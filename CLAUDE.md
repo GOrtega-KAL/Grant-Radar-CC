@@ -48,12 +48,15 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Se ha reducido de 10.976 a 8.835 líneas movida progresivamente a
-`grant_radar/` (paquete con nombre importable):
+`import`). Recuento verificado con `wc -l`: 9.426 líneas antes de la ronda
+de hoy, 9.202 después (la cifra "8.835" de una nota anterior de este
+archivo estaba mal calculada — ver AGENTS.md sección 24, nota de
+discrepancia). Progresivamente movida a `grant_radar/` (paquete con nombre
+importable):
 
 | Módulo | Contiene |
 |---|---|
-| `parsing_helpers.py` | Fechas y texto puros (sin estado) |
+| `parsing_helpers.py` | Fechas y texto puros (sin estado), incl. `_es_titulo_valido` |
 | `exclusion_terms.py` (+ `.json`) | Vocabulario de `_hard_out_of_scope()` |
 | `tech_taxonomy.py` (+ `.json`) | Categorías técnicas y su clasificación |
 | `kalfrisa_profile.py` (+ `.txt`) | Perfil de cliente enviado a Claude |
@@ -62,14 +65,17 @@ directamente, no se importa (su nombre con guiones no es válido para
 | `cache.py` | Caché de análisis de Claude (`grant_radar_cache.json`) |
 | `deterministic_rules.py` | Salvaguardas deterministas post-modelo |
 | `claude_schemas.py` | Esquemas Pydantic de Claude y su validación |
+| `audit.py` | `DISCOVERY_AUDIT` y `audit_exclusion()` (usado por las 8 fuentes) |
+| `sources/boa_aragon.py` | Conector BOA Aragón (primero de `sources/`, prueba) |
 
-Pendiente: `sources/` (los 8 conectores de fuentes — el bloque más grande
-que queda) y `pipeline.py` (`run_pipeline()`). El filtro previo a Claude
+Pendiente: el resto de `sources/` (7 conectores: BDNS, Horizon, CDTI, IDAE,
+BOE/MITECO, ECCP, EEN — BOA ya se extrajo como prueba, ver AGENTS.md sección
+25) y `pipeline.py` (`run_pipeline()`). El filtro previo a Claude
 (`_bdns_pre_claude_gate()`, `deterministic_prefilter()`, sección 4.1 de
 `AGENTS.md`) sigue deliberadamente sin extraer: es la lógica más compleja y
 ajustada del proyecto: no encadenarla detrás de otra tarea sin que el
 usuario lo pida explícitamente. Detalle completo de cada ronda en
-`AGENTS.md`, secciones 21-24, y en `SUGERENCIAS.MD` (3.2/3.3).
+`AGENTS.md`, secciones 21-25, y en `SUGERENCIAS.MD` (3.2/3.3).
 
 ## Publicar cambios (git push)
 

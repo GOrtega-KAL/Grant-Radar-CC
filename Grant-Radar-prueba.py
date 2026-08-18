@@ -145,6 +145,7 @@ from grant_radar.parsing_helpers import (
     _absolute_url,
     _date_to_iso,
     _days_until,
+    _es_titulo_valido,
     _extract_application_dates,
     _extract_date_range,
     _extract_spanish_application_dates,
@@ -155,6 +156,8 @@ from grant_radar.parsing_helpers import (
     _signed_days_until,
     select_evidence_excerpt,
 )
+from grant_radar.audit import DISCOVERY_AUDIT, audit_exclusion
+from grant_radar.sources.boa_aragon import fetch_boa
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -244,7 +247,6 @@ logging.basicConfig(
 )
 log = logging.getLogger("grant_radar")
 SOURCE_RUNTIME_METADATA = {}
-DISCOVERY_AUDIT = []
 IDENTITY_LANDINGS = []
 COVERAGE_WATCH_RESULTS = []
 RUN_DIAGNOSTICS = {}
@@ -1373,49 +1375,6 @@ def _official_call_identifier(text: str) -> str:
     if eurostars:
         return f"EUROSTARS-CALL-{eurostars.group(1)}"
     return ""
-
-
-def audit_exclusion(
-    item: dict,
-    reason: str,
-    stage: str,
-    details: dict | None = None,
-) -> None:
-    """Registra un descubrimiento excluido sin guardar descripciones extensas."""
-    source = str(item.get("source", "") or "DESCONOCIDA")
-    identifier = str(
-        item.get("identifier")
-        or item.get("bdns_id")
-        or item.get("catalog_ref")
-        or ""
-    ).strip()
-    title = " ".join(str(item.get("title", "")).split())[:500]
-    url = str(item.get("url", "") or item.get("official_url", "")).strip()
-    record = {
-        "source": source,
-        "identifier": identifier,
-        "title": title,
-        "url": url,
-        "reason": reason,
-        "stage": stage,
-        "deadline_date": str(item.get("deadline_date", "")),
-        "open_date": str(item.get("open_date", "")),
-        "bdns_id": str(item.get("bdns_id", "")),
-    }
-    if details:
-        record["details"] = details
-
-    key = (
-        source.casefold(),
-        identifier.casefold(),
-        url.casefold(),
-        title.casefold(),
-        reason,
-        stage,
-    )
-    if not any(entry.get("_key") == key for entry in DISCOVERY_AUDIT):
-        record["_key"] = key
-        DISCOVERY_AUDIT.append(record)
 
 
 def build_recurrent_coverage_watch(items: list[dict]) -> list[dict]:
@@ -3194,169 +3153,6 @@ def fetch_cdti(browser: PlaywrightBrowser) -> list:
     return _merge_cdti_results(curated_results, browser_results)
 
 
-def _fetch_boa_static() -> list:
-    """
-    BOA (Boletín Oficial de Aragón) — catálogo estático de respaldo.
-
-    MANTENIMIENTO del catálogo estático: revisar cuando se publiquen nuevas
-    convocatorias del Gobierno de Aragón relevantes para industria/energía.
-    Fuente: https://www.aragon.es/temas/industria-energia-mineria/ayudas-subvenciones
-    y https://www.boa.aragon.es
-    Última revisión: 2026-04-09
-    """
-    log.info("BOA: usando catálogo estático de respaldo...")
-    results = []
-
-    # ── Catálogo estático BOA/Aragón curado ──────────────────────────
-    # ESTADO: ★ = abierta confirmada | ◷ = fecha prevista | ✗ = cerrada (no incluir)
-    # Fuentes: BOA, aragon.es/tramitador, última revisión 2026-04-09
-    _BOA_STATIC = [
-        {
-            # ★ ABIERTA: 06/02/2026 – 05/05/2026 (confirmado por el usuario)
-            "title":        "Fondo de Transición Justa 2026 — Inversión PYME provincia de Teruel",
-            "description":  "Subvenciones del Fondo de Transición Justa para proyectos de inversión "
-                            "de pequeñas y medianas empresas en la provincia de Teruel. Incluye "
-                            "transformación ecológica de la industria, eficiencia energética y "
-                            "economía circular. Dotación 2,5 M€. Compatible con proyectos de "
-                            "descarbonización de procesos industriales en Aragón.",
-            "open_date":    "2026-02-06",
-            "deadline_date": "2026-05-05",
-            "fecha_prevista": False,
-            "budget":       "2.500.000 € total · subvención a fondo perdido",
-            "url":          "https://www.aragon.es/tramitador/-/tramite/ayudas-a-pequenas-y-medianas-empresas-de-la-provincia-de-teruel-para-proyectos-de-inversion-fondo-de-transicion-justa",
-            "keywords":     ["descarbonización", "eficiencia energética", "emisiones industriales",
-                             "transición energética", "economía baja en carbono"],
-        },
-        {
-            # ✗ CERRADA: la convocatoria oficial TDI-Feder 2026 finalizó el
-            # 15/01/2026. Se conserva para trazabilidad y el filtro la excluye.
-            "title":        "PAIP — Convocatoria 2026 Línea TDI-Feder",
-            "description":  "Programa de ayudas del Gobierno de Aragón a la industria y PYME para "
-                            "proyectos empresariales de transformación y desarrollo industrial "
-                            "en Aragón dentro de la línea TDI-Feder. Convocatoria cerrada.",
-            "open_date":    "2025-10-25",
-            "deadline_date": "2026-01-15",
-            "fecha_prevista": False,
-            "budget":       "Ver convocatoria (subvención a fondo perdido)",
-            "url":          "https://www.aragon.es/tramitador/-/tramite/ayudas-industria-digital-integradora-sostenible-marco-programa-ayudas-industria-pyme-aragon-paip/convocatoria-2026-en-desarrollo",
-            "keywords":     ["eficiencia energética", "eficiencia térmica", "hornos industriales"],
-        },
-    ]
-
-    for c in _BOA_STATIC:
-        close_str       = c.get("deadline_date", "")
-        open_str        = c.get("open_date", "")
-        es_prevista     = c.get("fecha_prevista", False)
-        deadline_days   = _days_until(close_str) if close_str else 120
-        if deadline_days <= 0 and not es_prevista:
-            log.debug(f"  BOA estático: descartando cerrada: {c['title'][:60]}")
-            audit_exclusion(
-                {
-                    "source": "BOA ARAGÓN",
-                    "title": c["title"],
-                    "url": c["url"],
-                    "open_date": open_str,
-                    "deadline_date": close_str,
-                },
-                "deadline_closed",
-                "boa_static_filter",
-            )
-            continue
-        results.append({
-            "source":              "BOA ARAGÓN",
-            "title":               c["title"],
-            "description":         c["description"],
-            "deadline_days":       deadline_days,
-            "deadline_date":       close_str,
-            "open_date":           open_str,
-            "fecha_sin_confirmar": not bool(close_str) or es_prevista,
-            "fecha_prevista":      es_prevista,
-            "budget":              c["budget"],
-            "url":                 c["url"],
-            "keywords_found":      c["keywords"],
-            "org":                 "Gobierno de Aragón",
-            "source_type":         "Catálogo curado",
-        })
-    log.info(f"  → {len(results)} convocatorias BOA cargadas desde el respaldo")
-    return results
-
-
-def _fetch_boa_playwright(browser: PlaywrightBrowser) -> list:
-    """Consulta con Chromium búsquedas BOA y ayudas del Gobierno de Aragón."""
-    targets = [
-        "https://www.boa.aragon.es/cgi-bin/EBOA/BRSCGI?CMD=VERDOC&BASE=BODA&DOCS=1-40&SEPARADOR=&&RANG-C=20250101-&TEXT-TEXT=eficiencia+energetica+industria",
-        "https://www.boa.aragon.es/cgi-bin/EBOA/BRSCGI?CMD=VERDOC&BASE=BODA&DOCS=1-40&SEPARADOR=&&RANG-C=20250101-&TEXT-TEXT=hidrogeno+industria",
-        "https://www.aragon.es/temas/industria-energia-mineria/ayudas-subvenciones-industria-energia-mineria",
-    ]
-    results = []
-    seen = set()
-    active_marker = re.compile(
-        rf"(?:en plazo|plazo permanente|convocatoria\s+{datetime.now().year}|"
-        rf"{datetime.now().year}\s+en desarrollo)",
-        re.IGNORECASE,
-    )
-    excluded_scope = re.compile(
-        r"(regad[ií]o|agropecuari|agricultur|ganader|vivienda|residencial|"
-        r"movilidad|veh[ií]culo|transporte)",
-        re.IGNORECASE,
-    )
-
-    for target_url in targets:
-        html = browser.html(target_url)
-        if not html:
-            continue
-        soup = BeautifulSoup(html, "html.parser")
-        base = "https://www.boa.aragon.es" if "boa.aragon.es" in target_url else "https://www.aragon.es"
-
-        for anchor in soup.find_all("a", href=True):
-            title = " ".join(anchor.get_text(" ", strip=True).split())
-            href = anchor.get("href", "").strip()
-            container = anchor.find_parent(["article", "li", "tr", "div"])
-            context_text = container.get_text(" ", strip=True) if container else title
-            combined = f"{title} {context_text}"
-            if (
-                len(title) < 20
-                or title in seen
-                or not _es_titulo_valido(title)
-                or not is_relevant(combined)
-                or "fuera de plazo" in combined.lower()
-                or excluded_scope.search(combined)
-                or not active_marker.search(combined)
-            ):
-                continue
-            seen.add(title)
-            open_date, deadline_date = _extract_date_range(context_text)
-            deadline_days = _days_until(deadline_date) if deadline_date else 60
-            if deadline_date and deadline_days <= 0:
-                continue
-            results.append({
-                "source":              "BOA ARAGÓN",
-                "title":               title[:240],
-                "description":         context_text[:2_000],
-                "deadline_days":       deadline_days,
-                "deadline_date":       deadline_date,
-                "open_date":           open_date,
-                "fecha_sin_confirmar": not bool(deadline_date),
-                "fecha_prevista":      False,
-                "budget":              "Ver disposición",
-                "url":                 _absolute_url(base, href),
-                "keywords_found":      keyword_match(combined),
-                "org":                 "Gobierno de Aragón",
-                "source_type":         "Playwright BOA",
-            })
-
-    log.info(f"  BOA Playwright: {len(results)} convocatorias relevantes")
-    return results
-
-
-def fetch_boa(browser: PlaywrightBrowser) -> list:
-    results = _fetch_boa_playwright(browser)
-    if results:
-        return results
-    log.warning("BOA: navegación en vivo sin resultados; activando catálogo estático")
-    return _fetch_boa_static()
-
-
 IDAE_BASE = "https://www.idae.es"
 IDAE_MAX_DETAIL_PAGES = 120
 IDAE_MIN_EXPECTED_INVENTORY = 40
@@ -4110,26 +3906,6 @@ def fetch_idae_catalog(browser: PlaywrightBrowser) -> list:
         f"(cerradas={skipped_closed}, antiguas sin plazo={skipped_old_unconfirmed})"
     )
     return results
-
-
-def _es_titulo_valido(title: str) -> bool:
-    """Filtra entradas basura del scraping (referencias BOE, enlaces de navegación, etc.)"""
-    if len(title) < 20:
-        return False
-    patrones_basura = [
-        r"^ir al documento",
-        r"^ref\.\s*boe",
-        r"^boe-[ab]-\d{4}",
-        r"^\d+$",
-        r"^ver (más|todo|detalle)",
-        r"^(anterior|siguiente|inicio|fin|buscar|acceder)$",
-        r"^(descargar|imprimir|compartir|enviar)",
-    ]
-    title_lower = title.lower().strip()
-    for patron in patrones_basura:
-        if re.match(patron, title_lower):
-            return False
-    return True
 
 
 def fetch_boe(browser: PlaywrightBrowser) -> list:

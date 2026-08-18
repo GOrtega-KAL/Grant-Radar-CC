@@ -1519,3 +1519,75 @@ fuentes, el bloque más grande que queda) y `pipeline.py`
 niveles de precedencia de la sección 4.1 — sigue deliberadamente sin
 tocar: se considera que merece su propia sesión dedicada por el riesgo de
 regresión silenciosa, no encadenarla detrás de otra extracción.
+
+**Nota de discrepancia detectada el 18/08/2026 (arranque en frío):** al
+empezar la sesión siguiente, `git show <commit de esta sección>:"Grant-Radar-prueba.py" | wc -l`
+daba 9.426 líneas, no 8.835. La cifra de esta sección quedó mal registrada
+en su momento (o se contó con un método distinto); no se ha investigado más
+a fondo por no ser bloqueante. A partir de la sección 25, las cifras de
+línea citadas están verificadas con `wc -l` sobre el archivo real en el
+momento de escribirlas.
+
+## 25. Quinta ronda de modularización a 18/08/2026 (prueba): conector BOA Aragón
+
+Primer intento de extraer un conector de fuente a un paquete `sources/`
+propio (pendiente desde la sección 21), usando BOA Aragón como caso de
+prueba por ser el más pequeño y autocontenido de los ocho (sin llamadas a
+`assess_web_inventory_health()`, sin fusión con BDNS, solo tres funciones).
+
+- `grant_radar/sources/boa_aragon.py` (paquete nuevo `grant_radar/sources/`):
+  `_fetch_boa_static()`, `_fetch_boa_playwright()`, `fetch_boa()`, movidas
+  sin cambios de lógica. `browser` se tipa como `typing.Any` en vez de
+  `PlaywrightBrowser`: esa clase vive en `Grant-Radar-prueba.py`, cuyo
+  nombre con guiones no es importable como módulo ni siquiera para un tipo;
+  el módulo solo necesita `browser.html(url) -> str | None`.
+- Dependencias resueltas antes de mover el conector:
+  - `_es_titulo_valido()` (también usada por `fetch_boe()`, que sigue en el
+    script principal) se movió a `grant_radar/parsing_helpers.py`: es una
+    función pura de validación de texto, exactamente el criterio que ya
+    agrupa ese módulo.
+  - `audit_exclusion()` y la lista mutable `DISCOVERY_AUDIT` (usada por las
+    ocho fuentes, no solo BOA — 32 referencias en todo el script) se
+    movieron juntas a un módulo nuevo, `grant_radar/audit.py`. El script
+    principal reimporta ambas (`from grant_radar.audit import
+    DISCOVERY_AUDIT, audit_exclusion`), así que las llamadas existentes
+    (`audit_exclusion(...)`, `DISCOVERY_AUDIT.clear()`, iterar sobre ella)
+    siguen funcionando sin cambios: Python vincula el nombre importado al
+    mismo objeto lista, no a una copia.
+- `tests/test_grant_radar_sources_boa_aragon.py` (nuevo, import estándar):
+  cubre `_fetch_boa_static()` fijando `_days_until()` con `mock.patch` en
+  vez de depender de la fecha real del sistema (el catálogo estático tiene
+  fechas fijas en el código y, a fecha de esta sesión, ambas ya están
+  vencidas — ver nota de mantenimiento en el propio módulo), y
+  `_fetch_boa_playwright()` con HTML sintético que ejercita en la misma
+  pasada el resultado activo y relevante, el excluido por ámbito
+  (regadío/agropecuario) y el excluido por estar fuera de plazo.
+  `tests/test_grant_radar_audit.py` (nuevo) prueba `audit_exclusion()` de
+  forma aislada, incluida la deduplicación por clave. Se añadieron también
+  tres casos de `_es_titulo_valido()` a
+  `tests/test_grant_radar_parsing_helpers.py`.
+- `Grant-Radar-prueba.py` bajó de 9.426 a 9.202 líneas (-2,4 % en esta
+  ronda; recuento verificado con `wc -l`, no con la cifra de la sección 24
+  — ver nota de discrepancia arriba). 226 pruebas `unittest` (216 + 10
+  nuevas) y `py_compile` en verde. Se repitió además
+  `poetry run python "Grant-Radar-prueba.py" --no-claude` completo (534,78 s
+  de recopilación, salida con código 0, sin `convocatorias.json` generado ni
+  caché IA modificada): 46 convocatorias vigentes en total, BOA Aragón
+  aportó 0 (cae al catálogo estático, que ya tiene sus dos únicas entradas
+  vencidas a fecha de esta sesión — comportamiento idéntico al del código
+  original, no una regresión de la extracción: ver nota de mantenimiento en
+  `boa_aragon.py`, última revisión del catálogo 2026-04-09). El resto de
+  fuentes no cambió de comportamiento respecto a ejecuciones anteriores más
+  allá de la variación normal de datos reales (46 vs. 47 candidatas de la
+  sección 23, esperable entre ejecuciones en días distintos).
+- Sigue pendiente: los otros siete conectores (BDNS, Horizon, CDTI, IDAE,
+  BOE/MITECO, ECCP, EEN) y `pipeline.py`. Ninguno es tan autocontenido como
+  BOA: CDTI fusiona con BDNS, BOE llama a `assess_web_inventory_health()` y
+  comparte `_es_titulo_valido()` (ya resuelto), ECCP y EEN tienen su propia
+  lógica de profundidad de rastreo y parámetros de listado. El patrón que
+  deja esta ronda para repetir con las demás: identificar qué helpers
+  comparte el conector con otras fuentes antes de moverlo, y decidir por
+  cada uno si es puro (→ `parsing_helpers.py`/`tech_taxonomy.py`), si es
+  estado compartido genuino (→ módulo propio, como `audit.py`), o si debe
+  quedarse en el script principal por depender de algo aún no extraído
+  (como `PlaywrightBrowser` o `assess_web_inventory_health()`).

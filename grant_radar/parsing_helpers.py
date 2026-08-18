@@ -483,3 +483,23 @@ def _levenshtein(a: str, b: str) -> int:
             current.append(min(ins_cost, del_cost, sub_cost))
         previous = current
     return previous[-1]
+
+
+def _es_titulo_valido(title: str) -> bool:
+    """Filtra entradas basura del scraping (referencias BOE, enlaces de navegación, etc.)"""
+    if len(title) < 20:
+        return False
+    patrones_basura = [
+        r"^ir al documento",
+        r"^ref\.\s*boe",
+        r"^boe-[ab]-\d{4}",
+        r"^\d+$",
+        r"^ver (más|todo|detalle)",
+        r"^(anterior|siguiente|inicio|fin|buscar|acceder)$",
+        r"^(descargar|imprimir|compartir|enviar)",
+    ]
+    title_lower = title.lower().strip()
+    for patron in patrones_basura:
+        if re.match(patron, title_lower):
+            return False
+    return True

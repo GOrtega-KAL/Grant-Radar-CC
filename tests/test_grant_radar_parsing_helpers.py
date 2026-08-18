@@ -12,6 +12,7 @@ from grant_radar.parsing_helpers import (
     _absolute_url,
     _date_to_iso,
     _days_until,
+    _es_titulo_valido,
     _extract_application_dates,
     _extract_date_range,
     _extract_spanish_application_dates,
@@ -104,6 +105,21 @@ class TextHelperTests(unittest.TestCase):
         self.assertLess(len(excerpt), len(text))
         self.assertIn("Beneficiarios", excerpt)
         self.assertIn("Plazo de presentación", excerpt)
+
+
+class TituloValidoTests(unittest.TestCase):
+    def test_rejects_short_titles(self):
+        self.assertFalse(_es_titulo_valido("Ver más"))
+
+    def test_rejects_known_junk_patterns(self):
+        self.assertFalse(_es_titulo_valido("Ir al documento completo publicado"))
+        self.assertFalse(_es_titulo_valido("BOE-A-2026-12345 disposición número"))
+        self.assertFalse(_es_titulo_valido("Descargar el archivo adjunto ahora"))
+
+    def test_accepts_a_plausible_call_title(self):
+        self.assertTrue(
+            _es_titulo_valido("Ayudas a la eficiencia energética en la industria de Aragón")
+        )
 
 
 if __name__ == "__main__":

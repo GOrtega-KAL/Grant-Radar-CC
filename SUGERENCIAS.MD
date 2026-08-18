@@ -365,6 +365,24 @@ ofrecería git.
    vez de descubrirse al fallar una llamada real a Claude. 216 tests
    `unittest`, `py_compile` y una repetición de `--no-claude` en verde, con
    las mismas 47 candidatas de las ejecuciones anteriores.
+   **Quinto incremento, sesión siguiente — primera prueba de `sources/`]**
+   Se extrajo el primer conector de fuente, BOA Aragón (el más pequeño y
+   autocontenido de los ocho), a `grant_radar/sources/boa_aragon.py`. Dos
+   dependencias compartidas con otras fuentes se resolvieron antes de mover
+   el conector: `_es_titulo_valido()` (pura, también usada por `fetch_boe()`)
+   pasó a `parsing_helpers.py`; `audit_exclusion()` y la lista mutable
+   `DISCOVERY_AUDIT` (compartidas por las 8 fuentes, 32 referencias en el
+   script) pasaron juntas a un módulo nuevo, `grant_radar/audit.py` —
+   el script principal las reimporta, así que las ~30 llamadas existentes no
+   cambiaron. Ver AGENTS.md sección 25 para el detalle completo, incluida
+   una discrepancia de recuento de líneas detectada al arrancar esta sesión
+   (la cifra "8.835" del cuarto incremento no cuadraba con `wc -l` sobre el
+   commit real: eran 9.426). Los otros siete conectores no son tan simples:
+   CDTI fusiona con BDNS, BOE/IDAE/CDTI llaman a
+   `assess_web_inventory_health()` (aún en el script principal), y ECCP/EEN
+   tienen lógica propia de profundidad de rastreo — cada uno necesitará el
+   mismo análisis de dependencias antes de moverse, no una repetición
+   mecánica del mismo patrón.
 3. Hacerlo de forma incremental y verificada: extraer un módulo, ejecutar
    `py_compile` y la suite completa de `unittest`, confirmar comportamiento
    idéntico con `--no-claude`, y solo entonces continuar con el siguiente
