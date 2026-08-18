@@ -1,0 +1,41 @@
+{
+  "spec_version": 1,
+  "cases": [
+    {
+      "id": "mandatory_unsupported_owned_product",
+      "title": "Industrial innovation support programme",
+      "description": "Eligible applicants must be manufacturing SMEs operating in the drone sector and have at least one drone product at TRL 6.",
+      "expected_decision": "reject"
+    },
+    {
+      "id": "generic_domain_word_without_requirement",
+      "title": "Industrial heat recovery for drone component factories",
+      "description": "Companies may demonstrate waste heat recovery in an industrial furnace. No proprietary drone product is required.",
+      "expected_decision": "not_reject"
+    },
+    {
+      "id": "complementary_sector_route",
+      "title": "Green transition in a manufacturing value chain",
+      "description": "Applicants are SMEs in the textile value chain. SMEs from complementary sectors such as technology and machinery are also eligible when their innovation contributes directly to the value chain.",
+      "expected_decision": "not_reject"
+    },
+    {
+      "id": "exclusive_intermediaries_without_members",
+      "title": "Cross-border cooperation networks",
+      "description": "The call is open exclusively to cluster organisations, digital innovation hubs and regional development agencies. Funding covers joint strategies, expert pools and networking.",
+      "expected_decision": "reject"
+    },
+    {
+      "id": "exclusive_cluster_with_direct_member_support",
+      "title": "Cluster-led industrial pilot programme",
+      "description": "The call is open exclusively to cluster organisations and digital innovation hubs and regional development agencies. Funding to member companies covers costs and pilots implemented by member companies.",
+      "expected_decision": "not_reject"
+    },
+    {
+      "id": "company_applicants_not_exclusive",
+      "title": "Cross-border industrial innovation",
+      "description": "Clusters, companies and research organisations may apply. Industrial SMEs receive grants for their own pilot costs.",
+      "expected_decision": "not_reject"
+    }
+  ]
+}

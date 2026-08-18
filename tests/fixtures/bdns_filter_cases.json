@@ -1,0 +1,816 @@
+{
+  "spec_version": 5,
+  "production_filter_enabled": true,
+  "thresholds": {
+    "new_establishment_min_execution_days": 730
+  },
+  "visible_labels": {
+    "cluster_route": "Vía clúster",
+    "consortium_partner": "Socio de consorcio",
+    "new_establishment": "Requiere nuevo centro"
+  },
+  "cases": [
+    {
+      "id": "active-national-manufacturing",
+      "description": "Ayuda nacional vigente para una empresa manufacturera.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["C"],
+        "technology_signals": ["industrial_efficiency"]
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "eligible_direct_opportunity",
+        "opportunity_role": "direct_beneficiary",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "closed-call",
+      "description": "El cierre confirmado prevalece sobre cualquier afinidad tecnológica.",
+      "input": {
+        "active_status": "closed",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["C", "D"],
+        "technology_signals": ["hydrogen", "industrial_heat"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "deadline_closed",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "recent-without-active-evidence",
+      "description": "Una publicación reciente sin plazo se retiene fuera de Claude hasta verificar documentos.",
+      "input": {
+        "active_status": "unverified_recent",
+        "call_access": "unknown",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["C"],
+        "technology_signals": ["innovation"]
+      },
+      "expected": {
+        "decision": "hold_manual",
+        "reason_code": "active_status_unverified",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "old-without-active-evidence",
+      "description": "Registro antiguo, no abierto y sin plazo documental.",
+      "input": {
+        "active_status": "unverified_old",
+        "call_access": "unknown",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["C"],
+        "technology_signals": ["energy_efficiency"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "no_active_evidence",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "named-direct-grant",
+      "description": "Concesión directa a una entidad identificada sin acceso general.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "named_or_preselected_beneficiary",
+        "company_eligible": false,
+        "territorial_requirement": "national",
+        "nace_sections": ["D"],
+        "technology_signals": ["hydrogen"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "not_open_call",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "open-direct-award-scheme",
+      "description": "La modalidad de concesión directa no excluye una ventanilla general y vigente.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "bdns_award_mode": "direct",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["D"],
+        "technology_signals": ["energy_efficiency"]
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "eligible_direct_opportunity",
+        "opportunity_role": "direct_beneficiary",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "instrumental-direct-award",
+      "description": "Una concesión directa instrumental no ofrece solicitud abierta ni participación en consorcio.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "instrumental",
+        "bdns_award_mode": "direct_instrumental",
+        "company_eligible": false,
+        "consortium_participation": "unknown",
+        "territorial_requirement": "national",
+        "nace_sections": ["D"],
+        "technology_signals": ["energy_efficiency"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "not_open_call",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "cluster-support-to-members",
+      "description": "El clúster transfiere apoyo o costes elegibles a empresas miembro.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "cluster_only",
+        "company_eligible": false,
+        "cluster_support": "financial_support_to_members",
+        "territorial_requirement": "national",
+        "nace_sections": ["M"],
+        "technology_signals": ["industrial_innovation"]
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "cluster_business_benefit_confirmed",
+        "opportunity_role": "cluster_route",
+        "visible_label": "Vía clúster"
+      }
+    },
+    {
+      "id": "cluster-pilot-at-member-company",
+      "description": "El clúster financia un piloto instalado en una empresa participante.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "cluster_only",
+        "company_eligible": false,
+        "cluster_support": "pilot_at_member_facility",
+        "territorial_requirement": "national",
+        "nace_sections": ["E", "M"],
+        "technology_signals": ["waste_recovery"]
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "cluster_business_benefit_confirmed",
+        "opportunity_role": "cluster_route",
+        "visible_label": "Vía clúster"
+      }
+    },
+    {
+      "id": "cluster-operating-costs",
+      "description": "Solo se financian estructura, personal o funcionamiento del clúster.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "cluster_only",
+        "company_eligible": false,
+        "cluster_support": "operating_costs_only",
+        "territorial_requirement": "national",
+        "nace_sections": ["S"],
+        "technology_signals": ["innovation"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "reject_cluster_operations",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "cluster-role-unclear",
+      "description": "No consta si las empresas miembro reciben apoyo o costes elegibles.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "cluster_only",
+        "company_eligible": false,
+        "cluster_support": "unknown",
+        "territorial_requirement": "national",
+        "nace_sections": ["M"],
+        "technology_signals": ["industrial_innovation"]
+      },
+      "expected": {
+        "decision": "hold_manual",
+        "reason_code": "cluster_role_unverified",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "indirect-commercial-funded-equipment",
+      "description": "El beneficiario puede comprar equipos a Kalfrisa, pero Kalfrisa no recibe financiación ni participa formalmente.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "other_beneficiaries",
+        "company_eligible": false,
+        "territorial_requirement": "project_outside_aragon",
+        "nace_sections": ["D"],
+        "technology_signals": ["industrial_energy_saving"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "indirect_commercial_role_only",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "own-process-investment-without-rd",
+      "description": "PAIP financia maquinaria y mejora de procesos propios de Kalfrisa sin exigir I+D.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "aragon",
+        "nace_sections": ["C"],
+        "technology_signals": ["productive_process_improvement"],
+        "rd_required": false
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "own_investment_connection_confirmed",
+        "opportunity_role": "direct_beneficiary",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "own-energy-saving-investment-without-rd",
+      "description": "INNOVAE financia una mejora de proceso propia si acredita el ahorro energético exigido.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["C", "D"],
+        "technology_signals": ["energy_efficiency", "process_improvement"],
+        "rd_required": false
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "own_investment_connection_confirmed",
+        "opportunity_role": "direct_beneficiary",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "consortium-partner-with-own-budget",
+      "description": "Kalfrisa puede ser socio formal del consorcio con costes y actividad propios.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "consortium_members",
+        "company_eligible": false,
+        "consortium_participation": "own_work_and_budget",
+        "territorial_requirement": "european",
+        "nace_sections": ["C"],
+        "technology_signals": ["industrial_decarbonisation"]
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "consortium_participation_confirmed",
+        "opportunity_role": "consortium_partner",
+        "visible_label": "Socio de consorcio"
+      }
+    },
+    {
+      "id": "outside-aragon-existing-centre-required",
+      "description": "El centro debe existir fuera de Aragón al presentar la solicitud.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "existing_establishment_outside_aragon",
+        "project_execution_days": 1095,
+        "nace_sections": ["C", "E"],
+        "technology_signals": ["waste_recovery"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "existing_establishment_required_outside_aragon",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "new-centre-729-days",
+      "description": "Se permite abrir centro después de solicitar, pero el periodo es inferior a dos años.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "new_establishment_allowed",
+        "project_execution_days": 729,
+        "nace_sections": ["D"],
+        "technology_signals": ["energy_efficiency"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "new_establishment_period_too_short",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "new-centre-730-days",
+      "description": "El límite exacto de dos años permite considerar viable la apertura del centro.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "new_establishment_allowed",
+        "project_execution_days": 730,
+        "nace_sections": ["D", "E"],
+        "technology_signals": ["energy_efficiency", "waste_recovery"]
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "new_establishment_period_sufficient",
+        "opportunity_role": "direct_beneficiary",
+        "visible_label": "Requiere nuevo centro"
+      }
+    },
+    {
+      "id": "new-centre-duration-unknown",
+      "description": "No se presume viable una apertura de centro si la duración no está confirmada.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "new_establishment_allowed",
+        "project_execution_days": null,
+        "nace_sections": ["D"],
+        "technology_signals": ["energy_efficiency"]
+      },
+      "expected": {
+        "decision": "hold_manual",
+        "reason_code": "new_establishment_duration_unknown",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "project-location-without-centre-requirement",
+      "description": "La inversión debe ejecutarse fuera de Aragón, pero no se exige centro previo.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "project_outside_aragon",
+        "nace_sections": ["C"],
+        "technology_signals": ["industrial_decarbonisation"]
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "project_location_compatible",
+        "opportunity_role": "direct_beneficiary",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "manufacturing-section-c",
+      "description": "La sección C es una señal industrial positiva.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["C"],
+        "technology_signals": ["industrial_innovation"]
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "eligible_direct_opportunity",
+        "opportunity_role": "direct_beneficiary",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "energy-section-d",
+      "description": "La sección D se conserva para ahorro y transición energética.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["D"],
+        "technology_signals": ["energy_efficiency"]
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "eligible_energy_opportunity",
+        "opportunity_role": "direct_beneficiary",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "waste-section-e",
+      "description": "La sección E se conserva para residuos, valorización y depuración.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["E"],
+        "technology_signals": ["waste_recovery", "gas_cleaning"]
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "eligible_waste_opportunity",
+        "opportunity_role": "direct_beneficiary",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "extractive-section-b-only",
+      "description": "Extractivas exclusivamente, sin C, D o E.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["B"],
+        "technology_signals": ["generic_innovation"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "extractive_sector_only",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "extractive-plus-manufacturing",
+      "description": "La presencia de B no excluye una convocatoria que también admite C.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["B", "C", "E"],
+        "technology_signals": ["industrial_emissions"]
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "eligible_direct_opportunity",
+        "opportunity_role": "direct_beneficiary",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "construction-industrial-thermal",
+      "description": "Construcción con conexión expresa a calor de proceso industrial.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["F"],
+        "technology_signals": ["industrial_heat", "waste_heat"]
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "industrial_thermal_connection",
+        "opportunity_role": "direct_beneficiary",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "construction-residential-only",
+      "description": "Edificación residencial sin aplicación térmica industrial.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["F"],
+        "technology_signals": ["residential_building"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "building_without_industrial_connection",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "primary-sector-direct-only",
+      "description": "Kalfrisa no es beneficiaria de una ayuda restringida al sector A.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["A"],
+        "technology_signals": ["generic_innovation"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "primary_sector_only",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "primary-sector-indirect-commercial-role",
+      "description": "Una explotación beneficiaria puede comprar tecnología de Kalfrisa, pero Kalfrisa no participa en la ayuda.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "other_beneficiaries",
+        "company_eligible": false,
+        "territorial_requirement": "national",
+        "nace_sections": ["A"],
+        "technology_signals": ["waste_to_energy"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "indirect_commercial_role_only",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "tertiary-without-technology",
+      "description": "Servicios terciarios sin inversión o conexión industrial.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["G", "I", "R"],
+        "technology_signals": []
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "no_industrial_or_technology_connection",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "tertiary-metadata-with-hydrogen",
+      "description": "La evidencia oficial de hidrógeno neutraliza un NACE terciario anómalo.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["H", "T"],
+        "technology_signals": ["hydrogen"]
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "strong_technology_overrides_sector_noise",
+        "opportunity_role": "direct_beneficiary",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "old-stale-api-open-flag",
+      "description": "Un indicador API abierto no reactiva una convocatoria antigua sin plazo vigente.",
+      "input": {
+        "active_status": "unverified_old",
+        "api_open_flag": true,
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["C"],
+        "technology_signals": ["energy_efficiency"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "no_active_evidence",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "residential-before-vigency",
+      "description": "La mejora exclusiva de viviendas se excluye aunque todavía falte verificar su plazo.",
+      "input": {
+        "active_status": "unverified_recent",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["F"],
+        "technology_signals": ["residential_energy_efficiency"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "explicit_non_industrial_scope",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "named-grant-before-vigency",
+      "description": "Una concesión nominativa se excluye sin gastar recursos en verificar si sigue abierta.",
+      "input": {
+        "active_status": "unverified_recent",
+        "call_access": "named_or_preselected_beneficiary",
+        "company_eligible": false,
+        "territorial_requirement": "national",
+        "nace_sections": ["D"],
+        "technology_signals": ["hydrogen"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "not_open_call",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "structured-primary-without-nace-code",
+      "description": "La finalidad oficial agraria permite excluir una ayuda primaria aunque SNPSAP no aporte CNAE.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "official_finality": "Agricultura, Pesca y Alimentación",
+        "formal_participation_route": false,
+        "territorial_requirement": "national",
+        "nace_sections": [],
+        "technology_signals": []
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "structured_primary_sector_scope",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "structured-primary-formal-group-route",
+      "description": "Un grupo operativo agrario no se excluye por sector hasta aclarar si Kalfrisa tendría trabajo y costes propios.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": false,
+        "official_finality": "Agricultura, Pesca y Alimentación",
+        "formal_participation_route": true,
+        "territorial_requirement": "national",
+        "nace_sections": ["A"],
+        "technology_signals": []
+      },
+      "expected": {
+        "decision": "hold_manual",
+        "reason_code": "consortium_role_unverified",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "structured-employment-title-required",
+      "description": "La finalidad empleo solo excluye cuando el título confirma un objeto laboral o sociolaboral.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "official_finality": "Fomento del Empleo",
+        "title_scope": "creación de puestos de trabajo en empresas de inserción",
+        "territorial_requirement": "national",
+        "nace_sections": [],
+        "technology_signals": []
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "structured_employment_or_development_scope",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "employment-finality-does-not-override-energy",
+      "description": "Una clasificación administrativa de empleo no excluye una línea expresamente energética o circular.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "official_finality": "Fomento del Empleo",
+        "title_scope": "economía circular y transición energética",
+        "territorial_requirement": "national",
+        "nace_sections": ["D", "E"],
+        "technology_signals": ["energy_efficiency", "waste_recovery"]
+      },
+      "expected": {
+        "decision": "retain",
+        "reason_code": "strong_technology_overrides_sector_noise",
+        "opportunity_role": "direct_beneficiary",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "structured-public-local-beneficiaries",
+      "description": "Una ayuda cuyo título la destina a entes locales solo ofrecería a Kalfrisa una venta indirecta.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "title_scope": "subvenciones destinadas a los entes locales",
+        "territorial_requirement": "national",
+        "nace_sections": ["E"],
+        "technology_signals": ["waste_recovery"]
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "structured_public_beneficiaries_only",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "residual-bonos-de-comercio",
+      "description": "Las preposiciones no impiden reconocer una campaña de bonos de comercio local.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "title_scope": "campaña de bonos de comercio",
+        "territorial_requirement": "national",
+        "nace_sections": [],
+        "technology_signals": []
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "explicit_non_industrial_scope",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "residual-convocatoria-pyme-global",
+      "description": "La variante Convocatoria Pyme Global mantiene el alcance ferial y comercial indirecto.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "title_scope": "Convocatoria Pyme Global para participación en feria",
+        "territorial_requirement": "national",
+        "nace_sections": [],
+        "technology_signals": []
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "explicit_non_industrial_scope",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "residual-conciliacion-laboral",
+      "description": "La conciliación personal, familiar y laboral es una ayuda laboral fuera del radar.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "title_scope": "conciliación de la vida personal, familiar y laboral",
+        "territorial_requirement": "national",
+        "nace_sections": [],
+        "technology_signals": []
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "explicit_non_industrial_scope",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    },
+    {
+      "id": "residual-cultural-title",
+      "description": "Un título que financia expresamente actividad cultural no se confunde con innovación industrial.",
+      "input": {
+        "active_status": "confirmed_open",
+        "call_access": "general_applicants",
+        "company_eligible": true,
+        "title_scope": "fomento de la actividad cultural en áreas rurales",
+        "territorial_requirement": "national",
+        "nace_sections": [],
+        "technology_signals": []
+      },
+      "expected": {
+        "decision": "reject",
+        "reason_code": "structured_specific_non_industrial_scope",
+        "opportunity_role": "unknown",
+        "visible_label": ""
+      }
+    }
+  ]
+}

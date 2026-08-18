@@ -1,0 +1,2117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Grant-Radar — Kalfrisa</title>
+<style>
+  :root {
+    --font: Inter, "Segoe UI", Arial, sans-serif;
+    --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+
+    --brand: #1556a8;
+    --brand-dark: #103f7e;
+    --brand-soft: #eaf2fc;
+    --brand-soft-2: #f3f7fd;
+    --brand-red: #d82436;
+
+    --bg: #f4f6f9;
+    --surface: #ffffff;
+    --surface-2: #f8fafc;
+    --surface-3: #eef2f7;
+    --border: #dfe5ed;
+    --border-strong: #c9d2df;
+
+    --text: #172033;
+    --text-2: #596579;
+    --text-3: #7d899d;
+
+    --success: #178552;
+    --success-soft: #e9f7f0;
+    --warning: #bd6d0f;
+    --warning-soft: #fff5e8;
+    --danger: #c93442;
+    --danger-soft: #fdeff1;
+    --neutral: #697589;
+    --neutral-soft: #eef1f5;
+    --teal: #087f8c;
+    --teal-soft: #e7f7f8;
+    --violet: #7654aa;
+    --violet-soft: #f1edf8;
+
+    --shadow-xs: 0 1px 2px rgba(23, 32, 51, .04);
+    --shadow-sm: 0 8px 24px rgba(23, 32, 51, .06);
+    --shadow-md: 0 18px 50px rgba(23, 32, 51, .12);
+
+    --radius-sm: 10px;
+    --radius: 14px;
+    --radius-lg: 20px;
+    --content-max: 1720px;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 10% -10%, rgba(21, 86, 168, .08), transparent 28%),
+      radial-gradient(circle at 105% 8%, rgba(216, 36, 54, .035), transparent 24%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  button, select, input { font: inherit; }
+  button { -webkit-tap-highlight-color: transparent; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid rgba(21, 86, 168, .22); outline-offset: 2px; }
+
+  .app-shell {
+    width: min(100%, var(--content-max));
+    margin: 0 auto;
+    padding: 18px 22px 28px;
+  }
+
+  /* Header */
+  .app-header {
+    position: sticky;
+    top: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: 72px;
+    padding: 10px 16px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(223, 229, 237, .88);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, .88);
+    box-shadow: var(--shadow-xs);
+    backdrop-filter: blur(16px);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .brand-logo {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 auto;
+    object-fit: contain;
+  }
+
+  .brand-copy { min-width: 0; }
+  .brand-copy h1 {
+    margin: 0;
+    font-size: 19px;
+    line-height: 1.15;
+    letter-spacing: -.4px;
+    font-weight: 750;
+  }
+  .brand-copy p {
+    margin: 4px 0 0;
+    color: var(--text-2);
+    font-size: 12.5px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .status-pill,
+  .updated-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 7px 11px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    white-space: nowrap;
+  }
+
+  .status-pill {
+    color: var(--success);
+    background: var(--success-soft);
+    border: 1px solid rgba(23, 133, 82, .18);
+    font-weight: 700;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 0 4px rgba(23, 133, 82, .10);
+    animation: statusPulse 2.2s ease-in-out infinite;
+  }
+
+  @keyframes statusPulse {
+    50% { opacity: .55; transform: scale(.86); }
+  }
+
+  .updated-pill {
+    color: var(--text-2);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    font-family: var(--font-mono);
+  }
+
+  .icon-btn,
+  .ghost-btn,
+  .primary-btn,
+  .link-btn,
+  .sort-direction-btn {
+    border: 0;
+    cursor: pointer;
+    transition: transform .15s ease, background .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+  }
+
+  .icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text-2);
+  }
+  .icon-btn:hover { color: var(--brand); border-color: rgba(21, 86, 168, .35); background: var(--brand-soft-2); }
+  .icon-btn:active, .ghost-btn:active, .primary-btn:active, .link-btn:active { transform: translateY(1px); }
+
+  /* Bento overview */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: minmax(290px, 1.35fr) minmax(235px, .85fr) minmax(225px, .9fr) minmax(290px, 1.1fr);
+    grid-template-rows: 148px;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .overview-card,
+  .panel {
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, .96);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .overview-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    padding: 18px;
+  }
+
+  .overview-card::after {
+    content: "";
+    position: absolute;
+    inset: auto -32px -52px auto;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(21, 86, 168, .10), transparent 70%);
+    pointer-events: none;
+  }
+
+  .overview-kicker {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .overview-value {
+    margin-top: 10px;
+    font-size: 46px;
+    line-height: .95;
+    letter-spacing: -2.4px;
+    font-weight: 800;
+  }
+
+  .overview-caption {
+    margin-top: 10px;
+    color: var(--text-2);
+    font-size: 12px;
+    line-height: 1.45;
+    max-width: 38ch;
+  }
+
+  .overview-main {
+    color: var(--brand-dark);
+    background:
+      linear-gradient(145deg, rgba(234, 242, 252, .98), rgba(255, 255, 255, .98));
+    border-color: rgba(21, 86, 168, .20);
+  }
+  .overview-main .overview-value { color: var(--brand); }
+
+  .overview-urgent {
+    background: linear-gradient(145deg, rgba(253, 239, 241, .9), rgba(255, 255, 255, .98));
+    border-color: rgba(201, 52, 66, .18);
+  }
+  .overview-urgent .overview-value { color: var(--danger); font-size: 40px; }
+  .urgent-title {
+    margin-top: 8px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .metric-stack {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    height: 100%;
+  }
+
+  .mini-metric {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+    padding: 12px;
+    border-radius: 13px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+  }
+  .mini-metric:first-child { grid-column: 1 / -1; }
+  .mini-metric-label { color: var(--text-2); font-size: 11px; font-weight: 700; }
+  .mini-metric-value { margin-top: 4px; color: var(--text); font-size: 26px; font-weight: 800; letter-spacing: -1px; }
+  .mini-metric-note { margin-top: 2px; color: var(--text-3); font-size: 10.5px; }
+
+  .summary-card {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+  .summary-card .summary-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 750;
+  }
+  .summary-card .summary-heading span:last-child {
+    color: var(--brand);
+    font-size: 10.5px;
+    font-family: var(--font-mono);
+    font-weight: 650;
+  }
+  .executive-summary {
+    color: var(--text-2);
+    font-size: 12px;
+    line-height: 1.55;
+  }
+  .executive-summary p { margin: 0; }
+  .executive-summary p + p { margin-top: 6px; }
+  .executive-summary strong { color: var(--text); }
+
+  /* Toolbar */
+  .toolbar {
+    position: sticky;
+    top: 88px;
+    z-index: 60;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 11px 13px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(223, 229, 237, .92);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, .93);
+    box-shadow: var(--shadow-xs);
+    backdrop-filter: blur(14px);
+  }
+
+  .filter-zone {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .filter-cluster {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .filter-caption {
+    flex: 0 0 auto;
+    color: var(--text-3);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    font-weight: 800;
+  }
+
+  .chip-scroll {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .chip-scroll::-webkit-scrollbar { display: none; }
+
+  .filter-chip {
+    flex: 0 0 auto;
+    min-height: 32px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 11.5px;
+    font-weight: 680;
+    cursor: pointer;
+    transition: .15s ease;
+  }
+  .filter-chip:hover { border-color: rgba(21, 86, 168, .34); color: var(--brand); background: var(--brand-soft-2); }
+  .filter-chip.active { border-color: var(--brand); background: var(--brand); color: #fff; }
+
+  .toolbar-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 7px;
+  }
+
+  .sort-control {
+    display: flex;
+    align-items: center;
+    min-height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .sort-control label {
+    padding-left: 10px;
+    color: var(--text-3);
+    font-size: 10.5px;
+    font-weight: 750;
+    white-space: nowrap;
+  }
+
+  .sort-control select {
+    min-width: 135px;
+    height: 34px;
+    padding: 0 28px 0 7px;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 11.5px;
+    font-weight: 700;
+    outline: 0;
+    cursor: pointer;
+  }
+
+  .sort-direction-btn {
+    width: 38px;
+    height: 34px;
+    border-left: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--brand);
+    font-weight: 850;
+  }
+  .sort-direction-btn:hover { background: var(--brand-soft); }
+
+  .toggle-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 36px;
+    padding: 5px 9px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 11px;
+    font-weight: 680;
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle-control input { position: absolute; opacity: 0; pointer-events: none; }
+  .toggle-track {
+    width: 28px;
+    height: 16px;
+    padding: 2px;
+    border-radius: 999px;
+    background: var(--border-strong);
+    transition: .18s ease;
+  }
+  .toggle-thumb {
+    display: block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(23, 32, 51, .22);
+    transition: transform .18s ease;
+  }
+  .toggle-control input:checked + .toggle-track { background: var(--brand); }
+  .toggle-control input:checked + .toggle-track .toggle-thumb { transform: translateX(12px); }
+
+  .ghost-btn,
+  .primary-btn,
+  .link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 36px;
+    padding: 7px 11px;
+    border-radius: 10px;
+    font-size: 11.5px;
+    font-weight: 750;
+    white-space: nowrap;
+  }
+  .ghost-btn { color: var(--text-2); background: var(--surface); border: 1px solid var(--border); }
+  .ghost-btn:hover { color: var(--brand); border-color: rgba(21, 86, 168, .34); background: var(--brand-soft-2); }
+  .primary-btn { color: #fff; background: var(--brand); border: 1px solid var(--brand); box-shadow: 0 4px 12px rgba(21, 86, 168, .16); }
+  .primary-btn:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
+  .link-btn { min-height: 31px; padding: 5px 9px; color: var(--brand); background: var(--brand-soft-2); border: 1px solid rgba(21, 86, 168, .16); }
+  .link-btn:hover { background: var(--brand-soft); border-color: rgba(21, 86, 168, .32); }
+
+  /* Main workspace */
+  .workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .panel { border-radius: var(--radius); overflow: hidden; }
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 49px;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #fff, #fbfcfe);
+  }
+  .panel-heading-group { min-width: 0; }
+  .panel-title { margin: 0; font-size: 14px; font-weight: 780; letter-spacing: -.15px; }
+  .panel-subtitle { margin-top: 3px; color: var(--text-3); font-size: 10.5px; }
+  .panel-tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 25px;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-2);
+    background: var(--surface-2);
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 650;
+    white-space: nowrap;
+  }
+
+  .results-panel { min-width: 0; }
+  .conv-list { padding: 8px; }
+
+  .conv-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 13px;
+    padding: 13px 14px;
+    margin-bottom: 7px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    cursor: pointer;
+    transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease, background .15s ease;
+  }
+  .conv-item:last-child { margin-bottom: 0; }
+  .conv-item:hover { border-color: rgba(21, 86, 168, .35); box-shadow: 0 8px 24px rgba(23, 32, 51, .075); transform: translateY(-1px); }
+  .conv-item.high { box-shadow: inset 3px 0 0 var(--brand); }
+  .conv-item.medium { box-shadow: inset 3px 0 0 var(--warning); }
+  .conv-item.low { box-shadow: inset 3px 0 0 #a5afbd; }
+  .conv-item.descartada { background: #f7f8fa; color: var(--neutral); }
+
+  .conv-main { min-width: 0; }
+  .conv-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    margin-bottom: 5px;
+  }
+  .conv-source {
+    color: var(--brand);
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: .55px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .status-label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 21px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    font-size: 9.5px;
+    font-weight: 760;
+    white-space: nowrap;
+  }
+  .status-label.high { color: var(--brand-dark); background: var(--brand-soft); }
+  .status-label.medium { color: var(--warning); background: var(--warning-soft); }
+  .status-label.low { color: var(--neutral); background: var(--neutral-soft); }
+  .status-label.review { color: var(--warning); background: var(--warning-soft); }
+  .status-label.discard { color: var(--danger); background: var(--danger-soft); }
+
+  .conv-title {
+    margin: 0;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.42;
+    font-weight: 740;
+    letter-spacing: -.1px;
+  }
+
+  .conv-analysis-line,
+  .conv-footer-line {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px 10px;
+  }
+  .conv-analysis-line { margin-top: 8px; }
+  .conv-footer-line { margin-top: 9px; justify-content: space-between; }
+
+  .analysis-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-2);
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .analysis-stat strong { color: var(--text); font-weight: 760; }
+  .analysis-separator { width: 3px; height: 3px; border-radius: 50%; background: var(--border-strong); }
+
+  .conv-org {
+    min-width: 0;
+    max-width: 58%;
+    color: var(--text-3);
+    font-size: 10.8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .conv-tags { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 23px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 9.5px;
+    font-weight: 700;
+  }
+  .tag.h2 { color: var(--teal); background: var(--teal-soft); border-color: rgba(8, 127, 140, .14); }
+  .tag.ee { color: var(--warning); background: var(--warning-soft); border-color: rgba(189, 109, 15, .14); }
+  .tag.desc { color: var(--brand); background: var(--brand-soft); border-color: rgba(21, 86, 168, .14); }
+  .tag.emis { color: var(--danger); background: var(--danger-soft); border-color: rgba(201, 52, 66, .12); }
+  .tag.horn { color: var(--violet); background: var(--violet-soft); border-color: rgba(118, 84, 170, .14); }
+
+  .conv-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    min-width: 114px;
+    text-align: right;
+  }
+  .score-block { display: flex; flex-direction: column; align-items: flex-end; }
+  .score-value { color: var(--brand); font-size: 25px; line-height: 1; font-weight: 850; letter-spacing: -1px; }
+  .score-label { margin-top: 3px; color: var(--text-3); font-size: 9px; text-transform: uppercase; letter-spacing: .65px; font-weight: 800; }
+  .deadline-value { color: var(--text-2); font-size: 12px; font-weight: 780; }
+  .deadline-value.urgent { color: var(--danger); }
+  .deadline-value.warn { color: var(--warning); }
+  .deadline-date { margin-top: 3px; color: var(--text-3); font-size: 9.5px; font-family: var(--font-mono); }
+  .deadline-progress {
+    width: 100%;
+    height: 4px;
+    margin-top: 7px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--surface-3);
+  }
+  .deadline-progress > span { display: block; width: 0; height: 100%; border-radius: inherit; transition: width .8s ease; }
+
+  .no-results { padding: 50px 20px; color: var(--text-3); font-size: 13px; text-align: center; }
+
+  /* Sidebar */
+  .sidebar {
+    position: sticky;
+    top: 151px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .deadline-list, .review-list, .pipeline-list, .keyword-list, .source-list { padding: 8px 12px; }
+
+  .deadline-item {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 2px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .deadline-item:last-child { border-bottom: 0; }
+  .deadline-days { font-size: 22px; line-height: 1; font-weight: 850; letter-spacing: -.7px; }
+  .deadline-days span { display: block; margin-top: 3px; color: var(--text-3); font-size: 9px; letter-spacing: .2px; font-weight: 650; }
+  .deadline-days.urgent { color: var(--danger); }
+  .deadline-days.warn { color: var(--warning); }
+  .deadline-days.ok { color: var(--success); }
+  .deadline-name { color: var(--text); font-size: 11.5px; line-height: 1.35; font-weight: 700; }
+  .deadline-org { margin-top: 3px; color: var(--text-3); font-size: 9.5px; font-family: var(--font-mono); }
+  .deadline-fit { color: var(--brand); font-size: 11px; font-weight: 800; }
+
+  .review-item {
+    padding: 9px 10px;
+    margin-bottom: 6px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-2);
+    cursor: pointer;
+  }
+  .review-item:last-child { margin-bottom: 0; }
+  .review-item:hover { border-color: rgba(189, 109, 15, .35); }
+  .review-title { color: var(--text); font-size: 11.3px; line-height: 1.35; font-weight: 700; }
+  .review-reasons { margin-top: 4px; color: var(--text-3); font-size: 9.7px; line-height: 1.35; }
+
+  .pipeline-list { display: grid; gap: 7px; }
+  .pipeline-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 7px 2px;
+    color: var(--text-2);
+    font-size: 11px;
+  }
+  .pipeline-row strong { color: var(--text); font-size: 11.5px; }
+  .pipeline-status { display: inline-flex; align-items: center; gap: 6px; }
+  .pipeline-status-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .pipeline-status-dot.ok { background: var(--success); }
+  .pipeline-status-dot.warn { background: var(--warning); }
+  .pipeline-status-dot.err { background: var(--danger); }
+
+  /* Analytics */
+  .analytics-section { margin-top: 12px; }
+  .analytics-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+    padding: 0 3px;
+  }
+  .analytics-heading h2 { margin: 0; font-size: 14px; font-weight: 780; }
+  .analytics-heading p { margin: 0; color: var(--text-3); font-size: 10.5px; }
+  .analytics-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  .keyword-item {
+    display: grid;
+    grid-template-columns: minmax(100px, 1fr) 1.4fr 28px;
+    gap: 9px;
+    align-items: center;
+    padding: 6px 0;
+  }
+  .kw-name { min-width: 0; color: var(--text-2); font-size: 10.8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .kw-bar-wrap { height: 5px; overflow: hidden; border-radius: 999px; background: var(--surface-3); }
+  .kw-bar { width: 0; height: 100%; border-radius: inherit; background: var(--brand); transition: width 1s ease; }
+  .kw-count { color: var(--text-3); font-size: 10px; text-align: right; font-family: var(--font-mono); }
+
+  .source-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .source-item:last-child { border-bottom: 0; }
+  .source-left { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .source-status { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; }
+  .source-status.ok { background: var(--success); }
+  .source-status.warn { background: var(--warning); }
+  .source-status.err { background: var(--danger); }
+  .source-name { color: var(--text); font-size: 11px; font-weight: 720; }
+  .source-type { margin-top: 2px; color: var(--text-3); font-size: 9.3px; font-family: var(--font-mono); }
+  .source-right { text-align: right; }
+  .source-count { color: var(--brand); font-size: 14px; font-weight: 820; }
+  .source-time { margin-top: 2px; color: var(--text-3); font-size: 9px; font-family: var(--font-mono); }
+
+  .chart-wrap { padding: 14px 14px 11px; }
+  .chart-caption { margin-bottom: 11px; color: var(--text-3); font-size: 10px; }
+  .mini-bars { display: flex; align-items: flex-end; gap: 5px; height: 110px; }
+  .mini-bar-col { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: flex-end; gap: 5px; height: 100%; }
+  .mini-bar {
+    width: 100%;
+    min-height: 4px;
+    border-radius: 5px 5px 2px 2px;
+    background: linear-gradient(to top, var(--brand), #7aa8df);
+    opacity: .9;
+    transition: opacity .15s ease, transform .15s ease;
+  }
+  .mini-bar:hover { opacity: 1; transform: translateY(-2px); }
+  .mini-bar-label { color: var(--text-3); font-size: 8.7px; }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 17px 3px 0;
+    color: var(--text-3);
+    font-size: 10.5px;
+  }
+  .footer-right { display: flex; align-items: center; gap: 12px; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgba(13, 21, 35, .48);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .2s ease, visibility .2s ease;
+  }
+  .modal-overlay.visible { opacity: 1; visibility: visible; pointer-events: auto; }
+
+  .detail-modal {
+    display: flex;
+    flex-direction: column;
+    width: min(92vw, 1420px);
+    height: min(91vh, 940px);
+    overflow: hidden;
+    border: 1px solid rgba(223, 229, 237, .95);
+    border-radius: 20px;
+    background: var(--surface);
+    box-shadow: var(--shadow-md);
+    transform: translateY(12px) scale(.99);
+    transition: transform .22s ease;
+  }
+  .modal-overlay.visible .detail-modal { transform: translateY(0) scale(1); }
+
+  .modal-header {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255, 255, 255, .96);
+  }
+  .modal-source { color: var(--brand); font-size: 10px; font-family: var(--font-mono); font-weight: 800; letter-spacing: .55px; text-transform: uppercase; }
+  .modal-title { margin: 5px 0 0; font-size: 18px; line-height: 1.3; letter-spacing: -.25px; font-weight: 790; }
+  .modal-actions { display: flex; align-items: center; gap: 8px; }
+
+  .modal-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 16px 18px 22px;
+    overscroll-behavior: contain;
+  }
+
+  .decision-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(120px, 1fr)) minmax(190px, 1.2fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .decision-card {
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-2);
+  }
+  .decision-card-label { color: var(--text-3); font-size: 9.5px; text-transform: uppercase; letter-spacing: .55px; font-weight: 800; }
+  .decision-card-value { margin-top: 5px; color: var(--text); font-size: 20px; font-weight: 840; letter-spacing: -.55px; }
+  .decision-card-value.brand { color: var(--brand); }
+  .decision-card-value.danger { color: var(--danger); }
+  .decision-card-note { margin-top: 3px; color: var(--text-3); font-size: 9.5px; line-height: 1.35; }
+
+  .modal-summary-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .content-card {
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+  }
+  .content-card.soft { background: var(--surface-2); }
+  .content-card h3 {
+    margin: 0 0 8px;
+    color: var(--text);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .55px;
+    font-weight: 820;
+  }
+  .content-copy { color: var(--text-2); font-size: 12.5px; line-height: 1.65; }
+  .content-copy strong { color: var(--text); }
+  .action-card { border-color: rgba(21, 86, 168, .18); background: var(--brand-soft-2); }
+  .action-card h3 { color: var(--brand); }
+
+  .radar-card {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 18px;
+    align-items: center;
+  }
+  .radar-visual { display: flex; flex-direction: column; align-items: center; }
+  .radar-score-line { display: flex; align-items: baseline; gap: 5px; margin-top: -5px; }
+  .radar-score { font-size: 34px; font-weight: 860; letter-spacing: -1.5px; }
+  .radar-score-label { color: var(--text-3); font-size: 10px; font-weight: 760; }
+  .dimension-list { display: grid; gap: 10px; }
+  .dimension-row { display: grid; grid-template-columns: minmax(135px, 1fr) minmax(80px, 1.2fr) 34px; gap: 9px; align-items: center; }
+  .dimension-name { color: var(--text-2); font-size: 11px; }
+  .dimension-bar { height: 6px; overflow: hidden; border-radius: 999px; background: var(--surface-3); }
+  .dimension-fill { height: 100%; border-radius: inherit; }
+  .dimension-value { color: var(--text); font-size: 10.5px; font-family: var(--font-mono); font-weight: 750; text-align: right; }
+
+  .two-col-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .detail-list { margin: 0; padding-left: 18px; color: var(--text-2); font-size: 12px; line-height: 1.6; }
+  .detail-list li + li { margin-top: 5px; }
+
+  .meta-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .meta-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+    color: var(--text-2);
+    font-size: 10.5px;
+  }
+  .meta-pill strong { color: var(--text); }
+
+  .notice {
+    display: none;
+    margin: 0 0 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+  .notice.warning { color: #805011; background: var(--warning-soft); border: 1px solid rgba(189, 109, 15, .22); }
+  .notice.danger { color: var(--danger); background: var(--danger-soft); border: 1px solid rgba(201, 52, 66, .18); }
+
+  details.technical-details {
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+  details.technical-details > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 48px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 780;
+    cursor: pointer;
+    list-style: none;
+  }
+  details.technical-details > summary::-webkit-details-marker { display: none; }
+  details.technical-details > summary::after { content: "+"; color: var(--brand); font-size: 18px; }
+  details.technical-details[open] > summary::after { content: "−"; }
+  .technical-content { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 12px 12px; }
+
+  .modal-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .analysis-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 23px;
+    padding: 3px 7px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-2);
+    background: var(--surface-2);
+    font-size: 9.5px;
+    font-weight: 700;
+  }
+
+  body.modal-open { overflow: hidden; }
+
+  /* Mobile filters drawer */
+  .mobile-toolbar-trigger { display: none; }
+
+  @media (max-width: 1280px) {
+    .overview-grid { grid-template-columns: 1.2fr .85fr .9fr 1fr; }
+    .workspace { grid-template-columns: minmax(0, 1fr) 330px; }
+    .filter-zone { gap: 9px; }
+    .filter-caption { display: none; }
+  }
+
+  @media (max-width: 1080px) {
+    .overview-grid { grid-template-columns: 1.2fr .9fr 1fr; grid-template-rows: 144px 132px; }
+    .summary-card { grid-column: 1 / -1; }
+    .workspace { grid-template-columns: 1fr; }
+    .sidebar { position: static; display: grid; grid-template-columns: 1fr 1fr 1fr; }
+    .toolbar { top: 88px; }
+    .filter-cluster:first-child .filter-chip:nth-child(n+5) { display: none; }
+  }
+
+  @media (max-width: 820px) {
+    .app-shell { padding: 10px 10px 22px; }
+    .app-header { top: 0; min-height: 64px; padding: 8px 10px; border-radius: 13px; }
+    .brand-logo { width: 40px; height: 40px; }
+    .brand-copy h1 { font-size: 17px; }
+    .brand-copy p { font-size: 11.5px; }
+    .updated-pill { display: none; }
+
+    .overview-grid { grid-template-columns: 1fr 1fr; grid-template-rows: none; grid-auto-rows: auto; }
+    .overview-main, .overview-urgent { grid-column: auto; min-height: 138px; }
+    .overview-main .overview-value, .overview-urgent .overview-value { font-size: 36px; }
+    .metrics-card { grid-column: 1 / -1; }
+    .metric-stack { grid-template-columns: repeat(3, 1fr); height: auto; }
+    .mini-metric:first-child { grid-column: auto; }
+    .mini-metric { min-height: 94px; }
+    .mini-metric-note { display: none; }
+    .summary-card { grid-column: 1 / -1; min-height: 142px; }
+
+    .toolbar {
+      top: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px;
+    }
+    .mobile-toolbar-trigger { display: inline-flex; }
+    .filter-zone {
+      position: fixed;
+      inset: auto 10px 10px;
+      z-index: 150;
+      display: none;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 13px;
+      max-height: 75vh;
+      padding: 15px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: var(--shadow-md);
+    }
+    .filter-zone.mobile-visible { display: flex; }
+    .filter-caption { display: block; }
+    .filter-cluster { align-items: flex-start; flex-direction: column; }
+    .chip-scroll { width: 100%; flex-wrap: wrap; overflow: visible; }
+    .filter-cluster:first-child .filter-chip:nth-child(n+5) { display: inline-flex; }
+    .toolbar-actions { flex: 1; justify-content: space-between; }
+    .toolbar-actions .toggle-control, .toolbar-actions .ghost-btn { display: none; }
+    .sort-control { flex: 1; }
+    .sort-control select { flex: 1; width: 100%; min-width: 0; }
+
+    .sidebar { grid-template-columns: 1fr; }
+    .analytics-grid { grid-template-columns: 1fr; }
+    .conv-item { padding: 12px; grid-template-columns: minmax(0, 1fr) 82px; }
+    .conv-side { min-width: 82px; }
+    .conv-org { max-width: 100%; }
+
+    .decision-strip { grid-template-columns: 1fr 1fr; }
+    .decision-card:last-child { grid-column: 1 / -1; }
+    .modal-summary-grid, .two-col-grid { grid-template-columns: 1fr; }
+    .radar-card { grid-template-columns: 1fr; }
+    .technical-content { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 560px) {
+    .app-shell { padding: 8px 8px 18px; }
+    .status-pill { width: 34px; padding: 0; justify-content: center; }
+    .status-pill span:last-child { display: none; }
+    .overview-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .overview-card { padding: 14px; border-radius: 16px; }
+    .overview-caption { font-size: 11px; }
+    .summary-card { min-height: 142px; }
+    .toolbar { margin-bottom: 8px; }
+    .sort-control label { display: none; }
+    .conv-item { grid-template-columns: minmax(0, 1fr) 70px; gap: 8px; }
+    .conv-title { font-size: 13.3px; }
+    .score-value { font-size: 22px; }
+    .conv-analysis-line { gap: 4px 7px; }
+    .analysis-stat { font-size: 10px; }
+    .analysis-separator { display: none; }
+    .conv-footer-line { align-items: flex-start; flex-direction: column; }
+    .conv-org { max-width: 100%; }
+    .tag:nth-child(n+4) { display: none; }
+
+    .modal-overlay { padding: 0; }
+    .detail-modal { width: 100vw; height: 100dvh; max-height: none; border: 0; border-radius: 0; }
+    .modal-header { padding: 12px; gap: 9px; }
+    .modal-title { font-size: 15px; }
+    .modal-actions .primary-btn { display: none; }
+    .modal-body { padding: 12px 10px 18px; }
+    .decision-strip { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .decision-card { padding: 9px; }
+    .decision-card-value { font-size: 17px; }
+    .radar-card { padding: 11px; }
+    .dimension-row { grid-template-columns: minmax(100px, 1fr) minmax(60px, 1fr) 32px; }
+
+    .footer { flex-direction: column; align-items: flex-start; }
+  }
+
+  @media print {
+    body { background: #fff; }
+    .app-shell { max-width: none; padding: 0; }
+    .app-header, .toolbar, .sidebar, .analytics-section, .footer, .link-btn, .modal-overlay { display: none !important; }
+    .overview-grid { grid-template-columns: repeat(4, 1fr); grid-template-rows: auto; }
+    .overview-card { box-shadow: none; break-inside: avoid; }
+    .summary-card { display: none; }
+    .workspace { display: block; }
+    .results-panel { border: 0; box-shadow: none; }
+    .panel-header { padding-left: 0; padding-right: 0; }
+    .conv-item { box-shadow: none !important; break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <header class="app-header">
+    <div class="brand">
+      <img src="grant-radar-logo.png" alt="Logo de Grant-Radar" class="brand-logo">
+      <div class="brand-copy">
+        <h1>Grant-Radar</h1>
+        <p>Vigilancia de financiación I+D · Kalfrisa</p>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="status-pill" title="Pipeline operativo">
+        <span class="status-dot"></span>
+        <span>Monitorización activa</span>
+      </div>
+      <div class="updated-pill" id="ts">Datos sin actualizar</div>
+      <button class="icon-btn" type="button" onclick="window.print()" title="Imprimir vista" aria-label="Imprimir vista">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 8V4h10v4M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v6H7z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="overview-grid" aria-label="Resumen del radar">
+    <article class="overview-card overview-main">
+      <div class="overview-kicker"><span>Oportunidades de alto encaje</span><span class="panel-tag">Prioridad alta</span></div>
+      <div class="overview-value" id="cnt-high">0</div>
+      <div class="overview-caption" id="high-caption">Calculando oportunidades prioritarias…</div>
+    </article>
+
+    <article class="overview-card overview-urgent" id="urgent-card" role="button" tabindex="0" aria-label="Abrir convocatoria con cierre más próximo">
+      <div class="overview-kicker"><span>Cierre más próximo</span><span class="panel-tag">Urgencia</span></div>
+      <div class="overview-value"><span id="cnt-urgent-days">—</span><span style="font-size:15px;letter-spacing:0;margin-left:4px">días</span></div>
+      <div class="urgent-title" id="urgent-title">Sin cierres confirmados</div>
+    </article>
+
+    <article class="overview-card metrics-card">
+      <div class="metric-stack">
+        <div class="mini-metric">
+          <div class="mini-metric-label">Convocatorias activas</div>
+          <div class="mini-metric-value" id="cnt-active">0</div>
+          <div class="mini-metric-note">Disponibles tras filtros duros</div>
+        </div>
+        <div class="mini-metric">
+          <div class="mini-metric-label">Descartadas</div>
+          <div class="mini-metric-value" id="cnt-discarded">0</div>
+        </div>
+        <div class="mini-metric">
+          <div class="mini-metric-label">Marcadas</div>
+          <div class="mini-metric-value" id="cnt-review">0</div>
+        </div>
+      </div>
+    </article>
+
+    <article class="overview-card summary-card">
+      <div class="summary-heading"><span>Resumen de la ejecución</span><span id="analysis-version">—</span></div>
+      <div class="executive-summary" id="executive-summary"><p>Calculando resumen desde el JSON publicado…</p></div>
+    </article>
+  </section>
+
+  <section class="toolbar" aria-label="Filtros y ordenación">
+    <button class="ghost-btn mobile-toolbar-trigger" type="button" onclick="toggleMobileFilters()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Filtros <span id="mobile-filter-count"></span>
+    </button>
+
+    <div class="filter-zone" id="filter-zone">
+      <div class="filter-cluster">
+        <span class="filter-caption">Fuente</span>
+        <div class="chip-scroll">
+          <button class="filter-chip active" type="button" onclick="setFilter('source','all',this)">Todas</button>
+          <button class="filter-chip" type="button" onclick="setFilter('source','HORIZON EUROPE',this)">Horizon EU</button>
+          <button class="filter-chip" type="button" onclick="setFilter('source','IDAE',this)">IDAE</button>
+          <button class="filter-chip" type="button" onclick="setFilter('source','CDTI',this)">CDTI</button>
+          <button class="filter-chip" type="button" onclick="setFilter('source','BOE / MITECO',this)">BOE</button>
+          <button class="filter-chip" type="button" onclick="setFilter('source','BOA ARAGÓN',this)">BOA</button>
+        </div>
+      </div>
+      <div class="filter-cluster">
+        <span class="filter-caption">Temática</span>
+        <div class="chip-scroll">
+          <button class="filter-chip active" type="button" onclick="setFilter('tag','all',this)">Todas</button>
+          <button class="filter-chip" type="button" onclick="setFilter('tag','h2',this)">H₂</button>
+          <button class="filter-chip" type="button" onclick="setFilter('tag','ee',this)">Eficiencia</button>
+          <button class="filter-chip" type="button" onclick="setFilter('tag','desc',this)">Descarbonización</button>
+          <button class="filter-chip" type="button" onclick="setFilter('tag','emis',this)">Emisiones</button>
+          <button class="filter-chip" type="button" onclick="setFilter('tag','horn',this)">Hornos</button>
+        </div>
+      </div>
+      <div class="filter-cluster" style="display:none" id="mobile-extra-controls">
+        <span class="filter-caption">Visibilidad</span>
+        <div class="chip-scroll">
+          <label class="toggle-control">
+            <input type="checkbox" id="toggle-descartadas-mobile" onchange="syncToggle('discarded', this.checked)">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            Descartadas
+          </label>
+          <label class="toggle-control">
+            <input type="checkbox" id="toggle-review-mobile" onchange="syncToggle('review', this.checked)">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            Solo marcadas
+          </label>
+          <button class="ghost-btn" type="button" onclick="exportCSV()">Exportar CSV</button>
+          <button class="ghost-btn" type="button" onclick="window.print()">Imprimir</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar-actions">
+      <div class="sort-control">
+        <label for="sort-key">Ordenar</label>
+        <select id="sort-key" onchange="setSortKey(this.value)">
+          <option value="match">Compatibilidad</option>
+          <option value="deadline">Tiempo restante</option>
+          <option value="actionability_score">Accionabilidad</option>
+          <option value="confidence">Confianza</option>
+        </select>
+        <button class="sort-direction-btn" id="sort-direction" type="button" onclick="toggleSortDirection()" title="Cambiar sentido de ordenación" aria-label="Cambiar sentido de ordenación">↓</button>
+      </div>
+      <label class="toggle-control">
+        <input type="checkbox" id="toggle-descartadas" onchange="syncToggle('discarded', this.checked)">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        Descartadas
+      </label>
+      <label class="toggle-control">
+        <input type="checkbox" id="toggle-review" onchange="syncToggle('review', this.checked)">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        Solo marcadas
+      </label>
+      <button class="ghost-btn" type="button" onclick="exportCSV()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        CSV
+      </button>
+    </div>
+  </section>
+
+  <main class="workspace">
+    <section class="panel results-panel">
+      <div class="panel-header">
+        <div class="panel-heading-group">
+          <h2 class="panel-title">Convocatorias detectadas</h2>
+          <div class="panel-subtitle">Ordenadas para revisión rápida del departamento de I+D</div>
+        </div>
+        <span class="panel-tag" id="filter-count-tag">0 resultados</span>
+      </div>
+      <div class="conv-list" id="conv-list"></div>
+    </section>
+
+    <aside class="sidebar">
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-heading-group"><h2 class="panel-title">Próximos cierres</h2><div class="panel-subtitle">Prioridad temporal</div></div>
+          <span class="panel-tag">5 primeras</span>
+        </div>
+        <div class="deadline-list" id="deadline-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-heading-group"><h2 class="panel-title">Casos marcados</h2><div class="panel-subtitle">Comprobaciones sugeridas</div></div>
+          <span class="panel-tag" id="review-count-tag">0</span>
+        </div>
+        <div class="review-list" id="review-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-heading-group"><h2 class="panel-title">Estado del pipeline</h2><div class="panel-subtitle">Cobertura y generación</div></div>
+          <span class="panel-tag" id="pipeline-status-tag">—</span>
+        </div>
+        <div class="pipeline-list" id="pipeline-summary"></div>
+      </section>
+    </aside>
+  </main>
+
+  <section class="analytics-section">
+    <div class="analytics-heading">
+      <div><h2>Actividad del radar</h2><p>Indicadores secundarios para supervisar el pipeline</p></div>
+    </div>
+    <div class="analytics-grid">
+      <section class="panel">
+        <div class="panel-header"><h2 class="panel-title">Palabras clave</h2><span class="panel-tag">Frecuencia</span></div>
+        <div class="keyword-list" id="kw-list"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-header"><h2 class="panel-title">Fuentes monitorizadas</h2><span class="panel-tag">Estado</span></div>
+        <div class="source-list" id="source-list"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-header"><h2 class="panel-title">Tendencia semanal</h2><span class="panel-tag">Detecciones</span></div>
+        <div class="chart-wrap"><div class="chart-caption">Nuevas convocatorias detectadas por semana</div><div class="mini-bars" id="mini-bars"></div></div>
+      </section>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div>Grant-Radar · Herramienta interna de vigilancia I+D para Kalfrisa</div>
+    <div class="footer-right"><span id="footer-schema">Esquema —</span><span id="footer-pipeline">Pipeline —</span></div>
+  </footer>
+</div>
+
+<div class="modal-overlay" id="ai-overlay" role="dialog" aria-modal="true" aria-labelledby="ov-title">
+  <article class="detail-modal">
+    <header class="modal-header">
+      <div>
+        <div class="modal-source" id="ov-source-label">Análisis de encaje</div>
+        <h2 class="modal-title" id="ov-title">—</h2>
+      </div>
+      <div class="modal-actions">
+        <button class="primary-btn" type="button" id="ov-open-link" onclick="openCurrentConvUrl()">Abrir convocatoria ↗</button>
+        <button class="ghost-btn" type="button" onclick="closeOverlay()" id="close-modal-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+          Cerrar
+        </button>
+      </div>
+    </header>
+
+    <div class="modal-body">
+      <div class="meta-row" id="ov-meta-row"></div>
+      <div class="notice warning" id="ov-review-block"></div>
+      <div class="notice warning" id="ov-url-generica-block">Página general del programa: la convocatoria específica puede requerir navegación adicional.</div>
+      <div class="notice danger" id="ov-url-rota-block">El enlace no respondió correctamente en la última comprobación automática. Verificar manualmente.</div>
+
+      <section class="decision-strip">
+        <div class="decision-card"><div class="decision-card-label">Encaje</div><div class="decision-card-value brand" id="ov-score">—</div><div class="decision-card-note">Compatibilidad tecnológica</div></div>
+        <div class="decision-card"><div class="decision-card-label">Accionabilidad</div><div class="decision-card-value" id="ov-actionability">—</div><div class="decision-card-note">Capacidad de actuar ahora</div></div>
+        <div class="decision-card"><div class="decision-card-label">Confianza</div><div class="decision-card-value" id="ov-confidence">—</div><div class="decision-card-note">Calidad del análisis</div></div>
+        <div class="decision-card"><div class="decision-card-label">Elegibilidad</div><div class="decision-card-value" id="ov-eligibility">—</div><div class="decision-card-note" id="ov-eligibility-note">Según datos extraídos</div></div>
+        <div class="decision-card"><div class="decision-card-label">Plazo</div><div class="decision-card-value" id="ov-deadline-days">—</div><div class="decision-card-note" id="ov-deadline-note">—</div></div>
+      </section>
+
+      <section class="modal-summary-grid">
+        <div class="content-card"><h3>Resumen ejecutivo</h3><div class="content-copy" id="ov-summary">—</div></div>
+        <div class="content-card action-card"><h3>Acción recomendada</h3><div class="content-copy" id="ov-action">—</div></div>
+      </section>
+
+      <section class="content-card radar-card">
+        <div class="radar-visual">
+          <svg id="ov-radar" width="240" height="240" viewBox="0 0 240 240" aria-label="Radar de dimensiones de encaje"></svg>
+          <div class="radar-score-line"><span class="radar-score" id="ov-radar-score">—</span><span class="radar-score-label">encaje global</span></div>
+        </div>
+        <div><h3>Dimensiones de evaluación</h3><div class="dimension-list" id="ov-dims"></div></div>
+      </section>
+
+      <section class="two-col-grid">
+        <div class="content-card"><h3>Evidencias positivas</h3><div id="ov-evidence">—</div></div>
+        <div class="content-card"><h3>Riesgos e incógnitas</h3><div id="ov-risks">—</div></div>
+      </section>
+
+      <section class="two-col-grid">
+        <div class="content-card"><h3>Socios técnicos recomendados</h3><div id="ov-partners">—</div></div>
+        <div class="content-card"><h3>Temáticas detectadas</h3><div class="modal-tags" id="ov-tags"></div></div>
+      </section>
+
+      <div class="notice danger" id="ov-descarte-block"><strong>Motivo de descarte:</strong> <span id="ov-descarte-motivo">—</span></div>
+
+      <details class="technical-details">
+        <summary>Detalles técnicos y trazabilidad</summary>
+        <div class="technical-content">
+          <div class="content-card"><h3>Hechos extraídos</h3><div id="ov-facts">—</div></div>
+          <div class="content-card"><h3>Trazabilidad de fuente</h3><div id="ov-trace">—</div></div>
+          <div class="content-card soft"><h3>Uso del modelo</h3><div class="content-copy" id="ov-model-usage">—</div></div>
+          <div class="content-card soft"><h3>Información complementaria</h3><div class="content-copy" id="ov-technical-meta">—</div></div>
+        </div>
+      </details>
+    </div>
+  </article>
+</div>
+
+<script>
+  let convocatorias = [];
+  let keywords = [];
+  let sources = [];
+  let reviewQueue = [];
+  let dashboardMeta = {};
+  let currentOverlayId = null;
+  let lastFocusedElement = null;
+  let urgentConvId = null;
+
+  const trendData = [4, 6, 3, 8, 5, 7, 9, 6, 11, 8, 7, 12];
+  const trendLabels = ['Oct', 'Oct', 'Nov', 'Nov', 'Dic', 'Dic', 'Ene', 'Ene', 'Feb', 'Feb', 'Mar', 'Hoy'];
+
+  const tagMap = {
+    h2: 'Hidrógeno', ee: 'Eficiencia', desc: 'Descarbonización', emis: 'Emisiones', horn: 'Hornos'
+  };
+  const techTagMap = {
+    waste_heat: 'Calor residual',
+    industrial_electrification: 'Electrificación industrial',
+    hydrogen_combustion: 'Combustión H₂',
+    emissions: 'Emisiones / RTO',
+    thermal_processes: 'Procesos térmicos',
+    digital_thermal: 'Digitalización térmica',
+    thermal_waste: 'Valorización térmica',
+    circular_manufacturing: 'Fabricación circular',
+    energy_efficiency: 'Eficiencia energética'
+  };
+  const eligibilityMap = { eligible: 'Elegible', ineligible: 'No elegible', unknown: 'Por confirmar' };
+  const roleMap = {
+    leader: 'Líder', technology_partner: 'Socio tecnológico', equipment_supplier: 'Proveedor de equipos',
+    demo_site: 'Emplazamiento demostrador', subcontractor: 'Subcontratista', end_user: 'Usuario final',
+    industrial_demonstrator: 'Demostrador industrial', consortium_partner: 'Socio de consorcio',
+    not_applicable: 'No aplicable', no_clear_role: 'Rol no definido', unknown: 'Por determinar'
+  };
+  const decisionMap = {
+    pursue: 'Preparar candidatura', monitor: 'Monitorizar', watch: 'Monitorizar', manual_review: 'Comprobar',
+    discard_closed: 'Cerrada', discard_ineligible: 'No elegible', discard_irrelevant: 'Fuera de alcance',
+    discard_out_of_scope: 'Fuera de alcance'
+  };
+  const reviewReasonMap = {
+    high_fit_low_confidence: 'encaje alto con confianza baja', eligibility_unknown: 'elegibilidad sin confirmar',
+    deadline_under_15_days: 'plazo inferior a 15 días', budget_missing: 'presupuesto no localizado',
+    consortium_requirement_missing: 'requisito de consorcio desconocido', model_requests_manual_review: 'el modelo solicita comprobación',
+    strategic_high_fit: 'oportunidad estratégica', rule_model_discrepancy: 'discrepancia entre reglas y modelo',
+    analysis_pending: 'análisis pendiente'
+  };
+
+  const filterState = { source: 'all', tag: 'all', showDiscarded: false, onlyReview: false };
+  const sortState = { key: 'match', dir: 'desc' };
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    })[char]);
+  }
+
+  function safeExternalUrl(value) {
+    try {
+      const parsed = new URL(String(value || ''), window.location.href);
+      return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : '';
+    } catch { return ''; }
+  }
+
+  function normalizeConv(raw) {
+    const match = Number.isFinite(Number(raw.fit_score)) ? Number(raw.fit_score) : Number(raw.match ?? 0);
+    const actionability = Number.isFinite(Number(raw.actionability_score)) ? Number(raw.actionability_score) : match;
+    const confidenceRaw = raw.confidence === null || raw.confidence === undefined ? null : Number(raw.confidence);
+    const eligibilityValue = typeof raw.eligibility === 'object' ? raw.eligibility.status : raw.eligibility;
+    const eligibilityReason = typeof raw.eligibility === 'object'
+      ? [...(raw.eligibility.reasons || []), ...(raw.eligibility.blocking_conditions || [])].join(' · ')
+      : (raw.eligibility_reason || '');
+    const roleValue = raw.role || raw.recommended_role || 'unknown';
+    const dimsValue = raw.scores && !Array.isArray(raw.dims)
+      ? [
+          { name: 'Alineación tecnológica', val: raw.scores.technology ?? 0 },
+          { name: 'Capacidad de consorcio', val: raw.scores.consortium ?? 0 },
+          { name: 'Encaje TRL', val: raw.scores.trl ?? 0 },
+          { name: 'Oportunidad estratégica', val: raw.scores.strategic ?? 0 }
+        ]
+      : (Array.isArray(raw.dims) ? raw.dims : (Array.isArray(raw.dimensiones) ? raw.dimensiones : []));
+
+    return {
+      ...raw,
+      id: raw.id,
+      deadline: Number(raw.deadline ?? 0),
+      match,
+      fit_score: match,
+      actionability_score: actionability,
+      confidence: Number.isFinite(confidenceRaw) ? confidenceRaw : null,
+      eligibility: eligibilityValue || 'unknown',
+      eligibility_reason: eligibilityReason,
+      recommended_role: roleValue,
+      decision: raw.decision || (raw.descartada ? 'discard_out_of_scope' : 'watch'),
+      evidence_quality: raw.evidence_quality || 'low',
+      positive_evidence: Array.isArray(raw.positive_evidence) ? raw.positive_evidence : [],
+      risks_and_unknowns: Array.isArray(raw.risks_and_unknowns) ? raw.risks_and_unknowns : [],
+      partner_needs: Array.isArray(raw.partner_needs) ? raw.partner_needs : [],
+      recommended_partners: Array.isArray(raw.recommended_partners) ? raw.recommended_partners : [],
+      review_required: Boolean(raw.review_required),
+      review_reasons: Array.isArray(raw.review_reasons) ? raw.review_reasons : [],
+      token_usage: raw.token_usage && typeof raw.token_usage === 'object' ? raw.token_usage : {},
+      call_facts: raw.call_facts && typeof raw.call_facts === 'object' ? raw.call_facts : {},
+      tech_tags: Array.isArray(raw.tech_tags) ? raw.tech_tags : [],
+      tags: Array.isArray(raw.tags) ? raw.tags : [],
+      dims: dimsValue,
+      summary: raw.summary || raw.resumen || '',
+      action: raw.action || raw.accion || '',
+      motivo_descarte: raw.motivo_descarte || ''
+    };
+  }
+
+  function priorityLabel(c) {
+    if (c.descartada) return 'Descartada';
+    if (c.priority === 'high') return 'Alta prioridad';
+    if (c.priority === 'medium') return 'Prioridad media';
+    return 'Prioridad baja';
+  }
+
+  function deadlineClass(days) {
+    if (days <= 20) return 'urgent';
+    if (days <= 60) return 'warn';
+    return 'ok';
+  }
+
+  function deadlineColor(days) {
+    if (days <= 20) return 'var(--danger)';
+    if (days <= 60) return 'var(--warning)';
+    if (days <= 180) return 'var(--success)';
+    return 'var(--neutral)';
+  }
+
+  function deadlineBarPct(days) {
+    return Math.max(3, Math.min(100, 100 - (days / 365 * 100)));
+  }
+
+  function formatDeadlineDate(dateStr) {
+    if (!dateStr) return null;
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function renderListHtml(items, emptyText = 'No consta en la fuente.') {
+    if (!Array.isArray(items) || !items.length) return `<div class="content-copy">${escapeHtml(emptyText)}</div>`;
+    return `<ul class="detail-list">${items.map(item => {
+      if (item && typeof item === 'object') {
+        const text = item.claim || item.evidence || item.reason || JSON.stringify(item);
+        return `<li>${escapeHtml(text)}</li>`;
+      }
+      return `<li>${escapeHtml(item)}</li>`;
+    }).join('')}</ul>`;
+  }
+
+  function setFilter(dim, value, element) {
+    filterState[dim] = value;
+    element.closest('.filter-cluster').querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+    element.classList.add('active');
+    updateMobileFilterCount();
+    renderConvs();
+  }
+
+  function setSortKey(key) {
+    sortState.key = key;
+    if (key === 'deadline') sortState.dir = 'asc';
+    else sortState.dir = 'desc';
+    updateSortDirectionButton();
+    renderConvs();
+  }
+
+  function toggleSortDirection() {
+    sortState.dir = sortState.dir === 'desc' ? 'asc' : 'desc';
+    updateSortDirectionButton();
+    renderConvs();
+  }
+
+  function updateSortDirectionButton() {
+    const button = document.getElementById('sort-direction');
+    button.textContent = sortState.dir === 'desc' ? '↓' : '↑';
+    button.title = sortState.dir === 'desc' ? 'Orden descendente' : 'Orden ascendente';
+    button.setAttribute('aria-label', button.title);
+  }
+
+  function syncToggle(type, checked) {
+    if (type === 'discarded') {
+      filterState.showDiscarded = checked;
+      document.getElementById('toggle-descartadas').checked = checked;
+      document.getElementById('toggle-descartadas-mobile').checked = checked;
+    } else {
+      filterState.onlyReview = checked;
+      document.getElementById('toggle-review').checked = checked;
+      document.getElementById('toggle-review-mobile').checked = checked;
+    }
+    updateMobileFilterCount();
+    renderConvs();
+  }
+
+  function updateMobileFilterCount() {
+    const count = [filterState.source !== 'all', filterState.tag !== 'all', filterState.showDiscarded, filterState.onlyReview].filter(Boolean).length;
+    document.getElementById('mobile-filter-count').textContent = count ? `(${count})` : '';
+  }
+
+  function toggleMobileFilters() {
+    const zone = document.getElementById('filter-zone');
+    const extras = document.getElementById('mobile-extra-controls');
+    const visible = zone.classList.toggle('mobile-visible');
+    extras.style.display = visible ? 'flex' : 'none';
+  }
+
+  function getFiltered() {
+    let list = convocatorias.filter(c => {
+      if ((c.deadline ?? 1) <= 0) return false;
+      if (c.descartada && !filterState.showDiscarded) return false;
+      if (filterState.onlyReview && !c.review_required) return false;
+      if (filterState.source !== 'all' && c.source !== filterState.source) return false;
+      if (filterState.tag !== 'all' && !(c.tags || []).includes(filterState.tag)) return false;
+      return true;
+    });
+
+    return [...list].sort((a, b) => {
+      const aValue = a[sortState.key];
+      const bValue = b[sortState.key];
+      const aNumber = Number.isFinite(Number(aValue)) ? Number(aValue) : (sortState.dir === 'desc' ? -Infinity : Infinity);
+      const bNumber = Number.isFinite(Number(bValue)) ? Number(bValue) : (sortState.dir === 'desc' ? -Infinity : Infinity);
+      return sortState.dir === 'desc' ? bNumber - aNumber : aNumber - bNumber;
+    });
+  }
+
+  function openConvUrl(id) {
+    const c = convocatorias.find(item => item.id === id);
+    const url = safeExternalUrl(c?.url);
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  function openCurrentConvUrl() {
+    if (currentOverlayId !== null) openConvUrl(currentOverlayId);
+  }
+
+  function exportCSV() {
+    const list = getFiltered();
+    const headers = [
+      'ID', 'Fuente', 'Título', 'Organismo', 'Encaje %', 'Accionabilidad %', 'Confianza %', 'Prioridad',
+      'Elegibilidad', 'Decisión', 'Rol recomendado', 'Días restantes', 'Apertura', 'Cierre', 'TRL mín', 'TRL máx',
+      'Socios recomendados', 'Necesidades de socio', 'Temáticas', 'Taxonomía tecnológica', 'Calidad de evidencia',
+      'Evidencias positivas', 'Riesgos e incógnitas', 'Revisión manual', 'Motivos de revisión', 'Tokens entrada',
+      'Tokens salida', 'Tokens totales', 'Coste IA estimado USD', 'Descartada', 'URL'
+    ];
+    const esc = value => {
+      const text = String(value ?? '').replace(/"/g, '""');
+      return /[,"\n]/.test(text) ? `"${text}"` : text;
+    };
+    const rows = list.map(c => [
+      c.id, c.source, c.title, c.org, c.fit_score, c.actionability_score, c.confidence ?? '',
+      c.priority === 'high' ? 'Alta' : c.priority === 'medium' ? 'Media' : 'Baja',
+      eligibilityMap[c.eligibility] || c.eligibility, decisionMap[c.decision] || c.decision,
+      roleMap[c.recommended_role] || c.recommended_role, c.deadline, c.open_date || '', c.deadline_date || '',
+      c.trl_min ?? '', c.trl_max ?? '',
+      (c.recommended_partners || []).map(p => p.name || p.canonical_name || p.partner_id).join(' | ') || c.socio_consorcio || '',
+      (c.partner_needs || []).map(item => typeof item === 'object' ? item.capability || item.reason : item).join(' | '),
+      (c.tags || []).map(tag => tagMap[tag] || tag).join(' | '),
+      (c.tech_tags || []).map(tag => techTagMap[tag] || tag).join(' | '), c.evidence_quality || '',
+      (c.positive_evidence || []).map(item => typeof item === 'object' ? item.claim || item.evidence : item).join(' | '),
+      (c.risks_and_unknowns || []).join(' | '), c.review_required ? 'Sí' : 'No',
+      (c.review_reasons || []).map(reason => reviewReasonMap[reason] || reason).join(' | '),
+      c.token_usage?.input_tokens ?? '', c.token_usage?.output_tokens ?? '', c.token_usage?.total_tokens ?? '',
+      c.token_usage?.estimated_cost_usd ?? '', c.descartada ? 'Sí' : 'No', c.url || ''
+    ].map(esc).join(','));
+
+    const csv = '\uFEFF' + [headers.map(esc).join(','), ...rows].join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `grant-radar-kalfrisa-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+
+  async function loadData() {
+    try {
+      const response = await fetch('convocatorias.json?_=' + Date.now());
+      if (!response.ok) throw new Error('JSON no disponible');
+      const data = await response.json();
+      convocatorias = (data.convocatorias || []).map(normalizeConv);
+      keywords = data.keywords || [];
+      reviewQueue = data.review_queue || [];
+      dashboardMeta = {
+        schema_version: data.schema_version || 1,
+        versions: data.versions || {},
+        stats: data.stats || {},
+        claude_usage: data.claude_usage || {},
+        coverage_watch: Array.isArray(data.coverage_watch) ? data.coverage_watch : [],
+        generated_at: data.generated_at || data.last_updated || null
+      };
+      sources = (data.sources || []).map(source => ({
+        ...source,
+        time: dashboardMeta.generated_at
+          ? `act. ${new Date(dashboardMeta.generated_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`
+          : 'sin hora'
+      }));
+      updateGeneratedTimestamp();
+      renderAll();
+    } catch (error) {
+      console.warn('convocatorias.json no disponible, usando datos de demostración:', error);
+      loadDemoData();
+      updateGeneratedTimestamp();
+      renderAll();
+    }
+  }
+
+  function updateGeneratedTimestamp() {
+    const element = document.getElementById('ts');
+    if (!dashboardMeta.generated_at) {
+      element.textContent = 'Modo demostración';
+      return;
+    }
+    const date = new Date(dashboardMeta.generated_at);
+    element.textContent = `Actualizado ${date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })} · ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  function loadDemoData() {
+    convocatorias = [
+      { id: 1, source: 'HORIZON EUROPE', title: 'Clean Hydrogen for Industrial Processes — HORIZON-JTI-CLEANH2-2025', match: 92, actionability_score: 86, confidence: 79, eligibility: 'eligible', recommended_role: 'technology_partner', decision: 'pursue', evidence_quality: 'high', priority: 'high', descartada: false, trl_min: 4, trl_max: 7, socio_consorcio: 'CIRCE / TECNALIA', deadline: 14, deadline_date: '', budget: 'Ver convocatoria', tags: ['h2', 'ee', 'desc'], tech_tags: ['hydrogen_combustion', 'thermal_processes'], org: 'Comisión Europea / Clean Hydrogen JU', summary: 'La convocatoria aborda la sustitución de combustibles fósiles por hidrógeno en procesos industriales de alta temperatura. Kalfrisa puede aportar equipos de combustión, integración térmica y validación industrial.', dims: [{ name: 'Alineación tecnológica', val: 95 }, { name: 'Capacidad de consorcio', val: 82 }, { name: 'Encaje TRL', val: 90 }, { name: 'Oportunidad estratégica', val: 86 }], action: 'Revisar las condiciones de consorcio e iniciar identificación de socios industriales y de validación.', url: 'https://ec.europa.eu/info/funding-tenders', keywords_found: ['hydrogen', 'industrial combustion'], positive_evidence: ['Uso de hidrógeno en procesos industriales de alta temperatura.', 'Rango TRL compatible con demostración industrial.'], risks_and_unknowns: ['Confirmar requisitos de consorcio y presupuesto por proyecto.'], recommended_partners: [{ name: 'CIRCE', matching_capabilities: ['hydrogen_combustion'] }, { name: 'TECNALIA', matching_capabilities: ['waste_heat'] }], partner_needs: ['Validación de combustión H₂', 'Coordinación europea'], review_required: true, review_reasons: ['strategic_high_fit'], token_usage: { input_tokens: 2940, output_tokens: 730, total_tokens: 3670, estimated_cost_usd: 0.0084 } },
+      { id: 2, source: 'IDAE', title: 'Ayudas a la eficiencia energética del sector industrial — 2025', match: 88, actionability_score: 91, confidence: 88, eligibility: 'eligible', recommended_role: 'leader', decision: 'pursue', evidence_quality: 'high', priority: 'high', descartada: false, trl_min: 5, trl_max: 7, socio_consorcio: 'N/A', deadline: 18, deadline_date: '', budget: 'Ver convocatoria', tags: ['ee', 'horn', 'desc'], tech_tags: ['energy_efficiency', 'waste_heat'], org: 'Instituto para la Diversificación y Ahorro de la Energía', summary: 'Línea orientada a inversiones y proyectos de eficiencia térmica en industria. El encaje es alto para recuperación de calor y modernización de equipos térmicos.', dims: [{ name: 'Alineación tecnológica', val: 92 }, { name: 'Capacidad de consorcio', val: 75 }, { name: 'Encaje TRL', val: 88 }, { name: 'Oportunidad estratégica', val: 85 }], action: 'Verificar intensidad de ayuda y preparar una ficha preliminar de inversión.', url: 'https://www.idae.es', keywords_found: ['eficiencia energética', 'waste heat'], positive_evidence: ['Objetivo explícito de eficiencia energética industrial.'], risks_and_unknowns: ['Confirmar si exige inversión en instalaciones propias.'], recommended_partners: [], partner_needs: [], review_required: false, token_usage: { total_tokens: 3100, estimated_cost_usd: 0.0069 } },
+      { id: 3, source: 'CDTI', title: 'Proyectos de I+D Tecnológico — CDTI 2025', match: 81, actionability_score: 74, confidence: 70, eligibility: 'eligible', recommended_role: 'leader', decision: 'pursue', evidence_quality: 'medium', priority: 'high', descartada: false, trl_min: 3, trl_max: 6, socio_consorcio: 'N/A', deadline: 45, deadline_date: '', budget: 'Ver convocatoria', tags: ['desc', 'emis', 'ee'], tech_tags: ['digital_thermal', 'emissions'], org: 'CDTI', summary: 'Instrumento general de financiación empresarial de I+D. Kalfrisa puede presentar un proyecto de desarrollo de equipo térmico o de tratamiento de emisiones si define claramente la novedad tecnológica.', dims: [{ name: 'Alineación tecnológica', val: 82 }, { name: 'Capacidad de consorcio', val: 90 }, { name: 'Encaje TRL', val: 78 }, { name: 'Oportunidad estratégica', val: 88 }], action: 'Preparar una ficha de concepto con objetivo, novedad, presupuesto y plan de validación.', url: 'https://www.cdti.es', keywords_found: ['I+D'], positive_evidence: ['Financiación empresarial compatible con desarrollo experimental.'], risks_and_unknowns: ['Convocatoria general: el encaje depende del proyecto propuesto.'], recommended_partners: [], partner_needs: [], review_required: true, review_reasons: ['budget_missing'] },
+      { id: 4, source: 'BOA ARAGÓN', title: 'Subvenciones para la descarbonización industrial en Aragón', match: 55, actionability_score: 67, confidence: 63, eligibility: 'eligible', recommended_role: 'leader', decision: 'monitor', evidence_quality: 'medium', priority: 'medium', descartada: false, trl_min: 5, trl_max: 8, socio_consorcio: 'N/A', deadline: 62, deadline_date: '', budget: 'Ver convocatoria', tags: ['desc', 'emis'], tech_tags: ['industrial_electrification'], org: 'Gobierno de Aragón', summary: 'Línea autonómica de descarbonización con posible encaje para electrificación, reducción de emisiones y eficiencia de instalaciones industriales.', dims: [{ name: 'Alineación tecnológica', val: 72 }, { name: 'Capacidad de consorcio', val: 85 }, { name: 'Encaje TRL', val: 80 }, { name: 'Oportunidad estratégica', val: 70 }], action: 'Monitorizar la publicación definitiva y validar gastos elegibles.', url: 'https://www.boa.aragon.es', keywords_found: ['descarbonización'], positive_evidence: ['Ámbito territorial favorable.'], risks_and_unknowns: ['Alcance técnico todavía genérico.'], recommended_partners: [], partner_needs: [], review_required: false },
+      { id: 5, source: 'IDAE', title: 'Programa ferroviario FNEE — Transporte', match: 5, actionability_score: 2, confidence: 96, eligibility: 'ineligible', recommended_role: 'not_applicable', decision: 'discard_irrelevant', evidence_quality: 'high', priority: 'low', descartada: true, motivo_descarte: 'La convocatoria está centrada en transporte ferroviario, un ámbito excluido del perfil de Kalfrisa.', trl_min: 1, trl_max: 9, socio_consorcio: 'N/A', deadline: 30, deadline_date: '', budget: 'Ver convocatoria', tags: [], org: 'Instituto para la Diversificación y Ahorro de la Energía', summary: 'Convocatoria orientada a eficiencia energética ferroviaria.', dims: [{ name: 'Alineación tecnológica', val: 0 }, { name: 'Capacidad de consorcio', val: 0 }, { name: 'Encaje TRL', val: 0 }, { name: 'Oportunidad estratégica', val: 0 }], action: 'Descartar.', url: 'https://www.idae.es', keywords_found: [], positive_evidence: [], risks_and_unknowns: [], recommended_partners: [], partner_needs: [], review_required: false }
+    ].map(normalizeConv);
+    keywords = [
+      { name: 'energy efficiency', count: 17, color: 'var(--brand)' },
+      { name: 'eficiencia energética', count: 14, color: 'var(--brand)' },
+      { name: 'decarbonisation', count: 13, color: 'var(--brand)' },
+      { name: 'waste heat', count: 8, color: 'var(--teal)' },
+      { name: 'hidrógeno', count: 6, color: 'var(--teal)' }
+    ];
+    sources = [
+      { name: 'HORIZON EUROPE', type: 'API REST', status: 'ok', count: 12, time: 'demo' },
+      { name: 'CDTI', type: 'Catálogo / scraping', status: 'ok', count: 8, time: 'demo' },
+      { name: 'IDAE', type: 'Web scraping', status: 'ok', count: 6, time: 'demo' },
+      { name: 'BOE / MITECO', type: 'API BOE', status: 'warn', count: 2, time: 'demo' },
+      { name: 'BOA Aragón', type: 'Catálogo curado', status: 'ok', count: 5, time: 'demo' }
+    ];
+    dashboardMeta = { schema_version: 2, versions: { analysis: 'demo-2.0', pipeline: 'vigtech-2.3' }, stats: {}, claude_usage: { current_run: { total_tokens: 14250, estimated_cost_usd: 0.032 } }, generated_at: null };
+  }
+
+  function renderAll() {
+    renderOverview();
+    renderConvs();
+    renderReviewQueue();
+    renderDeadlines();
+    renderPipelineSummary();
+    renderKeywords();
+    renderSources();
+    renderChart();
+    renderFooterMeta();
+  }
+
+  function renderOverview() {
+    const nonClosed = convocatorias.filter(c => (c.deadline ?? 1) > 0);
+    const active = nonClosed.filter(c => !c.descartada);
+    const high = active.filter(c => c.priority === 'high');
+    const discarded = nonClosed.filter(c => c.descartada);
+    const review = active.filter(c => c.review_required);
+    const urgent = [...active].sort((a, b) => a.deadline - b.deadline)[0];
+
+    animateNumber('cnt-active', active.length, 600);
+    animateNumber('cnt-high', high.length, 600);
+    animateNumber('cnt-discarded', discarded.length, 600);
+    animateNumber('cnt-review', review.length, 600);
+
+    const highPercentage = active.length ? Math.round(high.length / active.length * 100) : 0;
+    document.getElementById('high-caption').textContent = high.length
+      ? `${highPercentage}% de las convocatorias activas superan el umbral de prioridad alta.`
+      : 'No se han detectado oportunidades de prioridad alta en esta ejecución.';
+
+    urgentConvId = urgent?.id ?? null;
+    document.getElementById('cnt-urgent-days').textContent = urgent ? urgent.deadline : '—';
+    document.getElementById('urgent-title').textContent = urgent ? urgent.title : 'Sin cierres confirmados';
+    document.getElementById('urgent-card').style.cursor = urgent ? 'pointer' : 'default';
+
+    const version = dashboardMeta.versions?.analysis || 'formato compatible';
+    document.getElementById('analysis-version').textContent = version;
+    const top = [...active].sort((a, b) => (b.actionability_score - a.actionability_score) || (b.fit_score - a.fit_score))[0];
+    const urgentCount = active.filter(c => c.deadline < 30).length;
+    document.getElementById('executive-summary').innerHTML = `
+      <p><strong>${high.length} oportunidades</strong> presentan encaje alto y <strong>${urgentCount}</strong> cierran en menos de 30 días.</p>
+      ${top ? `<p>La primera por accionabilidad es <strong>${escapeHtml(top.title)}</strong> (${top.actionability_score}%).</p>` : ''}
+      <p>${review.length ? `${review.length} casos incluyen una marca de comprobación.` : 'No hay casos marcados para comprobación.'}</p>`;
+  }
+
+  function animateNumber(id, target, duration) {
+    const element = document.getElementById(id);
+    const start = performance.now();
+    function frame(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      element.textContent = Math.round(target * eased);
+      if (progress < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function renderConvs() {
+    const list = getFiltered();
+    const base = convocatorias.filter(c => (c.deadline ?? 1) > 0 && (filterState.showDiscarded || !c.descartada) && (!filterState.onlyReview || c.review_required));
+    document.getElementById('filter-count-tag').textContent = list.length === base.length ? `${list.length} resultados` : `${list.length} de ${base.length}`;
+
+    const element = document.getElementById('conv-list');
+    if (!list.length) {
+      element.innerHTML = '<div class="no-results">No hay convocatorias con los filtros activos.</div>';
+      return;
+    }
+
+    element.innerHTML = list.map(c => {
+      const priorityClass = c.priority === 'high' ? 'high' : c.priority === 'medium' ? 'medium' : 'low';
+      const deadlineDate = formatDeadlineDate(c.deadline_date);
+      const confidenceText = c.confidence == null ? 'N/D' : `${c.confidence}%`;
+      const eligibilityText = eligibilityMap[c.eligibility] || c.eligibility;
+      const decisionText = decisionMap[c.decision] || c.decision;
+      const reviewLabel = c.review_required ? '<span class="status-label review">Comprobar</span>' : '';
+      const discardLabel = c.descartada ? '<span class="status-label discard">Descartada</span>' : '';
+      const deadlineCls = deadlineClass(c.deadline);
+      const progressColor = c.fecha_prevista ? 'var(--warning)' : c.fecha_sin_confirmar ? 'var(--neutral)' : deadlineColor(c.deadline);
+      const title = escapeHtml(c.title);
+
+      return `
+        <article class="conv-item ${priorityClass}${c.descartada ? ' descartada' : ''}" tabindex="0" role="button" aria-label="Abrir detalle de ${title}" onclick="openOverlay(${Number(c.id)})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openOverlay(${Number(c.id)})}">
+          <div class="conv-main">
+            <div class="conv-eyebrow">
+              <span class="conv-source">${escapeHtml(c.source)}</span>
+              <span class="status-label ${priorityClass}">${escapeHtml(priorityLabel(c))}</span>
+              ${reviewLabel}${discardLabel}
+            </div>
+            <h3 class="conv-title">${title}</h3>
+            <div class="conv-analysis-line">
+              <span class="analysis-stat">Decisión <strong>${escapeHtml(decisionText)}</strong></span><span class="analysis-separator"></span>
+              <span class="analysis-stat">Acción <strong>${c.actionability_score}%</strong></span><span class="analysis-separator"></span>
+              <span class="analysis-stat">Confianza <strong>${confidenceText}</strong></span><span class="analysis-separator"></span>
+              <span class="analysis-stat">${escapeHtml(eligibilityText)}</span>
+            </div>
+            <div class="conv-footer-line">
+              <div class="conv-org">${escapeHtml(c.org || 'Organismo no especificado')}</div>
+              <div class="conv-tags">${(c.tags || []).filter(tag => tagMap[tag]).slice(0, 4).map(tag => `<span class="tag ${tag}">${tagMap[tag]}</span>`).join('')}</div>
+            </div>
+          </div>
+          <div class="conv-side">
+            <div class="score-block"><span class="score-value">${c.match}%</span><span class="score-label">Encaje</span></div>
+            <div style="width:100%">
+              <div class="deadline-value ${deadlineCls}">${c.deadline} días</div>
+              <div class="deadline-date">${deadlineDate || (c.fecha_prevista ? 'fecha prevista' : c.fecha_sin_confirmar ? 'sin confirmar' : 'cierre pendiente')}</div>
+              <div class="deadline-progress"><span data-width="${deadlineBarPct(c.deadline)}" style="background:${progressColor}"></span></div>
+            </div>
+          </div>
+        </article>`;
+    }).join('');
+
+    requestAnimationFrame(() => document.querySelectorAll('.deadline-progress > span').forEach(bar => { bar.style.width = `${bar.dataset.width}%`; }));
+  }
+
+  function renderDeadlines() {
+    const element = document.getElementById('deadline-list');
+    const items = [...convocatorias].filter(c => !c.descartada && (c.deadline ?? 1) > 0).sort((a, b) => a.deadline - b.deadline).slice(0, 5);
+    if (!items.length) {
+      element.innerHTML = '<div class="no-results" style="padding:20px">Sin cierres confirmados.</div>';
+      return;
+    }
+    element.innerHTML = items.map(c => `
+      <div class="deadline-item" role="button" tabindex="0" onclick="openOverlay(${Number(c.id)})" onkeydown="if(event.key==='Enter'){openOverlay(${Number(c.id)})}">
+        <div class="deadline-days ${deadlineClass(c.deadline)}">${c.deadline}<span>días</span></div>
+        <div><div class="deadline-name">${escapeHtml(c.title.length > 58 ? `${c.title.slice(0, 58)}…` : c.title)}</div><div class="deadline-org">${escapeHtml(c.source)}${formatDeadlineDate(c.deadline_date) ? ` · ${escapeHtml(formatDeadlineDate(c.deadline_date))}` : ''}</div></div>
+        <div class="deadline-fit">${c.fit_score}%</div>
+      </div>`).join('');
+  }
+
+  function renderReviewQueue() {
+    const element = document.getElementById('review-list');
+    const items = convocatorias.filter(c => c.review_required && (c.deadline ?? 1) > 0).sort((a, b) => a.deadline - b.deadline);
+    document.getElementById('review-count-tag').textContent = String(items.length);
+    if (!items.length) {
+      element.innerHTML = '<div class="no-results" style="padding:18px">Sin casos marcados.</div>';
+      return;
+    }
+    element.innerHTML = items.slice(0, 5).map(c => `
+      <div class="review-item" role="button" tabindex="0" onclick="openOverlay(${Number(c.id)})" onkeydown="if(event.key==='Enter'){openOverlay(${Number(c.id)})}">
+        <div class="review-title">${escapeHtml(c.title)}</div>
+        <div class="review-reasons">${escapeHtml((c.review_reasons || []).map(reason => reviewReasonMap[reason] || reason).join(' · ') || 'Comprobación recomendada')}</div>
+      </div>`).join('');
+  }
+
+  function renderPipelineSummary() {
+    const okCount = sources.filter(source => source.status === 'ok').length;
+    const warningCount = sources.filter(source => source.status === 'warn').length;
+    const errorCount = sources.filter(source => source.status === 'err').length;
+    const totalFound = sources.reduce((sum, source) => sum + Number(source.count || 0), 0);
+    const runUsage = dashboardMeta.claude_usage?.current_run || {};
+    const status = errorCount ? 'Atención' : warningCount ? 'Parcial' : 'Correcto';
+    document.getElementById('pipeline-status-tag').textContent = status;
+    document.getElementById('pipeline-summary').innerHTML = `
+      <div class="pipeline-row"><span class="pipeline-status"><span class="pipeline-status-dot ${errorCount ? 'err' : warningCount ? 'warn' : 'ok'}"></span>Fuentes operativas</span><strong>${okCount}/${sources.length || 0}</strong></div>
+      <div class="pipeline-row"><span>Detecciones recuperadas</span><strong>${totalFound}</strong></div>
+      <div class="pipeline-row"><span>Versión de análisis</span><strong>${escapeHtml(dashboardMeta.versions?.analysis || 'N/D')}</strong></div>
+      <div class="pipeline-row"><span>Tokens de la ejecución</span><strong>${runUsage.total_tokens ? Number(runUsage.total_tokens).toLocaleString('es-ES') : 'N/D'}</strong></div>
+      <div class="pipeline-row"><span>Coste IA estimado</span><strong>${runUsage.estimated_cost_usd == null ? 'N/D' : `$${Number(runUsage.estimated_cost_usd).toFixed(4)}`}</strong></div>`;
+  }
+
+  function renderKeywords() {
+    const element = document.getElementById('kw-list');
+    const max = Math.max(1, ...keywords.map(keyword => Number(keyword.count || 0)));
+    if (!keywords.length) {
+      element.innerHTML = '<div class="no-results" style="padding:20px">Sin datos de palabras clave.</div>';
+      return;
+    }
+    element.innerHTML = keywords.slice(0, 8).map(keyword => `
+      <div class="keyword-item"><div class="kw-name">${escapeHtml(keyword.name)}</div><div class="kw-bar-wrap"><div class="kw-bar" data-width="${(Number(keyword.count || 0) / max * 100).toFixed(0)}" style="background:${keyword.color || 'var(--brand)'}"></div></div><div class="kw-count">${Number(keyword.count || 0)}</div></div>`).join('');
+    requestAnimationFrame(() => document.querySelectorAll('.kw-bar').forEach(bar => { bar.style.width = `${bar.dataset.width}%`; }));
+  }
+
+  function renderSources() {
+    const element = document.getElementById('source-list');
+    if (!sources.length) {
+      element.innerHTML = '<div class="no-results" style="padding:20px">Sin datos de fuentes.</div>';
+      return;
+    }
+    element.innerHTML = sources.map(source => `
+      <div class="source-item"><div class="source-left"><span class="source-status ${escapeHtml(source.status || 'warn')}"></span><div><div class="source-name">${escapeHtml(source.name)}</div><div class="source-type">${escapeHtml(source.type || 'fuente')} ${source.count_cerradas ? `· ${source.count_cerradas} cerradas` : ''}</div></div></div><div class="source-right"><div class="source-count">${Number(source.count || 0)}</div><div class="source-time">${escapeHtml(source.time || '')}</div></div></div>`).join('');
+  }
+
+  function renderChart() {
+    const max = Math.max(...trendData);
+    document.getElementById('mini-bars').innerHTML = trendData.map((value, index) => `
+      <div class="mini-bar-col"><div class="mini-bar" style="height:${Math.max(4, value / max * 86)}px" title="${value} convocatorias"></div><div class="mini-bar-label">${trendLabels[index]}</div></div>`).join('');
+  }
+
+  function renderFooterMeta() {
+    document.getElementById('footer-schema').textContent = `Esquema ${dashboardMeta.schema_version || 'N/D'}`;
+    document.getElementById('footer-pipeline').textContent = `Pipeline ${dashboardMeta.versions?.pipeline || dashboardMeta.versions?.analysis || 'N/D'}`;
+  }
+
+  function drawRadar(svgElement, dims, color) {
+    if (!Array.isArray(dims) || !dims.length) { svgElement.innerHTML = ''; return; }
+    const cx = 120, cy = 120, radius = 78, count = dims.length;
+    const angle = index => Math.PI * 2 * index / count - Math.PI / 2;
+    const point = (index, ratio) => [cx + radius * ratio * Math.cos(angle(index)), cy + radius * ratio * Math.sin(angle(index))];
+    let html = '';
+    [0.25, 0.5, 0.75, 1].forEach(ratio => {
+      html += `<polygon points="${dims.map((_, index) => point(index, ratio).join(',')).join(' ')}" fill="none" stroke="#dfe5ed" stroke-width="${ratio === 1 ? 1.4 : .8}"/>`;
+    });
+    dims.forEach((_, index) => {
+      const [x, y] = point(index, 1);
+      html += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#dfe5ed" stroke-width=".8"/>`;
+    });
+    dims.forEach((dimension, index) => {
+      const [x, y] = point(index, 1.27);
+      const words = String(dimension.name || '').split(' ');
+      const lines = words.length <= 2 ? [words.join(' ')] : [words.slice(0, 2).join(' '), words.slice(2).join(' ')];
+      html += `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#7d899d" font-family="Inter,Segoe UI,Arial,sans-serif">${lines.map((line, lineIndex) => `<tspan x="${x}" dy="${lineIndex === 0 ? (lines.length > 1 ? -5 : 0) : 12}">${escapeHtml(line)}</tspan>`).join('')}</text>`;
+    });
+    const polygon = dims.map((dimension, index) => point(index, Math.max(0, Math.min(100, Number(dimension.val || 0))) / 100).join(',')).join(' ');
+    html += `<polygon points="${polygon}" fill="${color}24" stroke="${color}" stroke-width="2.3" stroke-linejoin="round"/>`;
+    dims.forEach((dimension, index) => {
+      const [x, y] = point(index, Math.max(0, Math.min(100, Number(dimension.val || 0))) / 100);
+      html += `<circle cx="${x}" cy="${y}" r="4" fill="${color}" stroke="#fff" stroke-width="1.7"/>`;
+    });
+    svgElement.innerHTML = html;
+  }
+
+  function openOverlay(id) {
+    const c = convocatorias.find(item => item.id === id);
+    if (!c) return;
+    currentOverlayId = id;
+    lastFocusedElement = document.activeElement;
+
+    document.getElementById('ov-source-label').textContent = `${c.source} · Análisis de encaje`;
+    document.getElementById('ov-title').textContent = c.title;
+    document.getElementById('ov-score').textContent = `${c.fit_score}%`;
+    document.getElementById('ov-radar-score').textContent = `${c.fit_score}%`;
+    document.getElementById('ov-actionability').textContent = `${c.actionability_score}%`;
+    document.getElementById('ov-confidence').textContent = c.confidence == null ? 'N/D' : `${c.confidence}%`;
+    document.getElementById('ov-eligibility').textContent = eligibilityMap[c.eligibility] || c.eligibility;
+    document.getElementById('ov-eligibility-note').textContent = c.eligibility_reason || 'Según datos extraídos';
+    document.getElementById('ov-deadline-days').textContent = `${c.deadline} días`;
+    document.getElementById('ov-deadline-days').className = `decision-card-value ${c.deadline <= 20 ? 'danger' : ''}`;
+    const deadlineDate = formatDeadlineDate(c.deadline_date);
+    document.getElementById('ov-deadline-note').textContent = deadlineDate
+      ? `Cierre ${deadlineDate}${c.fecha_prevista ? ' · previsto' : ''}`
+      : c.fecha_sin_confirmar ? 'Fecha de cierre sin confirmar' : 'Fecha exacta pendiente';
+
+    document.getElementById('ov-summary').textContent = c.summary || 'No se ha generado un resumen.';
+    document.getElementById('ov-action').textContent = c.action || 'No se ha definido una acción.';
+    document.getElementById('ov-open-link').style.display = safeExternalUrl(c.url) ? 'inline-flex' : 'none';
+
+    const trlString = c.trl_min || c.trl_max ? `TRL ${c.trl_min || '?'}–${c.trl_max || '?'}` : null;
+    const consortium = c.socio_consorcio && c.socio_consorcio !== 'N/A' ? c.socio_consorcio : null;
+    document.getElementById('ov-meta-row').innerHTML = [
+      `<span class="meta-pill"><strong>${escapeHtml(c.org || 'Organismo no especificado')}</strong></span>`,
+      trlString ? `<span class="meta-pill">${escapeHtml(trlString)}</span>` : '',
+      consortium ? `<span class="meta-pill">Consorcio: ${escapeHtml(consortium)}</span>` : '',
+      `<span class="meta-pill">Rol: ${escapeHtml(roleMap[c.recommended_role] || c.recommended_role)}</span>`,
+      `<span class="meta-pill">Decisión: ${escapeHtml(decisionMap[c.decision] || c.decision)}</span>`,
+      `<span class="meta-pill">Evidencia: ${escapeHtml(c.evidence_quality)}</span>`
+    ].join('');
+
+    const reviewBlock = document.getElementById('ov-review-block');
+    const reviewLabels = (c.review_reasons || []).map(reason => reviewReasonMap[reason] || reason);
+    if (c.review_required || c.eligibility_reason) {
+      reviewBlock.style.display = 'block';
+      reviewBlock.innerHTML = `${c.review_required ? `<strong>Comprobación sugerida:</strong> ${escapeHtml(reviewLabels.join(' · ') || 'revisión manual')}` : ''}${c.eligibility_reason ? `<div style="margin-top:4px"><strong>Elegibilidad:</strong> ${escapeHtml(c.eligibility_reason)}</div>` : ''}`;
+    } else {
+      reviewBlock.style.display = 'none';
+      reviewBlock.textContent = '';
+    }
+    document.getElementById('ov-url-generica-block').style.display = c.url_generica ? 'block' : 'none';
+    document.getElementById('ov-url-rota-block').style.display = c.url_rota ? 'block' : 'none';
+
+    const radarColor = c.priority === 'high' ? '#1556a8' : c.priority === 'medium' ? '#bd6d0f' : '#7d899d';
+    drawRadar(document.getElementById('ov-radar'), c.dims, radarColor);
+    document.getElementById('ov-radar-score').style.color = radarColor;
+    document.getElementById('ov-dims').innerHTML = (c.dims || []).map(dimension => `
+      <div class="dimension-row"><div class="dimension-name">${escapeHtml(dimension.name)}</div><div class="dimension-bar"><div class="dimension-fill" style="width:${Number(dimension.val || 0)}%;background:${radarColor}"></div></div><div class="dimension-value">${Number(dimension.val || 0)}%</div></div>`).join('');
+
+    document.getElementById('ov-evidence').innerHTML = renderListHtml(c.positive_evidence, 'No se registraron evidencias positivas explícitas.');
+    document.getElementById('ov-risks').innerHTML = renderListHtml(c.risks_and_unknowns, 'No se registraron riesgos adicionales.');
+
+    const partners = c.recommended_partners || [];
+    const partnerNeeds = c.partner_needs || [];
+    document.getElementById('ov-partners').innerHTML = (partners.length
+      ? `<ul class="detail-list">${partners.map(partner => {
+          const name = partner.name || partner.canonical_name || partner.partner_id || 'Socio';
+          const capabilities = partner.matching_capabilities || [];
+          return `<li><strong>${escapeHtml(name)}</strong>${capabilities.length ? ` — ${escapeHtml(capabilities.map(tag => techTagMap[tag] || tag).join(', '))}` : ''}</li>`;
+        }).join('')}</ul>`
+      : '<div class="content-copy">No se recomienda todavía un socio técnico concreto.</div>')
+      + (partnerNeeds.length ? `<div class="content-copy" style="margin-top:8px"><strong>Capacidades necesarias:</strong> ${escapeHtml(partnerNeeds.map(item => typeof item === 'object' ? item.capability || item.reason : item).join(', '))}</div>` : '');
+
+    document.getElementById('ov-tags').innerHTML =
+      (c.tags || []).filter(tag => tagMap[tag]).map(tag => `<span class="tag ${tag}">${escapeHtml(tagMap[tag])}</span>`).join('') +
+      (c.tech_tags || []).map(tag => `<span class="analysis-badge">${escapeHtml(techTagMap[tag] || tag)}</span>`).join('') +
+      (c.keywords_found || []).slice(0, 8).map(keyword => `<span class="analysis-badge">${escapeHtml(keyword)}</span>`).join('');
+
+    const facts = c.call_facts || {};
+    const factRows = [
+      ['Estado', facts.call_status], ['Programa', facts.programme], ['Tipo de acción', facts.action_type],
+      ['Solicitantes', (facts.applicant_types || []).join(', ')], ['Entidades elegibles', (facts.eligible_entity_types || []).join(', ')],
+      ['Ámbito geográfico', (facts.eligible_geographies || []).join(', ')], ['Evidencia de elegibilidad', (facts.eligibility_evidence || []).join(' · ')],
+      ['Presupuesto total', facts.budget_total_eur == null ? null : `${facts.budget_total_eur} €`],
+      ['Presupuesto por proyecto', facts.project_budget_eur == null ? null : `${facts.project_budget_eur} €`],
+      ['Intensidad de ayuda', facts.funding_rate_percent == null ? null : `${facts.funding_rate_percent}%`],
+      ['Fecha límite extraída', facts.deadline_date], ['Consorcio requerido', facts.consortium_required == null ? null : (facts.consortium_required ? 'Sí' : 'No')],
+      ['Evidencia sobre consorcio', facts.consortium_evidence], ['Temas exigidos', (facts.required_topics || []).join(', ')],
+      ['Resultados esperados', (facts.expected_outcomes || []).join(', ')], ['Fuente TRL', facts.trl_source],
+      ['Evidencia de fuente', (facts.evidence || []).join(' · ')], ['Datos ausentes', (facts.missing_fields || []).join(', ')]
+    ].filter(([, value]) => value !== null && value !== undefined && String(value).trim());
+    document.getElementById('ov-facts').innerHTML = factRows.length
+      ? `<ul class="detail-list">${factRows.map(([label, value]) => `<li><strong>${escapeHtml(label)}:</strong> ${escapeHtml(value)}</li>`).join('')}</ul>`
+      : '<div class="content-copy">El JSON no contiene extracción factual estructurada para esta convocatoria.</div>';
+
+    const relatedDocuments = Array.isArray(c.related_documents) ? c.related_documents : [];
+    const traceRows = [
+      c.source_type ? `Método: ${c.source_type}` : '', c.discovered_via ? `Descubierta mediante: ${c.discovered_via}` : '',
+      c.bdns_id ? `BDNS: ${c.bdns_id}` : '', c.programme_name ? `Programa: ${c.programme_name}` : '',
+      ...relatedDocuments.map(document => `${document.document_role || 'documento'} — ${document.source || ''}: ${document.title || document.url || ''}`)
+    ].filter(Boolean);
+    document.getElementById('ov-trace').innerHTML = renderListHtml(traceRows, 'Sin documentos relacionados adicionales.');
+
+    document.getElementById('ov-model-usage').innerHTML = `
+      <p><strong>Tokens:</strong> ${c.token_usage?.total_tokens == null ? 'N/D' : Number(c.token_usage.total_tokens).toLocaleString('es-ES')}</p>
+      <p><strong>Coste estimado:</strong> ${c.token_usage?.estimated_cost_usd == null ? 'N/D' : `$${Number(c.token_usage.estimated_cost_usd).toFixed(4)}`}</p>`;
+    document.getElementById('ov-technical-meta').innerHTML = `
+      <p><strong>Fuente:</strong> ${escapeHtml(c.source)}</p>
+      <p><strong>Calidad de evidencia:</strong> ${escapeHtml(c.evidence_quality)}</p>
+      <p><strong>ID:</strong> ${escapeHtml(c.id)}</p>`;
+
+    const discardBlock = document.getElementById('ov-descarte-block');
+    if (c.descartada && c.motivo_descarte) {
+      discardBlock.style.display = 'block';
+      document.getElementById('ov-descarte-motivo').textContent = c.motivo_descarte;
+    } else {
+      discardBlock.style.display = 'none';
+    }
+
+    document.getElementById('ai-overlay').classList.add('visible');
+    document.body.classList.add('modal-open');
+    setTimeout(() => document.getElementById('close-modal-btn').focus(), 30);
+  }
+
+  function closeOverlay() {
+    document.getElementById('ai-overlay').classList.remove('visible');
+    document.body.classList.remove('modal-open');
+    currentOverlayId = null;
+    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') lastFocusedElement.focus();
+  }
+
+  document.getElementById('ai-overlay').addEventListener('click', event => {
+    if (event.target === event.currentTarget) closeOverlay();
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && document.getElementById('ai-overlay').classList.contains('visible')) closeOverlay();
+    if (event.key === 'Tab' && document.getElementById('ai-overlay').classList.contains('visible')) {
+      const modal = document.querySelector('.detail-modal');
+      const focusable = [...modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter(element => !element.disabled && element.offsetParent !== null);
+      if (!focusable.length) return;
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+  });
+
+  document.getElementById('urgent-card').addEventListener('click', () => { if (urgentConvId !== null) openOverlay(urgentConvId); });
+  document.getElementById('urgent-card').addEventListener('keydown', event => {
+    if ((event.key === 'Enter' || event.key === ' ') && urgentConvId !== null) { event.preventDefault(); openOverlay(urgentConvId); }
+  });
+
+  updateSortDirectionButton();
+  renderChart();
+  loadData();
+</script>
+</body>
+</html>

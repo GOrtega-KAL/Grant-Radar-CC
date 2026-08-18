@@ -1,0 +1,215 @@
+{
+  "spec_version": 1,
+  "cases": [
+    {
+      "id": "family_succession_advice",
+      "stage": "metadata",
+      "title": "Ayudas para favorecer el relevo generacional en las empresas familiares",
+      "description": "Asesoramiento para diseñar e implantar un protocolo familiar y un plan de sucesión.",
+      "expected": "reject"
+    },
+    {
+      "id": "self_employment",
+      "stage": "metadata",
+      "title": "Ayudas para el fomento del autoempleo y nuevas actividades",
+      "description": "Creación del propio puesto de trabajo para personas desempleadas.",
+      "expected": "reject"
+    },
+    {
+      "id": "research_employment_programme",
+      "stage": "document",
+      "title": "Ayudas para iniciativas de investigación e innovación",
+      "description": "Programa de apoyo a entidades de investigación.",
+      "evidence": "Estas subvenciones están destinadas a la contratación de personas jóvenes en calidad de personal investigador. La finalidad de estas subvenciones consiste en favorecer la inserción laboral.",
+      "expected": "reject"
+    },
+    {
+      "id": "equality_compliance_plan",
+      "stage": "metadata",
+      "title": "Subvenciones para la implantación de planes de igualdad",
+      "description": "Elaboración de planes laborales para empresas no obligadas a disponer de ellos.",
+      "expected": "reject"
+    },
+    {
+      "id": "zero_emission_micromobility",
+      "stage": "metadata",
+      "title": "Subvenciones para el fomento de la movilidad sostenible de emisiones cero",
+      "description": "Compra de bicicletas eléctricas, patinetes y sillas de ruedas eléctricas.",
+      "expected": "reject"
+    },
+    {
+      "id": "automotive_value_chain_without_thermal_process",
+      "stage": "metadata",
+      "title": "Proyectos para la cadena de valor del sector de la automoción y la movilidad",
+      "description": "Tecnologías y servicios para vehículos.",
+      "expected": "reject"
+    },
+    {
+      "id": "tertiary_building_efficiency_without_industrial_process",
+      "stage": "metadata",
+      "title": "Eficiencia energética en edificios terciarios",
+      "description": "Mejora de oficinas, comercios y establecimientos de servicios.",
+      "expected": "reject"
+    },
+    {
+      "id": "prior_local_domicile_required",
+      "stage": "document",
+      "title": "Ayudas locales a pymes para inversión",
+      "description": "Inversión mínima en activos.",
+      "evidence": "Las personas beneficiarias deberán tener el domicilio social y fiscal en el municipio y su actividad principal deberá desarrollarse en el municipio.",
+      "expected": "reject"
+    },
+    {
+      "id": "prior_operating_establishment_required",
+      "stage": "document",
+      "title": "Ayuda autonómica a la eficiencia industrial",
+      "description": "Inversión empresarial en equipos eficientes.",
+      "evidence": "Las empresas beneficiarias deben estar válidamente constituidas y contar con establecimiento operativo en la Comunidad Autónoma convocante en el momento de presentar la solicitud.",
+      "expected": "reject"
+    },
+    {
+      "id": "prior_regional_tax_registration_required",
+      "stage": "document",
+      "title": "Ayuda autonómica a la industria 4.0",
+      "description": "Digitalización de procesos productivos.",
+      "evidence": "La entidad beneficiaria deberá estar dada de alta en el Censo de Actividades Económicas en la Comunidad Autónoma convocante en el momento del cierre.",
+      "expected": "reject"
+    },
+    {
+      "id": "project_location_is_not_prior_presence",
+      "stage": "document",
+      "title": "Ayuda a proyectos industriales regionales",
+      "description": "Inversión productiva empresarial.",
+      "evidence": "Las actuaciones y los equipos subvencionados deberán ejecutarse y ubicarse en la comunidad autónoma convocante tras la concesión.",
+      "expected": "not_reject"
+    },
+    {
+      "id": "disaster_affected_existing_business",
+      "stage": "document",
+      "title": "Ayudas de recuperación empresarial",
+      "description": "Apoyo económico local.",
+      "evidence": "Ayudas a actividades económicas ubicadas en los polígonos del municipio y afectadas por la DANA.",
+      "expected": "reject"
+    },
+    {
+      "id": "new_local_establishment_unknown_duration",
+      "stage": "metadata",
+      "title": "Ayudas municipales a la implantación de nuevas empresas",
+      "description": "Gastos iniciales de puesta en marcha y acondicionamiento del local.",
+      "expected": "hold_manual"
+    },
+    {
+      "id": "multi_line_new_and_existing_business",
+      "stage": "document",
+      "title": "Emprendimiento y consolidación empresarial local",
+      "description": "Modernización de empresas ya implantadas.",
+      "evidence": "Línea 1. Emprende para nuevas iniciativas empresariales. Línea 2. Consolida para empresas ya implantadas en el municipio.",
+      "expected": "not_reject"
+    },
+    {
+      "id": "schools_and_parent_associations_only",
+      "stage": "document",
+      "title": "Actividades municipales de medioambiente",
+      "description": "Programa ambiental local.",
+      "evidence": "QUINTA.- Beneficiarias. Podrán acceder a las ayudas contempladas los centros públicos y privados concertados que imparten Educación Infantil, Educación Primaria y Educación Secundaria Obligatoria. Asimismo, podrán ser beneficiarias las asociaciones de padres y madres de dichos centros. SEXTA.- Requisitos generales. En ningún caso podrán obtener ayuda las entidades o empresas sancionadas.",
+      "expected": "reject"
+    },
+    {
+      "id": "public_nonprofit_group_only",
+      "stage": "document",
+      "title": "Infraestructura verde urbana",
+      "description": "Proyectos urbanos en agrupación.",
+      "evidence": "Entidades beneficiarias. Podrán ser beneficiarias ayuntamientos y diputaciones. En agrupaciones podrán participar entidades sin ánimo de lucro, organismos públicos y universidades públicas.",
+      "expected": "reject"
+    },
+    {
+      "id": "company_group_route_preserved",
+      "stage": "document",
+      "title": "Proyecto industrial colaborativo",
+      "description": "Agrupación para inversión industrial.",
+      "evidence": "Entidades beneficiarias: empresas, pymes, organismos públicos y universidades públicas podrán ejecutar costes propios.",
+      "expected": "not_reject"
+    },
+    {
+      "id": "productive_investment_finance_preserved",
+      "stage": "metadata",
+      "title": "Ayudas para intereses y aval de operaciones de financiación",
+      "description": "Financiación de inversiones productivas, innovación, digitalización y sostenibilidad.",
+      "expected": "not_reject"
+    },
+    {
+      "id": "aragon_process_improvement_preserved",
+      "stage": "metadata",
+      "title": "Ayudas a la mejora y modernización de procesos industriales en Aragón",
+      "description": "Maquinaria, activos productivos y ahorro energético propios.",
+      "region": "ES24 - ARAGÓN",
+      "expected": "not_reject"
+    },
+    {
+      "id": "large_enterprises_only",
+      "stage": "metadata",
+      "title": "Ayudas a proyectos tractores empresariales",
+      "description": "Inversión industrial y activos productivos.",
+      "beneficiary_types": ["GRAN EMPRESA"],
+      "expected": "reject"
+    },
+    {
+      "id": "large_and_medium_enterprises_preserved",
+      "stage": "metadata",
+      "title": "Ayudas a inversiones industriales",
+      "description": "Inversión industrial y activos productivos.",
+      "beneficiary_types": ["GRAN EMPRESA", "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"],
+      "expected": "not_reject"
+    },
+    {
+      "id": "new_microenterprise_only",
+      "stage": "document",
+      "title": "Ayudas a la creación de empresas",
+      "description": "Gastos iniciales de puesta en marcha.",
+      "evidence": "Beneficiarios. Empresarios individuales dados de alta en RETA y las microempresas, cualquiera que sea su forma jurídica, siempre que inicien su actividad empresarial durante la anualidad de la convocatoria.",
+      "expected": "reject"
+    },
+    {
+      "id": "regional_activity_centre_required",
+      "stage": "document",
+      "title": "Ayudas a inversiones digitales industriales",
+      "description": "Digitalización de procesos productivos.",
+      "evidence": "Las empresas deberán disponer de un centro de actividad en la Comunidad Autónoma convocante y figurar de alta en el Impuesto de Actividades Económicas regional.",
+      "expected": "reject"
+    },
+    {
+      "id": "local_fiscal_census_outside_zaragoza",
+      "stage": "document",
+      "title": "Mejora de establecimientos industriales locales",
+      "description": "Inversión en maquinaria propia.",
+      "region": "ES243 - Zaragoza",
+      "evidence": "Los establecimientos subvencionados deberán estar ubicados en el término municipal de Calatayud. Para determinar la ubicación de la actividad se tomará la dirección que figure en el censo a efectos fiscales.",
+      "expected": "reject"
+    },
+    {
+      "id": "new_centre_short_period_rejected",
+      "stage": "document",
+      "title": "Emprendimiento e implantación empresarial local",
+      "description": "Implantación de nuevas empresas y apoyo a establecimientos existentes.",
+      "execution_days": 365,
+      "evidence": "La actividad económica deberá desarrollarse en el municipio, disponiendo de establecimiento abierto al público o domicilio fiscal local. También se admite la implantación de nuevas empresas.",
+      "expected": "reject"
+    },
+    {
+      "id": "new_centre_long_period_preserved",
+      "stage": "document",
+      "title": "Emprendimiento e implantación empresarial local",
+      "description": "Implantación de nuevas empresas y apoyo a establecimientos existentes.",
+      "execution_days": 900,
+      "evidence": "La actividad económica deberá desarrollarse en el municipio, disponiendo de establecimiento abierto al público o domicilio fiscal local. También se admite la implantación de nuevas empresas.",
+      "expected": "not_reject"
+    },
+    {
+      "id": "industrial_cybersecurity_without_process_connection",
+      "stage": "metadata",
+      "title": "Programa de Ciberseguridad Industrial",
+      "description": "Auditoría de redes, protección digital y resiliencia frente a ciberataques.",
+      "expected": "reject"
+    }
+  ]
+}

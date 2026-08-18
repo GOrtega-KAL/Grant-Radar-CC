@@ -1,0 +1,709 @@
+{
+  "_meta": {
+    "version": "bdns-hold-2026-08-v2",
+    "model": "claude-haiku-4-5",
+    "saved_at": "2026-08-07T11:34:10.306403+00:00"
+  },
+  "entries": {
+    "9b03908de99399919b118055b61e448d50c694359b52051876e6866b805f65bd": {
+      "bdns_id": "891276",
+      "title": "Convocatoria de subvenciones de minimis a entidades de la economía social para hacer inversiones en sus tiendas con el fin de mejorar la eficiencia energética, la accesibilidad universal, el equipamiento y el software tecnológico y la organización de los",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "3ce0aa0ef589227bef234fc1858d0889f260d90c2ce9bd9d117e5b6a69d834ae",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "closed",
+          "deadline_date": "",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "30 días naturales a partir del dia siguiente de su publicación en el BOIB",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/891276",
+          "confidence": 45,
+          "explanation": "Los metadatos indican que la convocatoria tiene estado 'unverified_recent' con fecha de recepción 2026-03-05 y publicación en BOIB 2026-03-07. El documento especifica un plazo de 30 días naturales desde la publicación. Dado que la fecha actual es 2026-08-07 (más de 4 meses después de la publicación), el plazo de 30 días habría vencido hace tiempo, lo que sugiere que la convocatoria está cerrada. Sin embargo, los campos 'fecha_fin_solicitud' y 'fecha_inicio_solicitud' están vacíos en los metadatos, lo que introduce incertidumbre. La confianza es baja porque no hay confirmación explícita del estado actual de la convocatoria."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 6534,
+        "output_tokens": 331,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 6865,
+        "estimated_cost_usd": 0.008189,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:31:34.640464+00:00"
+    },
+    "9f57c0bd951fb284e4a9a8ee7c9f78309e2fe4deba65df06b395628989c7f035": {
+      "bdns_id": "918621",
+      "title": "(TEC) Econ. Circular y Trans.Energética (Reg. 651/2014)",
+      "hold_reason": "territorial_eligibility_unverified",
+      "evidence_hash": "4be69356a890f19c5fe25c4ff6ebf5a72610443ac465fc89e17568daa65fd77c",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "territorial_condition_not_supported_by_quote",
+        "explanation": "La cita no demuestra la condición territorial clasificada.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-10-30",
+          "territorial_condition": "existing_establishment",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "El beneficiario de la subvención deberá estar dado de alta en el censo de actividades económicas en la Comunidad Autónoma de La Rioja, en un epígrafe correspondiente a alguna de las actividades subvencionadas, en el momento del cierre de la convocatoria.",
+          "evidence_source_url": "https://ias1.larioja.org/boletin/Bor_Boletin_visor_Servlet?referencia=41431075-1-PDF-578652",
+          "confidence": 85,
+          "explanation": "El documento establece explícitamente que los beneficiarios deben contar con 'establecimiento operativo en la Comunidad Autónoma de La Rioja' y estar 'dado de alta en el censo de actividades económicas'. Esto indica que se exige un centro previo existente en el territorio. No se permite solo localizar el proyecto allí sin establecimiento previo, ni se autoriza abrir un centro después. La condición es tener establecimiento operativo existente. La fecha límite de presentación es 30 de octubre de 2026 según el documento."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 12256,
+        "output_tokens": 339,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 12595,
+        "estimated_cost_usd": 0.013951,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:31:47.151109+00:00"
+    },
+    "3c8929a4f46672a85cb32aa9501c0e656ea285d7a3998a3ed449b2e5fc5e54d2": {
+      "bdns_id": "922826",
+      "title": "Subvención a favor del Ayuntamiento de Torralba del Río para la realización de trabajos para la mejora de la eficiencia energética en el edificio municipal",
+      "hold_reason": "supplier_role_unverified",
+      "evidence_hash": "68d9dc11305b2a9340b2d21a0bcf5a15ddd4593dfce972276b0f9e395945c674",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-12-31",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "",
+          "evidence_source_url": "",
+          "confidence": 0,
+          "explanation": "No se encontró información explícita en los documentos disponibles que determine si equipos, instalaciones o ingeniería suministrables por Kalfrisa son gasto elegible del beneficiario. Los metadatos estructurados solo indican que la subvención es para trabajos de mejora de eficiencia energética en edificio municipal del Ayuntamiento de Torralba del Río, pero no especifican qué proveedores o tipos de suministros son elegibles. Se requeriría acceso al documento 'CONVENIO PDF.pdf' para determinar los criterios de elegibilidad de gastos y proveedores."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 1661,
+        "output_tokens": 233,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 1894,
+        "estimated_cost_usd": 0.002826,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:31:51.046801+00:00"
+    },
+    "95f6b7be1958e49ed778a524a5033f4a43a6401e7014ee8b72e4292e06d6981a": {
+      "bdns_id": "895256",
+      "title": "Decreto de la Delegada del Área de Economía, Innovación y Hacienda por el que se aprueba la convocatoria de",
+      "hold_reason": "cluster_role_unverified",
+      "evidence_hash": "7e41c4bc46d726dfb5cc1ea4f474104260421b5ef5457cb515524253a1389e47",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-12-31",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "yes",
+          "evidence_quote": "dirigidas a fomentar la acción colaborativa de las empresas de Madrid de determinados sectores estratégicos y su participación en proyectos para mejorar su competitividad, a través de las asociaciones sin ánimo de lucro de especialización sectorial tipo clúster",
+          "evidence_source_url": "https://www.bocm.es/boletin/CM_Orden_BOCM/2026/04/08/BOCM-20260408-35.PDF",
+          "confidence": 85,
+          "explanation": "La convocatoria explícitamente menciona que el apoyo está dirigido a fomentar la participación de empresas en proyectos para mejorar su competitividad. La Línea B específicamente se denomina 'Competitividad por proyectos con impacto en la economía de la ciudad, para fortalecer el potencial innovador y la competitividad de las empresas de las asociaciones clúster'. Esto indica que el apoyo llega a empresas miembro a través de proyectos, no solo a la estructura del clúster. La Línea A se enfoca en consolidación de la asociación, pero la Línea B claramente beneficia a empresas miembro."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 6025,
+        "output_tokens": 355,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 6380,
+        "estimated_cost_usd": 0.0078,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:32:01.565877+00:00"
+    },
+    "cd9868581aaa447422ae02d7fee3fed55d5ab184a81c23071a6355f141690bb9": {
+      "bdns_id": "891467",
+      "title": "2 conv. y bases reguladoras para la concesión de subvenciones en régimen de concurrencia no competitiva, a proyectos de Eficiencia Energética y Economía Circular de Empresas Turísticas, Plan de Recuperación, Transf. y resiliencia, Comp. 14, Inv 4, Subm 2.",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "b146fe20f747b40627c8f90b3d38e0f4e4d596427dd18ecb65575fac39b9ff97",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "unknown",
+          "deadline_date": "",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "fecha_fin_solicitud\": \"\"",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/891467",
+          "confidence": 25,
+          "explanation": "Los metadatos SNPSAP muestran que el campo 'fecha_fin_solicitud' está vacío, lo que impide determinar si la convocatoria está abierta, cerrada o tiene ventanilla indefinida. El documento menciona 'DOS MESES DESDE LA FECHA DE LA PUBLICACIÓN DE LA CONVOCATORIA' como plazo, pero sin fecha de publicación explícita ni fecha de cierre, no puede establecerse el estado actual respecto a la fecha actual (2026-08-07). El estado calculado es 'unverified_recent' pero esto no resuelve directamente la pregunta sobre el estado de la solicitud."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 2573,
+        "output_tokens": 279,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 2852,
+        "estimated_cost_usd": 0.003968,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:32:08.171987+00:00"
+    },
+    "065c80934e21de220bac13410bdd9801d74f5381f772e4f65b10f88949864f40": {
+      "bdns_id": "914587",
+      "title": "RESOLUCIÓN de 18 de junio de 2026, Presidencia del Instituto Valenciano de Competitividad Empresarial (IVACE), por la que se convocan ayudas en materia de eficiencia energética en empresas, presupuesto 2026, financiación Unión Europea a través FEDER",
+      "hold_reason": "territorial_eligibility_unverified",
+      "evidence_hash": "a32484e7b7aa0fcd9f0783819f336113be3bf1429c1e63cf5a3a448e2006919c",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-10-29",
+          "territorial_condition": "existing_establishment",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "El proyecto objeto de subvención deberá encontrarse dentro del territorio de la Comunitat Valenciana.",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/914587",
+          "confidence": 45,
+          "explanation": "El documento establece que 'El proyecto objeto de subvención deberá encontrarse dentro del territorio de la Comunitat Valenciana', lo que indica una restricción territorial. Sin embargo, no especifica explícitamente si se requiere un centro previo existente, si solo se puede localizar el proyecto allí, o si permite abrir un nuevo centro. La redacción es ambigua respecto a si la empresa debe tener un establecimiento previo o si puede ser una nueva instalación. Se interpreta como 'existing_establishment' por la mención de que el proyecto debe estar 'dentro del territorio', pero la confianza es baja (45%) debido a la falta de claridad explícita sobre el estado previo del establecimiento."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 5548,
+        "output_tokens": 317,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 5865,
+        "estimated_cost_usd": 0.007133,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:32:14.220954+00:00"
+    },
+    "514afce7445f3762466cdf4b503790c2c6cec67ead05c13fb6e4ac782e6be740": {
+      "bdns_id": "920927",
+      "title": "Resolución de 21 de julio de 2026 de ICEX por la que se convocan entregas dinerarias sin contraprestación a las entidades colaboradoras en gestión de ayudas de ICEX para actividades cuya realización esté prevista del 1 de enero al 31 de diciembre de 2027.",
+      "hold_reason": "supplier_role_unverified",
+      "evidence_hash": "da14e0a02b2cccb3cab6695d23d87c7b3c22f9a18a8e44331f46d244bd889037",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2027-12-01",
+          "territorial_condition": "no_restriction",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "yes",
+          "evidence_quote": "sólo se considerarán gastos elegibles los facturados por terceros distintos de la beneficiaria, quedando en consecuencia excluidos tanto los costes internos de la Entidad Colaboradora y los de la/s empresa/s /s con ella, como los de autofacturación de las entidades beneficiarias",
+          "evidence_source_url": "http://www.boe.es/diario_boe/verifica.php?acc=Verificar&c=BOE-B-2026-25114",
+          "confidence": 35,
+          "explanation": "La convocatoria establece que solo son gastos elegibles los facturados por terceros distintos de la beneficiaria. Kalfrisa podría ser un tercero proveedor, pero no hay información explícita en los documentos que confirme si equipos, instalaciones o ingeniería suministrables por Kalfrisa específicamente son elegibles. La pregunta requiere verificación de si Kalfrisa es un proveedor autorizado o si sus productos/servicios encajan en las categorías de gasto permitidas (alquiler de equipos, suministros de feria, etc.). Sin documentación específica sobre Kalfrisa o sus productos, no puede determinarse con certeza la elegibilidad."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 4569,
+        "output_tokens": 370,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 4939,
+        "estimated_cost_usd": 0.006419,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:32:21.426907+00:00"
+    },
+    "632fe6f3f7be271b25063c7b2024f2350ae2fd4adbcb0207eaab5a4747783dab": {
+      "bdns_id": "902426",
+      "title": "Subvenciones 2026 proyectos de eficiencia energética y reducción de emisiones",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "d7ebbeb44082a41bf0c086cfcfd2e301686de33bc30815878a81f38714e6a1e7",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "unknown",
+          "deadline_date": "",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "fecha_fin_solicitud\": \"\"",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/902426",
+          "confidence": 25,
+          "explanation": "Los metadatos muestran que fecha_fin_solicitud está vacía, lo que impide determinar si la convocatoria está abierta, cerrada o tiene ventanilla indefinida. El documento indica que la recepción fue el 2026-04-29 y menciona '20 días hábiles desde el día siguiente a la publicación en el BOP' como plazo, pero sin fechas explícitas de inicio y fin de solicitud no puede verificarse el estado actual respecto a la fecha actual (2026-08-07). El estado calculado es 'unverified_recent', confirmando que no puede determinarse con certeza."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 1850,
+        "output_tokens": 274,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 2124,
+        "estimated_cost_usd": 0.00322,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:32:26.186444+00:00"
+    },
+    "80f1299a6037e2abbab20864aab46e1738e245679b40d0165ecd10a333c345ea": {
+      "bdns_id": "920602",
+      "title": "Orden por la que se establecen las bases reguladoras para la concesión de subvenciones a las empresas privadas para el fomento de la sostenibilidad en el desarrollo de la actividad industrial del sector minero.(Líneas 1 y 4)",
+      "hold_reason": "territorial_eligibility_unverified",
+      "evidence_hash": "9f589570a023c1c9341e2508b87869404c28930dc594f6bbd2a3e06e3957b97d",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-08-24",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "",
+          "evidence_source_url": "",
+          "confidence": 0,
+          "explanation": "Los metadatos disponibles no contienen información explícita sobre las condiciones territoriales de elegibilidad (si exige centro previo, solo localización del proyecto, permite apertura posterior o no impone restricción). Se requiere consultar el texto completo de la orden reguladora para determinar esta condición. Los documentos PDF referenciados no están disponibles en el contenido proporcionado."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 2072,
+        "output_tokens": 175,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 2247,
+        "estimated_cost_usd": 0.002947,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:32:44.107860+00:00"
+    },
+    "2b884906bb3294fe8eb09a501c6660a4d6e9cdff008e0cf2bfdb30ba5853b06b": {
+      "bdns_id": "904132",
+      "title": "Convocatoria para la concesión de subvenciones por el Ayuntamiento de Getafe para actuaciones relativas a la accesibilidad, conservación, rehabilitación o mejora de la eficiencia energética en viviendas del término municipal de Getafe, para el año 2026",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "1bb99e63cc5b5f1467ea792eb7c572954cc29cee42c4eb1b23d8e7b41166802d",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "unknown",
+          "deadline_date": "",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "20 DÍAS HÁBILES A PARTIR DEL SIGUIENTE A LA PUBLICACIÓN DE LA CONVOCATORIA EN EL BOCM",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/904132",
+          "confidence": 25,
+          "explanation": "Los metadatos indican que fecha_fin_solicitud y fecha_inicio_solicitud están vacíos, lo que impide determinar si la convocatoria está abierta, cerrada o próxima. Se menciona un plazo de '20 DÍAS HÁBILES A PARTIR DEL SIGUIENTE A LA PUBLICACIÓN' pero sin fechas específicas de inicio/fin en los metadatos, no puede establecerse el estado actual respecto a la fecha actual (2026-08-07). El estado calculado es 'unverified_recent' pero esto no resuelve directamente la pregunta sobre el estado de la solicitud."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 2664,
+        "output_tokens": 295,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 2959,
+        "estimated_cost_usd": 0.004139,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:33:05.114811+00:00"
+    },
+    "776234b24215082b6081e77982f239810b8e4af19c633bca4595ec445c7ed61d": {
+      "bdns_id": "905892",
+      "title": "CONVOCATORIA SUBVENCIONS EFICIENCIA ENERGETICA 2026",
+      "hold_reason": "territorial_eligibility_unverified",
+      "evidence_hash": "619bb99e6563cc9d7d823107453f68e2baddac3d877c7280e29746b6e0f29e1e",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-10-31",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "",
+          "evidence_source_url": "",
+          "confidence": 0,
+          "explanation": "Los metadatos disponibles no contienen información explícita sobre las condiciones territoriales de elegibilidad (si exige centro previo, solo localización del proyecto, permite apertura posterior o no impone restricción). El documento referenciado (ANUNCI_BOP_CONVOCATORIA_CATALA_I_CASTELLA.pdf) no ha sido proporcionado en el contenido analizable. Solo se confirma que la convocatoria está abierta con deadline 2026-10-31 y se limita a Cataluña (ES51), pero esto no responde específicamente a la pregunta sobre requisitos de establecimiento previo."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 1697,
+        "output_tokens": 236,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 1933,
+        "estimated_cost_usd": 0.002877,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:33:09.328155+00:00"
+    },
+    "9ed2782eebb998b5fc9758beb10c37fdb5e137d0ba4f82bbc1ef1ac6a196bbc2": {
+      "bdns_id": "907454",
+      "title": "Resolución SOD/GP/24/26, de 19 de mayo de 2026, por la que se convoca para el año 2026 la línea de subvenciones a grandes proyectos de mejora de la competitividad industrial en empresas de Cantabria promovidas por SODERCAN, S.A.",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "486ae0a1541f5831a9ed892b00bc6692b1b791cf6a6033f15bb9ea02fddf31b5",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "future_deadline_not_verified",
+        "explanation": "Haiku no aportó un cierre futuro coherente.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "Un mes a contar desde el día siguiente a la publicación del extracto en el BOC",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "Día siguiente a la publicación del extracto en el BOC Un mes a contar desde el día siguiente a la publicación del extracto en el BOC",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/907454",
+          "confidence": 75,
+          "explanation": "Los metadatos SNPSAP indican que la convocatoria tiene un plazo de solicitud de 'Un mes a contar desde el día siguiente a la publicación del extracto en el BOC'. Aunque no se proporciona la fecha exacta de publicación en el BOC, la resolución es de 19 de mayo de 2026 y fue recibida el 22 de mayo de 2026. Sin conocer la fecha actual de publicación en el BOC, se infiere que la convocatoria está abierta basándose en el estado 'unverified_recent' y la ausencia de fecha de fin de solicitud en los metadatos. La confianza es moderada porque no se dispone de la fecha exacta de publicación en el BOC para calcular el plazo preciso."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 2031,
+        "output_tokens": 358,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 2389,
+        "estimated_cost_usd": 0.003821,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:33:14.309051+00:00"
+    },
+    "03fbd3fa4010e2f0e24d6b5c3be00cbdfde1f78499d7214d348a78d5d5cf5f31": {
+      "bdns_id": "919209",
+      "title": "(EE) Eficiencia energética Industrial FNEE (Reg. 651/2014)",
+      "hold_reason": "territorial_eligibility_unverified",
+      "evidence_hash": "c76501def8f38617a41449055a9c1536419250fd580fc8ae290d80acc8f09e8b",
+      "resolution": {
+        "decision": "reject",
+        "reason_code": "haiku_existing_establishment_required",
+        "explanation": "La cita verificada exige un centro previo fuera de Aragón.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-10-30",
+          "territorial_condition": "existing_establishment",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "Las empresas beneficiarias deben estar válidamente constituidas, contar con establecimiento operativo en la Comunidad Autónoma de La Rioja, ejercer la actividad económica para la que se solicita la ayuda en La Rioja y realizar el proyecto subvencionable.",
+          "evidence_source_url": "https://ias1.larioja.org/boletin/Bor_Boletin_visor_Servlet?referencia=41431061-1-PDF-578653",
+          "confidence": 95,
+          "explanation": "La convocatoria exige explícitamente que las empresas beneficiarias cuenten con 'establecimiento operativo en la Comunidad Autónoma de La Rioja' y ejerzan la actividad económica en La Rioja. Esto indica que se requiere un centro previo existente en el territorio (existing_establishment). El plazo de presentación finaliza el 30 de octubre de 2026 según el documento. Los campos de ejecución, costes de proveedores y apoyo a clusters no tienen información explícita en los documentos proporcionados."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 10434,
+        "output_tokens": 338,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 10772,
+        "estimated_cost_usd": 0.012124,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:33:21.865860+00:00"
+    },
+    "ded9925ff6cd3482e9087b6440654367d4b65d8f90b74f2b4a312ef6df814f45": {
+      "bdns_id": "913792",
+      "title": "BASES REGULADORAS Y CONVOCATORIA DEL PLAN PROVINCIAL DE AUTOCONSUMOS COLECTIVOS EN EDIFICIOS MUNICIPALES PARA CONTRIBUIR A LA DESCARBONIZACIÓN DE LOS SERVICIOS LOCALES.",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "a7cb86ffc3391550fdba02bc6d8a0f472c9e40736234ee2b39b695dc411a8b47",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "future_deadline_not_verified",
+        "explanation": "Haiku no aportó un cierre futuro coherente.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "15 días naturales a partir del día siguiente de la publicación del extracto de la convocatoria en el BOP",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "A partir del día siguiente al de la publicación del extracto de la convocatoria en el BOP 15 dias naturales a partir del día siguiente de la publ del extracto de la convocatoria en el BOP",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/913792",
+          "confidence": 75,
+          "explanation": "La convocatoria está abierta según los metadatos SNPSAP que indican un plazo de 15 días naturales a partir de la publicación del extracto en el BOP. No hay fecha de fin de solicitud explícita en los metadatos (campo vacío), pero el texto indica claramente un plazo de presentación de 15 días. La confianza es moderada porque la fecha exacta de publicación en el BOP no se especifica en los documentos proporcionados, solo se menciona que el plazo comienza 'a partir del día siguiente' de dicha publicación."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 2024,
+        "output_tokens": 333,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 2357,
+        "estimated_cost_usd": 0.003689,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:33:27.220817+00:00"
+    },
+    "4f63ebc0761412514b48d9e2fc4c22af73389ca4a9c2b4c4acd73eb9442a817c": {
+      "bdns_id": "914021",
+      "title": "CONVOCATÒRIA PER A LA CONCESSIÓ DE SUBVENCIONS PER AL FOMENT DE LA REHABILITACIÓ, LA MILLORA DE L`ACCESSIBILITAT I DE L`EFICIÈNCIA ENERGÈTICA EN EDIFICIS D`HABITATGES",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "38447e7f8dd134bd1d1129916353e5f56078579feeba554204269ebda363bcde",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "future_deadline_not_verified",
+        "explanation": "Haiku no aportó un cierre futuro coherente.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "60 días naturales desde el día siguiente de la publicación de la convocatoria al BOPB",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "Des de l`endemà de la publicació de la convocatòria al BOPB 60 dies naturals des de l`endemà de la data de publicació de la convocatòria al BOPB",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/914021",
+          "confidence": 85,
+          "explanation": "La convocatoria está abierta según el documento de metadatos SNPSAP que indica que comienza 'Des de l`endemà de la publicació de la convocatòria al BOPB' (desde el día siguiente de la publicación) con un plazo de 60 días naturales. No hay fecha de fin de solicitud explícita en los metadatos, pero el plazo es determinado (60 días), por lo que se clasifica como 'open' en lugar de 'open_ended'."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 2028,
+        "output_tokens": 316,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 2344,
+        "estimated_cost_usd": 0.003608,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:33:31.631692+00:00"
+    },
+    "1df0c07b4b22f050b9da85bfadacbe2283cc5b865bea95a6c170128fcadaf154": {
+      "bdns_id": "916530",
+      "title": "Convocatoria para proyectos de eficiencia energética en piscinas climatizadas municipales 2026",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "71e796c5876dd51cf83c4639e33979344a7a9c9cbfbdf9f74d652b4722aba9b7",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "future_deadline_not_verified",
+        "explanation": "Haiku no aportó un cierre futuro coherente.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-09-18",
+          "territorial_condition": "existing_establishment",
+          "execution_days": 180,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "El plazo de presentación de solicitudes será de 30 días hábiles, iniciándose a partir del día siguiente al de la publicación del extracto de la presente convocatoria en el Boletín Oficial de la Provincia de Valencia (BOP)",
+          "evidence_source_url": "https://bop.dival.es/bop/downloads?anuncioCSV=BOPV-2026/08556&lang=es",
+          "confidence": 85,
+          "explanation": "La convocatoria está abierta. El extracto fue publicado en el BOP el 8 de julio de 2026 (fecha de publicación según metadatos). El plazo de presentación es de 30 días hábiles a partir del día siguiente a la publicación. Contando 30 días hábiles desde el 9 de julio de 2026, la fecha límite aproximada es el 18 de septiembre de 2026. La condición territorial es 'existing_establishment' porque los beneficiarios son municipios existentes de la provincia de Valencia. El plazo de ejecución es de 6 meses (180 días) desde la publicación del acuerdo de concesión. No hay información explícita sobre elegibilidad de costes de proveedores ni sobre apoyo a clusters."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 6549,
+        "output_tokens": 375,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 6924,
+        "estimated_cost_usd": 0.008424,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:33:37.833167+00:00"
+    },
+    "e3efa1d1c1010a00daaf7f6a2ae5f1c8d942c3bbbe5ed8cfa0ee315b94dc2c54": {
+      "bdns_id": "917802",
+      "title": "Bases reguladoras para subvenciones destinadas a financiar inversiones en energía, transición energética, cambio climático, prevención y gestión de residuos y economía circular, conforme art. 13 de Texto refundido de Ley de Subvenciones de Illes Balears.",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "dae4ed0020aa8bd87a7eecd6fcb52f99a46f2e926340a650eb4f465c6ee728e7",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "future_deadline_not_verified",
+        "explanation": "Haiku no aportó un cierre futuro coherente.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-08-26",
+          "territorial_condition": "existing_establishment",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "Termini de presentació: dos mesos des de l'endemà de la publicació de la convocatòria en el BOIB.",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/917802",
+          "confidence": 85,
+          "explanation": "La convocatoria está abierta. Según los metadatos SNPSAP, la fecha de inicio de solicitud es 2026-06-26 y no hay fecha de fin especificada (campo vacío). El documento de bases establece un plazo de dos meses desde la publicación en el BOIB (2026-06-25), lo que sitúa el cierre aproximadamente en 2026-08-26. El estado calculado es 'unverified_recent' y el indicador de apertura es concluyente (true). La convocatoria requiere que los beneficiarios tengan domicilio social o centro de actividad en Illes Balears, indicando una condición territorial de establecimiento existente. No se encuentran datos explícitos sobre elegibilidad de costes de proveedores ni sobre apoyo a clusters."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 9494,
+        "output_tokens": 354,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 9848,
+        "estimated_cost_usd": 0.011264,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:33:46.525215+00:00"
+    },
+    "ae804e3875281df461f8ad386f6b20379bb88edf76627137229f1b6a5bbdad49": {
+      "bdns_id": "917825",
+      "title": "Bases reguladoras para subvenciones destinadas a financiar inversiones en energía, transición energética, cambio climático, prevención y gestión de residuos y economía circular, conforme art. 13 de Texto refundido de Ley de Subvenciones de Illes Balears.",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "01b51be3cb08e2e59dc6d0fabae709a4dabc68a4248d068c3fcb825babbf0ec1",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "future_deadline_not_verified",
+        "explanation": "Haiku no aportó un cierre futuro coherente.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-08-26",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "Termini de presentació: dos mesos des de l'endemà de la publicació de la convocatòria en el BOIB. 26.08.2026",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/917825",
+          "confidence": 95,
+          "explanation": "La convocatoria está abierta. Los metadatos SNPSAP indican fecha de inicio de solicitud del 26 de junio de 2026 y fecha de fin vacía, lo que indica estado abierto. El documento de metadatos especifica explícitamente el plazo: 'Termini de presentació: dos mesos des de l'endemà de la publicació de la convocatòria en el BOIB. 26.08.2026', confirmando que la fecha límite es el 26 de agosto de 2026. El indicador 'indicador_abierto_api_no_concluyente' es true pero la información explícita del plazo de presentación abierto es clara."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 9942,
+        "output_tokens": 336,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 10278,
+        "estimated_cost_usd": 0.011622,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:33:54.878086+00:00"
+    },
+    "ecfd4ded5689813db09be92f009b314e7901717de0c25099b85ead036f201d42": {
+      "bdns_id": "920127",
+      "title": "Convocatoria de subvenciones para mejoras en eficiencia energética y la innovación en materia de procesos y de organización en el ámbito turístico de las Illes Balears",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "4eb157ada83283a99f1aae4d4f88211e56f7ef34fb327c9ae5fb8bf0a145dbab",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-09-30",
+          "territorial_condition": "existing_establishment",
+          "execution_days": -1,
+          "supplier_cost_eligible": "yes",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "30.09.2026",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/920127",
+          "confidence": 85,
+          "explanation": "La convocatoria está abierta según los metadatos SNPSAP que indican fecha_inicio_solicitud de 2026-06-08 y fecha_fin_solicitud vacía, pero el documento contiene la fecha límite 30.09.2026. La condición territorial se refiere a establecimientos turísticos existentes inscritos en el registro insular. Los costos de ejecución de obras e instalaciones son subvencionables. No hay información sobre apoyo a clusters. La confianza es alta pero no máxima debido a la discrepancia entre el campo vacío de fecha_fin_solicitud y la fecha explícita en el contenido."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 7543,
+        "output_tokens": 284,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 7827,
+        "estimated_cost_usd": 0.008963,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:34:02.683631+00:00"
+    },
+    "84b239bea50809d4cc3c70b82f85255e65157032de4599a81fb147ff83236570": {
+      "bdns_id": "921736",
+      "title": "SN a la Comunidad energética Local CEL Salto del Calderón financiación de los gastos corrientes derivados de la organización y celebración del Proyecto de eficiencia energética 2026",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "336b6a07070f9e6ecadcc40ba74f2bcbb86cd252f5eb8303a99a3ed3a916ec7a",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "open_ended_status_not_verified",
+        "explanation": "La cita no demuestra una ventanilla indefinida.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open_ended",
+          "deadline_date": "",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "Sin plazo de solicitud",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/921736",
+          "confidence": 95,
+          "explanation": "Los metadatos estructurados SNPSAP indican explícitamente 'Sin plazo de solicitud' tanto en 'fecha_fin_solicitud' como en 'fecha_inicio_solicitud', lo que corresponde a una ventanilla indefinida (open_ended). No hay información sobre las demás variables solicitadas en los documentos proporcionados."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 1666,
+        "output_tokens": 206,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 1872,
+        "estimated_cost_usd": 0.002696,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-07T11:34:10.304723+00:00"
+    }
+  }
+}

@@ -1,0 +1,639 @@
+{
+  "_meta": {
+    "version": "bdns-hold-2026-08-v3",
+    "model": "claude-haiku-4-5",
+    "saved_at": "2026-08-10T08:44:04.267573+00:00"
+  },
+  "entries": {
+    "e0b9738d3417c07f838565a61bcf40ed11010865b22ac3504e0ce1dc3c9b8c6d": {
+      "bdns_id": "917802",
+      "title": "Bases reguladoras para subvenciones destinadas a financiar inversiones en energía, transición energética, cambio climático, prevención y gestión de residuos y economía circular, conforme art. 13 de Texto refundido de Ley de Subvenciones de Illes Balears.",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "2b5d515625697ada40c7dcb16b4c886b5516cede48ec9f8aaeaca998aafe94f3",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-08-25",
+          "territorial_condition": "project_location_only",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "Termini de presentació: dos mesos des de l'endemà de la publicació de la convocatòria en el BOIB.",
+          "evidence_source_url": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1490592",
+          "confidence": 85,
+          "explanation": "La convocatoria está abierta. Se publicó el 25 de junio de 2026 (fecha_publicacion_convocatoria) y el plazo de presentación es de dos meses desde el día siguiente a la publicación en el BOIB, lo que sitúa el cierre aproximadamente el 25 de agosto de 2026. No hay fecha de fin de solicitud explícita en los metadatos (fecha_fin_solicitud está vacía), pero el documento de bases reguladoras especifica claramente el plazo de dos meses. El indicador 'indicador_abierto_api_no_concluyente' es true, pero la información textual es concluyente. La condición territorial es 'project_location_only' porque las actividades deben desarrollarse dentro del territorio de las Illes Balears. No se encontró información sobre costos de proveedores elegibles ni sobre apoyo a clusters."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 17316,
+        "output_tokens": 380,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 17696,
+        "estimated_cost_usd": 0.019216,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:40:16.028441+00:00"
+    },
+    "c9168e8afb78765de2dd44575a268bb9a9eee0771202095319b080e8b6bc1038": {
+      "bdns_id": "918621",
+      "title": "(TEC) Econ. Circular y Trans.Energética (Reg. 651/2014)",
+      "hold_reason": "territorial_eligibility_unverified",
+      "evidence_hash": "81211861229b866158bce6d01a2fad9330d1c329b6d04c685f1aeb642273335b",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "territorial_condition_not_supported_by_quote",
+        "explanation": "La cita no demuestra la condición territorial clasificada.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-09-30",
+          "territorial_condition": "existing_establishment",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "El beneficiario de la subvención deberá estar dado de alta en el censo de actividades económicas en la Comunidad Autónoma de La Rioja, en un epígrafe correspondiente a alguna de las actividades subvencionadas, en el momento del cierre de la convocatoria.",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/918621",
+          "confidence": 85,
+          "explanation": "La convocatoria exige explícitamente que el beneficiario esté dado de alta en el censo de actividades económicas en La Rioja en un epígrafe correspondiente a las actividades subvencionadas. Esto indica que se requiere un establecimiento previo existente en el territorio. No se permite abrir un centro después ni solo localizar el proyecto allí. La fecha de cierre de solicitudes es 30 de septiembre de 2026, y la convocatoria está abierta desde el 17 de julio de 2026."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 17194,
+        "output_tokens": 323,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 17517,
+        "estimated_cost_usd": 0.018809,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:40:38.612291+00:00"
+    },
+    "9e4fee8fdc1b07533a7456966bc9a0a81501e15aa9f8f77788f57043b1486e18": {
+      "bdns_id": "914587",
+      "title": "RESOLUCIÓN de 18 de junio de 2026, Presidencia del Instituto Valenciano de Competitividad Empresarial (IVACE), por la que se convocan ayudas en materia de eficiencia energética en empresas, presupuesto 2026, financiación Unión Europea a través FEDER",
+      "hold_reason": "territorial_eligibility_unverified",
+      "evidence_hash": "dbebdc193bb7446429eba041539ec819326757b3d360df55811dc0e168c433d6",
+      "resolution": {
+        "decision": "retain",
+        "reason_code": "haiku_no_prior_establishment_required",
+        "explanation": "La cita verificada no exige un centro previo al solicitar.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-10-29",
+          "territorial_condition": "project_location_only",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "El proyecto objeto de subvención deberá encontrarse dentro del territorio de la Comunitat Valenciana.",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/914587",
+          "confidence": 95,
+          "explanation": "La convocatoria establece explícitamente que el proyecto debe localizarse en el territorio de la Comunitat Valenciana, sin exigir un centro previo ni permitir abrir uno después. Se trata de una restricción territorial que limita la ejecución del proyecto al territorio especificado, clasificándose como 'project_location_only'. La fecha límite de presentación de solicitudes es el 29 de octubre de 2026. No hay información explícita sobre costes de proveedores elegibles ni sobre apoyo a clusters."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 16324,
+        "output_tokens": 275,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 16599,
+        "estimated_cost_usd": 0.017699,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:41:03.163906+00:00"
+    },
+    "f790c7ea29a9ee0d99568cb1e249ec4482b86edae2dae85f38eab08ac9acea09": {
+      "bdns_id": "889451",
+      "title": "Convocatoria para la concesión de subvenciones para fomentar el conocimiento de la economía social, fomentando el asociacionismo.",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "40e51f90b2ad705793d723bfc4c39c1f1784304c1bda1efb81f6aea8908c937d",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "closed_status_not_verified",
+        "explanation": "La cita no contiene un cierre de solicitudes pasado verificable.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "closed",
+          "deadline_date": "2026-03-20",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "Será de quince días hábiles desde el día siguiente al de la publicación en el Boletín Oficial del Principado de Asturias del presente extracto de la Resolución que aprueba la convocatoria.",
+          "evidence_source_url": "https://miprincipado.asturias.es/bopa/disposiciones?p_p_id=pa_sede_bopa_web_portlet_SedeBopaDispositionWeb&p_p_lifecycle=0&_pa_sede_bopa_web_portlet_SedeBopaDispositionWeb_mvcRenderCommandName=%2Fdisposition%2Fdetail&p_r_p_dispositionText=2026-01607&p_r_p_dispositionReference=2026-01607&p_r_p_dispositionDate=03%2F03%2F2026",
+          "confidence": 95,
+          "explanation": "La convocatoria fue publicada en el BOPA el 3 de marzo de 2026. El plazo de presentación de solicitudes es de quince días hábiles desde el día siguiente a la publicación. Contando 15 días hábiles desde el 4 de marzo de 2026, el plazo se cerró aproximadamente el 20 de marzo de 2026. Dado que la fecha actual es 10 de agosto de 2026, la solicitud está cerrada. No hay información sobre condiciones territoriales, elegibilidad de costes de proveedores o apoyo a clusters en los documentos proporcionados."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 6388,
+        "output_tokens": 437,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 6825,
+        "estimated_cost_usd": 0.008573,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:41:11.544006+00:00"
+    },
+    "a15635cae1fe4fe25f6593356cc1db5a64e47a16a0068915506ebe0d72faef5e": {
+      "bdns_id": "905892",
+      "title": "CONVOCATORIA SUBVENCIONS EFICIENCIA ENERGETICA 2026",
+      "hold_reason": "territorial_eligibility_unverified",
+      "evidence_hash": "6df1775ff125ea11d2cae10f7bdf8a4709ddfd56ac0de5bed5d0669bd2a1113d",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "territorial_condition_not_supported_by_quote",
+        "explanation": "La cita no demuestra la condición territorial clasificada.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-10-31",
+          "territorial_condition": "no_restriction",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "El objeto de las subvenciones de la presente convocatoria es financiar proyectos/actividades que tengan como objetivo: La promoción y conservación del medio ambiente",
+          "evidence_source_url": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1455647",
+          "confidence": 75,
+          "explanation": "La convocatoria no especifica restricciones territoriales explícitas sobre si se requiere un centro previo, si solo se puede localizar el proyecto en el territorio, o si se permite abrir un nuevo centro. El documento indica que las subvenciones se destinan a financiar proyectos/actividades en viviendas del municipio de Gurb (Cataluña) sin mencionar condiciones previas de establecimiento. La ausencia de restricciones territoriales específicas sugiere 'no_restriction', aunque la falta de claridad explícita reduce la confianza. El plazo de solicitud es del 1 de marzo al 31 de octubre de 2026, con estado 'open' según los metadatos."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 7505,
+        "output_tokens": 334,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 7839,
+        "estimated_cost_usd": 0.009175,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:41:20.701034+00:00"
+    },
+    "418be30e0d657ef958d33c75c26b566d3f5c5616fecb666b7dfb650d10740005": {
+      "bdns_id": "889461",
+      "title": "Resolución del consejero de Economía, Hacienda e Innovación por la cual se aprueba la convocatoria de ayudas para 2026-2027 a empresas con actividad en Islas Baleares para cubrir las comisiones de apertura i estudio, intereses y costa aval de SGR para op.",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "99198bb5a8e13955eeed4b7910b44e609d61ae16d5c3bd0a1614b87b4c4d5fb2",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "future_deadline_not_verified",
+        "explanation": "Haiku no aportó un cierre futuro coherente.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "",
+          "territorial_condition": "existing_establishment",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "Ser formalizadas por pymes. Ser operaciones financieras nuevas, renovaciones o refinanciación",
+          "evidence_source_url": "https://www.caib.es/eboibfront/es/2026/12232/711874/resolucion-del-consejero-de-economia-hacienda-e-in",
+          "confidence": 75,
+          "explanation": "La convocatoria está abierta según los metadatos (fecha_inicio_solicitud: 2025-10-15, sin fecha_fin_solicitud especificada). El documento no proporciona una fecha de cierre explícita, pero el estado calculado es 'unverified_recent' y el indicador de abierto es concluyente. La condición territorial requiere que las operaciones se realicen en centros productivos ubicados en las Illes Balears (requisito de establecimiento existente). No se encontró información sobre costes de proveedores elegibles ni sobre apoyo a clusters. La cita evidencia que se trata de operaciones financieras formalizadas, indicando que la convocatoria está activa para recibir solicitudes."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 7521,
+        "output_tokens": 336,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 7857,
+        "estimated_cost_usd": 0.009201,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:41:32.468523+00:00"
+    },
+    "7cded96de264901d3222fab266dee87d8312a2c403489eb52a53a377634b94ee": {
+      "bdns_id": "917825",
+      "title": "Bases reguladoras para subvenciones destinadas a financiar inversiones en energía, transición energética, cambio climático, prevención y gestión de residuos y economía circular, conforme art. 13 de Texto refundido de Ley de Subvenciones de Illes Balears.",
+      "hold_reason": "territorial_eligibility_unverified",
+      "evidence_hash": "90709898f1a2b8065378f2e1541c31360faa88aceeda4f825698a7b1a3df4420",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-08-26",
+          "territorial_condition": "no_restriction",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "Les activitats objecte d'aquestes ajuts hauran de desenvolupar-se dins l'àmbit territorial de les Illes Balears.",
+          "evidence_source_url": "https://www.caib.es/eboibfront/ca/2026/12293/717061/resolucio-del-conseller-d-empresa-autonoms-i-energ",
+          "confidence": 45,
+          "explanation": "El documento establece que las actividades deben desarrollarse dentro del territorio de Illes Balears, pero no especifica explícitamente si se requiere un centro previo, si solo se permite localizar el proyecto allí, o si permite abrir un centro después. La cita encontrada solo indica el ámbito territorial sin detallar las condiciones de elegibilidad territorial específicas solicitadas. No hay evidencia explícita sobre si exige establecimiento previo, solo localización de proyecto, o permite nueva apertura. La confianza es baja porque la pregunta requiere una clasificación específica que no está claramente establecida en los documentos disponibles."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 17477,
+        "output_tokens": 319,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 17796,
+        "estimated_cost_usd": 0.019072,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:41:48.548851+00:00"
+    },
+    "176753d3c7041c25a916251076cbcafb273dcc38ba09dca82163180b730cbaeb": {
+      "bdns_id": "899995",
+      "title": "SUBVENCIÓN DIRECTA EXCEPCIONAL EMPRESA PROVINCIAL DE RESIDUOS Y MEDIO AMBIENTE S.A. (EPREMASA) CONFERENCIA SECTORIAL MA 24/07/24 PRTR",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "87b9f77b1130f91b2243f5e2b2c168a042d005dae576dd8ebcaa80df316de177",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "unknown",
+          "deadline_date": "",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "Sin plazo",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/899995",
+          "confidence": 35,
+          "explanation": "Los metadatos indican 'Sin plazo' (sin deadline) tanto en fecha_fin_solicitud como en fecha_inicio_solicitud, lo que sugiere una ventanilla indefinida. Sin embargo, el estado calculado es 'unverified_recent' y no hay información explícita sobre si la convocatoria está actualmente abierta, cerrada o próxima. La frase 'Sin plazo' aparece en el contenido adicional pero no especifica claramente el estado actual de la solicitud. Se requeriría acceso al documento completo (TextoConvocatoria.pdf) para determinar con certeza el call_status."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 1783,
+        "output_tokens": 269,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 2052,
+        "estimated_cost_usd": 0.003128,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:41:54.619418+00:00"
+    },
+    "2308ca051d506535fd8cf04dc04c3e73c89117e5046bae9bb52cd88005d8dd78": {
+      "bdns_id": "919209",
+      "title": "(EE) Eficiencia energética Industrial FNEE (Reg. 651/2014)",
+      "hold_reason": "territorial_eligibility_unverified",
+      "evidence_hash": "dea7c7bb07e46e582c0d3959e7c91d0bc487fd0d4214a595d3d689c8f528e5fb",
+      "resolution": {
+        "decision": "reject",
+        "reason_code": "haiku_existing_establishment_required",
+        "explanation": "La cita verificada exige un centro previo fuera de Aragón.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-10-30",
+          "territorial_condition": "existing_establishment",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "Las empresas beneficiarias deben estar válidamente constituidas, contar con establecimiento operativo en la Comunidad Autónoma de La Rioja, ejercer la actividad económica para la que se solicita la ayuda en La Rioja y realizar el proyecto subvencionable.",
+          "evidence_source_url": "https://ias1.larioja.org/boletin/Bor_Boletin_visor_Servlet?referencia=41431061-1-PDF-578653",
+          "confidence": 95,
+          "explanation": "El documento establece explícitamente que las empresas beneficiarias deben contar con 'establecimiento operativo en la Comunidad Autónoma de La Rioja' y 'ejercer la actividad económica para la que se solicita la ayuda en La Rioja'. Esto indica que se exige un centro previo en el territorio. La convocatoria está abierta con plazo de presentación hasta el 30 de octubre de 2026. No se encontró información sobre costes de proveedores elegibles ni sobre apoyo a clusters."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 15512,
+        "output_tokens": 334,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 15846,
+        "estimated_cost_usd": 0.017182,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:42:05.733554+00:00"
+    },
+    "673bfbff86c0143cf9a415939ecf6a0e65e3e45fa30ac7102f1959a5b5f13581": {
+      "bdns_id": "914777",
+      "title": "SUBVENCIÓN PARA EL FOMENTO AL EMPLEO Y DE LA PROMOCIÓN DE LA ACTIVIDAD INDUSTRIAL EN CALATAYUD 2026",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "c1f569fafab6ab4e028ec4e4be41bbba1ecf5a04dbae34ebca44f4fe0b92a7ef",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "future_deadline_not_verified",
+        "explanation": "Haiku no aportó un cierre futuro coherente.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-07-11",
+          "territorial_condition": "existing_establishment",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "El plazo para la presentación de solicitudes será de quince días hábiles desde el día siguiente de la publicación de esta convocatoria en el Boletín Oficial de la Provincia de Zaragoza.",
+          "evidence_source_url": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1480401",
+          "confidence": 85,
+          "explanation": "La convocatoria fue publicada el 26 de junio de 2026 (fecha_publicacion_convocatoria). El plazo de presentación es de quince días hábiles desde el día siguiente de la publicación. Contando desde el 27 de junio de 2026, quince días hábiles vencen aproximadamente el 11 de julio de 2026. Dado que la fecha actual es 10 de agosto de 2026, la solicitud está cerrada. Sin embargo, el documento indica que el plazo es de quince días hábiles desde la publicación, y la metadata muestra estado 'unverified_recent', lo que sugiere que la convocatoria fue reciente. Revisando la información: la publicación fue el 26 de junio, por lo que el plazo de 15 días hábiles habría vencido alrededor del 11 de julio de 2026. A fecha 10 de agosto de 2026, la convocatoria está cerrada. No obstante, la causa es 'active_status_unverified', lo que indica que el estado no ha sido verificado. Basándome en los hechos explícitos del documento, la solicitud está abierta durante quince días hábiles desde la publicación (26 de junio), lo que significa que estuvo abierta hasta aproximadamente el 11 de julio de 2026. Actualmente (10 de agosto) está cerrada."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 8819,
+        "output_tokens": 520,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 9339,
+        "estimated_cost_usd": 0.011419,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:42:16.334813+00:00"
+    },
+    "1bd79b268228e9918508e00700d1a529a909c7461dee2c5234a4ca2255f1e102": {
+      "bdns_id": "919217",
+      "title": "(REE) Eficiencia energética Terciario FNEE (Reg. 651/2014)",
+      "hold_reason": "territorial_eligibility_unverified",
+      "evidence_hash": "8514dacec97fa1925a0a3bfe4aef4513187044d281fe570c4087ecae293c9d04",
+      "resolution": {
+        "decision": "reject",
+        "reason_code": "haiku_existing_establishment_required",
+        "explanation": "La cita verificada exige un centro previo fuera de Aragón.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-09-30",
+          "territorial_condition": "existing_establishment",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "Las empresas beneficiarias deben estar válidamente constituidas, contar con establecimiento operativo en la Comunidad Autónoma de La Rioja, ejercer la actividad económica para la que se solicita la ayuda en La Rioja y realizar el proyecto subvencionable.",
+          "evidence_source_url": "https://ias1.larioja.org/boletin/Bor_Boletin_visor_Servlet?referencia=41431079-1-PDF-578654",
+          "confidence": 95,
+          "explanation": "El documento establece explícitamente que las empresas beneficiarias deben contar con 'establecimiento operativo en la Comunidad Autónoma de La Rioja' y 'ejercer la actividad económica para la que se solicita la ayuda en La Rioja'. Esto indica que se exige un centro previo (establecimiento operativo) en el territorio. La convocatoria está abierta con plazo hasta el 30 de septiembre de 2026. No hay información sobre costes de proveedores elegibles ni apoyo a clusters, por lo que se marcan como unknown."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 17030,
+        "output_tokens": 340,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 17370,
+        "estimated_cost_usd": 0.01873,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:42:29.135613+00:00"
+    },
+    "4bb03295b3ff8c29c2e2e6e28781cb755b67aab83a91753a428763d88f26145e": {
+      "bdns_id": "916181",
+      "title": "ORDEN Consejera Economía, Competitividad y Empleo, por la que se aprueba para 2026, convocatoria subvenciones para el desarrollo de un Plan Wave Plus destinado a personas trabajadoras prioritariamente ocupadas de Aragón",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "52a288e37e93aa701b2764fe2045e35e48b09508020f91927cca280b287011e5",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "Diez días hábiles, a partir del día siguiente publicación BOA",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/916181",
+          "confidence": 45,
+          "explanation": "Los metadatos indican que la convocatoria fue publicada el 2026-06-30 y tiene un plazo de 'Diez días hábiles, a partir del día siguiente publicación BOA'. Sin embargo, los campos 'fecha_fin_solicitud' y 'fecha_inicio_solicitud' están vacíos en los metadatos. Dado que la fecha actual es 2026-08-10 (más de un mes después de la publicación), el plazo de diez días hábiles habría vencido hace tiempo. No obstante, el estado calculado es 'unverified_recent' y no hay confirmación explícita de cierre. La evidencia de plazo es indirecta (del documento de metadatos, no del documento oficial). La confianza es baja porque no hay fechas explícitas de inicio/fin de solicitud ni confirmación clara del estado actual."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 6696,
+        "output_tokens": 342,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 7038,
+        "estimated_cost_usd": 0.008406,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:42:57.514962+00:00"
+    },
+    "b91b4b9f5fb2c6e5093fdc970a09c93c1ff513ee7243797007d843096bf485e7": {
+      "bdns_id": "918271",
+      "title": "ORDEN de la Vicepresidenta y Consejera de Presidencia, Economía y Justicia, por la que se aprueba la convocatoria de subvenciones para actuaciones de mejora y modernización de áreas industriales durante el ejercicio de 2026",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "ce38207c89ca5fcdb63645abdb67186c3faa750e1741ad53b505e3898d113e67",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "unknown",
+          "territorial_condition": "existing_establishment",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "A partir del día siguiente de la publicación en el \"Boletín Oficial de Aragón\" Un mes y comenzará el día siguiente de la publicación en el \"Boletín Oficial de Aragón\"",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/918271",
+          "confidence": 45,
+          "explanation": "El documento indica que la convocatoria comienza 'a partir del día siguiente de la publicación en el Boletín Oficial de Aragón' con un plazo de 'un mes', lo que sugiere una solicitud abierta con plazo definido. Sin embargo, no se proporciona la fecha exacta de publicación en el BOA, por lo que no puede determinarse con certeza si actualmente está abierta (respecto a current_date 2026-08-10), próxima o cerrada. El estado calculado en metadatos es 'unverified_recent' y los campos de fecha de inicio y fin de solicitud están vacíos. Se clasifica como 'open' basándose en que el documento fue recibido el 2026-07-09 y la convocatoria aparentemente acaba de ser aprobada, pero la confianza es baja debido a la falta de fechas explícitas de solicitud."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 6976,
+        "output_tokens": 389,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 7365,
+        "estimated_cost_usd": 0.008921,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:43:08.217044+00:00"
+    },
+    "58c32263fd3cb3d58aaa823659c68665f447cac0064f5fccfc020f220272a1b6": {
+      "bdns_id": "920613",
+      "title": "Subvención del Fondo de Residuos 2026. Flujo de otros residuos a empresas",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "ee8310bbf5495b8ff7fa3035864e4cb3bc2742a43ef9b4cb9c14ea83d4b465f1",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "future_deadline_not_verified",
+        "explanation": "Haiku no aportó un cierre futuro coherente.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-09-20",
+          "territorial_condition": "existing_establishment",
+          "execution_days": -1,
+          "supplier_cost_eligible": "yes",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "2 meses a partir del día siguiente al de la publicación de la convocatoria en el BON El día del mes equivalente al del día de la publicación",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/920613",
+          "confidence": 85,
+          "explanation": "La convocatoria fue publicada el 21 de julio de 2026 (fecha_publicacion_convocatoria). El plazo de solicitud es de 2 meses a partir del día siguiente a la publicación, venciendo el día 20 del mes equivalente (20 de septiembre de 2026). Dado que la fecha actual es 10 de agosto de 2026, la solicitud está abierta. Los metadatos muestran estado 'unverified_recent' y no hay fecha de fin de solicitud registrada, confirmando que sigue abierta. La condición territorial requiere que el centro de producción esté en Navarra (existing_establishment). Los gastos de proveedores son subvencionables según Base 3. No hay información sobre apoyo a clusters."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 6720,
+        "output_tokens": 348,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 7068,
+        "estimated_cost_usd": 0.00846,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:43:19.541994+00:00"
+    },
+    "188fa20336458ccd031bcddbc243ea152f8fda922b1e72b3b76c2908367eb222": {
+      "bdns_id": "922442",
+      "title": "CONVOCATORIA DE AYUDAS PARA LA PUESTA EN MARCHA DE PROYECTOS EMPRESARIALES 2026",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "62f2fdf034124613c8acf84cc52e9717e1e64a7ec585ff8a08d3f8d87d57ce4e",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "future_deadline_not_verified",
+        "explanation": "Haiku no aportó un cierre futuro coherente.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-08-13",
+          "territorial_condition": "project_location_only",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "El plazo de QUINCE (15) días hábiles a computar a partir del día siguiente de la publicación del extracto de la convocatoria en el Boletín Oficial de la Provincia de Santa Cruz de Tenerife.",
+          "evidence_source_url": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1502418",
+          "confidence": 85,
+          "explanation": "La convocatoria está abierta. Se publicó el 29 de julio de 2026 (fecha_publicacion_convocatoria). El plazo de presentación es de 15 días hábiles desde el día siguiente a la publicación en el BOP. Contando 15 días hábiles desde el 30 de julio de 2026 (excluyendo fines de semana), la fecha límite aproximada es el 13 de agosto de 2026. Como la fecha actual es 10 de agosto de 2026, la convocatoria sigue abierta. La condición territorial es 'project_location_only' porque las ayudas están limitadas al municipio de Santiago del Teide (ES709 - Tenerife). Los campos sobre elegibilidad de costos de proveedores y apoyo a clusters no tienen información explícita en los documentos."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 11566,
+        "output_tokens": 392,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 11958,
+        "estimated_cost_usd": 0.013526,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:43:30.577467+00:00"
+    },
+    "6a1537540df7eea14b27f52b34b9654e7a50ef645ab43778e69525f6b757247f": {
+      "bdns_id": "923377",
+      "title": "Acuerdo de la Diputación Foral de Bizkaia para la aprobación del convenio a suscribir con la Universidad del País Vasco- Euskal Herriko Unibertsitatea para el desarrollo del proyecto Viveros empresariales Zitek",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "989efcbfbdb528805b70588db9ca428c5bf7908937433a24ed4b1de75cb95d15",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "closed_status_not_verified",
+        "explanation": "La cita no contiene un cierre de solicitudes pasado verificable.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "closed",
+          "deadline_date": "",
+          "territorial_condition": "unknown",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "Sin plazo de presentacion",
+          "evidence_source_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/923377",
+          "confidence": 75,
+          "explanation": "La convocatoria está cerrada porque se trata de una subvención directa nominativa ya concedida mediante acuerdo de la Diputación Foral de Bizkaia a la Universidad del País Vasco. Los documentos muestran que el convenio ya ha sido aprobado y formalizado para el proyecto Viveros empresariales Zitek en 2026. Los metadatos indican explícitamente 'Sin plazo de presentacion' tanto para fecha de inicio como de fin de solicitud, lo que confirma que no hay período de presentación abierto. El estado calculado es 'unverified_recent' pero la naturaleza de la convocatoria como subvención directa nominativa ya concedida indica que la fase de solicitud está cerrada."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 13633,
+        "output_tokens": 302,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 13935,
+        "estimated_cost_usd": 0.015143,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:43:43.631562+00:00"
+    },
+    "03fd3009cca3c9b8f33e1311b89e5194dcdc42deccb61440834c751b23b14e69": {
+      "bdns_id": "923650",
+      "title": "V EDICIÓN PREMIOS A LA EXCELENCIA EMPRESARIAL AGENDA URBANA 2030 DEL AYUNTAMIENTO DE SANTIAGO DE COMPOSTELA",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "f81743f50f505f767ffb9f7931d9acad01f954cf706df1136855402f5c47286c",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "future_deadline_not_verified",
+        "explanation": "Haiku no aportó un cierre futuro coherente.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-09-24",
+          "territorial_condition": "existing_establishment",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "El plazo de presentación de solicitudes será de 20 días hábiles, contados desde el día siguiente al de la publicación del extracto de las bases en el BOP de A Coruña.",
+          "evidence_source_url": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1505588",
+          "confidence": 85,
+          "explanation": "La convocatoria está abierta. Se especifica un plazo de 20 días hábiles desde la publicación del extracto en el BOP. La publicación en BDNS fue el 2026-08-05. Aunque no se tiene la fecha exacta de publicación en BOP, la convocatoria tiene estado 'unverified_recent' y fue publicada hace poco. El plazo de 20 días hábiles desde la publicación en BOP coloca la fecha límite aproximadamente el 2026-09-24 (contando 20 días hábiles desde el 2026-08-05). La solicitud requiere que las empresas tengan sede social fiscal en Santiago de Compostela (territorial_condition: existing_establishment). No hay información sobre costos de proveedores elegibles ni apoyo a clusters."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 13816,
+        "output_tokens": 366,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 14182,
+        "estimated_cost_usd": 0.015646,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:43:54.236336+00:00"
+    },
+    "35ae973c05d667eb64fb1676a8c534008b10b32b8695574588c9f2ea049b6ef3": {
+      "bdns_id": "923651",
+      "title": "BASES DE LA CONVOCATORIA DE AYUDAS DESTINADAS A APOYAR A LAS EMPRESAS DE ECONOMÍA SOCIAL DE SANTIAGO DE COMPOSTELA 2026",
+      "hold_reason": "active_status_unverified",
+      "evidence_hash": "f7f3293a8a8bad4a7fbb4a9b737de6a0ca89e59d9b44d25bb59d373bf3b750e7",
+      "resolution": {
+        "decision": "unresolved",
+        "reason_code": "insufficient_verified_evidence",
+        "explanation": "La respuesta no alcanza confianza 65 o la cita no aparece en el documento indicado.",
+        "resolved_by": "haiku_guardrail",
+        "facts": {
+          "call_status": "open",
+          "deadline_date": "2026-10-01",
+          "territorial_condition": "project_location_only",
+          "execution_days": -1,
+          "supplier_cost_eligible": "unknown",
+          "cluster_support_to_members": "unknown",
+          "evidence_quote": "El prazo xeral de presentación de solicitudes e xustificación comenzará a partir do día seguinte ao da publicación do extracto desta convocatoria no boletín oficial da provincia (BOP) da Coruña e rematará o 1 de outubro de 2026.",
+          "evidence_source_url": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1505591",
+          "confidence": 95,
+          "explanation": "La convocatoria está abierta. El plazo de presentación de solicitudes comienza el día siguiente a la publicación en el BOP de A Coruña (publicada el 2026-08-05, por lo que comienza el 2026-08-06) y finaliza el 1 de octubre de 2026. La condición territorial requiere que la sede social, fiscal y al menos un centro de trabajo estén en el Ayuntamiento de Santiago de Compostela, lo que corresponde a 'project_location_only'. Los campos de elegibilidad de costes de proveedores y apoyo a miembros de clústeres no son aplicables a esta convocatoria."
+        }
+      },
+      "usage": {
+        "stage": "resolución BDNS hold",
+        "input_tokens": 14263,
+        "output_tokens": 355,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 14618,
+        "estimated_cost_usd": 0.016038,
+        "service_tier": "standard"
+      },
+      "cached_at": "2026-08-10T08:44:04.266407+00:00"
+    }
+  }
+}

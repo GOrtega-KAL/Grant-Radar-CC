@@ -1,0 +1,17 @@
+grant_radar_data/bdns_document_cache.json
+grant_radar_data/bdns_document_cache.json.tmp
+grant_radar_data/source_document_cache.json
+grant_radar_data/source_document_cache.json.tmp
+
+# Credenciales reales (nunca deben llegar a git) — ver .env.example
+API KEYs.txt
+.env
+
+# Registros y salidas generadas, no código fuente
+debug.log
+convocatorias.json
+
+# Entorno Python local y cachés de bytecode
+.venv/
+__pycache__/
+*.pyc

@@ -1,0 +1,155 @@
+{
+  "spec_version": 1,
+  "cases": [
+    {
+      "id": "marine_digital_twin_reject",
+      "title": "Regional components of the EU Digital Twin Ocean",
+      "description": "Marine observation, data spaces and ecosystem governance.",
+      "expected_reject": true
+    },
+    {
+      "id": "marine_thermal_process_preserve",
+      "title": "Aquatic pollution reduced through industrial waste heat valorisation",
+      "description": "Demonstration of waste heat recovery in an industrial process.",
+      "expected_reject": false
+    },
+    {
+      "id": "transport_digital_reject",
+      "title": "Autonomous vessels in short sea shipping and inland waterways",
+      "description": "Digital navigation and vessel automation.",
+      "expected_reject": true
+    },
+    {
+      "id": "transport_waste_heat_preserve",
+      "title": "Waste heat recovery from ship engines for an industrial drying process",
+      "description": "Industrial waste heat demonstrator with a thermal process.",
+      "expected_reject": false
+    },
+    {
+      "id": "passenger_transport_digital_reject",
+      "title": "Enhanced resilience in multimodal passenger transport through digital AI",
+      "description": "Digital transport management and passenger mobility.",
+      "expected_reject": true
+    },
+    {
+      "id": "battery_operation_reject",
+      "title": "Enhanced electric operation and battery durability",
+      "description": "Battery operation for zero-emission waterborne transport.",
+      "expected_reject": true
+    },
+    {
+      "id": "residential_building_reject",
+      "title": "Transition to low-temperature heating in multi-apartment buildings",
+      "description": "Residential heating renovation and tenant comfort.",
+      "expected_reject": true
+    },
+    {
+      "id": "building_industrial_process_preserve",
+      "title": "Built4People heat recovery integrated in an industrial process",
+      "description": "Full-scale demonstration in an industrial furnace.",
+      "expected_reject": false
+    },
+    {
+      "id": "existing_building_repair_reject",
+      "title": "Sustainable maintenance and repair measures for existing buildings",
+      "description": "Building renovation with digital monitoring.",
+      "expected_reject": true
+    },
+    {
+      "id": "built_environment_components_reject",
+      "title": "Modular construction components for the existing built environment",
+      "description": "Offsite manufacturing for residential construction.",
+      "expected_reject": true
+    },
+    {
+      "id": "quantum_generic_reject",
+      "title": "Large-Scale Photonic Quantum Computing Platform Technologies",
+      "description": "Quantum computing hardware and software platforms.",
+      "expected_reject": true
+    },
+    {
+      "id": "quantum_combustion_preserve",
+      "title": "Quantum sensing for combustion control in an industrial furnace",
+      "description": "Industrial furnace, thermal process and low-emission combustion.",
+      "expected_reject": false
+    },
+    {
+      "id": "telco_cloud_reject",
+      "title": "Demand-side pilot demonstrators on Telco Edge Cloud Infrastructure",
+      "description": "Cloud communications and telecommunications infrastructure.",
+      "expected_reject": true
+    },
+    {
+      "id": "wind_generation_reject",
+      "title": "Innovative technologies to improve wind energy systems",
+      "description": "Wind turbine electricity generation and grid integration.",
+      "expected_reject": true
+    },
+    {
+      "id": "pv_industrial_heat_preserve",
+      "title": "PV based electrification with waste heat recovery in industrial processes",
+      "description": "Industrial process heat, waste heat and furnace electrification.",
+      "expected_reject": false
+    },
+    {
+      "id": "nuclear_safety_reject",
+      "title": "Safety of SMRs, advanced nuclear reactors and fuels",
+      "description": "Reactor safety assessment mentioning waste heat and industrial processes.",
+      "expected_reject": true
+    },
+    {
+      "id": "nuclear_industrial_heat_preserve",
+      "title": "SMR waste heat integration in industrial processes",
+      "description": "Waste heat recovery for a high-temperature industrial process.",
+      "expected_reject": false
+    },
+    {
+      "id": "energy_efficiency_industrial_preserve",
+      "title": "Energy efficiency and waste heat recovery in process industries",
+      "description": "Industrial heat recovery and thermal process demonstration.",
+      "expected_reject": false
+    },
+    {
+      "id": "civil_security_reject",
+      "title": "Civil Security for Society: disaster resilient society",
+      "description": "Emergency response and societal resilience.",
+      "expected_reject": true
+    },
+    {
+      "id": "road_safety_reject",
+      "title": "Road safety and resilience of rural areas",
+      "description": "Mobility safety and transport resilience.",
+      "expected_reject": true
+    },
+    {
+      "id": "civil_security_thermal_preserve",
+      "title": "Multi-hazard approach for industrial furnace installations",
+      "description": "Thermal process safety and waste heat recovery in process industry.",
+      "expected_reject": false
+    },
+    {
+      "id": "climate_governance_reject",
+      "title": "Climate governance and stakeholder participation",
+      "description": "Environmental policy coordination and public engagement.",
+      "expected_reject": true
+    },
+    {
+      "id": "life_governance_identifier_reject",
+      "title": "LIFE-2026-SAP-CLIMA-GOV",
+      "description": "Coordination, governance and stakeholder participation.",
+      "expected_reject": true
+    },
+    {
+      "id": "social_economy_reject",
+      "title": "Role and contribution of the Social Economy",
+      "description": "Socioeconomic policy and social enterprises.",
+      "expected_reject": true
+    },
+    {
+      "id": "primary_advisory_reject",
+      "title": "AI supporting informed advice for farmers and foresters",
+      "description": "Digital advisory services for primary production.",
+      "expected_reject": true
+    }
+  ]
+}

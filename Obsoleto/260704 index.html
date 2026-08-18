@@ -1,0 +1,1737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Grant-Radar — Kalfrisa</title>
+<style>
+  /* SF Pro / sistema Apple como primera opción, con fallback sans-serif moderno */
+  :root {
+    --font: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --font-mono: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+
+    /* Paleta blanca — inspirada en macOS/iOS */
+    --bg:       #f5f5f7;
+    --bg2:      #ffffff;
+    --bg3:      #f0f0f2;
+    --panel:    #ffffff;
+    --border:   #d2d2d7;
+    --border2:  #b8b8bf;
+
+    /* Colores de acento — sistema Apple */
+    --accent:   #0071e3;   /* azul Apple */
+    --accent2:  #0077ed;
+    --teal:     #30b0c7;
+    --red:      #ff3b30;
+    --blue:     #0071e3;
+    --green:    #34c759;
+    --orange:   #ff9500;
+
+    /* Texto */
+    --text:     #1d1d1f;
+    --text2:    #6e6e73;
+    --text3:    #a1a1a6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .topbar::before { display: none; }
+
+  .logo-area { display: flex; align-items: center; gap: 14px; }
+
+  .logo-badge {
+    width: 40px;
+    height: 40px;
+    display: block;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .logo-text h1 {
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    color: var(--text);
+    text-transform: none;
+  }
+
+  .logo-text p {
+    font-size: 12px;
+    color: var(--text2);
+    letter-spacing: 0;
+    margin-top: 1px;
+    font-weight: 400;
+  }
+
+  .topbar-right { display: flex; align-items: center; gap: 20px; }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--green);
+    letter-spacing: 0;
+    background: rgba(52,199,89,0.1);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.7); }
+  }
+
+  .timestamp {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* STAT CARDS */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .stat-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    transform: translateY(-1px);
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-color, var(--accent));
+    border-radius: 0 0 14px 14px;
+    transform: scaleX(var(--card-fill, 1));
+    transform-origin: left;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--text2);
+    text-transform: none;
+    font-family: var(--font);
+    margin-bottom: 10px;
+  }
+
+  .stat-value {
+    font-family: var(--font);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--card-color, var(--accent));
+    line-height: 1;
+    margin-bottom: 4px;
+    letter-spacing: -1px;
+  }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--text3);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font);
+  }
+
+  .stat-delta { color: var(--green); font-size: 11px; font-weight: 500; }
+  .stat-delta.neg { color: var(--red); }
+
+  /* MAIN GRID */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  /* PANEL */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(245,245,247,0.7);
+  }
+
+  .panel-title {
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--text);
+    text-transform: none;
+  }
+
+  .panel-tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text2);
+    letter-spacing: 0.5px;
+    background: var(--bg3);
+  }
+
+  /* CONVOCATORIA ITEMS */
+  .conv-list { padding: 8px; }
+
+  .conv-item {
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg2);
+  }
+
+  .conv-item:hover {
+    border-color: var(--accent);
+    box-shadow: 0 2px 12px rgba(0,113,227,0.10);
+    transform: translateY(-1px);
+  }
+
+  .conv-item.high  { border-left: 3px solid var(--green); }
+  .conv-item.medium { border-left: 3px solid var(--orange); }
+  .conv-item.low   { border-left: 3px solid var(--text3); }
+
+  .conv-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .conv-source {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .conv-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.45;
+    letter-spacing: -0.1px;
+  }
+
+  .match-score {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  .match-pct {
+    font-family: var(--font);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.5px;
+  }
+
+  .match-pct.high   { color: var(--green); }
+  .match-pct.medium { color: var(--orange); }
+  .match-pct.low    { color: var(--text3); }
+
+  .match-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 1px;
+    color: var(--text3);
+    text-transform: uppercase;
+  }
+
+  .conv-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text2);
+    font-family: var(--font);
+  }
+
+  .meta-icon { font-size: 10px; }
+
+  .conv-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .conv-tags {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .link-btn {
+    flex-shrink: 0;
+    border: 1px solid var(--border2);
+    background: #ffffff;
+    color: var(--accent);
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .link-btn:hover {
+    background: rgba(0,113,227,0.08);
+    border-color: var(--accent);
+  }
+
+  .tag {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    padding: 3px 8px;
+    font-family: var(--font);
+    text-transform: none;
+    border-radius: 20px;
+  }
+
+  .tag.h2   { background: rgba(48,176,199,0.12); color: var(--teal);   border: 1px solid rgba(48,176,199,0.3); }
+  .tag.ee   { background: rgba(255,149,0,0.12);  color: var(--orange); border: 1px solid rgba(255,149,0,0.3); }
+  .tag.desc { background: rgba(0,113,227,0.10);  color: var(--blue);   border: 1px solid rgba(0,113,227,0.25); }
+  .tag.emis { background: rgba(255,59,48,0.10);  color: var(--red);    border: 1px solid rgba(255,59,48,0.25); }
+  .tag.horn { background: rgba(150,100,200,0.10);color: #7b5fac;       border: 1px solid rgba(150,100,200,0.3); }
+
+  /* LLM SUMMARY */
+  .llm-panel .panel-header { border-bottom-color: rgba(48,176,199,0.25); }
+
+  .llm-summary {
+    padding: 16px;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font);
+  }
+
+  .llm-summary strong { color: var(--teal); font-weight: 600; }
+
+  .ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--teal);
+    border: 1px solid rgba(48,176,199,0.35);
+    background: rgba(48,176,199,0.08);
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+
+  .ai-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); animation: pulse-dot 1.5s ease-in-out infinite; }
+
+  /* DEADLINES */
+  .deadline-list { padding: 10px; }
+
+  .deadline-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .deadline-item:last-child { border-bottom: none; }
+
+  .deadline-days {
+    font-family: var(--font);
+    font-size: 22px;
+    font-weight: 700;
+    min-width: 52px;
+    line-height: 1;
+    letter-spacing: -0.5px;
+  }
+
+  .deadline-days.urgent { color: var(--red); }
+  .deadline-days.warn   { color: var(--orange); }
+  .deadline-days.ok     { color: var(--green); }
+
+  .deadline-days span {
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 0;
+    display: block;
+    font-weight: 400;
+  }
+
+  .deadline-info { flex: 1; }
+  .deadline-name { font-size: 12px; color: var(--text); font-weight: 500; }
+  .deadline-org  { font-size: 10px; color: var(--text3); font-family: var(--font-mono); margin-top: 2px; letter-spacing: 0.5px; }
+
+  .deadline-budget {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    text-align: right;
+    font-weight: 600;
+  }
+
+  /* BOTTOM ROW */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* KEYWORD RADAR */
+  .keyword-list { padding: 12px; }
+
+  .keyword-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 11px;
+  }
+
+  .kw-name {
+    font-family: var(--font);
+    font-size: 11px;
+    color: var(--text2);
+    min-width: 130px;
+    font-weight: 400;
+  }
+
+  .kw-bar-wrap {
+    flex: 1;
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .kw-bar {
+    height: 100%;
+    background: var(--bar-color, var(--accent));
+    transition: width 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+    border-radius: 2px;
+  }
+
+  .kw-bar::after { display: none; }
+
+  .kw-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text3);
+    min-width: 24px;
+    text-align: right;
+  }
+
+  /* SOURCE STATUS */
+  .source-list { padding: 12px; }
+
+  .source-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .source-item:last-child { border-bottom: none; }
+
+  .source-left { display: flex; align-items: center; gap: 10px; }
+
+  .source-status {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .source-status.ok   { background: var(--green); box-shadow: 0 0 5px rgba(52,199,89,0.5); }
+  .source-status.warn { background: var(--orange); }
+  .source-status.err  { background: var(--red); }
+
+  .source-name { font-size: 12px; color: var(--text); font-weight: 500; }
+  .source-type { font-size: 10px; color: var(--text3); font-family: var(--font-mono); letter-spacing: 0.3px; }
+
+  .source-right { text-align: right; }
+  .source-count { font-family: var(--font); font-size: 14px; color: var(--accent); font-weight: 700; }
+  .source-time  { font-size: 10px; color: var(--text3); font-family: var(--font-mono); }
+
+  /* MINI CHART */
+  .chart-wrap { padding: 14px 16px; }
+
+  .mini-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    height: 80px;
+    padding-bottom: 4px;
+  }
+
+  .mini-bar-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+
+  .mini-bar {
+    width: 100%;
+    background: linear-gradient(to top, var(--accent), rgba(0,113,227,0.25));
+    border-radius: 3px 3px 0 0;
+    min-height: 4px;
+    transition: height 1s ease;
+  }
+
+  .mini-bar:hover { background: linear-gradient(to top, var(--accent2), rgba(0,113,227,0.5)); }
+
+  .mini-bar-label {
+    font-family: var(--font);
+    font-size: 8px;
+    color: var(--text3);
+    text-align: center;
+  }
+
+  /* FOOTER */
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 4px;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+
+  .footer-left { font-family: var(--font); font-size: 11px; color: var(--text3); }
+  .footer-right { display: flex; gap: 16px; }
+
+  .footer-item {
+    font-family: var(--font);
+    font-size: 11px;
+    color: var(--text3);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .footer-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* AI OVERLAY */
+  .ai-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+
+  .ai-overlay.visible { opacity: 1; pointer-events: all; }
+
+  .ai-modal {
+    background: rgba(255,255,255,0.96);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    max-width: 600px;
+    width: 90%;
+    padding: 28px;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08);
+  }
+
+  .ai-modal-title {
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--teal);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .ai-modal-conv { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 16px; letter-spacing: -0.2px; }
+
+  .ai-section-title {
+    font-family: var(--font);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    margin-top: 16px;
+  }
+
+  .ai-text { font-size: 13px; line-height: 1.7; color: var(--text2); font-family: var(--font); }
+  .ai-text strong { color: var(--teal); font-weight: 600; }
+
+  .close-btn {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .close-btn:hover { background: var(--border); color: var(--text); }
+
+  .score-ring {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .ring-score { font-family: var(--font); font-size: 40px; font-weight: 700; color: var(--green); line-height: 1; letter-spacing: -1px; }
+  .ring-label { font-family: var(--font); font-size: 10px; font-weight: 500; color: var(--text3); margin-top: 2px; }
+
+  .ring-dims { display: flex; flex-direction: column; gap: 7px; flex: 1; }
+  .ring-dim { display: flex; align-items: center; gap: 8px; }
+  .ring-dim-name { font-size: 11px; color: var(--text2); min-width: 130px; font-family: var(--font); }
+  .ring-dim-bar { flex: 1; height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+  .ring-dim-fill { height: 100%; background: var(--green); border-radius: 2px; }
+  .ring-dim-val { font-family: var(--font-mono); font-size: 10px; color: var(--text3); min-width: 30px; text-align: right; }
+
+  /* ── FILTER BAR ─────────────────────────────────────── */
+  .filter-bar {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(245,245,247,0.6);
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .filter-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.8px;
+    color: var(--text3);
+    text-transform: uppercase;
+    white-space: nowrap;
+    min-width: 52px;
+  }
+  .filter-chip {
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+  .filter-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .filter-chip.chip-high.active   { background: var(--green);  border-color: var(--green); }
+  .filter-chip.chip-medium.active { background: var(--orange); border-color: var(--orange); }
+  .filter-chip.chip-low.active    { background: var(--text2);  border-color: var(--text2); }
+  .filter-chip.chip-h2.active     { background: var(--teal);   border-color: var(--teal); }
+  .filter-chip.chip-ee.active     { background: var(--orange); border-color: var(--orange); }
+  .filter-chip.chip-desc.active   { background: var(--blue);   border-color: var(--blue); }
+  .filter-chip.chip-emis.active   { background: var(--red);    border-color: var(--red); }
+  .filter-chip.chip-horn.active   { background: #7b5fac;       border-color: #7b5fac; }
+
+  .filter-divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    margin: 2px 0;
+  }
+
+  /* Sort chips — slightly distinct from filter chips */
+  .filter-chip.sort-chip.active {
+    background: var(--text);
+    border-color: var(--text);
+    color: #fff;
+  }
+  .filter-chip.sort-chip:not(.active):hover {
+    border-color: var(--text);
+    color: var(--text);
+  }
+
+  /* CSV export button */
+  .csv-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 11px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .csv-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .csv-btn:active { transform: scale(0.97); }
+
+  /* Toggle switch */
+  .toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle-label input { display: none; }
+  .toggle-track {
+    width: 28px; height: 16px;
+    border-radius: 8px;
+    background: var(--border2);
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle-label input:checked ~ .toggle-track { background: var(--accent); }
+  .toggle-thumb {
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: left 0.2s;
+  }
+  .toggle-label input:checked ~ .toggle-track .toggle-thumb { left: 14px; }
+
+  /* No results */
+  .no-results {
+    padding: 32px;
+    text-align: center;
+    color: var(--text3);
+    font-size: 13px;
+    font-family: var(--font);
+  }
+
+  /* Descartada card style */
+  .conv-item.descartada {
+    opacity: 0.55;
+    background: var(--bg3);
+  }
+  .conv-item.descartada:hover { opacity: 0.75; }
+  .descarte-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--red);
+    background: rgba(255,59,48,0.08);
+    border: 1px solid rgba(255,59,48,0.2);
+    padding: 2px 7px;
+    border-radius: 20px;
+    margin-bottom: 4px;
+  }
+
+  /* Deadline progress bar */
+  .deadline-bar-wrap {
+    width: 100%; height: 3px;
+    background: var(--bg3);
+    border-radius: 2px;
+    margin: 8px 0 6px;
+    overflow: hidden;
+  }
+  .deadline-bar-fill {
+    height: 100%; border-radius: 2px;
+    transition: width 1.1s cubic-bezier(0.25,1,0.5,1);
+  }
+
+  /* Deadline date label */
+  .deadline-date-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 0.3px;
+  }
+  .future-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-family: var(--font);
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text3);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 2px 7px;
+    border-radius: 20px;
+    margin-left: 4px;
+  }
+
+  /* ── RADAR SVG ───────────────────────────────────────── */
+  .score-ring {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .ring-score { font-family:var(--font); font-size:36px; font-weight:700; color:var(--green); line-height:1; letter-spacing:-1px; margin-top:8px; }
+  .ring-label { font-family:var(--font); font-size:10px; font-weight:500; color:var(--text3); margin-top:2px; text-align:center; }
+  .ring-dims { display:flex; flex-direction:column; gap:8px; flex:1; justify-content:center; }
+  .ring-dim { display:flex; align-items:center; gap:8px; }
+  .ring-dim-dot { width:8px; height:8px; border-radius:50%; background:var(--green); flex-shrink:0; }
+  .ring-dim-name { font-size:11px; color:var(--text2); flex:1; font-family:var(--font); }
+  .ring-dim-bar { width:80px; height:4px; background:var(--bg3); border-radius:2px; overflow:hidden; flex-shrink:0; }
+  .ring-dim-fill { height:100%; background:var(--green); border-radius:2px; transition:width 0.8s ease; }
+  .ring-dim-val { font-family:var(--font-mono); font-size:10px; color:var(--text); font-weight:600; min-width:28px; text-align:right; }
+
+  /* Meta pills in overlay */
+  .meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font);
+    font-size: 11px;
+    color: var(--text2);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 8px;
+  }
+  .meta-pill strong { color: var(--text); font-weight: 600; }
+
+  /* Deadline info block in overlay */
+  .deadline-info-block {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .deadline-info-block .di-days {
+    font-family: var(--font);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -1px;
+    flex-shrink: 0;
+    align-self: center;
+  }
+  .deadline-info-block .di-label {
+    font-size: 10px;
+    color: var(--text3);
+    font-family: var(--font);
+    margin-top: 2px;
+  }
+  .deadline-info-block .di-dates {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    border-left: 1px solid var(--border);
+    padding-left: 12px;
+  }
+  .deadline-info-block .di-date-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text2);
+    font-family: var(--font);
+  }
+  .deadline-info-block .di-date-row .di-dot {
+    width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+  }
+  .deadline-info-block .di-bar-wrap {
+    height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; margin-top: 6px;
+  }
+  .deadline-info-block .di-bar-fill {
+    height: 100%; border-radius: 2px; transition: width 0.8s ease;
+  }
+
+  /* ── RESPONSIVE ─────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .main-grid { grid-template-columns: 1fr; }
+    .bottom-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 600px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .topbar-right .timestamp { display: none; }
+  }
+
+  /* ENTRY ANIMATIONS */
+  .fade-in { animation: fadeUp 0.4s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .stat-card:nth-child(1) { animation-delay: 0.05s; }
+  .stat-card:nth-child(2) { animation-delay: 0.10s; }
+  .stat-card:nth-child(3) { animation-delay: 0.15s; }
+  .stat-card:nth-child(4) { animation-delay: 0.20s; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo-area">
+      <img src="grant-radar-logo.png" alt="Grant-Radar" class="logo-badge">
+      <div class="logo-text">
+        <h1>Grant-Radar</h1>
+        <p>Kalfrisa · Convocatorias de financiación I+D</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        Monitorización activa
+      </div>
+      <div class="timestamp" id="ts">—</div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card fade-in" style="--card-color: var(--green); --card-fill: 1">
+      <div class="stat-label">Convocatorias activas</div>
+      <div class="stat-value" id="cnt-active">0</div>
+      <div class="stat-sub"><span class="stat-delta">↑ 3</span> vs semana anterior</div>
+    </div>
+    <div class="stat-card fade-in" style="--card-color: var(--accent); --card-fill: 0.7">
+      <div class="stat-label">Alta compatibilidad</div>
+      <div class="stat-value" id="cnt-high">0</div>
+      <div class="stat-sub">Encaje ≥ 80%</div>
+    </div>
+    <div class="stat-card fade-in" style="--card-color: var(--red); --card-fill: 0.4">
+      <div class="stat-label">Cierre &lt; 30 días</div>
+      <div class="stat-value" id="cnt-urgent">0</div>
+      <div class="stat-sub"><span class="stat-delta neg">⚠ Acción requerida</span></div>
+    </div>
+    <div class="stat-card fade-in" style="--card-color: var(--text2); --card-fill: 0.5">
+      <div class="stat-label">Descartadas</div>
+      <div class="stat-value" id="cnt-discarded">0</div>
+      <div class="stat-sub">Fuera de scope Kalfrisa</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- LEFT: CONVOCATORIAS -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Convocatorias detectadas</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="panel-tag">IA match</span>
+          <span class="panel-tag" id="filter-count-tag">Todas</span>
+        </div>
+      </div>
+      <!-- FILTER BAR -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <span class="filter-label">Fuente</span>
+          <button class="filter-chip src-all active" onclick="setFilter('source','all',this)">Todas</button>
+          <button class="filter-chip" onclick="setFilter('source','HORIZON EUROPE',this)">Horizon EU</button>
+          <button class="filter-chip" onclick="setFilter('source','IDAE',this)">IDAE</button>
+          <button class="filter-chip" onclick="setFilter('source','CDTI',this)">CDTI</button>
+          <button class="filter-chip" onclick="setFilter('source','BOE / MITECO',this)">BOE</button>
+          <button class="filter-chip" onclick="setFilter('source','BOA ARAGÓN',this)">BOA</button>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Temática</span>
+          <button class="filter-chip tag-all active" onclick="setFilter('tag','all',this)">Todas</button>
+          <button class="filter-chip chip-h2" onclick="setFilter('tag','h2',this)">H₂</button>
+          <button class="filter-chip chip-ee" onclick="setFilter('tag','ee',this)">Efic. energ.</button>
+          <button class="filter-chip chip-desc" onclick="setFilter('tag','desc',this)">Descarbonización</button>
+          <button class="filter-chip chip-emis" onclick="setFilter('tag','emis',this)">Emisiones</button>
+          <button class="filter-chip chip-horn" onclick="setFilter('tag','horn',this)">Hornos</button>
+        </div>
+        <div class="filter-divider"></div>
+        <div class="filter-group">
+          <span class="filter-label">Ordenar por</span>
+          <button class="filter-chip sort-chip active" onclick="setSort('match','desc',this)" title="Más compatibles primero">Compatibilidad ↓</button>
+          <button class="filter-chip sort-chip" onclick="setSort('match','asc',this)" title="Menos compatibles primero">Compatibilidad ↑</button>
+          <button class="filter-chip sort-chip" onclick="setSort('deadline','asc',this)" title="Más urgentes primero">Tiempo restante ↑</button>
+          <button class="filter-chip sort-chip" onclick="setSort('deadline','desc',this)" title="Más lejanas primero">Tiempo restante ↓</button>
+        </div>
+        <div class="filter-group" style="margin-left:auto;gap:10px">
+          <label class="toggle-label">
+            <input type="checkbox" id="toggle-descartadas" onchange="renderConvs()">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span class="filter-label" style="margin:0">Ver descartadas</span>
+          </label>
+          <button class="csv-btn" onclick="exportCSV()" title="Descargar vista actual en CSV">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="display:block;flex-shrink:0"><path d="M6.5 1v7M3.5 5.5L6.5 8.5 9.5 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M1.5 10.5h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            CSV
+          </button>
+        </div>
+      </div>
+      <div class="conv-list" id="conv-list"></div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+
+      <!-- LLM SUMMARY -->
+      <div class="panel llm-panel">
+        <div class="panel-header">
+          <span class="panel-title">Análisis IA</span>
+          <div class="ai-badge"><div class="ai-dot"></div>Claude</div>
+        </div>
+        <div class="llm-summary">
+          <div class="ai-badge" style="margin-bottom:10px"><div class="ai-dot"></div>Resumen ejecutivo · hoy</div>
+          <p>Se detectan <strong>3 convocatorias de alta prioridad</strong> con encaje ≥ 80% para el perfil de Kalfrisa. La convocatoria <strong>Horizon Europe — Clean Hydrogen</strong> representa la mayor oportunidad presupuestaria (€6M) y coincide directamente con la hoja de ruta de hidrógeno como combustible industrial.</p>
+          <p style="margin-top:10px">La <strong>convocatoria IDAE eficiencia térmica industrial</strong> cierra en 18 días. Requiere acción inmediata.</p>
+          <p style="margin-top:10px">Recomendación: priorizar preparación de memoria técnica para IDAE y apertura de consorcio para Horizon Europe Q2 2025.</p>
+        </div>
+      </div>
+
+      <!-- URGENCY DEADLINES -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Próximos cierres</span>
+          <span class="panel-tag">Días restantes</span>
+        </div>
+        <div class="deadline-list" id="deadline-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BOTTOM ROW -->
+  <div class="bottom-grid">
+
+    <!-- KEYWORD RADAR -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Palabras clave</span>
+        <span class="panel-tag">Frecuencia</span>
+      </div>
+      <div class="keyword-list" id="kw-list">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- SOURCE STATUS -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Fuentes monitorizadas</span>
+        <span class="panel-tag">Estado</span>
+      </div>
+      <div class="source-list" id="source-list">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- TREND MINI CHART -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Tendencia semanal</span>
+        <span class="panel-tag">Convocatorias</span>
+      </div>
+      <div class="chart-wrap">
+        <div style="font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:1px;margin-bottom:8px;">Nuevas detecciones / semana</div>
+        <div class="mini-bars" id="mini-bars">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-left">Grant-Radar v0.2 · Kalfrisa I+D · Zaragoza</div>
+    <div class="footer-right">
+      <div class="footer-item"><div class="footer-dot" style="background:var(--teal)"></div> Horizon Europe</div>
+      <div class="footer-item"><div class="footer-dot" style="background:var(--accent)"></div> CDTI</div>
+      <div class="footer-item"><div class="footer-dot" style="background:var(--blue)"></div> IDAE</div>
+      <div class="footer-item"><div class="footer-dot" style="background:var(--text3)"></div> BOE/BOA</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- AI DETAIL OVERLAY -->
+<div class="ai-overlay" id="ai-overlay">
+  <div class="ai-modal">
+    <button class="close-btn" onclick="closeOverlay()">✕ Cerrar</button>
+    <div class="ai-modal-title" id="ov-source-label">Análisis de encaje</div>
+    <div class="ai-modal-conv" id="ov-title">—</div>
+
+    <!-- Meta row: org, TRL, consorcio -->
+    <div id="ov-meta-row" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px"></div>
+
+    <!-- Radar + score + dims -->
+    <div class="score-ring">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px">
+        <svg id="ov-radar" width="150" height="150" viewBox="0 0 150 150" style="display:block"></svg>
+        <div style="display:flex;align-items:baseline;gap:3px">
+          <div class="ring-score" id="ov-score">—</div>
+        </div>
+        <div class="ring-label">Match score</div>
+      </div>
+      <div class="ring-dims" id="ov-dims"></div>
+    </div>
+
+    <!-- Deadline block -->
+    <div id="ov-deadline-block" style="margin-top:14px"></div>
+
+    <!-- Aviso URL genérica (solo si c.url_generica) -->
+    <div id="ov-url-generica-block" style="display:none;margin-top:14px;padding:10px 14px;background:rgba(255,149,0,0.08);border:1px solid rgba(255,149,0,0.25);border-radius:10px;font-size:11px;color:var(--text2)">
+      ⚠ Página general del programa — la convocatoria específica puede requerir navegación adicional dentro de esta página.
+    </div>
+
+    <!-- Aviso URL no verificada / caída (solo si c.url_rota) -->
+    <div id="ov-url-rota-block" style="display:none;margin-top:14px;padding:10px 14px;background:rgba(255,59,48,0.06);border:1px solid rgba(255,59,48,0.2);border-radius:10px;font-size:11px;color:var(--red)">
+      ⚠ Este enlace no respondió correctamente en la última comprobación automática. Verificar manualmente antes de actuar.
+    </div>
+
+    <div id="ov-link-row" style="margin-top:14px"></div>
+
+    <div class="ai-section-title">Resumen ejecutivo</div>
+    <div class="ai-text" id="ov-summary">—</div>
+
+    <div class="ai-section-title">Keywords detectadas</div>
+    <div id="ov-tags" style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;"></div>
+
+    <div class="ai-section-title">Acción recomendada</div>
+    <div class="ai-text" id="ov-action">—</div>
+
+    <!-- Descarte motivo (only shown if descartada) -->
+    <div id="ov-descarte-block" style="display:none;margin-top:16px;padding:12px 14px;background:rgba(255,59,48,0.06);border:1px solid rgba(255,59,48,0.2);border-radius:10px">
+      <div style="font-size:10px;font-weight:600;color:var(--red);letter-spacing:0.5px;margin-bottom:4px">Motivo de descarte</div>
+      <div class="ai-text" id="ov-descarte-motivo" style="color:var(--text2)">—</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── DATA ─────────────────────────────────────────────────────────────────────
+  let convocatorias = [];
+  let keywords      = [];
+  let sources       = [];
+  const trendData   = [4,6,3,8,5,7,9,6,11,8,7,12];
+  const trendLabels = ['Oct','Oct','Nov','Nov','Dic','Dic','Ene','Ene','Feb','Feb','Mar','Hoy'];
+
+  const tagMap = {
+    h2: 'Hidrógeno', ee: 'Efic. Energ.',
+    desc: 'Descarbonización', emis: 'Emisiones', horn: 'Hornos'
+  };
+
+  // ── FILTER + SORT STATE ───────────────────────────────────────────────────────
+  const filterState = { source: 'all', tag: 'all' };
+  const sortState   = { key: 'match', dir: 'desc' };
+
+  function setFilter(dim, val, el) {
+    filterState[dim] = val;
+    el.closest('.filter-group').querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderConvs();
+  }
+
+  function setSort(key, dir, el) {
+    sortState.key = key;
+    sortState.dir = dir;
+    document.querySelectorAll('.sort-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderConvs();
+  }
+
+  function getFiltered() {
+    const showDesc = document.getElementById('toggle-descartadas')?.checked;
+    let list = convocatorias.filter(c => {
+      // Nunca mostrar convocatorias con plazo cerrado (deadline<=0)
+      if ((c.deadline ?? 1) <= 0) return false;
+      if (c.descartada && !showDesc) return false;
+      if (filterState.source !== 'all' && c.source !== filterState.source) return false;
+      if (filterState.tag    !== 'all' && !(c.tags||[]).includes(filterState.tag)) return false;
+      return true;
+    });
+
+    // Sort
+    list = [...list].sort((a, b) => {
+      const aVal = sortState.key === 'match' ? a.match : a.deadline;
+      const bVal = sortState.key === 'match' ? b.match : b.deadline;
+      return sortState.dir === 'desc' ? bVal - aVal : aVal - bVal;
+    });
+
+    return list;
+  }
+
+  // ── CSV EXPORT ────────────────────────────────────────────────────────────────
+  function exportCSV() {
+    const list = getFiltered();
+    const tagLabels = { h2:'Hidrógeno', ee:'Efic. energ.', desc:'Descarbonización', emis:'Emisiones', horn:'Hornos' };
+    const headers = ['ID','Fuente','Título','Organismo','Match %','Prioridad','Días restantes','Apertura','Cierre','TRL mín','TRL máx','Socios consorcio','Temáticas','Descartada','URL'];
+
+    const esc = v => {
+      const s = String(v ?? '').replace(/"/g, '""');
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s}"` : s;
+    };
+
+    const rows = list.map(c => [
+      c.id,
+      c.source,
+      c.title,
+      c.org,
+      c.match,
+      c.priority === 'high' ? 'Alta' : c.priority === 'medium' ? 'Media' : 'Baja',
+      c.deadline,
+      c.open_date     || '',
+      c.deadline_date || '',
+      c.trl_min ?? '',
+      c.trl_max ?? '',
+      c.socio_consorcio || '',
+      (c.tags||[]).map(t => tagLabels[t]||t).join(' | '),
+      c.descartada ? 'Sí' : 'No',
+      c.url || ''
+    ].map(esc).join(','));
+
+    const csv  = '\uFEFF' + [headers.map(esc).join(','), ...rows].join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    const ts   = new Date().toISOString().slice(0,10);
+    a.download = `grant-radar-kalfrisa-${ts}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // ── HELPERS ───────────────────────────────────────────────────────────────────
+  function deadlineColor(d) {
+    if (d <= 20)  return 'var(--red)';
+    if (d <= 60)  return 'var(--orange)';
+    if (d <= 180) return 'var(--green)';
+    return 'var(--text3)'; // distant / not yet open
+  }
+
+  function deadlineBarPct(d) {
+    // More urgent = fuller bar. Cap at 365d for scale.
+    return Math.max(2, Math.min(100, 100 - (d / 365 * 100)));
+  }
+
+  function formatDeadlineDate(dateStr) {
+    if (!dateStr) return null;
+    try {
+      return new Date(dateStr).toLocaleDateString('es-ES', {day:'2-digit', month:'short', year:'numeric'});
+    } catch { return null; }
+  }
+
+  function isFuture(deadline) { return deadline > 180; }
+
+  // ── LOAD DATA ────────────────────────────────────────────────────────────────
+  async function loadData() {
+    try {
+      const resp = await fetch('convocatorias.json?_=' + Date.now());
+      if (!resp.ok) throw new Error('JSON no disponible');
+      const data = await resp.json();
+
+      convocatorias = data.convocatorias || [];
+      keywords      = data.keywords     || [];
+      sources       = (data.sources || []).map(s => ({
+        ...s,
+        time: `actualizado ${new Date(data.last_updated).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}`
+      }));
+
+      if (data.last_updated) {
+        const dt = new Date(data.last_updated);
+        document.getElementById('ts').textContent =
+          dt.toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}) +
+          ' · ' + dt.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+      }
+      renderAll();
+    } catch(e) {
+      console.warn('convocatorias.json no disponible, usando demo:', e);
+      loadDemoData();
+      renderAll();
+    }
+  }
+
+  function loadDemoData() {
+    convocatorias = [
+      {id:1,source:'HORIZON EUROPE',title:'Clean Hydrogen for Industrial Processes — HORIZON-JTI-CLEANH2-2025',match:92,priority:'high',descartada:false,motivo_descarte:'',trl_min:4,trl_max:7,socio_consorcio:'ITAINNOVA / CIRCE',deadline:14,deadline_date:'',budget:'Ver convocatoria',budget_raw:0,tags:['h2','ee','desc'],org:'Comisión Europea / Clean Hydrogen JU',summary:'Convocatoria orientada a proyectos que sustituyan combustibles fósiles por hidrógeno verde en procesos industriales de alta temperatura, incluyendo hornos. Kalfrisa encaja directamente como proveedor de soluciones de combustión.',dims:[{name:'Alineación tecnológica',val:95},{name:'Capacidad de consorcio',val:80},{name:'Encaje TRL',val:90},{name:'Oportunidad estratégica',val:70}],action:'Iniciar identificación de socios antes del 20 marzo. Revisar Work Programme 2025.',url:'https://ec.europa.eu/info/funding-tenders',keywords_found:['hydrogen','combustion']},
+      {id:2,source:'IDAE',title:'Ayudas Eficiencia Energética Sector Industrial — 2025',match:88,priority:'high',descartada:false,motivo_descarte:'',trl_min:5,trl_max:7,socio_consorcio:'CIRCE',deadline:18,deadline_date:'',budget:'Ver convocatoria',budget_raw:0,tags:['ee','horn','desc'],org:'Instituto para la Diversificación y Ahorro de la Energía',summary:'Subvenciones del 40-60% para implantación de tecnologías de eficiencia térmica en hornos industriales.',dims:[{name:'Alineación tecnológica',val:92},{name:'Capacidad de consorcio',val:75},{name:'Encaje TRL',val:88},{name:'Oportunidad estratégica',val:85}],action:'⚠ URGENTE: plazo en 18 días.',url:'https://www.idae.es',keywords_found:['eficiencia energética']},
+      {id:3,source:'CDTI',title:'Proyectos de I+D Tecnológico — CDTI 2025',match:81,priority:'high',descartada:false,motivo_descarte:'',trl_min:3,trl_max:6,socio_consorcio:'N/A',deadline:45,deadline_date:'',budget:'Ver convocatoria',budget_raw:0,tags:['desc','emis','ee'],org:'CDTI',summary:'Financiación para proyectos de I+D empresarial.',dims:[{name:'Alineación tecnológica',val:82},{name:'Capacidad de consorcio',val:90},{name:'Encaje TRL',val:78},{name:'Oportunidad estratégica',val:88}],action:'Preparar ficha de proyecto.',url:'https://www.cdti.es',keywords_found:['I+D']},
+      {id:4,source:'BOA ARAGÓN',title:'Subvenciones Descarbonización Industrial Aragón',match:55,priority:'medium',descartada:false,motivo_descarte:'',trl_min:5,trl_max:8,socio_consorcio:'N/A',deadline:62,deadline_date:'',budget:'Ver convocatoria',budget_raw:0,tags:['desc','emis'],org:'Gobierno de Aragón',summary:'Línea autonómica de descarbonización.',dims:[{name:'Alineación tecnológica',val:72},{name:'Capacidad de consorcio',val:85},{name:'Encaje TRL',val:80},{name:'Oportunidad estratégica',val:70}],action:'Monitorizar.',url:'https://www.boa.aragon.es',keywords_found:['descarbonización']},
+      {id:5,source:'IDAE',title:'Programa ferroviario FNEE — Transporte',match:5,priority:'low',descartada:true,motivo_descarte:'Transporte ferroviario excluido. Kalfrisa se especializa en procesos térmicos industriales, no en movilidad.',trl_min:1,trl_max:9,socio_consorcio:'N/A',deadline:30,deadline_date:'',budget:'Ver convocatoria',budget_raw:0,tags:[],org:'Instituto para la Diversificación y Ahorro de la Energía',summary:'Convocatoria FNEE enfocada en eficiencia energética ferroviaria.',dims:[{name:'Alineación tecnológica',val:0},{name:'Capacidad de consorcio',val:0},{name:'Encaje TRL',val:0},{name:'Oportunidad estratégica',val:0}],action:'Descartar definitivamente.',url:'https://www.idae.es',keywords_found:[]},
+    ];
+    keywords = [
+      {name:'energy efficiency',count:17,color:'var(--accent)'},
+      {name:'eficiencia energética',count:14,color:'var(--accent)'},
+      {name:'decarbonisation',count:13,color:'var(--accent)'},
+      {name:'waste heat',count:3,color:'var(--teal)'},
+      {name:'hidrógeno',count:3,color:'var(--teal)'},
+    ];
+    sources = [
+      {name:'HORIZON EUROPE',type:'API REST',status:'ok',count:2,time:'demo'},
+      {name:'CDTI',type:'Catálogo curado',status:'ok',count:4,time:'demo'},
+      {name:'IDAE',type:'Web Scraping',status:'ok',count:2,time:'demo'},
+      {name:'BOE / MITECO',type:'API BOE',status:'warn',count:0,time:'demo'},
+      {name:'BOA Aragón',type:'Catálogo curado',status:'ok',count:4,time:'demo'},
+    ];
+  }
+
+  // ── RENDER ALL ───────────────────────────────────────────────────────────────
+  function renderAll() {
+    renderConvs();
+    renderDeadlines();
+    renderKeywords();
+    renderSources();
+    renderChart();
+    animateCounters();
+  }
+
+  // ── RENDER CONVOCATORIAS ─────────────────────────────────────────────────────
+  function renderConvs() {
+    const el = document.getElementById('conv-list');
+    const list = getFiltered();
+    // Total base: non-closed, non-discarded (unless toggle on)
+    const showDesc = document.getElementById('toggle-descartadas')?.checked;
+    const totalBase = convocatorias.filter(c =>
+      (c.deadline ?? 1) > 0 && (showDesc || !c.descartada)
+    ).length;
+    const badge = document.getElementById('filter-count-tag');
+    if (badge) badge.textContent = list.length === totalBase ? 'Todas' : `${list.length} / ${totalBase}`;
+
+    if (list.length === 0) {
+      el.innerHTML = '<div class="no-results">No hay convocatorias con los filtros activos.</div>';
+      return;
+    }
+
+    el.innerHTML = list.map(c => {
+      const dColor = deadlineColor(c.deadline);
+      const dPct   = deadlineBarPct(c.deadline);
+      const dLabel = formatDeadlineDate(c.deadline_date);
+      const oLabel = formatDeadlineDate(c.open_date);
+      const future = isFuture(c.deadline);
+      const sinConfirmar = c.fecha_sin_confirmar;
+      const esPrevista   = c.fecha_prevista;
+      const urgentBadge = c.deadline <= 20 && !c.descartada
+        ? `<span style="color:var(--red);font-size:10px;font-weight:600">⚠ Urgente · </span>`
+        : '';
+      const descartadaBadge = c.descartada
+        ? `<div class="descarte-badge">✕ Descartada</div>` : '';
+
+      const deadlineRow = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:2px">
+          <div class="meta-item" style="color:${esPrevista ? 'var(--text3)' : dColor};flex-wrap:wrap;gap:4px">
+            ${urgentBadge}<span class="meta-icon">⏱</span> ${c.deadline}d restantes
+            ${oLabel ? `<span class="deadline-date-label" style="margin-left:4px">· apertura ${oLabel}</span>` : ''}
+            ${dLabel ? `<span class="deadline-date-label" style="margin-left:4px">· cierre ${dLabel}</span>` : ''}
+            ${esPrevista ? `<span class="future-badge" style="color:var(--orange);border-color:rgba(255,149,0,0.3);background:rgba(255,149,0,0.08)">📅 fecha prevista</span>` : ''}
+            ${sinConfirmar && !esPrevista ? `<span class="future-badge" style="color:var(--text3);border-color:var(--border)">📅 fecha sin confirmar</span>` : ''}
+            ${future && !oLabel && !sinConfirmar && !esPrevista && !c.descartada ? `<span class="future-badge">📅 apertura pendiente</span>` : ''}
+          </div>
+        </div>
+        <div class="deadline-bar-wrap">
+          <div class="deadline-bar-fill" style="width:0%;background:${esPrevista ? 'var(--orange)' : sinConfirmar ? 'var(--border2)' : dColor}" data-pct="${dPct}"></div>
+        </div>`;
+
+      return `
+      <div class="conv-item ${c.priority}${c.descartada ? ' descartada' : ''}" onclick="openOverlay(${c.id})">
+        ${descartadaBadge}
+        <div class="conv-top">
+          <div style="flex:1;min-width:0">
+            <div class="conv-source">${c.source}</div>
+            <div class="conv-title">${c.title}</div>
+          </div>
+          <div class="match-score">
+            <div class="match-pct ${c.priority}">${c.match}%</div>
+            <div class="match-label">Match</div>
+          </div>
+        </div>
+        <div class="conv-meta">
+          ${deadlineRow}
+          <div class="meta-item" style="margin-top:4px"><span class="meta-icon">🏛</span> ${c.org}</div>
+        </div>
+        <div class="conv-footer" style="margin-top:8px">
+          <div class="conv-tags">
+            ${(c.tags||[]).filter(t => tagMap[t]).map(t => `<span class="tag ${t}">${tagMap[t]}</span>`).join('')}
+          </div>
+          ${c.url ? `<button type="button" class="link-btn" onclick="event.stopPropagation(); window.open('${c.url}','_blank','noopener')">Enlace ↗</button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+    // Animate deadline bars
+    requestAnimationFrame(() => setTimeout(() => {
+      document.querySelectorAll('.deadline-bar-fill').forEach(b => { b.style.width = b.dataset.pct + '%'; });
+    }, 60));
+  }
+
+  // ── RENDER DEADLINES PANEL ───────────────────────────────────────────────────
+  function renderDeadlines() {
+    const el = document.getElementById('deadline-list');
+    const sorted = [...convocatorias]
+      .filter(c => !c.descartada && (c.deadline ?? 1) > 0)
+      .sort((a,b) => a.deadline - b.deadline)
+      .slice(0,5);
+    el.innerHTML = sorted.map(c => {
+      const cls = c.deadline < 20 ? 'urgent' : c.deadline < 60 ? 'warn' : 'ok';
+      const dLabel = formatDeadlineDate(c.deadline_date);
+      return `
+        <div class="deadline-item">
+          <div class="deadline-days ${cls}">${c.deadline}<span>días</span></div>
+          <div class="deadline-info">
+            <div class="deadline-name">${c.title.length > 45 ? c.title.slice(0,45)+'…' : c.title}</div>
+            <div class="deadline-org">${c.source}${dLabel ? ' · ' + dLabel : ''}</div>
+          </div>
+          <div class="deadline-budget">${c.budget !== 'Ver convocatoria' ? c.budget : '—'}</div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── RENDER KEYWORDS ──────────────────────────────────────────────────────────
+  function renderKeywords() {
+    const max = Math.max(...keywords.map(k => k.count));
+    const el = document.getElementById('kw-list');
+    el.innerHTML = keywords.map(k => `
+      <div class="keyword-item">
+        <div class="kw-name">${k.name}</div>
+        <div class="kw-bar-wrap">
+          <div class="kw-bar" style="--bar-color:${k.color};width:0%" data-width="${(k.count/max*100).toFixed(0)}%"></div>
+        </div>
+        <div class="kw-count">${k.count}</div>
+      </div>`).join('');
+    setTimeout(() => {
+      document.querySelectorAll('.kw-bar').forEach(b => { b.style.width = b.dataset.width; });
+    }, 300);
+  }
+
+  // ── RENDER SOURCES ───────────────────────────────────────────────────────────
+  function renderSources() {
+    const el = document.getElementById('source-list');
+    el.innerHTML = sources.map(s => `
+      <div class="source-item">
+        <div class="source-left">
+          <div class="source-status ${s.status}"></div>
+          <div>
+            <div class="source-name">${s.name}</div>
+            <div class="source-type">${s.type}</div>
+          </div>
+        </div>
+        <div class="source-right">
+          <div class="source-count">${s.count}</div>
+          <div class="source-time">${s.time}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── RENDER CHART ─────────────────────────────────────────────────────────────
+  function renderChart() {
+    const max = Math.max(...trendData);
+    const el = document.getElementById('mini-bars');
+    el.innerHTML = trendData.map((v,i) => `
+      <div class="mini-bar-col">
+        <div class="mini-bar" style="height:${(v/max*70)}px" title="${v} convocatorias"></div>
+        <div class="mini-bar-label">${trendLabels[i]}</div>
+      </div>`).join('');
+  }
+
+  // ── COUNTERS ─────────────────────────────────────────────────────────────────
+  function animateCounters() {
+    const nonClosed  = convocatorias.filter(c => (c.deadline ?? 1) > 0);
+    const active     = nonClosed.filter(c => !c.descartada).length;
+    const high       = nonClosed.filter(c => !c.descartada && c.match >= 80).length;
+    const urgent     = nonClosed.filter(c => !c.descartada && c.deadline < 30).length;
+    const discarded  = nonClosed.filter(c => c.descartada).length;
+    animNum('cnt-active',    active,   800);
+    animNum('cnt-high',      high,     800);
+    animNum('cnt-urgent',    urgent,   800);
+    animNum('cnt-discarded', discarded,800);
+  }
+
+  function animNum(id, target, dur, decimal=false) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const start = Date.now();
+    const tick = () => {
+      const p = Math.min((Date.now()-start)/dur, 1);
+      const ease = 1-Math.pow(1-p,3);
+      el.textContent = decimal ? (target*ease).toFixed(1) : Math.round(target*ease);
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  function updateTimestamp() {
+    const now = new Date();
+    document.getElementById('ts').textContent =
+      now.toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}) +
+      ' · ' + now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  // ── RADAR SVG ────────────────────────────────────────────────────────────────
+  function drawRadar(svgEl, dims, color) {
+    if (!dims || dims.length === 0) { svgEl.innerHTML = ''; return; }
+    const cx = 75, cy = 75, r = 55, n = dims.length;
+    const angle = i => (Math.PI * 2 * i / n) - Math.PI / 2;
+    const pt = (i, ratio) => [
+      cx + r * ratio * Math.cos(angle(i)),
+      cy + r * ratio * Math.sin(angle(i))
+    ];
+
+    let html = '';
+    // Grid rings
+    [0.25, 0.5, 0.75, 1].forEach(ratio => {
+      const pts = dims.map((_,i) => pt(i,ratio).join(',')).join(' ');
+      html += `<polygon points="${pts}" fill="none" stroke="var(--border)" stroke-width="${ratio===1?1.5:0.8}" opacity="0.8"/>`;
+    });
+    // Axes
+    dims.forEach((_,i) => {
+      const [x,y] = pt(i,1);
+      html += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--border)" stroke-width="0.8"/>`;
+    });
+    // Axis labels
+    dims.forEach((d,i) => {
+      const [x,y] = pt(i, 1.22);
+      const words = d.name.split(' ');
+      const lines = words.length <= 2 ? [words.join(' ')] : [words.slice(0,2).join(' '), words.slice(2).join(' ')];
+      const dyStart = lines.length > 1 ? -6 : 0;
+      html += `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="7.5" fill="var(--text3)" font-family="-apple-system,sans-serif">
+        ${lines.map((l,li) => `<tspan x="${x}" dy="${li===0?dyStart:12}">${l}</tspan>`).join('')}
+      </text>`;
+    });
+    // Data fill
+    const dataPts = dims.map((d,i) => pt(i, d.val/100).join(',')).join(' ');
+    html += `<polygon points="${dataPts}" fill="${color}22" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`;
+    // Dots
+    dims.forEach((d,i) => {
+      const [x,y] = pt(i, d.val/100);
+      html += `<circle cx="${x}" cy="${y}" r="3.5" fill="${color}" stroke="#fff" stroke-width="1.5"/>`;
+    });
+    svgEl.innerHTML = html;
+  }
+
+  // ── OVERLAY ───────────────────────────────────────────────────────────────────
+  function openOverlay(id) {
+    const c = convocatorias.find(x => x.id === id);
+    if (!c) return;
+
+    // Header
+    document.getElementById('ov-source-label').textContent = c.source + ' · Análisis de encaje';
+    document.getElementById('ov-title').textContent = c.title;
+
+    // Score color
+    const scoreColor = c.priority === 'high' ? 'var(--green)' : c.priority === 'medium' ? 'var(--orange)' : 'var(--text3)';
+    const radarColor = c.priority === 'high' ? '#34c759' : c.priority === 'medium' ? '#ff9500' : '#8e8e93';
+    document.getElementById('ov-score').textContent = c.match + '%';
+    document.getElementById('ov-score').style.color = scoreColor;
+
+    // Meta pills
+    const metaEl = document.getElementById('ov-meta-row');
+    const trlStr = (c.trl_min || c.trl_max)
+      ? `TRL ${c.trl_min||'?'}–${c.trl_max||'?'}` : null;
+    const consortium = c.socio_consorcio && c.socio_consorcio !== 'N/A' ? c.socio_consorcio : null;
+    metaEl.innerHTML = [
+      `<span class="meta-pill">🏛 <strong>${c.org}</strong></span>`,
+      trlStr ? `<span class="meta-pill">🔬 ${trlStr}</span>` : '',
+      consortium ? `<span class="meta-pill">🤝 ${consortium}</span>` : '',
+    ].join('');
+
+    const dColor = deadlineColor(c.deadline);
+    const dPct   = deadlineBarPct(c.deadline);
+    const dLabel = formatDeadlineDate(c.deadline_date);
+    const oLabel = formatDeadlineDate(c.open_date);
+    const future = isFuture(c.deadline);
+    const sinConfirmar = c.fecha_sin_confirmar;
+    const esPrevista   = c.fecha_prevista;
+    const deadlineEl = document.getElementById('ov-deadline-block');
+    const barColor = esPrevista ? 'var(--orange)' : sinConfirmar ? 'var(--border2)' : dColor;
+    const dayColor = esPrevista ? 'var(--orange)' : sinConfirmar ? 'var(--text3)' : dColor;
+    const dayLabel = esPrevista ? 'días (previsto)*' : sinConfirmar ? 'días restantes*' : 'días restantes';
+    deadlineEl.innerHTML = `
+      <div class="deadline-info-block">
+        <div style="flex-shrink:0;text-align:center">
+          <div class="di-days" style="color:${dayColor}">${c.deadline}</div>
+          <div class="di-label">${dayLabel}</div>
+        </div>
+        <div class="di-dates">
+          ${oLabel
+            ? `<div class="di-date-row"><div class="di-dot" style="background:var(--green)"></div>Apertura: <strong>${oLabel}</strong></div>`
+            : future ? `<div class="di-date-row"><div class="di-dot" style="background:var(--text3)"></div><span style="color:var(--text3)">Fecha de apertura sin confirmar</span></div>` : ''}
+          ${dLabel
+            ? `<div class="di-date-row"><div class="di-dot" style="background:${dColor}"></div>Cierre: <strong>${dLabel}</strong>${esPrevista ? ' <span style="color:var(--orange);font-size:10px">(previsto)</span>' : ''}</div>`
+            : `<div class="di-date-row"><div class="di-dot" style="background:var(--text3)"></div><em style="color:var(--text3)">Fecha de cierre sin confirmar</em></div>`}
+          ${esPrevista ? `<div class="di-date-row" style="margin-top:2px"><div class="di-dot" style="background:var(--orange)"></div><span style="color:var(--orange);font-size:10px">* Fecha prevista — sujeta a disponibilidad presupuestaria y publicación oficial</span></div>` : ''}
+          ${sinConfirmar && !esPrevista ? `<div class="di-date-row" style="margin-top:2px"><div class="di-dot" style="background:var(--orange)"></div><span style="color:var(--orange);font-size:10px">* Plazo estimado — verificar en la fuente antes de actuar</span></div>` : ''}
+          <div class="di-bar-wrap">
+            <div class="di-bar-fill" style="width:${dPct}%;background:${barColor}"></div>
+          </div>
+        </div>
+      </div>`;
+
+    // Avisos de calidad de URL
+    document.getElementById('ov-url-generica-block').style.display = c.url_generica ? 'block' : 'none';
+    document.getElementById('ov-url-rota-block').style.display     = c.url_rota ? 'block' : 'none';
+
+    // Botón de enlace dentro del overlay
+    document.getElementById('ov-link-row').innerHTML = c.url
+      ? `<button type="button" class="link-btn" onclick="window.open('${c.url}','_blank','noopener')">Abrir convocatoria ↗</button>`
+      : '';
+
+    // Radar SVG
+    const svgEl = document.getElementById('ov-radar');
+    drawRadar(svgEl, c.dims, radarColor);
+
+    // Dims legend
+    document.getElementById('ov-dims').innerHTML = (c.dims||[]).map(d => `
+      <div class="ring-dim">
+        <div class="ring-dim-dot" style="background:${radarColor}"></div>
+        <div class="ring-dim-name">${d.name}</div>
+        <div class="ring-dim-bar"><div class="ring-dim-fill" style="width:${d.val}%;background:${radarColor}"></div></div>
+        <div class="ring-dim-val">${d.val}%</div>
+      </div>`).join('');
+
+    // Summary, tags, action
+    document.getElementById('ov-summary').innerHTML = c.summary || '—';
+    document.getElementById('ov-action').innerHTML  = c.action  || '—';
+    document.getElementById('ov-tags').innerHTML =
+      (c.keywords_found||[]).map(k => `<span class="tag desc" style="font-size:10px">${k}</span>`).join('') +
+      (c.tags||[]).filter(t => tagMap[t]).map(t => `<span class="tag ${t}">${tagMap[t]}</span>`).join('');
+
+    // Descarte block
+    const descBlock = document.getElementById('ov-descarte-block');
+    if (c.descartada && c.motivo_descarte) {
+      descBlock.style.display = 'block';
+      document.getElementById('ov-descarte-motivo').textContent = c.motivo_descarte;
+    } else {
+      descBlock.style.display = 'none';
+    }
+
+    document.getElementById('ai-overlay').classList.add('visible');
+  }
+
+  function closeOverlay() {
+    document.getElementById('ai-overlay').classList.remove('visible');
+  }
+
+  document.getElementById('ai-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeOverlay();
+  });
+
+  // ── INIT ─────────────────────────────────────────────────────────────────────
+  renderChart();
+  updateTimestamp();
+  setInterval(updateTimestamp, 30000);
+  loadData();
+</script>
+</body>
+</html>

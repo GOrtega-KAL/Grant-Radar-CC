@@ -1,0 +1,975 @@
+{
+  "last_updated": "2026-07-24T06:55:05.531979+00:00",
+  "convocatorias": [
+    {
+      "id": 1,
+      "source": "CDTI",
+      "title": "Proyectos de I+D — Línea PID (ventanilla abierta)",
+      "description": "Financiación de proyectos empresariales de investigación industrial y desarrollo experimental para la creación o mejora significativa de procesos productivos, productos o servicios. Presupuesto mínimo 175.000 €. Ayuda parcialmente reembolsable hasta el 85% con tramo no reembolsable del 10-33%. Modalidad individual, cooperación nacional e internacional. Aplica directamente a proyectos de eficiencia térmica, control de emisiones y combustión industrial H2-ready de Kalfrisa.",
+      "match": 92,
+      "priority": "high",
+      "descartada": false,
+      "motivo_descarte": "",
+      "trl_min": 4,
+      "trl_max": 7,
+      "socio_consorcio": "ITAINNOVA / CIRCE / Unizar",
+      "deadline": 365,
+      "deadline_date": "",
+      "open_date": "",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": false,
+      "budget_raw": 0,
+      "url": "https://www.cdti.es/ayudas/proyectos-de-i-d",
+      "org": "CDTI — Centro para el Desarrollo Tecnológico Industrial",
+      "tags": [
+        "h2",
+        "ee",
+        "desc",
+        "emis",
+        "horn"
+      ],
+      "summary": "Convocatoria CDTI PID de ventanilla abierta diseñada explícitamente para I+D industrial en procesos térmicos, eficiencia energética y descarbonización. Kalfrisa encaja como solicitante principal en proyectos de recuperación de calor residual, quemadores H2-ready y control de emisiones en hornos industriales. Financiación parcialmente reembolsable (hasta 85%) compatible con TRL 4-7 y validación en entorno relevante.",
+      "action": "Preparar propuesta de I+D con ITAINNOVA o CIRCE como socio tecnológico. Priorizar proyectos en recuperación calor residual cerámica (alta temperatura), quemadores H2 100% para siderurgia, o demostración de SCR catalítico en línea. Presupuesto mínimo 175k€. Ventanilla abierta permite presentación flexible.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 96
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 90
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 95
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 85
+        }
+      ],
+      "keywords_found": [
+        "eficiencia energética",
+        "eficiencia térmica",
+        "descarbonización",
+        "calor residual",
+        "emisiones industriales"
+      ],
+      "source_type": "Catálogo curado"
+    },
+    {
+      "id": 2,
+      "source": "CDTI",
+      "title": "Proyectos Transferencia Tecnológica Cervera (ventanilla abierta)",
+      "description": "Proyectos de I+D empresarial en colaboración obligatoria con Centros Tecnológicos acreditados. Área prioritaria 'Transición Energética' incluida. Subcontratación mínima 10% al Centro Tecnológico. Tramo no reembolsable fijo del 33%. Máximo encaje para Kalfrisa dada su relación con ITAINNOVA y CIRCE en Aragón.",
+      "match": 92,
+      "priority": "high",
+      "descartada": false,
+      "motivo_descarte": "",
+      "trl_min": 5,
+      "trl_max": 7,
+      "socio_consorcio": "ITAINNOVA / CIRCE (centros tecnológicos acreditados Aragón)",
+      "deadline": 365,
+      "deadline_date": "",
+      "open_date": "",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": false,
+      "budget_raw": 0,
+      "url": "https://www.cdti.es/ayudas/proyectos-cervera",
+      "org": "CDTI — Centro para el Desarrollo Tecnológico Industrial",
+      "tags": [
+        "h2",
+        "ee",
+        "desc",
+        "emis",
+        "horn"
+      ],
+      "summary": "Convocatoria Cervera diseñada para I+D colaborativa industrial con excelente encaje en tecnologías core de Kalfrisa: recuperación calor residual, quemadores H2-ready, control emisiones térmicas. Área prioritaria 'Transición Energética' cubre descarbonización e hidrógeno industrial. Ventanilla abierta permite propuestas en hornos cerámica, metalurgia y química. Estructura de consorcio obligatorio con Centro Tecnológico (ITAINNOVA/CIRCE) alineada con experiencia previa de Kalfrisa. Subvención 33% no reembolsable reduce riesgo financiero.",
+      "action": "Contactar inmediatamente a ITAINNOMA/CIRCE para identificar proyecto de demostración industrial (TRL5-7) en recuperación calor residual o combustión H2 en cliente cerámica/metalúrgica. Preparar propuesta dentro de 4-6 semanas aprovechando ventanilla abierta. Priorizar: validación de quemadores H2-ready en horno túnel cerámica o sistema integrado recuperación + postcombustión + monitorización IIoT en metalurgia.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 95
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 98
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 90
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 85
+        }
+      ],
+      "keywords_found": [
+        "eficiencia energética",
+        "calor residual",
+        "descarbonización",
+        "hidrógeno",
+        "eficiencia térmica"
+      ],
+      "source_type": "Catálogo curado"
+    },
+    {
+      "id": 3,
+      "source": "CDTI",
+      "title": "Infraestructuras de Ensayo y Experimentación CDTI (ventanilla abierta)",
+      "description": "Ayudas para el desarrollo o mejora de infraestructuras de ensayo, caracterización y demostración tecnológica en empresas. Abierto desde 16 de marzo de 2026 de forma permanente a través de la sede electrónica del CDTI. Interesante para laboratorios de validación de quemadores H2-ready y sistemas de medición de emisiones de Kalfrisa.",
+      "match": 88,
+      "priority": "high",
+      "descartada": false,
+      "motivo_descarte": "",
+      "trl_min": 5,
+      "trl_max": 7,
+      "socio_consorcio": "ITAINNOVA / CIRCE / Unizar",
+      "deadline": 365,
+      "deadline_date": "",
+      "open_date": "",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": false,
+      "budget_raw": 0,
+      "url": "https://www.cdti.es/ayudas/infraestructuras-ensayo-experimentacion",
+      "org": "CDTI — Centro para el Desarrollo Tecnológico Industrial",
+      "tags": [
+        "h2",
+        "ee",
+        "desc",
+        "emis",
+        "horn"
+      ],
+      "summary": "Convocatoria CDTI de infraestructuras de ensayo perfectamente alineada con el Centro de Diseño y Validación de Kalfrisa. Permite financiar laboratorios de validación de quemadores H2-ready, sistemas de medición de emisiones (NOx, COVs) y caracterización térmica en entorno relevante a demo industrial. Encaje estratégico directo en tecnologías core de Kalfrisa (recuperación calor residual, combustión H2, control emisiones).",
+      "action": "Preparar propuesta inmediata: infraestructura de ensayo para validación de quemadores H2-ready (0-100% H2) con equipos de medición de NOx/partículas y monitorización IIoT en simulador de horno industrial. Contactar ITAINNOVA como partner para caracterización térmica. Incluir aplicabilidad a sectores cerámica, siderurgia y petroquímica.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 95
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 90
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 85
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 82
+        }
+      ],
+      "keywords_found": [
+        "eficiencia energética",
+        "eficiencia térmica",
+        "hidrógeno",
+        "emisiones industriales"
+      ],
+      "source_type": "Catálogo curado"
+    },
+    {
+      "id": 4,
+      "source": "CDTI",
+      "title": "Proyectos Bilaterales CDTI — 13ª convocatoria (todo 2026)",
+      "description": "Financiación de proyectos bilaterales de I+D en cooperación con socios internacionales, con certificación y seguimiento unilateral CDTI. Convocatoria permanente durante todo 2026 con dos fechas de corte. Instrumento para proyectos de combustión industrial y eficiencia térmica con partners europeos.",
+      "match": 87,
+      "priority": "high",
+      "descartada": false,
+      "motivo_descarte": "",
+      "trl_min": 5,
+      "trl_max": 7,
+      "socio_consorcio": "ITAINNOVA / CIRCE / Unizar + partner europeo industrial",
+      "deadline": 160,
+      "deadline_date": "2026-12-31",
+      "open_date": "2026-01-01",
+      "fecha_sin_confirmar": false,
+      "fecha_prevista": false,
+      "budget_raw": 0,
+      "url": "https://www.cdti.es/ayudas/proyectos-bilaterales",
+      "org": "CDTI — Centro para el Desarrollo Tecnológico Industrial",
+      "tags": [
+        "h2",
+        "ee",
+        "desc",
+        "emis",
+        "horn"
+      ],
+      "summary": "Convocatoria CDTI bilateral perfectamente alineada con tecnologías core de Kalfrisa (recuperación calor residual, combustión H2-ready, control emisiones en hornos industriales). Kalfrisa puede liderar como PME innovadora con partner europeo en descarbonización térmica. TRL 5-7 en demostraciones industriales encaja exactamente con capacidad actual.",
+      "action": "Contactar inmediatamente ITAINNOVA/CIRCE para identificar partners europeos (Alemania, Francia, Italia con sectores cerámica/siderurgia). Preparar propuesta bilateral para corte 2026 Q1/Q2 con proyecto de validación de quemador H2 + recuperación calor residual en cliente cerámica/vidrio.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 95
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 90
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 85
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 80
+        }
+      ],
+      "keywords_found": [
+        "eficiencia energética",
+        "eficiencia térmica",
+        "calor residual",
+        "descarbonización"
+      ],
+      "source_type": "Catálogo curado"
+    },
+    {
+      "id": 5,
+      "source": "CDTI",
+      "title": "CIIP Eurostars CoD10 2026 — Cooperación I+D internacional Eureka",
+      "description": "Instrumento nacional CDTI para financiar participación española en proyectos aprobados en Eurostars-3 (red Eureka). Evaluación internacional previa. 10ª fecha de corte prevista julio 2026. Dirigido a pymes con proyectos colaborativos de I+D con socios de países Eureka.",
+      "match": 82,
+      "priority": "high",
+      "descartada": false,
+      "motivo_descarte": "",
+      "trl_min": 5,
+      "trl_max": 7,
+      "socio_consorcio": "centro tecnológico (ITAINNOVA/CIRCE) + universidad (Unizar) + partner europeo Eureka",
+      "deadline": 7,
+      "deadline_date": "2026-07-31",
+      "open_date": "2026-07-01",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": true,
+      "budget_raw": 0,
+      "url": "https://www.cdti.es/ayudas/eurostars",
+      "org": "CDTI — Centro para el Desarrollo Tecnológico Industrial",
+      "tags": [
+        "h2",
+        "ee",
+        "desc",
+        "emis",
+        "horn"
+      ],
+      "summary": "Eurostars-3 es vehículo de I+D internacional ideal para Kalfrisa. La convocatoria CDTI cubre proyectos colaborativos de descarbonización e eficiencia térmica industrial, campos core de la empresa. Kalfrisa puede liderar o coliderar con socios europeos especializados en procesos térmicos de alta temperatura, recuperación de calor residual o quemadores H2 para industria (cerámica, siderurgia, química).",
+      "action": "Preparar propuesta Eurostars en consorcio internacional. Contactar inmediatamente con ITAINNORA o CIRCE como socios tecnológicos españoles. Identificar partner europeo Eureka con capacidad en quemadores H2 o postcombustión catalítica. Meta: 10ª convocatoria (julio 2026). Presupuesto orientativo: 300-600k€ para Kalfrisa.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 90
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 85
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 80
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 75
+        }
+      ],
+      "keywords_found": [
+        "eficiencia energética",
+        "descarbonización",
+        "eficiencia térmica",
+        "calor residual"
+      ],
+      "source_type": "Catálogo curado"
+    },
+    {
+      "id": 17,
+      "source": "BOA ARAGÓN",
+      "title": "PAIP 2026 — Programa de Ayudas a la Industria y PYME Aragón (prevista)",
+      "description": "Programa de ayudas del Gobierno de Aragón a la industria y PYME para proyectos de transformación, innovación y competitividad industrial. La convocatoria de diseño industrial 2026 (línea dentro del PAIP) está en preparación — suele publicarse entre septiembre y octubre de cada año. La edición anterior (2025/2026) cerró el 15 enero 2026.",
+      "match": 82,
+      "priority": "high",
+      "descartada": false,
+      "motivo_descarte": "",
+      "trl_min": 5,
+      "trl_max": 7,
+      "socio_consorcio": "ITAINNOVA / CIRCE / Universidad de Zaragoza",
+      "deadline": 129,
+      "deadline_date": "2026-11-30",
+      "open_date": "2026-09-01",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": true,
+      "budget_raw": 0,
+      "url": "https://www.aragon.es/tramitador/-/tramite/ayudas-industria-digital-integradora-sostenible-marco-programa-ayudas-industria-pyme-aragon-paip/convocatoria-2026-en-desarrollo",
+      "org": "Gobierno de Aragón",
+      "tags": [
+        "h2",
+        "ee",
+        "desc",
+        "emis",
+        "horn"
+      ],
+      "summary": "PAIP 2026 es convocatoria autonómica aragonesa de transformación industrial con énfasis en eficiencia térmica y descarbonización. Keywords explícitos (eficiencia energética, eficiencia térmica, hornos industriales) alinean directamente con el core de Kalfrisa. Kalfrisa puede liderar como solicitante principal o partner tecnológico en consorcio con centros aragones.",
+      "action": "Preparar propuesta 2-3 meses antes de apertura esperada (septiembre-octubre 2026). Contactar ITAINNOVA o CIRCE como partners de validación. Explorar líneas de recuperación de calor residual, quemadores H2-ready o control de emisiones en hornos industriales cliente.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 90
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 85
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 80
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 75
+        }
+      ],
+      "keywords_found": [
+        "eficiencia energética",
+        "eficiencia térmica",
+        "hornos industriales"
+      ],
+      "source_type": "Catálogo curado"
+    },
+    {
+      "id": 6,
+      "source": "CDTI",
+      "title": "Partenariados Pilar 2 SERA 2026 — Segunda llamada",
+      "description": "Instrumento de adjudicación directa CDTI para financiar entidades españolas en proyectos internacionales seleccionados en partenariados cofinanciados del Pilar 2 de Horizon Europe. Segunda llamada prevista julio 2026. El proyecto debe aprobarse primero en el marco europeo.",
+      "match": 78,
+      "priority": "high",
+      "descartada": false,
+      "motivo_descarte": "",
+      "trl_min": 5,
+      "trl_max": 7,
+      "socio_consorcio": "centro tecnológico (ITAINNOVA/CIRCE) + universidad (Unizar)",
+      "deadline": 7,
+      "deadline_date": "2026-07-31",
+      "open_date": "2026-07-01",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": true,
+      "budget_raw": 0,
+      "url": "https://www.cdti.es/ayudas/partenariados-pilar-2-sera-2026-1",
+      "org": "CDTI — Centro para el Desarrollo Tecnológico Industrial",
+      "tags": [
+        "h2",
+        "ee",
+        "desc",
+        "emis",
+        "horn"
+      ],
+      "summary": "Convocatoria Horizon Europe (Pilar 2 SERA) con keywords directos en descarbonización, eficiencia térmica e hidrógeno industrial. Kalfrisa encaja como socio tecnológico experto en recuperación de calor residual y quemadores H2 en procesos industriales. Requiere consorciación internacional previa en Horizon y cofinanciación CDTI posterior.",
+      "action": "Contactar inmediatamente con ITAINNOVA/CIRCE para identificar coordinador europeo en partenariados Horizon SERA 2026 Pilar 2. Preparar propuesta TRL 5-7 de demostración en horno industrial con componente H2/descarbonización. Monitorizar llamada julio 2026.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 85
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 80
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 90
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 65
+        }
+      ],
+      "keywords_found": [
+        "eficiencia energética",
+        "descarbonización",
+        "hidrógeno",
+        "eficiencia térmica"
+      ],
+      "source_type": "Catálogo curado"
+    },
+    {
+      "id": 9,
+      "source": "IDAE",
+      "title": "Para eficiencia energética en la industria",
+      "description": "",
+      "match": 78,
+      "priority": "high",
+      "descartada": false,
+      "motivo_descarte": "",
+      "trl_min": 5,
+      "trl_max": 7,
+      "socio_consorcio": "ITAINNOVA / CIRCE / Universidad de Zaragoza",
+      "deadline": 30,
+      "deadline_date": "",
+      "open_date": "",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": false,
+      "budget_raw": 0,
+      "url": "https://www.idae.es/ayudas-y-financiacion/para-eficiencia-energetica-en-la-industria",
+      "org": "Instituto para la Diversificación y Ahorro de la Energía",
+      "tags": [
+        "ee",
+        "desc",
+        "emis",
+        "horn",
+        "h2"
+      ],
+      "summary": "Convocatoria IDAE de eficiencia energética industrial alineada directamente con el core de Kalfrisa (recuperación calor residual, combustión H2-ready, control emisiones en hornos). TRL 5-7 es óptimo para demostración en entorno industrial. Kalfrisa puede liderar como proveedor tecnológico o socio tecnológico en consorcio sectorial.",
+      "action": "Contactar inmediatamente ITAINNOVA/CIRCE para identificar clientes industriales (cerámica, siderurgia, vidrio) con proyectos de descarbonización. Preparar propuesta de solución integrada: recuperación calor + quemador H2-ready + monitorización digital. Verificar bases completas en web IDAE antes de cierre.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 85
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 80
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 90
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 65
+        }
+      ],
+      "keywords_found": [
+        "eficiencia energética"
+      ],
+      "source_type": "Web Scraping"
+    },
+    {
+      "id": 10,
+      "source": "IDAE",
+      "title": "Segunda convocatoria del Programa de ayudas para actuaciones de eficiencia energética en PYME y gran empresa del sector industrial (FNEE)",
+      "description": "",
+      "match": 78,
+      "priority": "high",
+      "descartada": false,
+      "motivo_descarte": "",
+      "trl_min": 5,
+      "trl_max": 7,
+      "socio_consorcio": "ITAINNOVA / CIRCE / Unizar",
+      "deadline": 30,
+      "deadline_date": "",
+      "open_date": "",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": false,
+      "budget_raw": 0,
+      "url": "https://www.idae.es/ayudas-y-financiacion/para-eficiencia-energetica-en-la-industria/convocatorias-cerradas/segunda-convocatoria-ayudas-pyme-fnee",
+      "org": "Instituto para la Diversificación y Ahorro de la Energía",
+      "tags": [
+        "ee",
+        "desc",
+        "emis",
+        "horn",
+        "h2"
+      ],
+      "summary": "Convocatoria FNEE orientada a eficiencia energética industrial en PYME y gran empresa. Kalfrisa encaja como solicitante o partner tecnológico experto en recuperación de calor residual, control de emisiones y transición a H2 en procesos térmicos. El foco en industria térmica (cerámicas, metalurgia, química, vidrio) alinea perfectamente con su experiencia core.",
+      "action": "Contactar con ITAINNOVA o CIRCE como socio consorcio. Preparar propuesta enfocada en: (1) recuperación calor residual en horno industrial específico del cliente, (2) validación de quemador H2-ready en entorno relevante, (3) monitorización IIoT del proceso. Verificar si convocatoria permite partner tecnológico como liderador o requiere PYME/gran empresa como titular.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 85
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 90
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 80
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 65
+        }
+      ],
+      "keywords_found": [
+        "eficiencia energética"
+      ],
+      "source_type": "Web Scraping"
+    },
+    {
+      "id": 12,
+      "source": "IDAE",
+      "title": "Fondo Nacional de Eficiencia Energética",
+      "description": "",
+      "match": 72,
+      "priority": "medium",
+      "descartada": false,
+      "motivo_descarte": "",
+      "trl_min": 5,
+      "trl_max": 7,
+      "socio_consorcio": "ITAINNOVA / CIRCE / Unizar",
+      "deadline": 30,
+      "deadline_date": "",
+      "open_date": "",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": false,
+      "budget_raw": 0,
+      "url": "https://www.idae.es/ayudas-y-financiacion/fondo-nacional-de-eficiencia-energetica",
+      "org": "Instituto para la Diversificación y Ahorro de la Energía",
+      "tags": [
+        "ee",
+        "desc",
+        "h2",
+        "emis",
+        "horn"
+      ],
+      "summary": "Convocatoria IDAE de eficiencia energética con potencial alineación con soluciones térmicas industriales de Kalfrisa (recuperación calor residual, quemadores H2, control emisiones). Aunque el título es genérico sin detallar procesos térmicos específicos, el foco IDAE en industria y descarbonización encaja con el portfolio. Kalfrisa puede participar como partner tecnológico experto en hornos y procesos de alta temperatura.",
+      "action": "Solicitar bases detalladas a IDAE para confirmar: (1) si incluye procesos térmicos industriales (hornos, postcombustión); (2) si admite H2-ready como línea de descarbonización; (3) TRL objetivo. Contactar ITAINNOVA/CIRCE para co-liderazgo en consorcio. Preparar propuesta con caso de uso en cerámica/siderurgia si bases lo permiten.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 70
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 85
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 80
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 60
+        }
+      ],
+      "keywords_found": [
+        "eficiencia energética"
+      ],
+      "source_type": "Web Scraping"
+    },
+    {
+      "id": 13,
+      "source": "IDAE",
+      "title": "Ingreso aportaciones al Fondo Nacional de Eficiencia Energética 2026",
+      "description": "",
+      "match": 62,
+      "priority": "medium",
+      "descartada": false,
+      "motivo_descarte": "",
+      "trl_min": 5,
+      "trl_max": 7,
+      "socio_consorcio": "Centro tecnológico (ITAINNOVA/CIRCE) + universidad (Unizar)",
+      "deadline": 30,
+      "deadline_date": "",
+      "open_date": "",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": false,
+      "budget_raw": 0,
+      "url": "https://www.idae.es/ayudas-y-financiacion/ingreso-aportaciones-al-fondo-nacional-de-eficiencia-energetica-2026",
+      "org": "Instituto para la Diversificación y Ahorro de la Energía",
+      "tags": [
+        "ee",
+        "desc",
+        "emis",
+        "horn",
+        "h2"
+      ],
+      "summary": "Convocatoria IDAE de eficiencia energética con potencial moderado-alto para Kalfrisa. Aunque el título es genérico, el carácter de 'Fondo Nacional' sugiere enfoque en industria térmica y descarbonización. Kalfrisa encaja como solicitante en proyectos de recuperación de calor residual y conversión a H2 en procesos industriales, pero requiere clarificación de bases para confirmar exclusión de sectores no-industriales.",
+      "action": "1) Solicitar bases detalladas a IDAE para validar exclusión de edificios/terciario; 2) Si confirma enfoque industrial térmico, preparar propuesta con ITAINNOVA/CIRCE sobre recuperación calor residual y quemadores H2 en cerámica/metalurgia; 3) Posicionar como demostración TRL6-7 en cliente real.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 68
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 85
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 80
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 45
+        }
+      ],
+      "keywords_found": [
+        "eficiencia energética"
+      ],
+      "source_type": "Web Scraping"
+    },
+    {
+      "id": 8,
+      "source": "IDAE",
+      "title": "Para la transición energética en las islas PRTR",
+      "description": "",
+      "match": 45,
+      "priority": "low",
+      "descartada": false,
+      "motivo_descarte": "",
+      "trl_min": 5,
+      "trl_max": 7,
+      "socio_consorcio": "Centro tecnológico (ITAINNOVA/CIRCE) + administración local insular",
+      "deadline": 30,
+      "deadline_date": "",
+      "open_date": "",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": false,
+      "budget_raw": 0,
+      "url": "https://www.idae.es/ayudas-y-financiacion/para-la-transicion-energetica-en-las-islas-prtr",
+      "org": "Instituto para la Diversificación y Ahorro de la Energía",
+      "tags": [
+        "desc",
+        "ee",
+        "emis"
+      ],
+      "summary": "Convocatoria de transición energética con foco geográfico islas (PRTR). Aunque Kalfrisa domina tecnologías de descarbonización industrial térmica (H2, eficiencia, emisiones), el contexto insular sugiere énfasis en energías renovables, generación eléctrica y resiliencia energética local, donde Kalfrisa no es actor natural. Posible si hay componente de descarbonización industrial en islas, pero bajo encaje sin descripción detallada.",
+      "action": "Revisar bases completas en IDAE. Si incluye descarbonización de procesos térmicos industriales insulares (cerámica, alimentos, vidrio), contactar a ITAINNOVA para mapeo de demanda local. En caso contrario, deprioritizar.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 55
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 70
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 60
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 25
+        }
+      ],
+      "keywords_found": [
+        "transición energética"
+      ],
+      "source_type": "Web Scraping"
+    },
+    {
+      "id": 14,
+      "source": "IDAE",
+      "title": "Eficiencia Energética",
+      "description": "",
+      "match": 42,
+      "priority": "low",
+      "descartada": false,
+      "motivo_descarte": "",
+      "trl_min": 4,
+      "trl_max": 7,
+      "socio_consorcio": "ITAINNOVA / CIRCE",
+      "deadline": 30,
+      "deadline_date": "",
+      "open_date": "",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": false,
+      "budget_raw": 0,
+      "url": "https://www.idae.es/tecnologias/eficiencia-energetica",
+      "org": "Instituto para la Diversificación y Ahorro de la Energía",
+      "tags": [
+        "ee"
+      ],
+      "summary": "Convocatoria IDAE de eficiencia energética con alcance genérico sin especificación sectorial ni tecnológica. El título sugiere cobertura amplia que potencialmente incluye edificios y transporte (criterios de exclusión de Kalfrisa). Encaje débil sin claridad sobre si aborda procesos térmicos industriales, recuperación de calor residual o descarbonización industrial específicamente.",
+      "action": "Solicitar bases completas y descriptivo técnico a IDAE antes de comprometer recursos. Si la convocatoria es sectorial (cerámica, metalurgia, vidrio) o específica en recuperación térmica/H2 industrial, reclasificar a HIGH. Mientras tanto, descartar como oportunidad prioritaria.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 35
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 80
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 70
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 25
+        }
+      ],
+      "keywords_found": [
+        "eficiencia energética"
+      ],
+      "source_type": "Web Scraping"
+    },
+    {
+      "id": 15,
+      "source": "IDAE",
+      "title": "Transición Energética en las Illes Balears",
+      "description": "",
+      "match": 35,
+      "priority": "low",
+      "descartada": false,
+      "motivo_descarte": "",
+      "trl_min": 5,
+      "trl_max": 8,
+      "socio_consorcio": "Centro tecnológico regional (ITAINNOVA) o administración autonómica",
+      "deadline": 30,
+      "deadline_date": "",
+      "open_date": "",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": false,
+      "budget_raw": 0,
+      "url": "https://www.idae.es/oficina-tecnica-de-energia-limpia-y-proyectos-inteligentes-en-las-islas/energia-sostenible-en-las-islas-pniec-prtr/transicion-energetica-en-las-illes-balears",
+      "org": "Instituto para la Diversificación y Ahorro de la Energía",
+      "tags": [
+        "desc",
+        "ee"
+      ],
+      "summary": "Convocatoria de transición energética con enfoque territorial insular (Baleares) que puede incluir industria térmica, pero carece de especificidad técnica en recuperación de calor residual, combustión H2 u hornos industriales. Kalfrisa no es el solicitante natural; su valor como partner experto en tecnologías core es limitado sin proyectos ancla identificados.",
+      "action": "Descartar como línea prioritaria. Revisar descripción detallada oficial si está disponible. Si incluye incentivos a industria cerámica/siderúrgica/vidrio en islas, contactar ITAINNOVA para rol de partner tecnológico especializado.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 25
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 40
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 55
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 30
+        }
+      ],
+      "keywords_found": [
+        "transición energética"
+      ],
+      "source_type": "Web Scraping"
+    },
+    {
+      "id": 16,
+      "source": "IDAE",
+      "title": "Transición Energética en las Islas Canarias",
+      "description": "",
+      "match": 35,
+      "priority": "low",
+      "descartada": false,
+      "motivo_descarte": "",
+      "trl_min": 5,
+      "trl_max": 7,
+      "socio_consorcio": "Centro tecnológico (ITAINNOVA/CIRCE) + empresa local canaria",
+      "deadline": 30,
+      "deadline_date": "",
+      "open_date": "",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": false,
+      "budget_raw": 0,
+      "url": "https://www.idae.es/oficina-tecnica-de-energia-limpia-y-proyectos-inteligentes-en-las-islas/energia-sostenible-en-las-islas-pniec-prtr/transicion-energetica-en-las-islas-canarias",
+      "org": "Instituto para la Diversificación y Ahorro de la Energía",
+      "tags": [
+        "h2",
+        "ee",
+        "desc"
+      ],
+      "summary": "Convocatoria orientada a transición energética insular con foco probable en renovables eléctricas y eficiencia genérica. Kalfrisa tiene tecnologías térmicas industriales aplicables (H2, recuperación calor, descarbonización) pero no es el solicitante natural; requeriría identificar industria térmica específica en Canarias (cerámica, vidrio, metalurgia) con necesidades de modernización.",
+      "action": "Descartar como solicitante principal. Evaluar únicamente si: (1) existe socio industrial canario en sector térmico (cerámicas, vidrio, metalurgia) con proyecto de descarbonización específico, o (2) IDAE abre línea explícita de eficiencia térmica industrial post-evaluación de bases. Contactar ITAINNOVA para confirmar alcance sectorial de convocatoria.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 40
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 55
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 60
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 20
+        }
+      ],
+      "keywords_found": [
+        "transición energética"
+      ],
+      "source_type": "Web Scraping"
+    },
+    {
+      "id": 7,
+      "source": "IDAE",
+      "title": "Programa de Ayudas para actuaciones de eficiencia energética en el sector ferroviario (FNEE)",
+      "description": "",
+      "match": 12,
+      "priority": "low",
+      "descartada": true,
+      "motivo_descarte": "Transporte ferroviario excluido explícitamente. Kalfrisa se especializa en procesos térmicos industriales (hornos, combustión, recuperación de calor residual >400°C), no en movilidad ni sistemas de tracción ferroviaria. Sin componente de hornos industriales, emisiones térmicas o combustión industrial de alta temperatura, la convocatoria cae fuera del perímetro estratégico de la empresa.",
+      "trl_min": 6,
+      "trl_max": 8,
+      "socio_consorcio": "N/A",
+      "deadline": 30,
+      "deadline_date": "",
+      "open_date": "",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": false,
+      "budget_raw": 0,
+      "url": "https://www.idae.es/ayudas-y-financiacion/para-movilidad-y-vehiculos/convocatorias-cerradas/programa-de-ayudas-para-0",
+      "org": "Instituto para la Diversificación y Ahorro de la Energía",
+      "tags": [
+        "ee"
+      ],
+      "summary": "Convocatoria IDAE orientada a eficiencia energética en sector ferroviario (movilidad). Aunque Kalfrisa domina eficiencia energética e hidrógeno como combustible, el foco es transporte, no procesos térmicos industriales. Incluida en criterios de exclusión absoluta ('transporte terrestre').",
+      "action": "Descartar. No contactar. Redirigir recursos a convocatorias de I+D en hornos industriales, recuperación de calor residual, quemadores H2-ready en sectores cerámico/siderúrgico o control de emisiones NOx en procesos térmicos.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 5
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 60
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 50
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 0
+        }
+      ],
+      "keywords_found": [
+        "eficiencia energética"
+      ],
+      "source_type": "Web Scraping"
+    },
+    {
+      "id": 11,
+      "source": "IDAE",
+      "title": "Programa de ayudas para la realización de actuaciones de eficiencia energética en explotaciones agropecuarias",
+      "description": "",
+      "match": 5,
+      "priority": "low",
+      "descartada": true,
+      "motivo_descarte": "Criterio de exclusión absoluta: agricultura/sector agropecuario. El programa está diseñado para explotaciones agropecuarias, fuera del alcance industrial térmico de Kalfrisa.",
+      "trl_min": 1,
+      "trl_max": 9,
+      "socio_consorcio": "N/A",
+      "deadline": 30,
+      "deadline_date": "",
+      "open_date": "",
+      "fecha_sin_confirmar": true,
+      "fecha_prevista": false,
+      "budget_raw": 0,
+      "url": "https://www.idae.es/ayudas-y-financiacion/programa-de-ayudas-para-la-realizacion-de-actuaciones-de-eficiencia",
+      "org": "Instituto para la Diversificación y Ahorro de la Energía",
+      "tags": [],
+      "summary": "Convocatoria IDAE enfocada en eficiencia energética en explotaciones agropecuarias. Aunque toca eficiencia energética (keyword de interés), el sector agropecuario está explícitamente excluido del perfil de Kalfrisa. No hay aplicación a procesos térmicos industriales de alta temperatura ni a hornos.",
+      "action": "DESCARTAR. No perseguir. Sector no compatible con estrategia industrial de Kalfrisa.",
+      "dims": [
+        {
+          "name": "Alineación tecnológica",
+          "val": 0
+        },
+        {
+          "name": "Capacidad de consorcio",
+          "val": 0
+        },
+        {
+          "name": "Encaje TRL",
+          "val": 0
+        },
+        {
+          "name": "Oportunidad estratégica",
+          "val": 0
+        }
+      ],
+      "keywords_found": [
+        "eficiencia energética"
+      ],
+      "source_type": "Web Scraping"
+    }
+  ],
+  "stats": {
+    "active": 17,
+    "high": 6,
+    "urgent": 2,
+    "budget": 0.0
+  },
+  "sources": [
+    {
+      "name": "HORIZON EUROPE",
+      "type": "API REST",
+      "status": "ok",
+      "count": 1,
+      "time": "actualizado 08:55"
+    },
+    {
+      "name": "CDTI",
+      "type": "Catálogo curado",
+      "status": "ok",
+      "count": 6,
+      "time": "actualizado 08:55"
+    },
+    {
+      "name": "IDAE",
+      "type": "Web Scraping",
+      "status": "ok",
+      "count": 10,
+      "time": "actualizado 08:55"
+    },
+    {
+      "name": "BOE / MITECO",
+      "type": "API BOE",
+      "status": "warn",
+      "count": 0,
+      "time": "actualizado 08:55"
+    },
+    {
+      "name": "BOA ARAGÓN",
+      "type": "Catálogo curado",
+      "status": "ok",
+      "count": 1,
+      "time": "actualizado 08:55"
+    }
+  ],
+  "keywords": [
+    {
+      "name": "eficiencia energética",
+      "count": 14,
+      "color": "var(--accent)"
+    },
+    {
+      "name": "eficiencia térmica",
+      "count": 7,
+      "color": "var(--accent)"
+    },
+    {
+      "name": "descarbonización",
+      "count": 5,
+      "color": "var(--blue)"
+    },
+    {
+      "name": "calor residual",
+      "count": 4,
+      "color": "var(--accent)"
+    },
+    {
+      "name": "hidrógeno",
+      "count": 3,
+      "color": "var(--teal)"
+    },
+    {
+      "name": "transición energética",
+      "count": 3,
+      "color": "var(--accent)"
+    },
+    {
+      "name": "emisiones industriales",
+      "count": 2,
+      "color": "var(--red)"
+    },
+    {
+      "name": "hornos industriales",
+      "count": 1,
+      "color": "#a080e0"
+    }
+  ]
+}
