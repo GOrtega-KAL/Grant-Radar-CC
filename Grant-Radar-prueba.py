@@ -86,6 +86,16 @@ from dotenv import load_dotenv  # Lee credenciales desde el archivo .env local (
 # el resto del pipeline. Es el primer paso de la división en módulos
 # propuesta en SUGERENCIAS.MD (3.2); el resto del script sigue igual.
 from grant_radar.cache import cache_key, cache_load, cache_save, source_hash
+from grant_radar.claude_schemas import (
+    BdnsHoldFacts,
+    CallEvaluation,
+    CallFacts,
+    ClaudeAnalysisError,
+    EvaluationScores,
+    FundingLineFacts,
+    normalize_call_facts,
+    validate_structured_output_schema,
+)
 from grant_radar.deterministic_rules import (
     BDNS_DIRECT_OWN_INVESTMENT_TERMS,
     _deterministic_call_status,
@@ -208,8 +218,8 @@ BDNS_DOCUMENT_CACHE_FILE = os.path.join(DATA_DIR, "bdns_document_cache.json")
 SOURCE_DOCUMENT_CACHE_FILE = os.path.join(DATA_DIR, "source_document_cache.json")
 AUDIT_SCHEMA_VERSION = 2
 AUDIT_MAX_RUNS = 365
-STRUCTURED_SCHEMA_MAX_OPTIONAL_FIELDS = 24
-STRUCTURED_SCHEMA_MAX_UNION_FIELDS = 16
+# STRUCTURED_SCHEMA_MAX_OPTIONAL_FIELDS y STRUCTURED_SCHEMA_MAX_UNION_FIELDS
+# viven en grant_radar/claude_schemas.py, junto a los esquemas que limitan.
 BDNS_HOLD_AI_VERSION = "bdns-hold-2026-08-v4-direct-participation"
 BDNS_DOCUMENT_CACHE_VERSION = "bdns-document-text-2026-08-v1"
 SOURCE_DOCUMENT_CACHE_VERSION = "source-document-text-2026-08-v1"
@@ -5552,14 +5562,6 @@ def post_procesar_texto(texto: str, whitelist: list = None) -> str:
 print("✓ Normalización determinista de entidades cargada")
 
 
-class ClaudeAnalysisError(RuntimeError):
-    """Error fatal con trazabilidad opcional de llamadas ya completadas."""
-
-    def __init__(self, message: str, partial_usages: list[dict] | None = None):
-        super().__init__(message)
-        self.partial_usages = list(partial_usages or [])
-
-
 def claude_key_format_is_valid() -> bool:
     """Validación local de formato; no realiza ninguna petición externa."""
     return (
@@ -5931,201 +5933,6 @@ def _deduplicate_raw_convocations(convocations: list) -> list:
             continue
         consolidated.append(item)
     return consolidated
-
-
-class FundingLineFacts(BaseModel):
-    name: str
-    scope: str
-    applicant_types: list[str]
-    eligible_entity_types: list[str]
-    eligible_cnae: list[str]
-    eligible_actions: list[str]
-    requirements: list[str]
-    budget_total_eur: float = Field(ge=-1)
-    project_cost_min_eur: float = Field(ge=-1)
-    grant_max_eur: float = Field(ge=-1)
-    funding_rate_percent: float = Field(ge=-1, le=100)
-    deadline_date: str
-    consortium_required: Literal["yes", "no", "unknown"]
-    evidence: list[str]
-
-
-class CallFacts(BaseModel):
-    """Hechos generales y líneas con centinelas no anulables."""
-    call_status: Literal["open", "forthcoming", "closed", "unknown"]
-    programme: str
-    action_type: str
-    applicant_types: list[str]
-    eligible_geographies: list[str]
-    eligible_entity_types: list[str]
-    eligibility_evidence: list[str]
-    budget_total_eur: float = Field(ge=-1)
-    funding_rate_percent: float = Field(ge=-1, le=100)
-    project_budget_eur: float = Field(ge=-1)
-    project_cost_min_eur: float = Field(ge=-1)
-    grant_max_eur: float = Field(ge=-1)
-    deadline_date: str
-    trl_min: int = Field(ge=0, le=9)
-    trl_max: int = Field(ge=0, le=9)
-    trl_source: str
-    consortium_required: Literal["yes", "no", "unknown"]
-    consortium_evidence: str
-    required_topics: list[str]
-    eligible_actions: list[str]
-    expected_outcomes: list[str]
-    funding_lines: list[FundingLineFacts]
-    evidence: list[str]
-    missing_fields: list[str]
-
-
-class EvaluationScores(BaseModel):
-    technological_fit: int = Field(ge=0, le=100)
-    strategic_fit: int = Field(ge=0, le=100)
-    role_fit: int = Field(ge=0, le=100)
-    trl_fit: int = Field(ge=0, le=100)
-    consortium_readiness: int = Field(ge=0, le=100)
-
-
-class CallEvaluation(BaseModel):
-    fit_score: int = Field(ge=0, le=100)
-    actionability_score: int = Field(ge=0, le=100)
-    confidence: int = Field(ge=0, le=100)
-    decision: Literal[
-        "pursue", "watch", "manual_review",
-        "discard_out_of_scope", "discard_ineligible",
-    ]
-    eligibility: Literal["eligible", "ineligible", "unknown"]
-    eligibility_reason: str
-    recommended_role: Literal[
-        "leader", "technology_partner", "industrial_demonstrator",
-        "consortium_partner", "not_applicable", "unknown",
-    ]
-    scores: EvaluationScores
-    evidence_quality: Literal["high", "medium", "low"]
-    positive_evidence: list[str]
-    risks_and_unknowns: list[str]
-    partner_needs: list[str]
-    recommended_partner_ids: list[str]
-    resumen: str
-    accion: str
-    tags: list[str]
-
-
-class BdnsHoldFacts(BaseModel):
-    """Respuesta factual mínima para resolver una única causa `hold_manual`."""
-    call_status: Literal["open", "forthcoming", "open_ended", "closed", "unknown"]
-    deadline_date: str
-    territorial_condition: Literal[
-        "existing_establishment", "project_location_only",
-        "new_establishment_allowed", "no_restriction", "unknown",
-    ]
-    execution_days: int = Field(ge=-1)
-    consortium_participation: Literal["yes", "no", "unknown"]
-    cluster_support_to_members: Literal["yes", "no", "unknown"]
-    evidence_quote: str
-    evidence_source_url: str
-    confidence: int = Field(ge=0, le=100)
-    explanation: str
-
-
-def structured_schema_complexity(output_model: type[BaseModel]) -> dict:
-    """Cuenta límites explícitos de Anthropic sin realizar una petición API."""
-    schema = output_model.model_json_schema()
-    optional_fields = 0
-    union_fields = 0
-
-    def walk(value) -> None:
-        nonlocal optional_fields, union_fields
-        if isinstance(value, dict):
-            properties = value.get("properties")
-            if isinstance(properties, dict):
-                required = set(value.get("required", []))
-                optional_fields += sum(
-                    property_name not in required
-                    for property_name in properties
-                )
-            if isinstance(value.get("anyOf"), list):
-                union_fields += 1
-            if isinstance(value.get("type"), list):
-                union_fields += 1
-            for nested in value.values():
-                walk(nested)
-        elif isinstance(value, list):
-            for nested in value:
-                walk(nested)
-
-    walk(schema)
-    return {
-        "model": output_model.__name__,
-        "optional_fields": optional_fields,
-        "union_fields": union_fields,
-        "schema_characters": len(json.dumps(schema, ensure_ascii=False)),
-    }
-
-
-def validate_structured_output_schema(output_model: type[BaseModel]) -> dict:
-    """Falla localmente si el esquema supera los límites publicados."""
-    metrics = structured_schema_complexity(output_model)
-    violations = []
-    if metrics["optional_fields"] > STRUCTURED_SCHEMA_MAX_OPTIONAL_FIELDS:
-        violations.append(
-            f"{metrics['optional_fields']} campos opcionales "
-            f"(máximo {STRUCTURED_SCHEMA_MAX_OPTIONAL_FIELDS})"
-        )
-    if metrics["union_fields"] > STRUCTURED_SCHEMA_MAX_UNION_FIELDS:
-        violations.append(
-            f"{metrics['union_fields']} campos con uniones "
-            f"(máximo {STRUCTURED_SCHEMA_MAX_UNION_FIELDS})"
-        )
-    if violations:
-        raise ClaudeAnalysisError(
-            f"Esquema estructurado {metrics['model']} incompatible con Claude: "
-            + "; ".join(violations)
-        )
-    return metrics
-
-
-def normalize_call_facts(facts_model: CallFacts) -> dict:
-    """Convierte los centinelas del esquema compacto al contrato interno."""
-    facts = facts_model.model_dump()
-    for field_name in (
-        "programme", "action_type", "deadline_date", "trl_source",
-        "consortium_evidence",
-    ):
-        if not str(facts.get(field_name, "")).strip():
-            facts[field_name] = None
-    for field_name in (
-        "budget_total_eur", "funding_rate_percent", "project_budget_eur",
-        "project_cost_min_eur", "grant_max_eur",
-    ):
-        if facts.get(field_name, -1) < 0:
-            facts[field_name] = None
-    for field_name in ("trl_min", "trl_max"):
-        if facts.get(field_name, 0) <= 0:
-            facts[field_name] = None
-    facts["consortium_required"] = {
-        "yes": True,
-        "no": False,
-        "unknown": None,
-    }[facts["consortium_required"]]
-
-    for line in facts.get("funding_lines", []):
-        if not str(line.get("scope", "")).strip():
-            line["scope"] = None
-        if not str(line.get("deadline_date", "")).strip():
-            line["deadline_date"] = None
-        for field_name in (
-            "budget_total_eur", "project_cost_min_eur", "grant_max_eur",
-            "funding_rate_percent",
-        ):
-            if line.get(field_name, -1) < 0:
-                line[field_name] = None
-        line["consortium_required"] = {
-            "yes": True,
-            "no": False,
-            "unknown": None,
-        }[line["consortium_required"]]
-    return facts
 
 
 def _public_deadline_values(conv: dict) -> tuple[int | None, str, bool]:

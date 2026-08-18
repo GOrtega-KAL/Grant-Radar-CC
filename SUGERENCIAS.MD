@@ -349,6 +349,22 @@ ofrecería git.
    ejecución de esa misma mañana, las 4 fuentes con control de salud
    `healthy`): confirma que el cambio no alteró ningún resultado del
    pipeline real, no solo los tests.
+   **[Cuarto incremento, mismo día — esquemas de Claude]** Se extrajo
+   `grant_radar/claude_schemas.py`: los cinco modelos Pydantic
+   (`CallFacts`, `CallEvaluation`, `FundingLineFacts`, `EvaluationScores`,
+   `BdnsHoldFacts`), `ClaudeAnalysisError`, y las funciones que los validan
+   contra los límites publicados de Anthropic
+   (`structured_schema_complexity`, `validate_structured_output_schema`,
+   `normalize_call_facts`). Fue el candidato más sencillo hasta ahora: no
+   depende de ningún otro módulo del proyecto, solo de `pydantic` y la
+   librería estándar. El script principal bajó de 9.006 a 8.835 líneas
+   (-18,6 % acumulado). Nuevo `test_grant_radar_claude_schemas.py`,
+   incluyendo un test que fija en código el invariante de `AGENTS.md`
+   "cero opcionales, cero uniones" para los tres esquemas principales, para
+   que un campo `Optional` añadido sin querer en el futuro rompa un test en
+   vez de descubrirse al fallar una llamada real a Claude. 216 tests
+   `unittest`, `py_compile` y una repetición de `--no-claude` en verde, con
+   las mismas 47 candidatas de las ejecuciones anteriores.
 3. Hacerlo de forma incremental y verificada: extraer un módulo, ejecutar
    `py_compile` y la suite completa de `unittest`, confirmar comportamiento
    idéntico con `--no-claude`, y solo entonces continuar con el siguiente

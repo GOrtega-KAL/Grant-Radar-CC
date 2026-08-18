@@ -1484,3 +1484,38 @@ en la sección 21 (`filter_usable_cache()` → `apply_current_deterministic_rule
   sección 21). El acoplamiento cache/rules que bloqueaba avanzar ya está
   resuelto; el resto de dominios no tiene, de momento, ninguna dependencia
   cruzada conocida entre sí.
+
+## 24. Cuarta ronda de modularización a 18/08/2026: esquemas de Claude
+
+`grant_radar/claude_schemas.py`: los cinco modelos Pydantic (`CallFacts`,
+`CallEvaluation`, `FundingLineFacts`, `EvaluationScores`, `BdnsHoldFacts`),
+`ClaudeAnalysisError`, `STRUCTURED_SCHEMA_MAX_OPTIONAL_FIELDS`/
+`STRUCTURED_SCHEMA_MAX_UNION_FIELDS`, y las funciones que validan los
+esquemas contra los límites publicados de Anthropic
+(`structured_schema_complexity`, `validate_structured_output_schema`,
+`normalize_call_facts`). Sin dependencias cruzadas con otros módulos de
+`grant_radar/` — solo `pydantic` y la librería estándar — fue el candidato
+más simple de las cuatro rondas de hoy.
+
+`Grant-Radar-prueba.py` bajó de 9.006 a 8.835 líneas (-19,5 % acumulado
+desde las 10.976 originales de esta mañana). Nuevo
+`tests/test_grant_radar_claude_schemas.py`, con un test que fija el
+invariante "cero opcionales, cero uniones" de la sección 4 para los tres
+esquemas principales como aserción de test, no solo como comentario. 216
+pruebas `unittest`, `py_compile` y una repetición de
+`poetry run python "Grant-Radar-prueba.py" --no-claude` en verde, con las
+mismas 47 candidatas y las mismas cuatro fuentes `healthy` que en las rondas
+anteriores.
+
+Balance del día: cuatro rondas de modularización (secciones 21-24),
+`Grant-Radar-prueba.py` pasó de 10.976 a 8.835 líneas. Paquete `grant_radar/`
+con diez módulos: `parsing_helpers`, `exclusion_terms` (+ `.json`),
+`tech_taxonomy` (+ `.json`), `kalfrisa_profile` (+ `.txt`),
+`partner_catalog` (+ `.json`), `versions`, `cache`, `deterministic_rules`,
+`claude_schemas`. Sigue pendiente `sources/` (los ocho conectores de
+fuentes, el bloque más grande que queda) y `pipeline.py`
+(`run_pipeline()` y su orquestación). La lógica más compleja del proyecto —
+`_bdns_pre_claude_gate()` y `deterministic_prefilter()`, con los siete
+niveles de precedencia de la sección 4.1 — sigue deliberadamente sin
+tocar: se considera que merece su propia sesión dedicada por el riesgo de
+regresión silenciosa, no encadenarla detrás de otra extracción.
