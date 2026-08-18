@@ -81,6 +81,37 @@ from pydantic import BaseModel, Field, ValidationError
 from playwright.sync_api import BrowserContext, TimeoutError as PlaywrightTimeoutError, sync_playwright
 from dotenv import load_dotenv  # Lee credenciales desde el archivo .env local (no versionado)
 
+# Utilidades de texto y fechas sin estado, extraídas a un módulo aparte
+# (ver grant_radar/parsing_helpers.py) para poder probarlas y leerlas sin
+# el resto del pipeline. Es el primer paso de la división en módulos
+# propuesta en SUGERENCIAS.MD (3.2); el resto del script sigue igual.
+from grant_radar.exclusion_terms import (
+    BUILDING_TERMS,
+    CIVIL_SECURITY_TERMS,
+    CYBERSECURITY_TERMS,
+    EDUCATION_HEALTH_TERMS,
+    GENERIC_DIGITAL_POLICY_TERMS,
+    GOVERNANCE_PRIMARY_TERMS,
+    MARINE_POLICY_TERMS,
+    NUCLEAR_TERMS,
+    RENEWABLE_GENERATION_TERMS,
+    TRANSPORT_TERMS,
+)
+from grant_radar.parsing_helpers import (
+    _SPANISH_MONTHS,
+    _absolute_url,
+    _date_to_iso,
+    _days_until,
+    _extract_application_dates,
+    _extract_date_range,
+    _extract_spanish_application_dates,
+    _fold_text,
+    _levenshtein,
+    _parse_cdti_calendar_date,
+    _parse_flexible_date,
+    _signed_days_until,
+)
+
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 if hasattr(sys.stderr, "reconfigure"):
@@ -2353,27 +2384,6 @@ class PlaywrightBrowser:
         finally:
             page.close()
 
-def _signed_days_until(date_str: str) -> int | None:
-    """Días con signo hasta una fecha; ``None`` si no puede interpretarse."""
-    if not date_str:
-        return None
-    for fmt in ["%Y-%m-%dT%H:%M:%S", "%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y"]:
-        try:
-            dt = datetime.strptime(date_str[:10], fmt[:10])
-            return (dt.date() - datetime.now().date()).days
-        except Exception:
-            pass
-    return None
-
-
-def _days_until(date_str: str) -> int:
-    """Convierte una fecha ISO o formato europeo a días restantes."""
-    signed_days = _signed_days_until(date_str)
-    if signed_days is not None:
-        return max(0, signed_days)
-    return 90
-
-
 def _stable_factual_hash_text(value: str, document_role: str = "") -> str:
     """Elimina solo relojes de sede que no cambian los hechos de la ayuda."""
     text = re.sub(r"\s+", " ", str(value or "")).strip()
@@ -2742,34 +2752,6 @@ def _http_get(
     return None
 
 
-def _parse_flexible_date(raw: str) -> str:
-    text = " ".join(str(raw or "").replace("\xa0", " ").split())
-    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%d.%m.%Y"):
-        try:
-            return datetime.strptime(text[:10], fmt).strftime("%Y-%m-%d")
-        except ValueError:
-            pass
-    folded = _fold_text(text)
-    month_names = {
-        **_SPANISH_MONTHS,
-        "january": 1, "february": 2, "march": 3, "april": 4,
-        "may": 5, "june": 6, "july": 7, "august": 8,
-        "september": 9, "october": 10, "november": 11, "december": 12,
-    }
-    match = re.search(
-        r"\b(\d{1,2})\s+(?:de\s+)?([a-z]+)\s+(?:de\s+)?(20\d{2})\b",
-        folded,
-    )
-    if match and match.group(2) in month_names:
-        try:
-            return datetime(
-                int(match.group(3)), month_names[match.group(2)], int(match.group(1))
-            ).strftime("%Y-%m-%d")
-        except ValueError:
-            pass
-    return ""
-
-
 def _sedia_meta(item: dict, key: str, default="") -> str:
     """
     Extrae un valor del dict metadata de la SEDIA API.
@@ -3124,258 +3106,6 @@ def _fetch_horizon_rss_fallback() -> list:
     log.warning("Horizon Europe: RSS no disponible (bozo=1 confirmado). "
                 "Si SEDIA API falla, no hay fallback funcional.")
     return []
-
-
-def _date_to_iso(raw: str) -> str:
-    for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%d.%m.%Y", "%Y-%m-%d"):
-        try:
-            return datetime.strptime(raw.strip()[:10], fmt).strftime("%Y-%m-%d")
-        except (TypeError, ValueError):
-            pass
-    return ""
-
-
-def _extract_date_range(text: str) -> tuple[str, str]:
-    """Extrae apertura y cierre de texto renderizado, sin asumir un HTML concreto."""
-    date_pattern = r"(\d{1,2}[./-]\d{1,2}[./-]\d{4})"
-    range_match = re.search(
-        date_pattern + r"\s*(?:al|a|hasta|-|–)\s*" + date_pattern,
-        text,
-        re.IGNORECASE,
-    )
-    if range_match:
-        return _date_to_iso(range_match.group(1)), _date_to_iso(range_match.group(2))
-
-    dates = {}
-    labels = (
-        (
-            r"\b(?:inicio|apertura|desde|comienzo)\b[^.\n]{0,100}?"
-            + date_pattern,
-            "open",
-        ),
-        (
-            r"\b(?:fin|finalizaci.n|cierre|hasta|vencimiento)\b"
-            r"[^.\n]{0,100}?" + date_pattern,
-            "close",
-        ),
-    )
-    for pattern, key in labels:
-        match = re.search(pattern, text, re.IGNORECASE)
-        if match:
-            dates[key] = _date_to_iso(match.group(1))
-    return dates.get("open", ""), dates.get("close", "")
-
-
-def _extract_spanish_application_dates(text: str) -> tuple[str, str]:
-    """Extrae plazos expresados como «15 de septiembre de 2026»."""
-    folded = _fold_text(text)
-    month_names = "|".join(_SPANISH_MONTHS)
-    textual_date = (
-        rf"\d{{1,2}}\s+de\s+(?:{month_names})"
-        rf"(?:\s+de)?\s+20\d{{2}}"
-    )
-    scope_patterns = (
-        rf"(?:plazo|solicitudes?|presentacion)[^.\n]{{0,300}}?"
-        rf"(?:desde|inicio|comenzara)[^.\n]{{0,120}}?({textual_date})"
-        rf"[^.\n]{{0,220}}?(?:hasta|fin|finalizara)[^.\n]{{0,120}}?({textual_date})",
-        rf"(?:desde|inicio)[^.\n]{{0,100}}?({textual_date})"
-        rf"[^.\n]{{0,220}}?(?:hasta|fin)[^.\n]{{0,100}}?({textual_date})",
-    )
-    for pattern in scope_patterns:
-        match = re.search(pattern, folded, re.IGNORECASE)
-        if match:
-            open_date, _ = _parse_cdti_calendar_date(match.group(1), datetime.now().year)
-            close_date, _ = _parse_cdti_calendar_date(
-                match.group(2),
-                datetime.now().year,
-                month_end=True,
-            )
-            if open_date or close_date:
-                return open_date, close_date
-
-    # Algunas fichas oficiales separan con punto la apertura relativa y el
-    # cierre absoluto: «El plazo para presentar solicitudes comenzará ... .
-    # Finalizará ... el 15 de julio de 2025». Se exige la frase de solicitud
-    # para no confundir el fin de ejecución del proyecto con el de la call.
-    split_close = re.search(
-        rf"(?:plazo\s+para\s+presentar\s+solicitudes|presentacion\s+de\s+solicitudes)"
-        rf"[\s\S]{{0,650}}?finalizara[\s\S]{{0,160}}?({textual_date})",
-        folded,
-        re.IGNORECASE,
-    )
-    if split_close:
-        close_date, _ = _parse_cdti_calendar_date(
-            split_close.group(1), datetime.now().year, month_end=True,
-        )
-        return "", close_date
-
-    close_match = re.search(
-        rf"(?:plazo|solicitudes?|presentacion)[^.\n]{{0,350}}?"
-        rf"(?:hasta|finaliza|fin)[^.\n]{{0,100}}?({textual_date})",
-        folded,
-        re.IGNORECASE,
-    )
-    if close_match:
-        close_date, _ = _parse_cdti_calendar_date(
-            close_match.group(1),
-            datetime.now().year,
-            month_end=True,
-        )
-        return "", close_date
-    return "", ""
-
-
-def _extract_application_dates(text: str) -> tuple[str, str]:
-    """Extrae únicamente fechas ligadas explícitamente al plazo de solicitud."""
-    textual_open, textual_close = _extract_spanish_application_dates(text)
-    if textual_close:
-        return textual_open, textual_close
-
-    folded = _fold_text(text)
-    date_pattern = r"(\d{1,2}[./-]\d{1,2}[./-]\d{4})"
-    labelled_close = re.search(
-        r"fecha[_\s-]+fin[_\s-]+solicitud[^\d]{0,30}" + date_pattern,
-        folded,
-        re.IGNORECASE,
-    )
-    if labelled_close:
-        return "", _date_to_iso(labelled_close.group(1))
-    scoped_range = re.search(
-        r"(?:plazo|solicitudes?|presentacion)"
-        r"[^.\n]{0,350}?" + date_pattern
-        + r"[^.\n]{0,220}?(?:al|a|hasta|-)\s*" + date_pattern,
-        folded,
-        re.IGNORECASE,
-    )
-    if scoped_range:
-        return (
-            _date_to_iso(scoped_range.group(1)),
-            _date_to_iso(scoped_range.group(2)),
-        )
-
-    scoped_close = re.search(
-        r"(?:plazo|solicitudes?|presentacion)"
-        r"[^.\n]{0,350}?(?:hasta|finaliza(?:cion)?|cierre|fin)"
-        r"[^.\n]{0,100}?" + date_pattern,
-        folded,
-        re.IGNORECASE,
-    )
-    if scoped_close:
-        return "", _date_to_iso(scoped_close.group(1))
-
-    catalan_close = re.search(
-        r"termini\s+de\s+presentacio[^\n]{0,350}?" + date_pattern,
-        folded,
-        re.IGNORECASE,
-    )
-    if catalan_close:
-        return "", _date_to_iso(catalan_close.group(1))
-
-    open_match = re.search(
-        r"\b(?:fecha\s+de\s+)?(?:inicio|apertura)\b"
-        r"[^.\n]{0,240}?" + date_pattern,
-        folded,
-        re.IGNORECASE,
-    )
-    close_match = re.search(
-        r"\b(?:fecha\s+de\s+)?(?:finaliza(?:cion)?|cierre|fin)\b"
-        r"[^.\n]{0,240}?" + date_pattern,
-        folded,
-        re.IGNORECASE,
-    )
-    if open_match and not re.search(
-        r"\b(solicitud|plazo)\b", open_match.group(0), re.IGNORECASE
-    ):
-        open_match = None
-    if close_match and not re.search(
-        r"\b(solicitud|plazo)\b", close_match.group(0), re.IGNORECASE
-    ):
-        close_match = None
-    return (
-        _date_to_iso(open_match.group(1)) if open_match else "",
-        _date_to_iso(close_match.group(1)) if close_match else "",
-    )
-
-
-def _absolute_url(base: str, href: str) -> str:
-    if href.startswith(("http://", "https://")):
-        return href
-    if href.startswith("/"):
-        return base.rstrip("/") + href
-    return base.rstrip("/") + "/" + href
-
-
-_SPANISH_MONTHS = {
-    "enero": 1,
-    "febrero": 2,
-    "marzo": 3,
-    "abril": 4,
-    "mayo": 5,
-    "junio": 6,
-    "julio": 7,
-    "agosto": 8,
-    "septiembre": 9,
-    "setiembre": 9,
-    "octubre": 10,
-    "noviembre": 11,
-    "diciembre": 12,
-}
-
-
-def _fold_text(value: str) -> str:
-    """Minúsculas sin acentos para comparar títulos y familias de programas."""
-    normalized = unicodedata.normalize("NFKD", str(value))
-    return "".join(char for char in normalized if not unicodedata.combining(char)).casefold()
-
-
-def _parse_cdti_calendar_date(
-    raw: str,
-    default_year: int,
-    month_end: bool = False,
-) -> tuple[str, bool]:
-    """
-    Convierte fechas del calendario CDTI a ISO.
-
-    Devuelve (fecha_iso, es_estimada). Cuando CDTI solo publica el mes,
-    se usa el primer día para apertura y el último para cierre, marcándolo
-    siempre como estimación.
-    """
-    clean = re.sub(r"\(\*\)", "", str(raw)).strip()
-    folded = _fold_text(clean)
-    if not folded:
-        return "", True
-
-    day_match = re.search(
-        r"\b(\d{1,2})\s+de\s+([a-z]+)(?:\s+(?:de\s+)?(20\d{2}|\d{2}))?\b",
-        folded,
-    )
-    if day_match:
-        day = int(day_match.group(1))
-        month = _SPANISH_MONTHS.get(day_match.group(2))
-        if not month:
-            return "", True
-        year_raw = day_match.group(3)
-        year = int(year_raw) if year_raw else default_year
-        if year < 100:
-            year += 2000
-        try:
-            return datetime(year, month, day).strftime("%Y-%m-%d"), False
-        except ValueError:
-            return "", True
-
-    month_match = re.search(
-        r"\b(" + "|".join(_SPANISH_MONTHS) + r")(?:\s+(20\d{2}|\d{2}))?\b",
-        folded,
-    )
-    if not month_match:
-        return "", True
-    month = _SPANISH_MONTHS[month_match.group(1)]
-    year_raw = month_match.group(2)
-    year = int(year_raw) if year_raw else default_year
-    if year < 100:
-        year += 2000
-    day = calendar.monthrange(year, month)[1] if month_end else 1
-    return datetime(year, month, day).strftime("%Y-%m-%d"), True
 
 
 def _fetch_cdti_static() -> list:
@@ -6488,24 +6218,6 @@ def fetch_een_funding() -> list:
 
 
 ENTIDADES_CANONICAS = ["ITAINNOVA", "CIRCE", "Unizar", "CDTI", "IDAE"]
-
-
-def _levenshtein(a: str, b: str) -> int:
-    """Distancia de Levenshtein clásica, sin dependencias externas."""
-    if a == b:
-        return 0
-    if len(a) < len(b):
-        a, b = b, a
-    previous = list(range(len(b) + 1))
-    for i, ca in enumerate(a, 1):
-        current = [i]
-        for j, cb in enumerate(b, 1):
-            ins_cost = current[j - 1] + 1
-            del_cost = previous[j] + 1
-            sub_cost = previous[j - 1] + (ca != cb)
-            current.append(min(ins_cost, del_cost, sub_cost))
-        previous = current
-    return previous[-1]
 
 
 def post_procesar_texto(texto: str, whitelist: list = None) -> str:
@@ -9877,15 +9589,8 @@ def _hard_out_of_scope(conv: dict, tech_tags: list[str]) -> str | None:
         "waste_heat", "hydrogen_combustion", "emissions",
         "thermal_processes", "thermal_waste",
     }
-    transport_terms = (
-        "ship", "ships", "vessel", "vessels", "maritime", "waterborne",
-        "aviation", "aircraft", "road transport", "railway", "ferroviario",
-        "ferroviaria", "vehiculo", "vehiculos", "vehicle", "vehicles",
-        "mobility", "movilidad", "mobilidad", "automocion",
-        "passenger transport", "battery durability",
-    )
     transport_is_scope = any(
-        _term_present(title_text, term) for term in transport_terms
+        _term_present(title_text, term) for term in TRANSPORT_TERMS
     )
     if transport_is_scope and not tags.intersection(thermal_core):
         return (
@@ -9893,14 +9598,8 @@ def _hard_out_of_scope(conv: dict, tech_tags: list[str]) -> str | None:
             "explícita; sector excluido por el perfil de Kalfrisa."
         )
 
-    building_terms = (
-        "residential building", "multi-apartment", "housing", "edificio residencial",
-        "vivienda", "built4people", "existing buildings", "beautiful buildings",
-        "built environment", "edificio terciario", "edificios terciarios",
-        "eficiencia energetica terciario",
-    )
     if (
-        any(term in title_text for term in building_terms)
+        any(term in title_text for term in BUILDING_TERMS)
         and "industrial process" not in title_text
     ):
         return (
@@ -9908,12 +9607,8 @@ def _hard_out_of_scope(conv: dict, tech_tags: list[str]) -> str | None:
             "térmicos industriales; ámbito excluido por el perfil."
         )
 
-    cybersecurity_terms = (
-        "ciberseguridad industrial", "industrial cybersecurity",
-        "cybersecurity programme", "cybersecurity program",
-    )
     if (
-        any(term in title_text for term in cybersecurity_terms)
+        any(term in title_text for term in CYBERSECURITY_TERMS)
         and not tags.intersection(thermal_core)
     ):
         return (
@@ -9921,12 +9616,8 @@ def _hard_out_of_scope(conv: dict, tech_tags: list[str]) -> str | None:
             "o valorizacion industrial vinculados a las capacidades de Kalfrisa."
         )
 
-    civil_security_terms = (
-        "civil security for society", "multi-hazard approach",
-        "disaster resilient society", "road safety",
-    )
     if (
-        any(term in title_text for term in civil_security_terms)
+        any(term in title_text for term in CIVIL_SECURITY_TERMS)
         and not tags.intersection(thermal_core)
     ):
         return (
@@ -9934,13 +9625,9 @@ def _hard_out_of_scope(conv: dict, tech_tags: list[str]) -> str | None:
             "termica o de proceso industrial explicita."
         )
 
-    governance_primary_terms = (
-        "climate governance", "environmental governance",
-        "social economy", "farmers and foresters",
-    )
     if (
         (
-            any(term in title_text for term in governance_primary_terms)
+            any(term in title_text for term in GOVERNANCE_PRIMARY_TERMS)
             or bool(re.search(r"\blife-[a-z0-9-]+-gov\b", title_text))
         )
         and not tags.intersection(thermal_core)
@@ -9950,23 +9637,16 @@ def _hard_out_of_scope(conv: dict, tech_tags: list[str]) -> str | None:
             "objeto principal, sin tecnologia termica industrial explicita."
         )
 
-    renewable_generation_terms = (
-        "photovoltaic", "pv based", "wind energy", "wave energy", "tidal energy",
-    )
     if (
-        any(_term_present(title_text, term) for term in renewable_generation_terms)
+        any(_term_present(title_text, term) for term in RENEWABLE_GENERATION_TERMS)
         and not tags.intersection(thermal_core)
     ):
         return (
             "Generación eléctrica renovable sin componente térmico industrial "
             "explícito; ámbito excluido por el perfil."
         )
-    nuclear_terms = (
-        "small modular reactor", "nuclear reactor", "nuclear reactors",
-        "nuclear fuel", "nuclear fuels", "smr", "smrs",
-    )
     if (
-        any(_term_present(title_text, term) for term in nuclear_terms)
+        any(_term_present(title_text, term) for term in NUCLEAR_TERMS)
         and "industrial process" not in title_text
         and "waste heat" not in title_text
     ):
@@ -9978,13 +9658,8 @@ def _hard_out_of_scope(conv: dict, tech_tags: list[str]) -> str | None:
     strong_thermal_tags = {
         "waste_heat", "hydrogen_combustion", "thermal_processes", "thermal_waste",
     }
-    marine_policy_terms = (
-        "aquatic pollution", "by fishers, for fishers", "marine habitats",
-        "digital twin ocean", "ocean technology testing", "ice-free arctic",
-        "riparian and coastal", "antarctica and the southern ocean",
-    )
     if (
-        any(term in title_text for term in marine_policy_terms)
+        any(term in title_text for term in MARINE_POLICY_TERMS)
         and not tags.intersection(strong_thermal_tags)
     ):
         return (
@@ -9992,28 +9667,16 @@ def _hard_out_of_scope(conv: dict, tech_tags: list[str]) -> str | None:
             "sin proceso térmico industrial explícito."
         )
 
-    generic_digital_policy_terms = (
-        "miniaturised energy harvesting", "automated scientific discovery",
-        "telco edge cloud", "philanthropic organisations",
-        "technology transfer offices",
-        "photonic quantum", "quantum machine learning", "microelectronic",
-        "supply chain resilience", "digital energy system",
-    )
     if (
-        any(term in title_text for term in generic_digital_policy_terms)
+        any(term in title_text for term in GENERIC_DIGITAL_POLICY_TERMS)
         and not tags.intersection(strong_thermal_tags)
     ):
         return (
             "Tecnología digital, cuántica o actividad de ecosistema genérica sin "
             "integración térmica o de proceso industrial explícita."
         )
-    education_health_terms = (
-        "educational outcomes", "mental health", "outside school",
-        "school education", "resultados educativos", "salud mental",
-        "educacion escolar", "centros educativos",
-    )
     if (
-        any(_term_present(title_text, term) for term in education_health_terms)
+        any(_term_present(title_text, term) for term in EDUCATION_HEALTH_TERMS)
         and not tags
     ):
         return (

@@ -277,28 +277,69 @@ ofrecería git.
    posteriores), `claude_pipeline/` (esquemas Pydantic, prompts, llamadas,
    validación), `cache/` (caché IA, caché documental, auditoría) y
    `pipeline.py` (orquestación de alto nivel).
-2. Hacerlo de forma incremental y verificada: extraer un módulo, ejecutar
+2. **[Primer incremento aplicado el 18/08/2026]** Se creó el paquete
+   `grant_radar/` (nombre válido para `import`, a diferencia de
+   `Grant-Radar-prueba.py`, que conserva su nombre y sigue siendo el punto
+   de entrada) y se extrajo `grant_radar/parsing_helpers.py`: doce
+   funciones/constantes puras de fechas y texto
+   (`_days_until`, `_parse_flexible_date`, `_extract_application_dates`,
+   `_fold_text`, `_levenshtein`, etc.), sin dependencia de caché, reglas ni
+   Claude. Cada eliminación del script principal se verificó con
+   `py_compile` + los 146 tests existentes antes de continuar con la
+   siguiente, tal como pide este punto; además se añadió
+   `tests/test_grant_radar_parsing_helpers.py`, que importa el módulo de
+   forma estándar (sin `runpy`) y prueba solo esas funciones. Fue posible
+   extraerlas primero precisamente porque no dependen de nada más: intentar
+   `cache/` primero (el candidato original) reveló que `filter_usable_cache()`
+   llama a `apply_current_deterministic_rules()`, que a su vez depende de
+   gran parte del dominio de reglas — cache y rules están acopladas y no se
+   pueden separar de forma aislada sin extraer también ese dominio.
+   El resto de la división (`sources/`, `rules/`, `claude_pipeline/`,
+   `cache/`, `pipeline.py`) sigue pendiente; cada paquete requiere el mismo
+   análisis de dependencias antes de mover código, y algunos (`rules/`,
+   `cache/`) no son independientes entre sí.
+3. Hacerlo de forma incremental y verificada: extraer un módulo, ejecutar
    `py_compile` y la suite completa de `unittest`, confirmar comportamiento
    idéntico con `--no-claude`, y solo entonces continuar con el siguiente
    módulo. Evita una migración de alto riesgo en un único paso.
-3. Conservar los encabezados `CELDA N` como comentarios de sección dentro de
+4. Conservar los encabezados `CELDA N` como comentarios de sección dentro de
    cada módulo mientras se considere útil para la navegación, o sustituirlos
    por la propia organización en archivos una vez completada la migración.
-4. Actualizar los tests para importar los módulos de forma estándar en vez
-   de depender de `runpy.run_path()` sobre un script monolítico.
+5. Actualizar los tests para importar los módulos de forma estándar en vez
+   de depender de `runpy.run_path()` sobre un script monolítico
+   (`tests/test_grant_radar_parsing_helpers.py` ya lo hace para el módulo
+   extraído; `tests/test_grant_radar.py` sigue usando `runpy` para el resto
+   del script, que continúa siendo un único archivo).
 
 ### 3.3. Frente a 2.3 — Reglas de negocio hardcodeadas
 
-1. Externalizar los términos y condiciones de exclusión/inclusión a
-   ficheros de configuración declarativa (YAML o JSON) versionados junto al
-   código, con una estructura explícita por categoría (sector, territorio,
-   objeto laboral, tipo de entidad, etc.) y su propio conjunto de fixtures
-   de test.
-2. Diseñar un motor de reglas genérico que recorra esa configuración
-   (listas de términos, condiciones de contexto requerido, precedencia)
-   en vez de codificar cada categoría como una función distinta. Esto
-   convierte "añadir una exclusión nueva" en "añadir una entrada de datos",
-   sin tocar Python ni desplegar código.
+1. **[Primer incremento aplicado el 18/08/2026, solo datos]** Se externalizaron
+   a `grant_radar/exclusion_terms.json` las diez listas de palabras que usa
+   `_hard_out_of_scope()` (transporte, edificios, ciberseguridad, seguridad
+   civil, gobernanza, generación renovable, nuclear, política marina,
+   digital/cuántica genérica, educación/salud). `grant_radar/exclusion_terms.py`
+   carga el JSON y expone cada lista como constante; `_hard_out_of_scope()`
+   las referencia igual que antes. Deliberadamente **no** se movieron las
+   condiciones (qué combinación de tags térmicos neutraliza cada lista, qué
+   mensaje de descarte usa, si la comparación es por palabra completa o
+   subcadena): eso es la parte de "cuándo se aplica cada regla", con lógica
+   distinta por categoría y ajustada durante meses (AGENTS.md, secciones 4 y
+   13-20); moverla habría sido el motor de reglas genérico del punto 2, con
+   mucho más riesgo. Ampliar una categoría existente ya es hoy "añadir una
+   palabra al JSON"; añadir una categoría nueva con una condición distinta
+   sigue requiriendo Python. Verificado con `py_compile`, los 25 casos de
+   `tests/fixtures/common_scope_filter_cases.json`, los 160 tests completos y
+   un nuevo `tests/test_grant_radar_exclusion_terms.py` que comprueba que el
+   JSON carga sin duplicados ni categorías vacías.
+2. No implementado: el motor de reglas genérico en sí (que interpretaría
+   condiciones de precedencia y contexto de forma declarativa, no solo
+   listas de términos) sigue pendiente. Diseñarlo bien requeriría formalizar
+   primero, en un documento aparte, todas las variantes de condición que hoy
+   existen en `_hard_out_of_scope()` y, sobre todo, en `_bdns_pre_claude_gate()`
+   (mucho más compleja: siete niveles de precedencia documentados en la
+   sección 4.1 de `AGENTS.md`) — no se ha intentado en esta sesión por el
+   riesgo de introducir una regresión silenciosa en la lógica de negocio más
+   ajustada de todo el proyecto.
 3. Mantener la exigencia ya vigente en `AGENTS.MD` de ampliar primero los
    fixtures (`tests/fixtures/*.json`) antes de cualquier cambio de reglas,
    aplicándola también a las nuevas entradas de configuración.

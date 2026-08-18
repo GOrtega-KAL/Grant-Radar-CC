@@ -14,7 +14,15 @@ de evidencia, normalización o reglas deterministas reutilizables.
 
 ## 2. Archivo de trabajo y alcance
 
-- Backend principal en desarrollo: `Grant-Radar-prueba.py`.
+- Backend principal en desarrollo: `Grant-Radar-prueba.py`. Sigue siendo el
+  punto de entrada (`poetry run python "Grant-Radar-prueba.py"`) y el archivo
+  donde vive la mayoría del código.
+- Paquete `grant_radar/`: módulos extraídos del backend principal como parte
+  de la división en curso (ver sección 21 y `SUGERENCIAS.MD` 3.2/3.3).
+  `Grant-Radar-prueba.py` los importa con `from grant_radar.X import ...`.
+  Antes de mover más código aquí, comprobar sus dependencias reales — no
+  todo se puede extraer de forma aislada (ver nota sobre `cache/` y `rules/`
+  en la sección 21).
 - Frontend activo: `index.html`.
 - JSON público/local del dashboard: `convocatorias.json`.
 - No modificar archivos de backup, `Obsoleto/` ni `Frontend alternativo/` salvo
@@ -1348,13 +1356,29 @@ original, está en ese archivo.
   auditar el código en busca de sintaxis exclusiva de 3.12+ (no se encontró
   ninguna). No probado ejecutando realmente sobre un intérprete 3.11 —ver
   reserva en `SUGERENCIAS.MD` 3.9— porque este equipo solo tiene Python 3.14.
-- No implementado en esta pasada, por alcance y riesgo: la división del
-  monolito en módulos (`SUGERENCIAS.MD` 3.2) y la externalización de las
-  reglas de exclusión a configuración declarativa (`SUGERENCIAS.MD` 3.3).
-  Ambas afectan directamente a la lógica de negocio ajustada a lo largo de
-  las secciones 13-20 de este documento; quedan pendientes de una decisión
-  explícita del usuario sobre alcance y ritmo antes de abordarlas.
-- Verificación: `py_compile` y las 146 pruebas `unittest` (144 originales +
-  2 nuevas) finalizaron correctamente tras cada cambio de código. No se
-  llamó a Claude, no se modificó la caché IA ni `convocatorias.json`, y no
-  se publicó en GitHub Pages durante esta sesión.
+- División en módulos (`SUGERENCIAS.MD` 3.2): primer incremento aplicado.
+  Nuevo paquete `grant_radar/` (nombre válido para `import`, a diferencia
+  de `Grant-Radar-prueba.py`) con `parsing_helpers.py`: doce
+  funciones/constantes puras de fechas y texto sin dependencia de caché,
+  reglas ni Claude. El candidato original, `cache/`, resultó estar acoplado
+  al dominio de reglas (`filter_usable_cache()` llama a
+  `apply_current_deterministic_rules()`) y se descartó como primer paso.
+  Resto de la división (`sources/`, `rules/`, `claude_pipeline/`, `cache/`,
+  `pipeline.py`) pendiente.
+- Reglas de exclusión (`SUGERENCIAS.MD` 3.3): primer incremento aplicado,
+  solo datos. Las diez listas de términos de `_hard_out_of_scope()` viven
+  ahora en `grant_radar/exclusion_terms.json`
+  (`grant_radar/exclusion_terms.py` las carga); la lógica de cuándo se
+  aplica cada una sigue en Python, sin cambios. Ampliar una lista existente
+  ya no requiere tocar `Grant-Radar-prueba.py`. El motor de reglas genérico
+  en sí y la externalización de `_bdns_pre_claude_gate()` (siete niveles de
+  precedencia, sección 4.1) siguen sin implementarse: requieren formalizar
+  antes todas las variantes de condición existentes, y el riesgo de
+  regresión silenciosa es alto.
+- Verificación: `py_compile` y las 160 pruebas `unittest` (144 originales +
+  16 nuevas, incluyendo dos archivos de test que importan módulos de
+  `grant_radar/` sin `runpy`) finalizaron correctamente tras cada cambio de
+  código, incluidos los 25 casos de `tests/fixtures/common_scope_filter_cases.json`
+  que cubren `_hard_out_of_scope()`. No se llamó a Claude, no se modificó la
+  caché IA ni `convocatorias.json`, y no se publicó en GitHub Pages durante
+  esta sesión.

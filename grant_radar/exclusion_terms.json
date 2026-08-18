@@ -1,0 +1,52 @@
+{
+  "_comentario": "Listas de términos que usa _hard_out_of_scope() en Grant-Radar-prueba.py para descartar convocatorias fuera del perfil de Kalfrisa. Este archivo es solo DATOS (las palabras a buscar); la lógica de cuándo se aplica cada lista (qué combinación de tags térmicos la neutraliza, qué mensaje de descarte usa) sigue en Python, en _hard_out_of_scope(). Añadir o quitar una palabra de una lista existente NO requiere tocar el script; añadir una categoría nueva sí, porque necesita su propia condición en Python. Antes de cambiar esto, añadir primero un caso a tests/fixtures/common_scope_filter_cases.json (ver AGENTS.md).",
+  "transport_terms": [
+    "ship", "ships", "vessel", "vessels", "maritime", "waterborne",
+    "aviation", "aircraft", "road transport", "railway", "ferroviario",
+    "ferroviaria", "vehiculo", "vehiculos", "vehicle", "vehicles",
+    "mobility", "movilidad", "mobilidad", "automocion",
+    "passenger transport", "battery durability"
+  ],
+  "building_terms": [
+    "residential building", "multi-apartment", "housing", "edificio residencial",
+    "vivienda", "built4people", "existing buildings", "beautiful buildings",
+    "built environment", "edificio terciario", "edificios terciarios",
+    "eficiencia energetica terciario"
+  ],
+  "cybersecurity_terms": [
+    "ciberseguridad industrial", "industrial cybersecurity",
+    "cybersecurity programme", "cybersecurity program"
+  ],
+  "civil_security_terms": [
+    "civil security for society", "multi-hazard approach",
+    "disaster resilient society", "road safety"
+  ],
+  "governance_primary_terms": [
+    "climate governance", "environmental governance",
+    "social economy", "farmers and foresters"
+  ],
+  "renewable_generation_terms": [
+    "photovoltaic", "pv based", "wind energy", "wave energy", "tidal energy"
+  ],
+  "nuclear_terms": [
+    "small modular reactor", "nuclear reactor", "nuclear reactors",
+    "nuclear fuel", "nuclear fuels", "smr", "smrs"
+  ],
+  "marine_policy_terms": [
+    "aquatic pollution", "by fishers, for fishers", "marine habitats",
+    "digital twin ocean", "ocean technology testing", "ice-free arctic",
+    "riparian and coastal", "antarctica and the southern ocean"
+  ],
+  "generic_digital_policy_terms": [
+    "miniaturised energy harvesting", "automated scientific discovery",
+    "telco edge cloud", "philanthropic organisations",
+    "technology transfer offices",
+    "photonic quantum", "quantum machine learning", "microelectronic",
+    "supply chain resilience", "digital energy system"
+  ],
+  "education_health_terms": [
+    "educational outcomes", "mental health", "outside school",
+    "school education", "resultados educativos", "salud mental",
+    "educacion escolar", "centros educativos"
+  ]
+}
