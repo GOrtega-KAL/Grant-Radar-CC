@@ -1,0 +1,48 @@
+IDENTIDAD:
+- Kalfrisa, fundada en 1965, es una empresa industrial de tamaño mediano.
+- Sede: Polígono Industrial Malpica, calle D, nº 65, 50016 Zaragoza (España).
+- NIF: A50013465.
+- CNAE principal declarado para el radar: 2899. CNAE accesorio: 7112.
+- No equiparar automáticamente «empresa mediana» con la condición jurídica de
+  PYME de una convocatoria: verificar sus umbrales, empresas vinculadas/asociadas
+  y demás requisitos aplicables antes de afirmar la elegibilidad.
+- La elegibilidad por CNAE, tamaño, ubicación y tipo de entidad debe comprobarse
+  convocatoria por convocatoria; nunca se dará por supuesta.
+
+CAPACIDADES Y ACTIVOS TECNOLÓGICOS:
+- Recuperación y valorización de calor residual; recuperadores convectivos y de
+  radiación; gases de escape de alta temperatura.
+- Hornos industriales, combustión y quemadores de bajas emisiones; mezclas de
+  hidrógeno y demostraciones de hasta 100 % H2 cuando el proceso lo permita.
+- Electrificación e hibridación del calor de proceso.
+- Oxidación térmica regenerativa y recuperativa (RTO), tratamiento de COV/NMVOC
+  y concentración mediante rotor de zeolitas.
+- Valorización térmica de residuos, pirólisis y postcombustión.
+- CFD/HPC, gemelos digitales, IIoT, monitorización remota, control avanzado,
+  mantenimiento predictivo y ACV vinculados a equipos y procesos térmicos.
+
+EXPERIENCIA I+D RELEVANTE:
+- HIGH2-FURNACES, DESCARB-e, EDPIC, LIFE ABATE, e-RTO, RAFeRTO, DT4RAF e IGNITE.
+- Desarrollo de recuperadores de radiación y demostración industrial.
+- TRL preferente 4-7, sin excluir TRL superiores cuando exista demostración,
+  primera aplicación industrial o escalado.
+- Puede actuar como líder tecnológico, fabricante/demostrador o socio industrial.
+
+PROGRAMAS Y SECTORES:
+- I+D industrial, pilotos y demostración: Horizon Europe, LIFE, Innovation Fund,
+  Interreg, CDTI, IDAE y programas autonómicos.
+- Cerámica, siderurgia, metalurgia, vidrio, refractarios, química, petroquímica,
+  cemento, cal, fundición, tratamiento térmico, alimentación, farmacia, papel,
+  residuos y otros sectores si existe un proceso térmico o de emisiones aplicable.
+
+FUERA DE FOCO SALVO CONEXIÓN INDUSTRIAL TÉRMICA EXPLÍCITA:
+- Edificios residenciales/terciarios y transporte.
+- Solar fotovoltaica, eólica o hidrógeno genérico sin uso térmico industrial.
+- Software o IA genéricos sin integración con equipos/procesos térmicos.
+- Investigación básica TRL 1-3 sin ruta industrial.
+- Ayudas exclusivas para tipos de entidad que excluyan a Kalfrisa.
+- Adquisición ordinaria de equipos sin innovación, demostración o desarrollo.
+
+No atribuyas a Kalfrisa capacidades no incluidas aquí. En particular, no des por
+propios SCR, filtros de mangas u oxidación catalítica si la convocatoria no aporta
+evidencia adicional.

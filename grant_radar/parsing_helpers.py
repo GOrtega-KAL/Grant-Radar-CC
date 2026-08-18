@@ -323,6 +323,150 @@ def _absolute_url(base: str, href: str) -> str:
     return base.rstrip("/") + "/" + href
 
 
+def select_evidence_excerpt(
+    text: str,
+    title: str = "",
+    limit: int = 20_000,
+) -> str:
+    """
+    Conserva evidencia distribuida por todo un documento largo.
+
+    Un corte por el principio pierde líneas, anexos y requisitos posteriores.
+    Esta selección combina cabecera con ventanas alrededor de conceptos
+    estructurales y términos distintivos del título, manteniendo el orden de la
+    fuente. No interpreta ni inventa contenido.
+    """
+    compact = " ".join(str(text or "").split())
+    if len(compact) <= limit:
+        return compact
+
+    structural_anchors = (
+        "beneficiari", "applicant", "eligible entit", "eligibility",
+        "requisitos", "requirements", "cnae", "nace",
+        "presupuesto", "budget", "coste elegible", "eligible cost",
+        "ayuda maxima", "maximum grant", "funding rate", "intensidad",
+        "plazo", "deadline", "fecha de apertura", "opening date",
+        "consorcio", "consortium", "trl", "technology readiness",
+        "subprograma", "subprogramme", "linea", "funding line",
+        "actuaciones subvencionables", "eligible activities",
+        "sector industrial", "industrial sector", "scope", "objeto",
+    )
+    stopwords = {
+        "para", "with", "from", "that", "this", "programa", "programme",
+        "convocatoria", "ayudas", "projects", "project", "industrial",
+    }
+    title_terms = [
+        token for token in re.findall(r"[a-z0-9]{5,}", _fold_text(title))
+        if token not in stopwords
+    ][:12]
+
+    folded = _fold_text(compact)
+    raw_candidates = set()
+    for anchor in (*structural_anchors, *title_terms):
+        start_at = 0
+        occurrences = 0
+        folded_anchor = _fold_text(anchor)
+        while folded_anchor and occurrences < 40:
+            position = folded.find(folded_anchor, start_at)
+            if position < 0:
+                break
+            forward_window = (
+                8_000
+                if folded_anchor in {
+                    "cnae", "nace", "beneficiari", "applicant",
+                    "eligible entit",
+                }
+                else 1_800
+            )
+            raw_candidates.add((
+                max(0, position - 1_200),
+                min(
+                    len(compact),
+                    position + len(folded_anchor) + forward_window,
+                ),
+            ))
+            start_at = position + len(folded_anchor)
+            occurrences += 1
+
+    candidates = []
+    for start, end in raw_candidates:
+        window = folded[start:end]
+        structural_density = sum(
+            1 for anchor in structural_anchors
+            if _fold_text(anchor) in window
+        )
+        title_density = sum(
+            1 for term in title_terms if term in window
+        )
+        numeric_evidence = len(re.findall(
+            r"\b(?:\d[\d.,]*\s*(?:€|eur|%|meses?|months?)|"
+            r"cnae\s*\d+)\b",
+            window,
+        ))
+        score = structural_density * 10 + title_density * 4 + min(
+            numeric_evidence, 10
+        )
+        candidates.append((start, end, score))
+
+    header = (0, min(len(compact), 1_200))
+    selected = [header]
+    used = header[1] - header[0]
+
+    # Reserva cobertura para categorías distintas antes de competir por
+    # densidad global. Así una sección monetaria muy densa no desplaza una lista
+    # extensa de beneficiarios/CNAE o los plazos.
+    category_groups = (
+        ("cnae", "nace", "beneficiari", "eligible entit", "applicant"),
+        ("presupuesto", "budget", "coste elegible", "ayuda maxima",
+         "maximum grant", "funding rate", "intensidad"),
+        ("plazo", "deadline", "fecha de apertura", "opening date"),
+        ("subprograma", "subprogramme", "linea", "funding line",
+         "sector industrial", "industrial sector"),
+    )
+    remaining = list(candidates)
+    for group in category_groups:
+        matching = [
+            candidate for candidate in remaining
+            if any(
+                _fold_text(anchor) in folded[candidate[0]:candidate[1]]
+                for anchor in group
+            )
+            and not any(
+                candidate[0] < existing_end
+                and candidate[1] > existing_start
+                for existing_start, existing_end in selected
+            )
+        ]
+        if not matching:
+            continue
+        start, end, score = max(matching, key=lambda item: (item[2], -item[0]))
+        available = limit - used
+        if available < 300:
+            break
+        end = min(end, start + available)
+        selected.append((start, end))
+        used += end - start
+
+    for start, end, score in sorted(
+        candidates,
+        key=lambda item: (-item[2], item[0]),
+    ):
+        if any(
+            start < existing_end and end > existing_start
+            for existing_start, existing_end in selected
+        ):
+            continue
+        available = limit - used
+        if available < 300:
+            break
+        end = min(end, start + available)
+        selected.append((start, end))
+        used += end - start
+
+    selected.sort()
+    return " […] ".join(compact[start:end] for start, end in selected)
+
+
 def _levenshtein(a: str, b: str) -> int:
     """Distancia de Levenshtein clásica, sin dependencias externas."""
     if a == b:

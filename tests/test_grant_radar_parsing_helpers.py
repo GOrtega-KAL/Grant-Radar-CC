@@ -20,6 +20,7 @@ from grant_radar.parsing_helpers import (
     _parse_cdti_calendar_date,
     _parse_flexible_date,
     _signed_days_until,
+    select_evidence_excerpt,
 )
 
 
@@ -84,6 +85,25 @@ class TextHelperTests(unittest.TestCase):
     def test_levenshtein_distance_between_close_variants(self):
         self.assertEqual(_levenshtein("CDTI", "CDTI"), 0)
         self.assertEqual(_levenshtein("ITAINNOVA", "ITAINOVA"), 1)
+
+    def test_select_evidence_excerpt_returns_short_text_unchanged(self):
+        self.assertEqual(select_evidence_excerpt("Texto breve.", limit=1000), "Texto breve.")
+
+    def test_select_evidence_excerpt_keeps_beneficiaries_and_deadline_in_long_text(self):
+        # Bloques de relleno moderados: uno muy grande junto a "beneficiarios"
+        # consumiría todo el presupuesto de ese candidato (ventana de 8.000
+        # caracteres reservada para anclas de beneficiarios/CNAE) y dejaría
+        # sin presupuesto al resto de categorías, que es justo el
+        # comportamiento real que se quiere probar aquí: que ambas convivan.
+        filler = "Lorem ipsum dolor sit amet. " * 200
+        text = (
+            f"{filler} Beneficiarios: pymes industriales con CNAE 2899. {filler} "
+            f"Plazo de presentación de solicitudes: 30/09/2026. {filler}"
+        )
+        excerpt = select_evidence_excerpt(text, title="Convocatoria industrial", limit=10_000)
+        self.assertLess(len(excerpt), len(text))
+        self.assertIn("Beneficiarios", excerpt)
+        self.assertIn("Plazo de presentación", excerpt)
 
 
 if __name__ == "__main__":

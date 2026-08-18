@@ -1382,3 +1382,43 @@ original, está en ese archivo.
   que cubren `_hard_out_of_scope()`. No se llamó a Claude, no se modificó la
   caché IA ni `convocatorias.json`, y no se publicó en GitHub Pages durante
   esta sesión.
+
+## 22. Segunda ronda de modularización a 18/08/2026
+
+Continuación de la sección 21, mismo día: se identificó un bloque grande y
+autónomo (taxonomía tecnológica + su comparación contra texto) que tampoco
+dependía de caché, reglas ni Claude, y se extrajo junto con los datos de
+cliente que quedaban embebidos en el script.
+
+- `grant_radar/tech_taxonomy.py` (+ `tech_taxonomy.json`): las categorías
+  técnicas de Kalfrisa (`TECH_TAG_STRONG_TERMS`, `TECH_TAG_CONTEXTUAL_TERMS`,
+  `TECH_DISCOVERY_TERMS`, `TECH_TAG_COMPAT_ALIASES`) y las funciones que
+  comparan un texto contra ellas (`detect_tech_tags`, `is_relevant`,
+  `keyword_match`, `_term_present`, `_contextual_term_present`,
+  `has_technology_discovery_signal`, `_compat_tags_for`). `TECH_TAGS` y
+  `KEYWORDS` siguen siendo valores derivados, calculados en el módulo igual
+  que antes en el script.
+- `grant_radar/kalfrisa_profile.py` (+ `kalfrisa_profile.txt`): el texto de
+  perfil de Kalfrisa enviado en cada prompt de evaluación. Ahora es un
+  archivo de texto plano editable sin tocar Python; `PROFILE_VERSION` sigue
+  en `Grant-Radar-prueba.py` y sigue siendo manual (cambiar el texto no
+  invalida la caché por sí solo).
+- `grant_radar/partner_catalog.py` (+ `partner_catalog.json`): los 16 socios
+  técnicos recomendables y `preselect_partners()`.
+- `select_evidence_excerpt()` se movió a `parsing_helpers.py` (ya extraído
+  el 18/08 por la mañana): dependía solo de `_fold_text`, igual que el resto
+  de ese módulo.
+- Tres archivos de test nuevos con import estándar (sin `runpy`):
+  `test_grant_radar_tech_taxonomy.py`,
+  `test_grant_radar_profile_and_partners.py`, y ampliación de
+  `test_grant_radar_parsing_helpers.py` para `select_evidence_excerpt()`.
+- `Grant-Radar-prueba.py` bajó de 10.976 a 10.037 líneas (-8,6 %) entre las
+  dos rondas del 18/08/2026. `py_compile` y las 180 pruebas `unittest`
+  (144 originales + 36 nuevas) finalizaron correctamente tras cada
+  extracción. No se llamó a Claude, no se modificó la caché IA ni
+  `convocatorias.json`, y no se publicó en GitHub Pages durante esta ronda.
+- Sigue pendiente: `sources/`, `rules/`, `claude_pipeline/`, `cache/` y
+  `pipeline.py` (ver sección 21). `cache/` y `rules/` continúan acoplados
+  entre sí (`filter_usable_cache()` llama a
+  `apply_current_deterministic_rules()`); extraer cualquiera de los dos
+  exige abordar ese acoplamiento primero.

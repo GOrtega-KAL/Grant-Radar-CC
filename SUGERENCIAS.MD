@@ -298,6 +298,25 @@ ofrecería git.
    `cache/`, `pipeline.py`) sigue pendiente; cada paquete requiere el mismo
    análisis de dependencias antes de mover código, y algunos (`rules/`,
    `cache/`) no son independientes entre sí.
+   **[Segundo incremento, mismo día]** Se localizó un bloque grande y
+   cohesionado que tampoco dependía de caché, reglas ni Claude: la
+   taxonomía tecnológica y su comparación contra texto. Se extrajo
+   `grant_radar/tech_taxonomy.py` (datos en `tech_taxonomy.json` + funciones
+   `detect_tech_tags`, `is_relevant`, `keyword_match`, `_compat_tags_for`,
+   etc.), y por separado — al ser puramente datos de cliente, relevantes
+   para 2.7 — `grant_radar/kalfrisa_profile.py` (el texto de perfil de
+   Kalfrisa que se envía a Claude, ahora en `kalfrisa_profile.txt`, editable
+   sin tocar Python) y `grant_radar/partner_catalog.py` (los 16 socios
+   técnicos y la función `preselect_partners()`). También se movió
+   `select_evidence_excerpt()` a `parsing_helpers.py`, al ser igual de
+   autónoma que el resto de ese módulo. Cada extracción se verificó por
+   separado con `py_compile` y la suite completa antes de continuar con la
+   siguiente; se añadieron tres archivos de test más
+   (`test_grant_radar_tech_taxonomy.py`,
+   `test_grant_radar_profile_and_partners.py`, y ampliaciones a
+   `test_grant_radar_parsing_helpers.py`). El script principal bajó de
+   10.976 a 10.037 líneas (-8,6 %) entre las dos rondas de extracción del
+   18/08/2026; 180 tests `unittest` y `py_compile` en verde.
 3. Hacerlo de forma incremental y verificada: extraer un módulo, ejecutar
    `py_compile` y la suite completa de `unittest`, confirmar comportamiento
    idéntico con `--no-claude`, y solo entonces continuar con el siguiente
@@ -407,11 +426,18 @@ ofrecería git.
    (nuevo cliente), no como refactor especulativo si el alcance del
    proyecto sigue siendo exclusivamente Kalfrisa.
 
-**[Decisión del 18/08/2026]** No implementado, siguiendo la propia
-recomendación del punto anterior: sigue sin existir un segundo cliente real,
-así que extraer el perfil ahora sería refactor especulativo sobre código de
-reglas ya frágil (ver 2.3). Queda pendiente hasta que haya una necesidad de
-negocio concreta.
+**[Decisión del 18/08/2026, actualizada]** El texto de perfil de Kalfrisa que
+se envía a Claude (`KALFRISA_PROFILE`) ya salió del script, como
+consecuencia natural de extraer `grant_radar/tech_taxonomy.py` y
+`grant_radar/partner_catalog.py` (ver 3.2): ahora vive en
+`grant_radar/kalfrisa_profile.txt`, un archivo de texto plano editable sin
+tocar Python. Eso cubre la parte de "datos de cliente" (identidad,
+capacidades, programas de interés). Lo que **no** se ha tocado, siguiendo la
+recomendación original, son las reglas de negocio que usan ese perfil de
+forma implícita (por ejemplo, el reconocimiento de "Zaragoza, Huesca y
+Teruel" como Aragón dentro de `_bdns_pre_claude_gate()`): moverlas sería
+refactor especulativo sobre código de reglas ya frágil (ver 2.3) sin que
+exista todavía un segundo cliente real que lo justifique.
 
 ### 3.8. Frente a 2.8 — Validación de contrato frontend-backend
 

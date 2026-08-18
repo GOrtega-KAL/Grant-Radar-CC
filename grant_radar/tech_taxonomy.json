@@ -1,0 +1,109 @@
+{
+  "_comentario": "Taxonomía tecnológica de Kalfrisa: qué vocabulario clasifica una convocatoria dentro de cada categoría técnica. strong_terms clasifica por sí solo; contextual_terms solo cuenta si hay contexto industrial/térmico cerca (ver tech_taxonomy.py); discovery_terms solo amplía inventarios, nunca puntúa ni anula exclusiones. compat_aliases traduce cada categoría a los códigos cortos antiguos del campo público 'tags'. Antes de ampliar una categoría, añadir un caso a los fixtures de tests/fixtures/ (ver AGENTS.md).",
+  "strong_terms": {
+    "waste_heat": [
+      "calor residual", "waste heat", "residual heat", "heat recovery",
+      "industrial heat recovery", "process heat", "exhaust heat",
+      "flue gas heat", "recuperador", "recuperator",
+      "industrial heat exchanger", "process heat exchanger",
+      "flue gas heat exchanger", "industrial heat exchange",
+      "intercambiador de calor industrial", "intercambio de calor en procesos"
+    ],
+    "industrial_electrification": [
+      "electrificación industrial", "industrial electrification",
+      "electrification of heat", "electric furnace", "electro-thermal",
+      "electrothermal", "hybrid heating", "power-to-heat"
+    ],
+    "hydrogen_combustion": [
+      "combustión de hidrógeno", "hydrogen combustion", "hydrogen burner",
+      "fuel-flexible burner", "hydrogen-ready", "h2-ready",
+      "hydrogen blending", "hydrogen furnace"
+    ],
+    "emissions": [
+      "voc", "nmvoc", "cov", "covnm", "thermal oxidation",
+      "oxidación térmica", "regenerative thermal oxidizer", "rto",
+      "nox abatement", "industrial off-gas", "emisiones industriales"
+    ],
+    "thermal_processes": [
+      "high-temperature process", "proceso de alta temperatura",
+      "industrial furnace", "horno industrial", "kiln", "calcination",
+      "calcinación", "heat treatment", "tratamiento térmico",
+      "melting furnace", "industrial drying",
+      "industrial thermochemical process", "proceso termoquímico industrial"
+    ],
+    "thermal_waste": [
+      "waste valorisation", "waste valorization", "valorización de residuos",
+      "pyrolysis", "pirólisis", "post-combustion", "postcombustión",
+      "waste-to-energy", "energy-from-waste",
+      "valorización energética de residuos", "thermal waste treatment",
+      "tratamiento térmico de residuos", "waste gasification",
+      "gasificación de residuos", "biomass gasification",
+      "gasificación de biomasa",
+      "valorisation of agri-food biomass side-streams",
+      "valorization of agri-food biomass side-streams",
+      "agri-food biomass side-stream valorisation",
+      "agri-food biomass side-stream valorization",
+      "technology for valorisation of biomass side-streams",
+      "technology for valorization of biomass side-streams",
+      "valorización de corrientes laterales de biomasa agroalimentaria"
+    ]
+  },
+  "contextual_terms": {
+    "digital_thermal": [
+      "digital twin", "gemelo digital", "predictive maintenance",
+      "mantenimiento predictivo", "cfd", "advanced process control",
+      "industrial monitoring", "monitorización industrial", "iiot",
+      "industrial iot", "industrial internet of things",
+      "machine learning for thermal processes",
+      "thermal process data analysis", "process data analytics",
+      "control de procesos térmicos"
+    ],
+    "circular_manufacturing": [
+      "de-manufacturing", "demanufacturing", "re-manufacturing",
+      "remanufacturing", "circular manufacturing", "fabricación circular",
+      "disassembly", "desmontaje", "component reuse", "reutilización de componentes",
+      "product repair", "reparación de productos"
+    ],
+    "energy_efficiency": [
+      "eficiencia energética", "energy efficiency", "eficiencia térmica",
+      "thermal efficiency", "descarbonización", "decarbonisation",
+      "decarbonization", "net zero", "optimización energética industrial",
+      "industrial energy optimisation", "industrial energy optimization",
+      "optimización del consumo energético",
+      "reducción del consumo energético industrial"
+    ]
+  },
+  "discovery_terms": [
+    "heat exchanger for industrial processes",
+    "energy recovery from waste",
+    "industrial process optimisation",
+    "industrial process optimization",
+    "thermochemical conversion of waste"
+  ],
+  "compat_aliases": {
+    "hydrogen_combustion": ["h2", "desc"],
+    "energy_efficiency": ["ee"],
+    "waste_heat": ["ee", "desc"],
+    "industrial_electrification": ["desc"],
+    "emissions": ["emis"],
+    "thermal_processes": ["horn"],
+    "digital_thermal": ["ee"],
+    "thermal_waste": ["desc", "emis"],
+    "circular_manufacturing": ["desc"]
+  },
+  "industrial_context_terms": [
+    "industrial process", "procesos industriales", "process industries",
+    "industrias de proceso", "energy intensive industr", "manufacturing",
+    "fabricación", "factory", "fábrica", "furnace", "horno", "kiln",
+    "combustion", "combustión", "flue gas", "gases de escape",
+    "chemical industry", "industria química", "steel", "siderurgia",
+    "ceramic", "cerámica", "glass industry", "industria del vidrio",
+    "cement", "calcinación", "calcination"
+  ],
+  "tech_context_extra_terms": [
+    "thermal process", "proceso termico", "process heat", "calor de proceso",
+    "industrial equipment", "equipo industrial", "industrial emissions",
+    "emisiones industriales", "industrial waste", "residuo industrial",
+    "flue gas", "gases de escape", "combustion", "combustion industrial"
+  ]
+}
