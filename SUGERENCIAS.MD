@@ -317,6 +317,38 @@ ofrecería git.
    `test_grant_radar_parsing_helpers.py`). El script principal bajó de
    10.976 a 10.037 líneas (-8,6 %) entre las dos rondas de extracción del
    18/08/2026; 180 tests `unittest` y `py_compile` en verde.
+   **[Tercer incremento, mismo día — cache y rules juntos, a petición
+   expresa]** Se extrajo el acoplamiento identificado en el primer
+   incremento: `grant_radar/cache.py` (`cache_key`, `cache_save`,
+   `cache_load`, `filter_usable_cache`, `analysis_is_usable`,
+   `_reindex_cache_entries`, `source_hash`, `_stable_factual_hash_text`) y
+   `grant_radar/deterministic_rules.py` (`apply_current_deterministic_rules`
+   y las 18 funciones que llama: correcciones de inversión propia,
+   valorización, consorcio, tamaño de empresa, región, consistencia
+   temporal...). `cache.py` importa `apply_current_deterministic_rules` de
+   `deterministic_rules.py`; es la única dependencia cruzada entre ambos, tal
+   como se había detectado. También se creó `grant_radar/versions.py` (las
+   versiones de perfil/extractor/evaluador/prompt/caché/modelo, que
+   `cache_key`/`cache_save`/`cache_load` necesitaban) y se movió
+   `_deterministic_call_status()` junto con `BDNS_DIRECT_OWN_INVESTMENT_TERMS`
+   (compartida con el filtro previo a Claude, que sigue en el script
+   principal y la reimporta). `cache_save`/`cache_load` pasaron a recibir la
+   ruta del archivo como parámetro en vez de leer una constante propia, para
+   no duplicar el cálculo de ruta basado en `__file__` en dos sitios.
+   El script principal bajó de 10.037 a 9.006 líneas en este tercer paso
+   (-10,3 % adicional; -17,9 % acumulado desde las 10.976 originales). Se
+   añadieron `test_grant_radar_cache.py` y
+   `test_grant_radar_deterministic_rules.py` con import estándar. Los tests
+   de `test_grant_radar.py` que accedían a estas funciones vía
+   `APP["nombre"]` (patrón `runpy`) se mantuvieron intactos: se añadió un
+   bloque al principio del archivo que fusiona las funciones movidas de
+   vuelta en `APP` en lugar de reescribir unos 12 puntos de acceso
+   dispersos; los archivos de test nuevos sí importan directamente. 205
+   tests `unittest` y `py_compile` en verde, más una ejecución real
+   `--no-claude` completa (8:33 min, 47 candidatas, mismas cifras que la
+   ejecución de esa misma mañana, las 4 fuentes con control de salud
+   `healthy`): confirma que el cambio no alteró ningún resultado del
+   pipeline real, no solo los tests.
 3. Hacerlo de forma incremental y verificada: extraer un módulo, ejecutar
    `py_compile` y la suite completa de `unittest`, confirmar comportamiento
    idéntico con `--no-claude`, y solo entonces continuar con el siguiente

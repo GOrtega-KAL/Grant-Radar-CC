@@ -1422,3 +1422,65 @@ cliente que quedaban embebidos en el script.
   entre sí (`filter_usable_cache()` llama a
   `apply_current_deterministic_rules()`); extraer cualquiera de los dos
   exige abordar ese acoplamiento primero.
+
+## 23. Tercera ronda de modularización a 18/08/2026: cache + rules juntos
+
+Antes de esta ronda, el usuario corrigió a mano la línea 11 de `Grant-Radar-prueba.py`
+(la ruta `cd` de la Celda 1), que seguía apuntando a la carpeta original
+`Grant-Radar` en vez de a esta copia; y ejecutó dos veces
+`poetry run python "Grant-Radar-prueba.py" --no-claude` como validación
+real del trabajo de las secciones 21 y 22 (no solo `py_compile`/`unittest`).
+Ambas ejecuciones terminaron con `status: completed_no_claude`, sin errores,
+47 candidatas y las cuatro fuentes con control de salud (`ECCP`, `IDAE`,
+`BOE / MITECO`, `CDTI`) en `healthy`. `grant_radar_cache.json` no se tocó,
+como exige `--no-claude`.
+
+A petición expresa, se extrajo a continuación el acoplamiento identificado
+en la sección 21 (`filter_usable_cache()` → `apply_current_deterministic_rules()`):
+
+- `grant_radar/versions.py`: `PROFILE_VERSION`, `EXTRACTOR_VERSION`,
+  `EVALUATOR_VERSION`, `PARTNER_CATALOG_VERSION`, `ANALYSIS_PROMPT_VERSION`,
+  `CACHE_SCHEMA_VERSION`, `CLAUDE_MODEL`. Sin estas constantes centralizadas,
+  `cache_key()` (llamada en unos 6 puntos del script) habría necesitado
+  parámetros adicionales en cada sitio; en cambio, tanto el script principal
+  como `cache.py` las importan del mismo origen.
+- `grant_radar/cache.py`: `cache_key()`, `cache_save()`, `cache_load()`,
+  `filter_usable_cache()`, `analysis_is_usable()`, `_reindex_cache_entries()`,
+  `source_hash()`, `_stable_factual_hash_text()`. `cache_save()`/`cache_load()`
+  reciben ahora la ruta del archivo de caché como parámetro (antes leían
+  `CACHE_FILE` directamente); la ruta se sigue calculando una sola vez en el
+  script principal a partir de su propio `__file__`, para no arriesgar que la
+  caché se lea o escriba en un sitio distinto tras mover código a un
+  subdirectorio.
+- `grant_radar/deterministic_rules.py`: `apply_current_deterministic_rules()`
+  y las 18 funciones que orquesta (correcciones de inversión propia,
+  valorización directa, participación en consorcio, tamaño de empresa,
+  ineligibilidad regional, consistencia temporal, prioridad derivada...),
+  más `_deterministic_call_status()` (usada también en otros dos puntos del
+  script, que la reimportan) y la constante `BDNS_DIRECT_OWN_INVESTMENT_TERMS`
+  (compartida con `deterministic_prefilter()`, que sigue en el script
+  principal y también la reimporta).
+- `cache.py` importa `apply_current_deterministic_rules` de
+  `deterministic_rules.py`: es la única dependencia cruzada entre los dos
+  módulos, la misma que motivó extraerlos juntos en vez de por separado.
+- `tests/test_grant_radar.py` accedía a varias de estas funciones vía
+  `APP["nombre"]` (patrón `runpy.run_path()`) en unos 12 puntos dispersos de
+  la clase `DeterministicPostAnalysisTests` y otras. En vez de reescribir
+  cada acceso, se añadió justo después de crear `APP` un bloque que fusiona
+  en `APP` las funciones públicas y privadas de `grant_radar.cache` y
+  `grant_radar.deterministic_rules`, documentando por qué. Los archivos de
+  test nuevos (`test_grant_radar_cache.py`,
+  `test_grant_radar_deterministic_rules.py`) sí importan directamente, sin
+  pasar por `APP`.
+- `Grant-Radar-prueba.py` bajó de 10.037 a 9.006 líneas en este paso
+  (-17,9 % acumulado desde las 10.976 originales de hoy por la mañana).
+  `py_compile` y 205 pruebas `unittest` (180 anteriores + 25 nuevas)
+  finalizaron correctamente tras la extracción. Además, se repitió
+  `poetry run python "Grant-Radar-prueba.py" --no-claude` después del
+  cambio: terminó en 8 min 33 s con las mismas 47 candidatas y las mismas
+  cuatro fuentes `healthy` que antes de extraer nada, confirmando que el
+  resultado del pipeline real no cambió, no solo los tests.
+- Sigue pendiente: `sources/`, `claude_pipeline/` y `pipeline.py` (ver
+  sección 21). El acoplamiento cache/rules que bloqueaba avanzar ya está
+  resuelto; el resto de dominios no tiene, de momento, ninguna dependencia
+  cruzada conocida entre sí.

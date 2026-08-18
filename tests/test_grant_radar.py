@@ -16,6 +16,29 @@ from pydantic import BaseModel
 ROOT = Path(__file__).resolve().parents[1]
 APP = runpy.run_path(str(ROOT / "Grant-Radar-prueba.py"))
 
+# Estas funciones vivían en Grant-Radar-prueba.py y se probaban vía
+# APP["nombre"]; ahora viven en grant_radar/cache.py y
+# grant_radar/deterministic_rules.py (ver SUGERENCIAS.MD 3.2). El script
+# principal solo las reimporta si las usa él mismo, así que no todas quedan
+# en APP tras el runpy. Se añaden aquí para no reescribir los ~12 sitios de
+# este archivo que ya las buscan por ese nombre; los tests nuevos de esos
+# módulos (test_grant_radar_*.py) las importan de forma estándar.
+from grant_radar import cache as _cache_module
+from grant_radar import deterministic_rules as _rules_module
+
+for _module in (_cache_module, _rules_module):
+    for _name in dir(_module):
+        if not _name.startswith("_") or _name.startswith("__"):
+            continue
+        APP.setdefault(_name, getattr(_module, _name))
+APP.setdefault("apply_current_deterministic_rules", _rules_module.apply_current_deterministic_rules)
+APP.setdefault("filter_usable_cache", _cache_module.filter_usable_cache)
+APP.setdefault("analysis_is_usable", _cache_module.analysis_is_usable)
+APP.setdefault("cache_key", _cache_module.cache_key)
+APP.setdefault("cache_load", _cache_module.cache_load)
+APP.setdefault("cache_save", _cache_module.cache_save)
+APP.setdefault("source_hash", _cache_module.source_hash)
+
 
 class SourceParserTests(unittest.TestCase):
     def test_boe_inventory_keeps_active_idae_call_and_records_health(self):
