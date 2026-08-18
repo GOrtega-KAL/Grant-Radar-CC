@@ -1709,3 +1709,96 @@ usuario condicionó explícitamente su autorización a que no se hicieran
 llamadas a la API sin pedir permiso primero. El aumento de coste central
 estimado (+67 %, de $1,22 a $2,04) queda documentado aquí para que el
 usuario lo revise antes de autorizar una ejecución completa.
+
+## 27. Revisión del embudo determinista tras ampliar BDNS (mismo día, 18/08/2026)
+
+Ante el aumento de candidatas BDNS (sección 26), el usuario pidió revisar si
+merecía la pena endurecer los filtros deterministas antes de gastar en
+Claude, y preguntó si tocar esos filtros ahora iría en contra del trabajo de
+modularización. Se revisó el embudo completo con los datos reales de la
+ejecución `--no-claude` de la sección 26 (948 convocatorias detectadas tras
+deduplicar, dominadas por las 899 de BDNS) y se leyó el código real de
+`_bdns_pre_claude_gate()` (líneas ~1056-1248) para entender el motivo exacto
+de cada descarte, no solo los recuentos agregados.
+
+**Respuesta a "¿tocar los filtros ahora contradice la modularización?":
+no.** `AGENTS.md` (secciones 21-25) y `SUGERENCIAS.MD` (3.2/3.3) siempre
+trataron "extraer código a módulos" y "cambiar reglas de negocio" como ejes
+independientes, resueltos en sesiones separadas a propósito. La única razón
+por la que `_bdns_pre_claude_gate()`/`deterministic_prefilter()` (sección
+4.1) siguen sin extraer no es un conflicto estructural, sino que son la
+lógica más compleja y ajustada del proyecto (siete niveles de precedencia) y
+tocarla sin petición expresa del usuario se consideraba demasiado
+arriesgado para colarla detrás de otra tarea — exactamente la situación para
+la que se dejó esa nota. Modificarla ahora, con el script principal todavía
+sin extraer esa lógica, no bloquea ni complica una extracción futura: se
+extraerá lo que exista en ese momento, igual que con cualquier otro módulo.
+
+**Veredicto sobre las 77 candidatas finales (32 retain + 8 ambiguous + 37
+resueltas-ambiguas de BDNS):** el embudo determinista ya funciona
+correctamente y no es el cuello de botella. De las 948 convocatorias
+detectadas:
+
+- `deterministic_prefilter()` (línea de log "Prefiltro común") rechaza
+  **838 de 948 (88,4 %)** en el primer paso, solo con los datos del
+  listado, sin llamar a Claude.
+- De las 70 que quedan en `hold_manual` de BDNS por falta de datos en el
+  listado, la resolución automática (`resolve_bdns_holds_for_pipeline`,
+  que busca evidencia adicional y reaplica las reglas) rechaza **33 más
+  sin Claude** y no necesita revisión manual humana en ningún caso
+  (`revisión manual=0`). Solo entonces se declaran genuinamente ambiguas
+  las **37 restantes**, que pasarían a Claude en una ejecución real.
+- En total, **871 de 948 (91,9 %) se descartan de forma determinista**;
+  solo 77 (8,1 %) llegarían a Claude — el coste estimado ($2,04 central)
+  refleja esas 77, no las 899 candidatas iniciales de BDNS citadas en la
+  sección 26. Confundir "candidatas tras el primer filtro de listado" con
+  "candidatas que realmente cuestan Claude" habría llevado a una alarma de
+  coste desproporcionada respecto a la realidad.
+- De los 70 `hold_manual`, el motivo domina con claridad:
+  `territorial_eligibility_unverified` = 57 (81 %),
+  `active_status_unverified` = 12 (17 %), `consortium_role_unverified` = 1.
+  Leyendo el código: el paso 1 (¿es de fuera de Aragón?, usa `bdns_regions`
+  del detalle BDNS y `bdns_admin_type`/`nivel1`) funciona bien y clasifica
+  correctamente administraciones como "Cámara de Comercio de Granada" o
+  "Ayuntamiento de X" como subnacionales fuera de Aragón. El paso 2 (¿eso
+  descarta a Kalfrisa?, `existing_centre_patterns`/`new_centre_patterns`/
+  `project_location_patterns` sobre el texto de la descripción, línea
+  ~4505) es el que se atasca: el requisito explícito de "centro ya
+  existente en la comunidad convocante" casi nunca aparece en la
+  descripción corta de BDNS, solo en las bases completas en PDF — de ahí
+  que quede "unknown" y pase a `hold_manual`.
+- Se consideró reutilizar `build_recurrent_coverage_watch()` (línea ~1385)
+  para "recordar" que programas anuales repetidos de administraciones
+  ajenas a Aragón (se detectaron ediciones 2023/2024/2025/2026 del mismo
+  programa municipal, y tres convocatorias de la Cámara de Comercio de
+  Granada) ya se descartaron en ediciones anteriores. Se descartó tras leer
+  su código: esa función vigila que programas *relevantes* conocidos sigan
+  apareciendo cada ejecución (alerta si dejan de encontrarse), no sirve
+  para lo contrario (recordar descartes de programas irrelevantes). No hay
+  hoy ningún mecanismo para eso; sería lógica nueva, no reutilización.
+
+**Decisión del usuario:** no tocar el filtro territorial por ahora. Motivo
+compartido con el usuario y aceptado: el crecimiento no viene de un filtro
+laxo sino de que ensanchar la ventana temporal (sección 26) trae más
+convocatorias subnacionales de fuera de Aragón en general, no solo las de
+Aragón que se buscaban; el sistema ya resuelve automáticamente el 91,9 % sin
+Claude y sin revisión manual; y el coste real ($2,04) sigue muy por debajo
+de la barrera de seguridad ($5,00). Se documentan aquí, para si se retoma
+más adelante, las dos vías concretas evaluadas y no descartadas por
+inviables, solo aplazadas:
+
+1. **Señal por tipo de administración**: usar `nivel2`/`nivel3` (ya
+   disponibles sin coste adicional) para que Cámaras de Comercio/
+   Ayuntamientos fuera de Aragón asuman por defecto "centro ya existente
+   requerido" salvo que el texto sugiera lo contrario — invierte la
+   presunción actual. Riesgo: falsos negativos si algún programa de estos
+   emisores resulta ser de alcance nacional.
+2. **Ampliar los patrones de texto**: revisar bases reales de varios de los
+   37 casos ambiguos de esta ejecución para encontrar lenguaje de
+   requisito de centro que `existing_centre_patterns`/`new_centre_patterns`
+   no reconocen hoy. Más lento (requiere leer PDFs reales caso a caso) pero
+   menor riesgo de falso negativo que la opción 1.
+
+Cualquiera de las dos, si se retoma, debe seguir la disciplina ya vigente
+en `SUGERENCIAS.MD` 3.3: ampliar primero los fixtures de test con los casos
+reales encontrados, antes de tocar la lógica de `_bdns_pre_claude_gate()`.

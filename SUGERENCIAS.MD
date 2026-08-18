@@ -431,6 +431,24 @@ ofrecería git.
 4. Documentar en la propia configuración el motivo y la fecha de cada regla
    añadida, sustituyendo el actual registro narrativo en `AGENTS.MD` por
    metadatos estructurados y trazables junto a cada regla.
+5. **[Auditado el 18/08/2026, sesión siguiente, sin cambios de código]** Tras
+   ampliar la ventana de BDNS (ver 3.2, quinto/sexto incremento), se auditó
+   con datos reales si `_bdns_pre_claude_gate()` necesitaba endurecerse para
+   contener el volumen nuevo. Conclusión, con cifras reales (detalle en
+   AGENTS.md sección 27): de 948 candidatas detectadas, el 91,9 % (871) se
+   descarta de forma determinista sin llamar a Claude y sin ninguna
+   revisión manual; solo el 8,1 % (77) llega genuinamente ambiguo. El
+   cuello de botella dominante (81 % de los casos en espera de evidencia,
+   `territorial_eligibility_unverified`) no es un filtro laxo: es que el
+   requisito de "centro ya existente en la comunidad convocante" casi nunca
+   aparece en la descripción corta de BDNS, solo en las bases completas en
+   PDF — una limitación de datos disponibles, no de la regla en sí. Se
+   decidió explícitamente no tocar el filtro por ahora (coste real dentro
+   de la barrera de seguridad); quedan documentadas en AGENTS.md sección 27
+   dos vías concretas para si se retoma en el futuro (señal por tipo de
+   administración vía `nivel2`/`nivel3`, o ampliar los patrones de texto de
+   requisito de centro), ambas sujetas a la misma exigencia de fixtures
+   primero del punto 3.
 
 ### 3.4. Frente a 2.4 — Fragilidad ante cambios en fuentes externas
 

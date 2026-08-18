@@ -86,6 +86,14 @@ ajustada del proyecto: no encadenarla detrás de otra tarea sin que el
 usuario lo pida explícitamente. Detalle completo de cada ronda en
 `AGENTS.md`, secciones 21-26, y en `SUGERENCIAS.MD` (3.2/3.3).
 
+**Auditoría del embudo determinista (18/08/2026, sin cambios de código):**
+tras ampliar la ventana de BDNS, se comprobó con datos reales si
+`_bdns_pre_claude_gate()` necesitaba endurecerse. No: descarta el 91,9 % de
+las candidatas sin llamar a Claude y sin revisión manual; el resto es
+ambiguo de verdad, no un filtro laxo. Decisión explícita del usuario: no
+tocarlo por ahora. Dos vías quedan documentadas para retomar en el futuro,
+si hace falta — ver AGENTS.md sección 27 y SUGERENCIAS.MD 3.3 punto 5.
+
 ## Publicar cambios (git push)
 
 El repositorio remoto usa un token fine-grained guardado en `.env`
