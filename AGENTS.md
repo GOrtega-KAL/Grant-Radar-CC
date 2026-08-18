@@ -64,7 +64,9 @@ Fuentes actuales:
 - IDAE: Playwright sobre ayudas y financiación, más el catálogo de ayudas para
   ámbito estatal, Aragón y Zaragoza.
 - BOE/MITECO: Playwright y consolidación de documentos regulatorios.
-- BOA Aragón: Playwright; catálogo estático como respaldo.
+- BOA Aragón: señal secundaria/backup (Playwright + catálogo estático); el
+  descubrimiento automático principal de convocatorias autonómicas de Aragón
+  es el filtro estructurado `nivel1`/`nivel2` dentro de BDNS (sección 26).
 - ECCP: inventario de calls y rastreo limitado de landings oficiales y webs de
   proyectos, con profundidad elegida mediante experimento auditable de niveles
   0-3, `robots.txt`, HTTPS y límites de peticiones, bytes y tiempo. La prueba del
@@ -1591,3 +1593,119 @@ prueba por ser el más pequeño y autocontenido de los ocho (sin llamadas a
   estado compartido genuino (→ módulo propio, como `audit.py`), o si debe
   quedarse en el script principal por depender de algo aún no extraído
   (como `PlaywrightBrowser` o `assess_web_inventory_health()`).
+
+## 26. Cobertura automática de Aragón vía BDNS a 18/08/2026 (sesión siguiente)
+
+El usuario pidió refrescar el catálogo estático de BOA (ambas entradas ya
+vencidas, ver sección 25), pero con el objetivo real de dejar de depender de
+un catálogo curado y lograr cobertura automática de verdad. Antes de tocar
+código se investigaron dos fuentes de scraping directo aportadas por el
+usuario y ambas se descartaron con evidencia real:
+
+- **Registro BOA `CONV/AYUDAS`**
+  (`boa.aragon.es/cgi-bin/CONV/BRSCGI?...&SEC=CONV_AYUDAS&TIPO-C=AYUDAS...`):
+  estructurado, paginable por GET simple sin sesión (11.577 documentos
+  históricos), pero su entrada más reciente está fechada 7/01/2026 — más de
+  7 meses de desfase editorial respecto al 18/08/2026, confirmado revisando
+  las primeras 100 entradas (ninguna posterior a enero 2026, densidad ~44
+  filas/día hasta ahí) y el final del listado (documento 11570+, ya del
+  Programa de Desarrollo Rural 2014-2020). No sirve como fuente de
+  "vigentes ahora".
+- **Buscador de trámites de aragon.es**
+  (`aragon.es/tramites/.../ayudas-subvenciones?...p_auth=...`): acción de
+  portlet Liferay con token de sesión — HTTP 403 ante un GET simple, no es
+  una URL estable para scraping directo sin simular la interacción real del
+  formulario.
+
+La alternativa que sí funciona: **BDNS**, ya integrada vía `fetch_bdns()`
+(línea ~4590), tiene datos casi en tiempo real (`fechaRecepcion` del mismo
+día en pruebas reales) y cada fila de `convocatorias/ultimas` ya trae
+`nivel1` ("AUTONOMICA"/"LOCAL"/"ESTADO"/"OTROS") y `nivel2` (nombre de la
+administración, p. ej. "ARAGÓN") sin llamadas adicionales. Entradas del
+propio índice BOA `CONV/AYUDAS` revisado arriba incluían literalmente
+"Observaciones: BDNS (Identif.): ####", confirmando que las ayudas del
+Gobierno de Aragón sí quedan registradas en BDNS, coherente con el principio
+ya documentado en la sección 3 ("BDNS ... `bdns_id` prevalece como identidad
+fuerte"). Se probó filtrar `convocatorias/busqueda` server-side por
+`nivel1`, `nivel2`, `administraciones` o `regiones`: la API los ignora
+silenciosamente (mismo resultado con o sin esos parámetros) — el filtro
+debe hacerse en cliente, igual que ya hacía `_bdns_candidate_from_listing()`
+con palabras clave.
+
+**Cambio implementado:**
+
+- `grant_radar/bdns_scope.py` (nuevo): `_bdns_candidate_from_listing()`
+  (movida tal cual desde `Grant-Radar-prueba.py`, sin test dedicado hasta
+  ahora), `_bdns_is_aragon_regional_administration()` (nueva: `nivel1`
+  folded == "autonomica" y "aragon" en `nivel2` folded — administraciones
+  LOCAL quedan fuera aunque mencionen Aragón, publican en el Boletín Oficial
+  de la Provincia, no en BOA) y `_bdns_is_prefilter_candidate()` (OR de las
+  dos). El script principal las reimporta; la línea de construcción de
+  `candidates` en `fetch_bdns()` pasa a usar `_bdns_is_prefilter_candidate`.
+- `BDNS_LATEST_MAX_PAGES` sube de 10 a 35 (línea ~4177), con comentario
+  explicando la medición real de densidad (~44 filas/día nacional el
+  17-18/08/2026) que la justifica: 35 páginas × 100 filas ≈ 79 días, colchón
+  sobre el mínimo de negocio de 60 días pedido explícitamente por el
+  usuario (se descartaron 30 páginas/~68 días y 40 páginas/~90 días como
+  alternativas más ajustada/más holgada).
+  Este ensanchado afecta a **todas** las administraciones, no solo a
+  Aragón: la API no permite filtrar `convocatorias/ultimas` por región en
+  servidor.
+- `SOURCE_RUNTIME_METADATA["BDNS"]` gana un contador nuevo,
+  `aragon_admin_candidates`, junto a `inventory_unique`/
+  `prefilter_candidates` — visible en memoria durante la ejecución, aunque
+  a fecha de esta sesión no queda persistido en
+  `grant_radar_audit.json` (ese archivo no serializa
+  `SOURCE_RUNTIME_METADATA` para fuentes que no llaman a
+  `assess_web_inventory_health()`, que es el caso de BDNS); queda como
+  posible mejora futura si se quiere ese número en el histórico de
+  auditoría.
+- `grant_radar/sources/boa_aragon.py`: solo nota de estado en el docstring
+  de módulo, sin cambio de lógica — el conector queda como señal
+  secundaria/backup, no como mecanismo principal.
+- Nuevo `tests/test_grant_radar_bdns_scope.py` (import estándar) y dos
+  tests añadidos a `tests/test_grant_radar.py` (`SourceParserTests`): uno de
+  integración de `fetch_bdns()` con `_http_get` mockeado que verifica que
+  una fila autonómica de Aragón sin ninguna palabra clave entra igualmente
+  como candidata, y un test de regresión que ata `BDNS_LATEST_MAX_PAGES` ×
+  `BDNS_PAGE_SIZE` al mínimo de negocio de 60 días usando la densidad
+  medida, para que nadie reduzca la constante sin darse cuenta de que
+  incumple el requisito. 238 pruebas `unittest` (226 + 12 nuevas) y
+  `py_compile` en verde.
+
+**Verificación real (`--no-claude`, 18/08/2026, 12:40-12:53 UTC), comparada
+contra el baseline de la sección 25:**
+
+| Métrica | Antes (sección 25) | Después |
+|---|---|---|
+| `BDNS_LATEST_MAX_PAGES` | 10 (~22-23 días) | 35 (~79 días) |
+| BDNS inventariadas | 2.084 | 4.475 |
+| BDNS candidatas (prefiltro) | 635 | 899 |
+| BDNS vigentes (final) | 16 | 47 |
+| Tiempo BDNS | 168,06 s | 243,15 s |
+| Tiempo total recopilación | 534,78 s | 580,07 s |
+| Total vigentes (todas las fuentes) | 46 | 77 |
+| Previsión Claude (coste central) | $1,2190 (92 llamadas) | $2,0405 (154 llamadas) |
+
+El incremento de 46→77 vigentes es enteramente atribuible a BDNS (16→47,
++31); el resto de fuentes no cambió (Horizon 19, ECCP 4, EEN 2, CDTI 5,
+IDAE 1, BOE 1, BOA 0) — consistente con que el cambio solo toca `fetch_bdns()`.
+Confirmado un caso real, concreto, que antes no aparecía y que no tiene
+ninguna palabra clave industrial obvia en su título — prueba directa de que
+el filtro de administración (no el de palabras clave) es lo que lo trajo:
+
+> [2026-09-17] ORDEN ECE/ /2026, de 31 de julio, por la que se convocan
+> para el ejercicio 2026 ayudas para la realización de inversiones en
+> recintos feriales y para la promoción y organización de certámenes
+> feriales en la Comunidad Autónoma de Aragón.
+
+Invariantes de `--no-claude` confirmados en esta ejecución: código de salida
+0, "No se llamó a Claude", caché IA no modificada, `convocatorias.json` no
+generado ni publicado, barrera de Claude (`claude_safety_preflight()`)
+dentro de límites pese al aumento de volumen (200 análisis / $5,00 máximo).
+
+**No ejecutado en esta sesión:** ninguna llamada real a Claude/Haiku — el
+usuario condicionó explícitamente su autorización a que no se hicieran
+llamadas a la API sin pedir permiso primero. El aumento de coste central
+estimado (+67 %, de $1,22 a $2,04) queda documentado aquí para que el
+usuario lo revise antes de autorizar una ejecución completa.

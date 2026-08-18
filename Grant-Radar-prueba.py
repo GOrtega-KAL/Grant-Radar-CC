@@ -157,6 +157,10 @@ from grant_radar.parsing_helpers import (
     select_evidence_excerpt,
 )
 from grant_radar.audit import DISCOVERY_AUDIT, audit_exclusion
+from grant_radar.bdns_scope import (
+    _bdns_is_aragon_regional_administration,
+    _bdns_is_prefilter_candidate,
+)
 from grant_radar.sources.boa_aragon import fetch_boa
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -4174,30 +4178,20 @@ print("✓ Funciones de fuentes cargadas")
 # ── BDNS / SNPSAP: API REST oficial ─────────────────────────────────────────
 BDNS_API_BASE = "https://www.infosubvenciones.es/bdnstrans/api"
 BDNS_PUBLIC_BASE = "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias"
-BDNS_LATEST_MAX_PAGES = 10
 BDNS_PAGE_SIZE = 100
+# Ventana cubierta por `convocatorias/ultimas` (BDNS), TODAS las
+# administraciones (la API no filtra por región en servidor — ver AGENTS.md
+# sección 26). Medición real 17-18/08/2026: ~44 filas/día nacional.
+# 35 páginas × 100 ≈ 79 días, colchón sobre el mínimo de negocio de 60 días.
+# Si una medición posterior muestra una densidad muy distinta, recalibrar con
+# una nueva medición real, no mover la cifra a ciegas.
+BDNS_LATEST_MAX_PAGES = 35
 BDNS_SEARCH_GROUPS = (
     "industria eficiencia energia descarbonizacion",
     "innovacion investigacion desarrollo demostracion",
     "hidrogeno calor hornos combustion emisiones",
     "economia circular residuos digitalizacion",
 )
-
-
-def _bdns_candidate_from_listing(item: dict) -> bool:
-    text = " ".join(str(item.get(key, "")) for key in (
-        "descripcion", "descripcionLeng", "nivel1", "nivel2", "nivel3",
-    ))
-    folded = _fold_text(text)
-    broad_terms = (
-        "industr", "energia", "energet", "innov", "investig", "desarroll",
-        "digital", "descarbon", "emision", "hidrogen", "circular", "residu",
-        "fabric", "empresa", "pyme", "tecnolog", "clima", "medioambient",
-    )
-    return bool(
-        has_technology_discovery_signal(text)
-        or any(term in folded for term in broad_terms)
-    )
 
 
 def _is_safe_public_https_url(value: str) -> bool:
@@ -4631,7 +4625,7 @@ def fetch_bdns() -> list:
             {"descripcion": query, "descripcionTipoBusqueda": 2},
             3,
         )
-    candidates = [row for row in listings.values() if _bdns_candidate_from_listing(row)]
+    candidates = [row for row in listings.values() if _bdns_is_prefilter_candidate(row)]
     results = []
     for index, listing in enumerate(candidates):
         bdns_id = str(listing.get("numeroConvocatoria", "")).strip()
@@ -4657,6 +4651,9 @@ def fetch_bdns() -> list:
         "strategy": "API REST SNPSAP: últimas + búsquedas temáticas + detalle",
         "inventory_unique": len(listings),
         "prefilter_candidates": len(candidates),
+        "aragon_admin_candidates": sum(
+            1 for row in candidates if _bdns_is_aragon_regional_administration(row)
+        ),
         "pages_read": pages_read,
         "errors": errors,
     }

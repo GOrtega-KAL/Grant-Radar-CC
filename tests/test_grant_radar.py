@@ -649,6 +649,61 @@ class SourceParserTests(unittest.TestCase):
         self.assertEqual(degraded["status"], "degraded")
         self.assertEqual(unhealthy["status"], "unhealthy")
 
+    def test_fetch_bdns_includes_aragon_administration_without_a_keyword_match(self):
+        national_keyword_row = {
+            "numeroConvocatoria": "900101",
+            "descripcion": "Ayudas a la digitalización industrial de pymes",
+            "nivel1": "ESTADO", "nivel2": "MINISTERIO DE INDUSTRIA",
+        }
+        aragon_no_keyword_row = {
+            "numeroConvocatoria": "900102",
+            "descripcion": "Convenio de colaboración institucional ordinario",
+            "nivel1": "AUTONOMICA", "nivel2": "ARAGÓN",
+        }
+        irrelevant_row = {
+            "numeroConvocatoria": "900103",
+            "descripcion": "Becas de comedor escolar para familias numerosas",
+            "nivel1": "LOCAL", "nivel2": "AYUNTAMIENTO DE VIGO",
+        }
+        listing_rows = [national_keyword_row, aragon_no_keyword_row, irrelevant_row]
+        detail_by_id = {
+            "900101": {"descripcion": national_keyword_row["descripcion"], "codigoBDNS": "900101"},
+            "900102": {"descripcion": aragon_no_keyword_row["descripcion"], "codigoBDNS": "900102"},
+        }
+
+        def fake_http_get(url, params=None, **kwargs):
+            response = mock.Mock()
+            endpoint = url.rsplit("/", 1)[-1]
+            if endpoint == "ultimas":
+                response.json.return_value = {"content": listing_rows, "last": True}
+            elif endpoint == "busqueda":
+                response.json.return_value = {"content": [], "last": True}
+            elif endpoint == "convocatorias":
+                num_conv = str((params or {}).get("numConv", ""))
+                response.json.return_value = detail_by_id.get(num_conv, {})
+            else:
+                raise AssertionError(f"Unexpected BDNS endpoint: {url}")
+            return response
+
+        globals_dict = APP["fetch_bdns"].__globals__
+        with mock.patch.dict(globals_dict, {"_http_get": mock.Mock(side_effect=fake_http_get)}):
+            results = APP["fetch_bdns"]()
+
+        self.assertEqual(sorted(r["bdns_id"] for r in results), ["900101", "900102"])
+        metadata = APP["SOURCE_RUNTIME_METADATA"]["BDNS"]
+        self.assertEqual(metadata["prefilter_candidates"], 2)
+        self.assertEqual(metadata["aragon_admin_candidates"], 1)
+
+    def test_bdns_latest_window_covers_at_least_sixty_days(self):
+        # Densidad medida el 17-18/08/2026 (ver AGENTS.md sección 26): ~44
+        # filas/día a nivel nacional en convocatorias/ultimas.
+        observed_daily_volume = 44
+        minimum_required_days = 60
+        covered_days = (
+            APP["BDNS_LATEST_MAX_PAGES"] * APP["BDNS_PAGE_SIZE"] / observed_daily_volume
+        )
+        self.assertGreaterEqual(covered_days, minimum_required_days)
+
 
 class IdentityAndFilterTests(unittest.TestCase):
     def structured_bdns_raw(self, **overrides):

@@ -8,6 +8,12 @@
 # `browser` se tipa como `Any` en vez de importar `PlaywrightBrowser`: esa
 # clase vive en Grant-Radar-prueba.py, cuyo nombre con guiones no es un
 # módulo importable. Solo se usa aquí `browser.html(url) -> str | None`.
+#
+# ESTADO (18/08/2026, ver AGENTS.md sección 26): el mecanismo automático
+# principal para convocatorias autonómicas de Aragón ya no es este conector,
+# sino el filtro estructurado nivel1/nivel2 dentro de fetch_bdns() (ver
+# grant_radar/bdns_scope.py). Este conector se mantiene como señal secundaria
+# de respaldo/trazabilidad, no como fuente principal de descubrimiento.
 
 import logging
 import re

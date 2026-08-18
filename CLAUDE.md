@@ -66,16 +66,25 @@ importable):
 | `deterministic_rules.py` | Salvaguardas deterministas post-modelo |
 | `claude_schemas.py` | Esquemas Pydantic de Claude y su validación |
 | `audit.py` | `DISCOVERY_AUDIT` y `audit_exclusion()` (usado por las 8 fuentes) |
-| `sources/boa_aragon.py` | Conector BOA Aragón (primero de `sources/`, prueba) |
+| `sources/boa_aragon.py` | Conector BOA Aragón (señal secundaria/backup, ver sección 26) |
+| `bdns_scope.py` | Filtro de candidatas BDNS: palabras clave + administración autonómica de Aragón |
 
-Pendiente: el resto de `sources/` (7 conectores: BDNS, Horizon, CDTI, IDAE,
-BOE/MITECO, ECCP, EEN — BOA ya se extrajo como prueba, ver AGENTS.md sección
-25) y `pipeline.py` (`run_pipeline()`). El filtro previo a Claude
+El descubrimiento automático principal de convocatorias autonómicas de
+Aragón ya no es el conector BOA (su scraper en vivo no encuentra nada y su
+catálogo estático está vencido), sino un filtro estructurado `nivel1`/
+`nivel2` dentro de `fetch_bdns()` (`grant_radar/bdns_scope.py`), con la
+ventana de `convocatorias/ultimas` ampliada a ~79 días. Detalle completo de
+la investigación y de los números reales de verificación en AGENTS.md
+sección 26.
+
+Pendiente: el resto de `sources/` (7 conectores: Horizon, CDTI, IDAE,
+BOE/MITECO, ECCP, EEN, BDNS — BOA ya se extrajo como prueba, ver AGENTS.md
+sección 25) y `pipeline.py` (`run_pipeline()`). El filtro previo a Claude
 (`_bdns_pre_claude_gate()`, `deterministic_prefilter()`, sección 4.1 de
 `AGENTS.md`) sigue deliberadamente sin extraer: es la lógica más compleja y
 ajustada del proyecto: no encadenarla detrás de otra tarea sin que el
 usuario lo pida explícitamente. Detalle completo de cada ronda en
-`AGENTS.md`, secciones 21-25, y en `SUGERENCIAS.MD` (3.2/3.3).
+`AGENTS.md`, secciones 21-26, y en `SUGERENCIAS.MD` (3.2/3.3).
 
 ## Publicar cambios (git push)
 
