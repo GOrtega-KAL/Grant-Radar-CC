@@ -83,6 +83,12 @@ importable):
 | `browser.py` | `PlaywrightBrowser`: sesión Chromium única de las fuentes sin API |
 | `dedup.py` | Identidad de programa, rol documental y consolidación de duplicados |
 
+Comportamientos concretos ya verificados con código (identidad de programa,
+extracción de presupuesto, bloqueo por ámbito del navegador, y por qué el
+patrón `__globals__` de los tests sobrevive a las extracciones) están
+recogidos en AGENTS.md sección 31: consultarla antes de deducirlos otra vez
+leyendo expresiones regulares.
+
 El descubrimiento automático principal de convocatorias autonómicas de
 Aragón ya no es el conector BOA (su scraper en vivo no encuentra nada y su
 catálogo estático está vencido), sino un filtro estructurado `nivel1`/

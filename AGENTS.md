@@ -1887,11 +1887,11 @@ Invariantes confirmadas: no se llamó a Claude, no se modificó la caché IA
 (`grant_radar_cache.json` sigue con fecha 14/08) y no se generó ni publicó
 `convocatorias.json`.
 
-Nota de comportamiento observada al escribir los tests, **no** corregida por
-quedar fuera del alcance de una extracción: `_extract_funding_budget()` no
-reconoce "2,5 millones **de** euros" (la preposición intermedia rompe el
-patrón) aunque sí reconoce "2,5 millones EUR". Queda fijado como test explícito
-en `tests/test_grant_radar_call_text.py` para que la limitación sea visible.
+Nota de comportamiento observada al escribir los tests: `_extract_funding_budget()`
+no reconocía "2,5 millones **de** euros" aunque sí "2,5 millones EUR". Se dejó
+fijado como test explícito sin corregir, por quedar fuera del alcance de una
+extracción que debía preservar el comportamiento. **Corregido a continuación,
+con dos fallos más del mismo patrón: ver sección 31.**
 
 Sigue pendiente: `browser.py` (`PlaywrightBrowser`), `dedup.py` (identidad y
 deduplicación documental), los siete conectores, `documents.py` (enriquecimiento
@@ -2007,3 +2007,76 @@ arrancó desde el módulo nuevo y las cuatro fuentes con control de salud siguen
 Sigue pendiente: los conectores BOE, IDAE, BDNS y CDTI (este último tras
 `documents.py`), ECCP —que solo espera por `deterministic_prefilter()`— y
 `pipeline.py`.
+
+## 31. Notas de comportamiento verificadas a 19/08/2026
+
+Comportamientos concretos comprobados con código en las rondas 28-30. No son
+decisiones nuevas: son cómo se comporta realmente el sistema, escrito aquí
+para no tener que volver a deducirlo leyendo expresiones regulares.
+
+### 31.1. `_extract_funding_budget()` — tres fallos corregidos
+
+El campo `budget` que devuelve esta función lo producen solo IDAE y ECCP, se
+muestra en la tarjeta del dashboard, viaja en la evidencia enviada a Haiku y
+**entra en `source_hash()`**: cambiarlo puede invalidar entradas de caché y
+provocar reanálisis de pago. Por eso se midió antes de tocar nada.
+
+| Texto real | Antes | Ahora |
+|---|---|---|
+| `Presupuesto: 2,5 millones de euros` | `Ver convocatoria` | `2,5 millones de euros total` |
+| `Dotación: 3.000.000 de euros` | `Ver convocatoria` | `3.000.000 de euros total` |
+| `Dotación de 2.500.000 euros` | `Ver convocatoria` | `2.500.000 euros total` |
+| `Total budget: 2.5 million euros` | `2.5 million **eur** total` | `2.5 million euros total` |
+
+Las causas eran tres y distintas: la preposición intermedia rompía el patrón;
+la alternancia de moneda empezaba por `EUR` y, siendo insensible a mayúsculas,
+se comía las tres primeras letras de "euros"; y el patrón solo tenía `dotacion`
+sin tilde, porque esta función —a diferencia de `_extract_deadline_from_text()`—
+no pliega el texto (devuelve el literal encontrado, así que no puede plegarlo
+sin perder el original).
+
+Impacto de caché medido, no supuesto: los cinco registros ECCP/IDAE de
+`convocatorias.json` daban `Ver convocatoria` y ninguno contenía la expresión
+afectada, así que ningún hash existente cambió.
+
+Se conserva a propósito el respaldo cuando el importe **no** es la dotación:
+"el presupuesto mínimo del proyecto es de 175.000 euros" describe un umbral por
+proyecto y sigue devolviendo `Ver convocatoria`. Publicarlo como presupuesto
+sería peor que no publicar nada.
+
+### 31.2. `_programme_identity()` se queda en el acrónimo, sin ordinales
+
+`_programme_identity("Convocatoria del Programa MOVES III")` devuelve
+`("moves", "MOVES")`, no `"moves iii"`: el patrón de nombre directo corta en el
+primer espacio. Es el comportamiento correcto para lo que hace falta —permite
+fusionar "MOVES III" con "MOVES III 2026" o con una modificación posterior—,
+pero conviene tenerlo presente si alguna vez dos programas comparten acrónimo y
+se distinguen solo por el ordinal. No ha ocurrido con las fuentes actuales.
+
+La función es deliberadamente conservadora en el otro sentido: exige la palabra
+"programa" en el título y rechaza acrónimos administrativos genéricos (`FEDER`,
+`PRTR`, `IDAE`, `MITECO`, `BOE`...) y años sueltos, porque fusionar por ellos
+uniría convocatorias sin ninguna relación.
+
+### 31.3. `PlaywrightBrowser` bloquea por ámbito, no siempre por host
+
+Cuando una web responde con un bloqueo de WAF, `html()` recuerda el ámbito para
+no insistir el resto de la ejecución. Para IDAE ese ámbito **no** es el host
+entero sino `www.idae.es:grant-details`, y solo cuando la ruta empieza por
+`/ayudas-y-financiacion/`: IDAE bloquea las fichas de detalle pero sirve el
+inventario sin problema, y marcar el host completo perdería la fuente entera.
+Cubierto en `tests/test_grant_radar_browser.py`.
+
+### 31.4. El patrón de tests sobrevive a las extracciones
+
+`mock.patch.dict(APP["fn"].__globals__, {...})` sigue funcionando después de
+mover una función a un módulo, porque `__globals__` apunta al módulo donde la
+función queda definida. Verificado en las rondas 29 y 30: ni un solo test de
+`tests/test_grant_radar.py` necesitó reescribirse por una extracción. Lo único
+que hay que añadir es el módulo nuevo al bloque de fusión de `APP` cuando los
+tests usen alguno de sus helpers privados, que el script principal no reimporta.
+
+El reverso de esa comodidad está en la sección 29: ese mismo bloque de fusión
+puede tapar un `NameError` real. Por eso existe
+`tests/test_grant_radar_script_names.py`, que carga el script con globals
+limpios.
