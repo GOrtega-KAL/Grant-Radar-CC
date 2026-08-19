@@ -14,15 +14,23 @@ de evidencia, normalización o reglas deterministas reutilizables.
 
 ## 2. Archivo de trabajo y alcance
 
-- Backend principal en desarrollo: `Grant-Radar-prueba.py`. Sigue siendo el
-  punto de entrada (`poetry run python "Grant-Radar-prueba.py"`) y el archivo
-  donde vive la mayoría del código.
-- Paquete `grant_radar/`: módulos extraídos del backend principal como parte
-  de la división en curso (ver sección 21 y `SUGERENCIAS.MD` 3.2/3.3).
-  `Grant-Radar-prueba.py` los importa con `from grant_radar.X import ...`.
-  Antes de mover más código aquí, comprobar sus dependencias reales — no
-  todo se puede extraer de forma aislada (ver nota sobre `cache/` y `rules/`
-  en la sección 21).
+- Backend principal: `Grant-Radar-prueba.py`. Sigue siendo el punto de entrada
+  (`poetry run python "Grant-Radar-prueba.py"`) y no se importa: su nombre con
+  guiones no es válido para `import`. A 19/08/2026 conserva 6.976 líneas, y lo
+  que queda en él es la matriz de reglas previa a Claude (sección 4.1), los
+  conectores BDNS, CDTI y ECCP, el análisis con Haiku y la orquestación de
+  `run_pipeline()`.
+- Paquete `grant_radar/`: 22 módulos, 5.119 líneas, con la lógica ya extraída
+  del backend principal (división en curso; historial por rondas en las
+  secciones 21-32 y en `SUGERENCIAS.MD` 3.2/3.3). `Grant-Radar-prueba.py` los
+  importa con `from grant_radar.X import ...`, y `CLAUDE.md` mantiene la tabla
+  de qué contiene cada uno.
+  Antes de mover más código aquí, comprobar sus dependencias reales con un
+  análisis previo: no todo se puede extraer de forma aislada. El acoplamiento
+  entre caché y reglas que bloqueó el primer intento se resolvió extrayendo
+  ambos a la vez (sección 23), y seis de los siete conectores no se pudieron
+  mover hasta extraer antes la infraestructura que compartían (secciones 28
+  y 30).
 - Frontend activo: `index.html`.
 - JSON público/local del dashboard: `convocatorias.json`.
 - No modificar archivos de backup, `Obsoleto/` ni `Frontend alternativo/` salvo

@@ -109,7 +109,7 @@ AGENTS.md sección 28. El filtro previo a Claude
 ajustada del proyecto; no encadenarla detrás de otra tarea sin que el usuario
 lo pida explícitamente. Es también lo único que le falta a ECCP, por eso ese
 conector va el último. Detalle completo de cada ronda en `AGENTS.md`,
-secciones 21-28, y en `SUGERENCIAS.MD` (3.2/3.3).
+secciones 21-32, y en `SUGERENCIAS.MD` (3.2/3.3).
 
 **Auditoría del embudo determinista (18/08/2026, sin cambios de código):**
 tras ampliar la ventana de BDNS, se comprobó con datos reales si
