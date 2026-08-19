@@ -447,6 +447,15 @@ ofrecería git.
    raíz del primero se amplió `tests/test_grant_radar_script_names.py` para
    comprobar también cada módulo del paquete. 349 pruebas y un `--no-claude`
    idéntico. `Grant-Radar-prueba.py`: 6.976 → 6.409 líneas, -30,3 % en el día.
+   **[Undécimo incremento, 19/08/2026 — capa documental y CDTI]** CDTI era el
+   único conector bloqueado por un dominio propio y no por infraestructura
+   genérica: el enriquecimiento con documentos oficiales. Se extrajeron
+   `grant_radar/documents.py` (descarga, extracción de texto HTML/PDF y caché
+   documental de fuentes) y `grant_radar/sources/cdti.py`. Con ellos,
+   `grant_radar/sources/` reúne siete de los ocho conectores; solo queda ECCP,
+   que espera por `deterministic_prefilter()`. 361 pruebas y un `--no-claude`
+   idéntico por sexta vez. `Grant-Radar-prueba.py`: 6.409 → 5.384 líneas,
+   -41,5 % acumulado en el día.
 3. Hacerlo de forma incremental y verificada: extraer un módulo, ejecutar
    `py_compile` y la suite completa de `unittest`, confirmar comportamiento
    idéntico con `--no-claude`, y solo entonces continuar con el siguiente

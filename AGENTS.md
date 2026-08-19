@@ -2254,3 +2254,45 @@ sobre `_bdns_company_eligible()`.
 
 Sigue pendiente: CDTI (tras `documents.py`), ECCP —que solo espera por
 `deterministic_prefilter()`— y `pipeline.py`.
+
+## 34. Undécima ronda a 19/08/2026: capa documental y conector CDTI
+
+Etapa 6 del plan de la sección 28. CDTI era el único conector bloqueado por una
+dependencia que no era infraestructura genérica sino un dominio propio: el
+enriquecimiento con documentos oficiales.
+
+- `grant_radar/documents.py`: `enrich_with_official_documents()`,
+  `_hold_document_text()` (extracción de texto de HTML, texto plano y PDF), la
+  caché documental de fuentes (`_load/_save_source_document_cache()`,
+  `_source_document_cache_key()`, `_SOURCE_DOCUMENT_CACHE_STATE`) y
+  `_official_document_priority()`, más las constantes de política de tamaño y
+  reintento.
+  **Decisión de diseño:** la ruta `SOURCE_DOCUMENT_CACHE_FILE` se calcula ahora
+  en el módulo, a partir de la posición del paquete, y el script la importa —al
+  revés que con la caché de análisis (sección 23), donde la ruta se pasa como
+  parámetro. El motivo es que CDTI llama a `enrich_with_official_documents()` y
+  también es un módulo: pasar la ruta habría obligado a hacerla viajar por una
+  firma más sin ganar nada. Hay un test que ata la ruta resultante a
+  `grant_radar_data/source_document_cache.json` bajo la raíz del proyecto, para
+  que módulo y script no puedan acabar escribiendo en ficheros distintos sin
+  que salte nada. Verificado además contra la ruta real antes y después.
+  `_hold_document_text()` la sigue usando `retrieve_bdns_hold_evidence()`, que
+  permanece en el script y la reimporta.
+- `grant_radar/sources/cdti.py`: las diez funciones del conector, incluido el
+  calendario oficial con Chromium, el catálogo curado de ventanilla abierta y
+  `_merge_cdti_results()`, que los combina con prioridad creciente.
+
+Con esto, `grant_radar/sources/` reúne siete de los ocho conectores: BDNS,
+BOA Aragón, BOE/MITECO, CDTI, EEN, Horizon Europe e IDAE. Solo queda ECCP, que
+no espera por infraestructura sino por `deterministic_prefilter()`, es decir
+por la sesión dedicada a las reglas.
+
+**Verificación:** `Grant-Radar-prueba.py` bajó de 6.409 a 5.384 líneas (-16,0 %
+en esta ronda; -41,5 % acumulado en el día desde 9.199). 361 pruebas
+`unittest` (349 + 12) y `py_compile` en verde. La ejecución `--no-claude` de
+cierre (702,12 s, código 0) repite todos los números por sexta vez: 953
+convocatorias detectadas, 33 duplicadas fusionadas, 39 tras el prefiltro
+inicial, 77 vigentes con idéntico desglose —CDTI en sus 5—, mismo prefiltro
+común y misma previsión de coste. Las cuatro fuentes con control de salud
+siguen `healthy` y la caché documental se leyó y escribió con normalidad desde
+el módulo nuevo.
