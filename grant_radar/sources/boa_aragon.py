@@ -5,9 +5,10 @@
 # estático curado como respaldo cuando la navegación en vivo no devuelve
 # resultados. Sin dependencias de caché ni de Claude.
 #
-# `browser` se tipa como `Any` en vez de importar `PlaywrightBrowser`: esa
-# clase vive en Grant-Radar-prueba.py, cuyo nombre con guiones no es un
-# módulo importable. Solo se usa aquí `browser.html(url) -> str | None`.
+# `browser` es la sesión Chromium compartida (`grant_radar/browser.py`); de
+# ella solo se usa aquí `browser.html(url) -> str`. Hasta que esa clase se
+# extrajo del script principal (AGENTS.md sección 30) el parámetro se tipaba
+# como `typing.Any`, porque `Grant-Radar-prueba.py` no es importable.
 #
 # ESTADO (18/08/2026, ver AGENTS.md sección 26): el mecanismo automático
 # principal para convocatorias autonómicas de Aragón ya no es este conector,
@@ -18,11 +19,11 @@
 import logging
 import re
 from datetime import datetime
-from typing import Any
 
 from bs4 import BeautifulSoup
 
 from grant_radar.audit import audit_exclusion
+from grant_radar.browser import PlaywrightBrowser
 from grant_radar.parsing_helpers import (
     _absolute_url,
     _days_until,
@@ -121,7 +122,7 @@ def _fetch_boa_static() -> list:
     return results
 
 
-def _fetch_boa_playwright(browser: Any) -> list:
+def _fetch_boa_playwright(browser: PlaywrightBrowser) -> list:
     """Consulta con Chromium búsquedas BOA y ayudas del Gobierno de Aragón."""
     targets = [
         "https://www.boa.aragon.es/cgi-bin/EBOA/BRSCGI?CMD=VERDOC&BASE=BODA&DOCS=1-40&SEPARADOR=&&RANG-C=20250101-&TEXT-TEXT=eficiencia+energetica+industria",
@@ -189,7 +190,7 @@ def _fetch_boa_playwright(browser: Any) -> list:
     return results
 
 
-def fetch_boa(browser: Any) -> list:
+def fetch_boa(browser: PlaywrightBrowser) -> list:
     results = _fetch_boa_playwright(browser)
     if results:
         return results

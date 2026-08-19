@@ -418,6 +418,17 @@ ofrecería git.
    cubierto con `tests/test_grant_radar_script_names.py`. 295 pruebas y un
    `--no-claude` con resultados idénticos (77 vigentes, mismo desglose).
    `Grant-Radar-prueba.py`: 8.963 → 8.403 líneas.
+   **[Octavo incremento, 19/08/2026 — navegador e identidad documental]**
+   Segunda mitad de la capa compartida: `grant_radar/browser.py`
+   (`PlaywrightBrowser`, con lo que el script principal deja de importar
+   `playwright.sync_api` y el conector BOA puede tipar su parámetro `browser`
+   de verdad, en vez del `typing.Any` que arrastraba desde el quinto
+   incremento) y `grant_radar/dedup.py` (identidad de programa, rol y rango
+   documental, y deduplicación). Con esto queda extraída toda la
+   infraestructura que bloqueaba a BOE, IDAE y CDTI. 317 pruebas (295 + 22,
+   incluidas las de `browser.py` sin arrancar Chromium) y un `--no-claude` con
+   las mismas 33 duplicadas fusionadas y las mismas 77 vigentes.
+   `Grant-Radar-prueba.py`: 8.403 → 7.977 líneas.
 3. Hacerlo de forma incremental y verificada: extraer un módulo, ejecutar
    `py_compile` y la suite completa de `unittest`, confirmar comportamiento
    idéntico con `--no-claude`, y solo entonces continuar con el siguiente

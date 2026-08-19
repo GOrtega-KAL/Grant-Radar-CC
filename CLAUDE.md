@@ -54,8 +54,8 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l`: 8.403
-líneas tras las dos rondas del 19/08/2026 (9.199 al empezar el día; la cifra
+`import`). Recuento verificado con `wc -l`: 7.977
+líneas tras las tres rondas del 19/08/2026 (9.199 al empezar el día; la cifra
 "8.835" de una nota anterior de este archivo estaba mal calculada — ver
 AGENTS.md sección 24, nota de discrepancia). Progresivamente movida a `grant_radar/` (paquete con nombre
 importable):
@@ -80,6 +80,8 @@ importable):
 | `call_text.py` | Texto de convocatoria compartido: mecanismo, identificador oficial, deadline, presupuesto, enlaces externos |
 | `sources/horizon_europe.py` | Conector Horizon Europe (SEDIA Search API) |
 | `sources/een.py` | Conector EEN: noticias de financiación y perfiles I+D con call verificable |
+| `browser.py` | `PlaywrightBrowser`: sesión Chromium única de las fuentes sin API |
+| `dedup.py` | Identidad de programa, rol documental y consolidación de duplicados |
 
 El descubrimiento automático principal de convocatorias autonómicas de
 Aragón ya no es el conector BOA (su scraper en vivo no encuentra nada y su
@@ -90,8 +92,7 @@ la investigación y de los números reales de verificación en AGENTS.md
 sección 26.
 
 Pendiente: cinco conectores (CDTI, IDAE, BOE/MITECO, ECCP, BDNS — BOA,
-Horizon y EEN ya extraídos, ver AGENTS.md secciones 25 y 29), más
-`browser.py` (`PlaywrightBrowser`), `dedup.py` (identidad/deduplicación),
+Horizon y EEN ya extraídos, ver AGENTS.md secciones 25, 29 y 30), más
 `documents.py` (enriquecimiento documental, que bloquea CDTI) y `pipeline.py`
 (`run_pipeline()`). El plan por etapas y el orden de dependencias están en
 AGENTS.md sección 28. El filtro previo a Claude

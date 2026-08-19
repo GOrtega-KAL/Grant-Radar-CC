@@ -1959,3 +1959,51 @@ generar ni publicar `convocatorias.json`.
 Sigue pendiente: `browser.py` (`PlaywrightBrowser`), `dedup.py`, los conectores
 BOE, IDAE, BDNS y CDTI (este último tras `documents.py`), ECCP —que solo espera
 por `deterministic_prefilter()`— y `pipeline.py`.
+
+## 30. Octava ronda a 19/08/2026: navegador e identidad documental
+
+Segunda mitad de la capa de infraestructura (etapa 3 del plan de la sección
+28). Es la que desbloquea los conectores que faltan: BOE, IDAE y CDTI dependen
+de estas dos piezas.
+
+- `grant_radar/browser.py`: la clase `PlaywrightBrowser`, sesión Chromium única
+  compartida por las cuatro fuentes sin API. Su única dependencia del script
+  era `log`. El script principal dejó de importar `playwright.sync_api`: ahora
+  solo lo necesita este módulo.
+- `grant_radar/sources/boa_aragon.py`: con la clase ya importable, el parámetro
+  `browser` se tipa de verdad como `PlaywrightBrowser` en vez de `typing.Any`.
+  Era una limitación explícita de la sección 25 y desaparece sola.
+- `grant_radar/dedup.py`: `_programme_identity()`, `_document_role()`,
+  `_document_rank()`, `_add_discovery_source()` y
+  `_deduplicate_raw_convocations()`. Cero dependencias del script: solo
+  `audit_exclusion`, `_official_call_identifier`, `_fold_text` y
+  `select_evidence_excerpt`, todos ya extraídos. Es el bloque más central
+  movido hasta ahora — decide qué convocatorias son la misma y cuál manda—,
+  pero también uno de los más autónomos.
+
+Aplicada la lección de la sección 29: se comprobaron los nombres de nivel
+superior de cada módulo nuevo antes de dar la extracción por buena. `dedup.py`
+contiene exactamente las cinco funciones previstas y nada más.
+
+**Verificación:** `Grant-Radar-prueba.py` bajó de 8.403 a 7.977 líneas (-5,1 %
+en esta ronda; -13,3 % acumulado en el día desde 9.199). 317 pruebas `unittest`
+(295 + 22) y `py_compile` en verde. Dos archivos de test nuevos: `browser.py`
+se prueba sin arrancar Chromium, sustituyendo `context` por un doble, y cubre
+lo que es lógica propia de la clase (cuándo devuelve cadena vacía, cuándo marca
+un ámbito bloqueado por WAF y cuándo deja de insistir, incluido el caso IDAE,
+que bloquea solo las fichas de detalle y no el inventario); `dedup.py` prueba
+por separado las tres piezas del criterio de identidad, que hasta ahora solo se
+ejercitaban a través de la deduplicación completa.
+
+La ejecución `--no-claude` de cierre (551,88 s, código 0) repite exactamente los
+números de las secciones 26, 28 y 29: 953 convocatorias detectadas, **33
+duplicadas fusionadas** —la cifra que probaría un fallo de la deduplicación si
+hubiera cambiado—, 39 tras el prefiltro inicial, 77 vigentes con idéntico
+desglose por fuente, mismo prefiltro común y misma previsión de coste. Chromium
+arrancó desde el módulo nuevo y las cuatro fuentes con control de salud siguen
+`healthy`. Sin llamadas a Claude, sin tocar la caché IA, sin generar ni publicar
+`convocatorias.json`.
+
+Sigue pendiente: los conectores BOE, IDAE, BDNS y CDTI (este último tras
+`documents.py`), ECCP —que solo espera por `deterministic_prefilter()`— y
+`pipeline.py`.
