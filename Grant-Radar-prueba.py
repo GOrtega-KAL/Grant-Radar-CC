@@ -209,6 +209,25 @@ from grant_radar.documents import (
     enrich_with_official_documents,
 )
 from grant_radar.publishing import github_upload
+from grant_radar.claude_usage import (
+    CLAUDE_CACHE_READ_USD_PER_MTOK,
+    CLAUDE_CACHE_WRITE_USD_PER_MTOK,
+    CLAUDE_INPUT_USD_PER_MTOK,
+    CLAUDE_OUTPUT_USD_PER_MTOK,
+    aggregate_aborted_run_usage,
+    aggregate_partial_token_usage,
+    aggregate_token_usage,
+)
+from grant_radar.hold_evidence import retrieve_bdns_hold_evidence
+from grant_radar.hold_quotes import (
+    _hold_question,
+    _hold_resolution,
+    _normalize_evidence_quote,
+    _quote_mentions_date,
+    _quote_supports_cluster_members,
+    _quote_supports_consortium_participation,
+    _quote_supports_territorial_condition,
+)
 from grant_radar.claude_selection import (
     CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS,
     CLAUDE_MAX_ANALYSES_PER_RUN,
@@ -299,10 +318,6 @@ GITHUB_BRANCH = "main"
 # CLAUDE_MODEL vive en grant_radar/versions.py, junto al resto de versiones
 # que identifican un análisis en caché.
 CLAUDE_SLEEP_S = 1                         # 1s entre llamadas (Claude no tiene RPM estricto)
-CLAUDE_INPUT_USD_PER_MTOK = 1.0
-CLAUDE_OUTPUT_USD_PER_MTOK = 5.0
-CLAUDE_CACHE_WRITE_USD_PER_MTOK = 1.25
-CLAUDE_CACHE_READ_USD_PER_MTOK = 0.10
 # Barrera previa a cualquier llamada. El coste usa el extremo superior observado
 # por convocatoria; sigue siendo una estimación, no una garantía de facturación.
 # PROFILE_VERSION, EXTRACTOR_VERSION, EVALUATOR_VERSION,
@@ -323,16 +338,12 @@ AUDIT_FILE = os.path.join(DATA_DIR, "grant_radar_audit.json")
 BDNS_HOLD_CACHE_FILE = os.path.join(DATA_DIR, "bdns_hold_ai_cache.json")
 BDNS_HOLD_REPORT_FILE = os.path.join(DATA_DIR, "bdns_hold_pilot_report.json")
 BDNS_HOLD_REPLAY_FILE = os.path.join(DATA_DIR, "bdns_hold_replay_report.json")
-BDNS_DOCUMENT_CACHE_FILE = os.path.join(DATA_DIR, "bdns_document_cache.json")
 AUDIT_SCHEMA_VERSION = 2
 AUDIT_MAX_RUNS = 365
 # STRUCTURED_SCHEMA_MAX_OPTIONAL_FIELDS y STRUCTURED_SCHEMA_MAX_UNION_FIELDS
 # viven en grant_radar/claude_schemas.py, junto a los esquemas que limitan.
 BDNS_HOLD_AI_VERSION = "bdns-hold-2026-08-v4-direct-participation"
-BDNS_DOCUMENT_CACHE_VERSION = "bdns-document-text-2026-08-v1"
 BDNS_HOLD_PILOT_MAX = 20
-BDNS_HOLD_MAX_DOCUMENTS = 4
-BDNS_HOLD_MAX_TOTAL_BYTES = 12 * 1024 * 1024
 
 # ── PERFIL DE KALFRISA Y CATÁLOGO DE SOCIOS ──────────────────────────
 # Ver grant_radar/kalfrisa_profile.py y grant_radar/partner_catalog.py
@@ -1621,286 +1632,18 @@ def _structured_claude_call(
     )
 
 
-_BDNS_DOCUMENT_CACHE_STATE = {"path": "", "entries": {}}
 
 
-def _load_bdns_document_cache() -> dict:
-    """Carga texto oficial ya extraído; es independiente de la caché IA."""
-    path = os.path.abspath(BDNS_DOCUMENT_CACHE_FILE)
-    if _BDNS_DOCUMENT_CACHE_STATE["path"] == path:
-        return _BDNS_DOCUMENT_CACHE_STATE["entries"]
-    try:
-        with open(path, "r", encoding="utf-8") as handle:
-            payload = json.load(handle)
-    except (OSError, json.JSONDecodeError):
-        payload = {}
-    meta = payload.get("_meta", {}) if isinstance(payload, dict) else {}
-    entries = payload.get("entries", {}) if isinstance(payload, dict) else {}
-    if meta.get("version") != BDNS_DOCUMENT_CACHE_VERSION or not isinstance(entries, dict):
-        entries = {}
-    _BDNS_DOCUMENT_CACHE_STATE["path"] = path
-    _BDNS_DOCUMENT_CACHE_STATE["entries"] = entries
-    return entries
 
 
-def _save_bdns_document_cache(entries: dict) -> None:
-    """Persiste atómicamente evidencia pública, sin mezclarla con decisiones IA."""
-    payload = {
-        "_meta": {
-            "version": BDNS_DOCUMENT_CACHE_VERSION,
-            "saved_at": datetime.now(timezone.utc).isoformat(),
-            "content": "public_bdns_document_text",
-        },
-        "entries": entries,
-    }
-    temporary = BDNS_DOCUMENT_CACHE_FILE + ".tmp"
-    with open(temporary, "w", encoding="utf-8") as handle:
-        json.dump(payload, handle, ensure_ascii=False, separators=(",", ":"))
-    os.replace(temporary, BDNS_DOCUMENT_CACHE_FILE)
 
 
-def _bdns_document_cache_key(candidate: dict) -> str:
-    """Identifica una revisión concreta de un documento oficial estable."""
-    identity = {
-        "url": re.sub(r"#.*$", "", str(candidate.get("url", "")).strip()),
-        "published_date": str(candidate.get("published_date", "") or ""),
-        "source_key": str(candidate.get("source_key", "") or ""),
-        "kind": str(candidate.get("kind", "") or ""),
-    }
-    return hashlib.sha256(json.dumps(
-        identity, ensure_ascii=False, sort_keys=True, separators=(",", ":")
-    ).encode("utf-8")).hexdigest()
 
 
-def _is_cacheable_bdns_document(candidate: dict) -> bool:
-    """Limita la caché a documentos de inventario, no a landings mutables."""
-    if not candidate.get("_from_bdns_inventory"):
-        return False
-    return candidate.get("kind") in {"document", "announcement"}
 
 
-def retrieve_bdns_hold_evidence(
-    conv: dict,
-    session: requests.Session | None = None,
-) -> dict:
-    """Recupera evidencia oficial acotada para una causa BDNS en espera."""
-    client = session or requests.Session()
-    documents = []
-    structured_metadata = {
-        "codigo_bdns": conv.get("bdns_id", ""),
-        "titulo": conv.get("title", ""),
-        "fecha_recepcion": conv.get("bdns_received_date", ""),
-        "fecha_publicacion_convocatoria": conv.get("bdns_call_publication_date", ""),
-        "fecha_inicio_solicitud": conv.get("open_date", ""),
-        "fecha_fin_solicitud": conv.get("deadline_date", ""),
-        "estado_calculado": conv.get("bdns_active_status", ""),
-        "indicador_abierto_api_no_concluyente": conv.get("bdns_api_open_flag", False),
-        "tipo_administracion": conv.get("bdns_admin_type", ""),
-        "regiones": conv.get("bdns_regions", []),
-        "beneficiarios": conv.get("bdns_beneficiary_types", []),
-        "modo_concesion": conv.get("bdns_award_mode", ""),
-        "instrumentos": conv.get("bdns_instruments", []),
-        "finalidad": conv.get("bdns_finality", ""),
-        "objetivos": conv.get("bdns_objectives", ""),
-    }
-    narrative_excerpt = select_evidence_excerpt(
-        str(conv.get("description", "")), conv.get("title", ""), 10_000
-    )
-    metadata_text = (
-        "METADATOS SNPSAP CON ETIQUETAS:\n"
-        + json.dumps(structured_metadata, ensure_ascii=False, sort_keys=True)
-        + ("\nCONTENIDO ADICIONAL:\n" + narrative_excerpt if narrative_excerpt else "")
-    )[:16_000]
-    if metadata_text:
-        documents.append({
-            "title": "Metadatos estructurados SNPSAP",
-            "url": conv.get("bdns_url") or conv.get("url", ""),
-            "kind": "bdns_metadata",
-            "format": "text",
-            "text": metadata_text,
-            "bytes": len(metadata_text.encode("utf-8")),
-        })
-    for related in conv.get("related_document_contents", []):
-        related_text = select_evidence_excerpt(
-            str(related.get("description", "")), related.get("title", ""), 10_000
-        )
-        if related_text:
-            documents.append({
-                "title": related.get("title", "Documento relacionado"),
-                "url": related.get("url", ""),
-                "kind": related.get("document_role", "related_document"),
-                "format": "text",
-                "text": related_text,
-                "bytes": len(related_text.encode("utf-8")),
-            })
-
-    candidates = [
-        {**item, "_from_bdns_inventory": True}
-        for item in conv.get("bdns_documents", [])
-        if isinstance(item, dict)
-    ]
-    for fallback in (conv.get("url", ""),):
-        if _is_safe_public_https_url(fallback) and not any(
-            item.get("url") == fallback for item in candidates
-        ):
-            candidates.append({
-                "title": "Sede electrónica",
-                "url": fallback,
-                "kind": "application_landing",
-            })
-    fetched = 0
-    processed = 0
-    errors = 0
-    total_bytes = 0
-    source_bytes = 0
-    cache_hits = 0
-    cache_misses = 0
-    document_cache = _load_bdns_document_cache()
-    cache_changed = False
-    for candidate in candidates:
-        if processed >= BDNS_HOLD_MAX_DOCUMENTS or source_bytes >= BDNS_HOLD_MAX_TOTAL_BYTES:
-            break
-        url = str(candidate.get("url", ""))
-        if not _is_safe_public_https_url(url):
-            continue
-        processed += 1
-        cacheable = _is_cacheable_bdns_document(candidate)
-        cache_key = _bdns_document_cache_key(candidate) if cacheable else ""
-        cached = document_cache.get(cache_key, {}) if cache_key else {}
-        cached_text = cached.get("text", "") if isinstance(cached, dict) else ""
-        cached_bytes = cached.get("bytes", 0) if isinstance(cached, dict) else 0
-        if (
-            isinstance(cached_text, str)
-            and len(cached_text) >= 80
-            and isinstance(cached_bytes, int)
-            and 0 <= cached_bytes <= BDNS_HOLD_MAX_DOCUMENT_BYTES
-            and source_bytes + cached_bytes <= BDNS_HOLD_MAX_TOTAL_BYTES
-        ):
-            cache_hits += 1
-            source_bytes += cached_bytes
-            documents.append({
-                "title": candidate.get("title", "Documento oficial"),
-                "url": url,
-                "kind": candidate.get("kind", "document"),
-                "format": cached.get("format", "text"),
-                "text": cached_text,
-                "bytes": cached_bytes,
-            })
-            continue
-        if cacheable:
-            cache_misses += 1
-        response = _http_get(
-            url,
-            session=client,
-            timeout=20,
-            retries=2,
-            headers={"Accept": "text/html,application/pdf,text/plain;q=0.9,*/*;q=0.2"},
-            max_bytes=min(
-                BDNS_HOLD_MAX_DOCUMENT_BYTES,
-                BDNS_HOLD_MAX_TOTAL_BYTES - source_bytes,
-            ),
-        )
-        fetched += 1
-        if response is None:
-            errors += 1
-            continue
-        if not _is_safe_public_https_url(str(response.url)):
-            errors += 1
-            continue
-        response_bytes = len(response.content)
-        total_bytes += response_bytes
-        source_bytes += response_bytes
-        if response_bytes > BDNS_HOLD_MAX_DOCUMENT_BYTES:
-            errors += 1
-            continue
-        text, document_format = _hold_document_text(response, url)
-        if len(text) < 80:
-            errors += 1
-            continue
-        documents.append({
-            "title": candidate.get("title", "Documento oficial"),
-            "url": url,
-            "kind": candidate.get("kind", "document"),
-            "format": document_format,
-            "text": text,
-            "bytes": response_bytes,
-        })
-        if cacheable:
-            document_cache[cache_key] = {
-                "url": url,
-                "published_date": candidate.get("published_date", ""),
-                "kind": candidate.get("kind", "document"),
-                "format": document_format,
-                "bytes": response_bytes,
-                "text": text,
-                "cached_at": datetime.now(timezone.utc).isoformat(),
-            }
-            cache_changed = True
-
-    if cache_changed:
-        _save_bdns_document_cache(document_cache)
-
-    prompt_documents = []
-    remaining = BDNS_HOLD_MAX_EVIDENCE_CHARS
-    for document in documents:
-        if remaining <= 0:
-            break
-        excerpt = select_evidence_excerpt(
-            document.get("text", ""), conv.get("title", ""), min(remaining, 16_000)
-        )
-        if not excerpt:
-            continue
-        prompt_documents.append({
-            "title": document.get("title", ""),
-            "url": document.get("url", ""),
-            "kind": document.get("kind", ""),
-            "format": document.get("format", ""),
-            "text": excerpt,
-        })
-        remaining -= len(excerpt)
-    evidence_hash = hashlib.sha256(json.dumps(
-        prompt_documents, ensure_ascii=False, sort_keys=True, separators=(",", ":")
-    ).encode("utf-8")).hexdigest()
-    # El prefiltro local inspecciona los documentos oficiales completos. El
-    # límite de extractos existe para Claude, no debe ocultar un objeto o una
-    # lista exhaustiva de beneficiarios a una regla determinista auditable.
-    deterministic_scope_exclusion = _bdns_intrinsic_exclusion(
-        conv,
-        " ".join(str(item.get("text", "")) for item in documents),
-    )
-    return {
-        "documents": prompt_documents,
-        "deterministic_scope_exclusion": deterministic_scope_exclusion,
-        "evidence_hash": evidence_hash,
-        "metrics": {
-            "candidate_urls": len(candidates),
-            "processed_urls": processed,
-            "fetched_urls": fetched,
-            "cache_hits": cache_hits,
-            "cache_misses": cache_misses,
-            "errors": errors,
-            "bytes": total_bytes,
-            "source_bytes": source_bytes,
-            "documents_with_text": len(prompt_documents),
-            "characters": sum(len(item["text"]) for item in prompt_documents),
-        },
-    }
 
 
-def _hold_resolution(
-    decision: str,
-    reason_code: str,
-    explanation: str,
-    resolved_by: str,
-    facts: dict | None = None,
-) -> dict:
-    return {
-        "decision": decision,
-        "reason_code": reason_code,
-        "explanation": explanation,
-        "resolved_by": resolved_by,
-        "facts": facts or {},
-    }
 
 
 def resolve_hold_deterministically(conv: dict, hold_reason: str, evidence: dict) -> dict:
@@ -1962,116 +1705,16 @@ def resolve_hold_deterministically(conv: dict, hold_reason: str, evidence: dict)
     )
 
 
-def _hold_question(hold_reason: str) -> str:
-    return {
-        "active_status_unverified": (
-            "Determina si la solicitud está abierta, es próxima, tiene ventanilla "
-            "indefinida, está cerrada o no puede determinarse."
-        ),
-        "territorial_eligibility_unverified": (
-            "Determina si exige un centro previo en el territorio, solo localizar "
-            "allí el proyecto, permite abrir un centro después o no impone restricción."
-        ),
-        "new_establishment_duration_unknown": (
-            "Determina el plazo confirmado para implantar el centro y ejecutar el proyecto."
-        ),
-        "consortium_role_unverified": (
-            "Determina si una empresa como Kalfrisa puede ser miembro formal con "
-            "actividad, costes o presupuesto propios, y no solo contratista."
-        ),
-        "cluster_role_unverified": (
-            "Determina si el apoyo llega a empresas miembro, pilotos o costes "
-            "empresariales, en lugar de financiar solo la estructura del clúster."
-        ),
-    }.get(hold_reason, "Resuelve únicamente la causa indicada usando evidencia explícita.")
 
 
-def _normalize_evidence_quote(value: str) -> str:
-    """Normaliza solo diferencias tipográficas; no permite paráfrasis."""
-    folded = _fold_text(value).replace("\u00ad", "")
-    return re.sub(r"[\W_]+", " ", folded, flags=re.UNICODE).strip()
 
 
-def _quote_mentions_date(quote: str, iso_date: str) -> bool:
-    parsed = _parse_flexible_date(iso_date)
-    if not parsed:
-        return False
-    year, month, day = (int(value) for value in parsed.split("-"))
-    folded = _fold_text(quote)
-    numeric_variants = (
-        f"{day:02d}/{month:02d}/{year}", f"{day}/{month}/{year}",
-        f"{day:02d}-{month:02d}-{year}", f"{day:02d}.{month:02d}.{year}",
-        f"{year}-{month:02d}-{day:02d}",
-    )
-    if any(value in folded for value in numeric_variants):
-        return True
-    month_names = [
-        name for name, number in _SPANISH_MONTHS.items() if number == month
-    ]
-    return str(year) in folded and any(
-        re.search(rf"\b0?{day}\s+(?:de\s+)?{name}\b", folded)
-        for name in month_names
-    )
 
 
-def _quote_supports_territorial_condition(quote: str, condition: str) -> bool:
-    folded = _normalize_evidence_quote(quote)
-    establishment = r"(?:centro de trabajo|establecimiento|sede|centro operativo)"
-    obligation = r"(?:deber|debera|deberan|debe|requisito|cuenten|contar|disponer|tener)"
-    if condition == "existing_establishment":
-        return bool(
-            re.search(rf"{obligation}.{{0,100}}{establishment}", folded)
-            or re.search(rf"{establishment}.{{0,100}}{obligation}", folded)
-        )
-    if condition == "new_establishment_allowed":
-        return bool(re.search(
-            r"(?:abrir|crear|implantar|establecer).{0,50}"
-            r"(?:centro|establecimiento|sede)", folded
-        ))
-    if condition == "project_location_only":
-        project_marker = re.search(
-            r"(?:proyecto|actuacion|inversion|instalacion|obras?|servei|servicio)",
-            folded,
-        )
-        location_marker = re.search(
-            r"(?:realic|ejecut|desarroll|ubic|localiz|territori|municip|puert)",
-            folded,
-        )
-        return bool(project_marker and location_marker and not re.search(establishment, folded))
-    # La ausencia de una restricción no puede demostrarse con una cita positiva aislada.
-    return False
 
 
-def _quote_supports_consortium_participation(quote: str) -> bool:
-    folded = _normalize_evidence_quote(quote)
-    consortium = (
-        "consorcio", "agrupacion de empresas", "proyecto en cooperacion",
-        "socios", "miembros",
-    )
-    direct_participation = (
-        "beneficiario", "cobeneficiario", "costes elegibles", "costes subvencionables",
-        "presupuesto", "paquete de trabajo", "actividad del proyecto",
-        "empresas participantes", "entidades participantes",
-    )
-    commercial_only = (
-        "contratista", "subcontratista", "proveedor externo", "adjudicatario",
-    )
-    return (
-        any(term in folded for term in consortium)
-        and any(term in folded for term in direct_participation)
-        and not any(term in folded for term in commercial_only)
-    )
 
 
-def _quote_supports_cluster_members(quote: str) -> bool:
-    folded = _normalize_evidence_quote(quote)
-    return any(term in folded for term in ("cluster", "agrupacion", "asociacion")) and any(
-        term in folded for term in (
-            "empresas miembro", "empresas de", "participacion en proyectos",
-            "proyectos de las empresas", "competitividad de las empresas",
-            "beneficiarios finales", "apoyo a terceros",
-        )
-    )
 
 
 def _validated_hold_resolution(
@@ -2269,106 +1912,10 @@ def analyze_bdns_hold_with_claude(
     return _validated_hold_resolution(conv, hold_reason, facts_model, evidence), usage
 
 
-def aggregate_token_usage(usages: list[dict]) -> dict:
-    valid = [usage for usage in usages if isinstance(usage, dict) and usage]
-    return {
-        "analyzed_convocations": len(valid),
-        "api_calls": sum(int(usage.get("api_calls", 2)) for usage in valid),
-        "retry_api_calls": sum(
-            int(usage.get("retry_api_calls", 0)) for usage in valid
-        ),
-        "input_tokens": sum(int(usage.get("input_tokens", 0)) for usage in valid),
-        "output_tokens": sum(int(usage.get("output_tokens", 0)) for usage in valid),
-        "cache_write_tokens": sum(
-            int(usage.get("cache_write_tokens", 0)) for usage in valid
-        ),
-        "cache_read_tokens": sum(
-            int(usage.get("cache_read_tokens", 0)) for usage in valid
-        ),
-        "total_tokens": sum(int(usage.get("total_tokens", 0)) for usage in valid),
-        "estimated_cost_usd": round(
-            sum(float(usage.get("estimated_cost_usd", 0)) for usage in valid),
-            6,
-        ),
-        "pricing_usd_per_mtok": {
-            "input": CLAUDE_INPUT_USD_PER_MTOK,
-            "output": CLAUDE_OUTPUT_USD_PER_MTOK,
-            "cache_write": CLAUDE_CACHE_WRITE_USD_PER_MTOK,
-            "cache_read": CLAUDE_CACHE_READ_USD_PER_MTOK,
-        },
-        "pricing_note": (
-            "Estimación calculada desde usage devuelto por Anthropic; "
-            "no incluye impuestos ni posibles ajustes comerciales."
-        ),
-    }
 
 
-def aggregate_partial_token_usage(usages: list[dict]) -> dict:
-    """Resume etapas completadas antes de abortar una convocatoria."""
-    valid = [usage for usage in usages if isinstance(usage, dict) and usage]
-    input_tokens = sum(int(usage.get("input_tokens", 0)) for usage in valid)
-    output_tokens = sum(int(usage.get("output_tokens", 0)) for usage in valid)
-    cache_write_tokens = sum(
-        int(usage.get("cache_write_tokens", 0)) for usage in valid
-    )
-    cache_read_tokens = sum(
-        int(usage.get("cache_read_tokens", 0)) for usage in valid
-    )
-    return {
-        "completed_api_calls": sum(
-            int(usage.get("api_calls", 1)) for usage in valid
-        ),
-        "retry_api_calls": sum(
-            int(usage.get("retry_api_calls", 0)) for usage in valid
-        ),
-        "completed_stages": [str(usage.get("stage", "")) for usage in valid],
-        "input_tokens": input_tokens,
-        "output_tokens": output_tokens,
-        "cache_write_tokens": cache_write_tokens,
-        "cache_read_tokens": cache_read_tokens,
-        "total_tokens": (
-            input_tokens + output_tokens + cache_write_tokens + cache_read_tokens
-        ),
-        "estimated_cost_usd": round(
-            sum(float(usage.get("estimated_cost_usd", 0)) for usage in valid),
-            6,
-        ),
-    }
 
 
-def aggregate_aborted_run_usage(
-    completed_analyses: list[dict],
-    failed_analysis_stages: list[dict],
-) -> dict:
-    """Incluye análisis completos e intentos facturables del caso fallido."""
-    completed = aggregate_token_usage(completed_analyses)
-    partial = aggregate_partial_token_usage(failed_analysis_stages)
-    return {
-        "analyzed_convocations": completed["analyzed_convocations"],
-        "failed_convocations": int(bool(failed_analysis_stages)),
-        "api_calls": completed["api_calls"] + partial["completed_api_calls"],
-        "retry_api_calls": (
-            completed.get("retry_api_calls", 0)
-            + partial.get("retry_api_calls", 0)
-        ),
-        "completed_analysis_api_calls": completed["api_calls"],
-        "failed_analysis_api_calls": partial["completed_api_calls"],
-        "failed_analysis_stages": partial["completed_stages"],
-        "input_tokens": completed["input_tokens"] + partial["input_tokens"],
-        "output_tokens": completed["output_tokens"] + partial["output_tokens"],
-        "cache_write_tokens": (
-            completed["cache_write_tokens"] + partial["cache_write_tokens"]
-        ),
-        "cache_read_tokens": (
-            completed["cache_read_tokens"] + partial["cache_read_tokens"]
-        ),
-        "total_tokens": completed["total_tokens"] + partial["total_tokens"],
-        "estimated_cost_usd": round(
-            completed["estimated_cost_usd"] + partial["estimated_cost_usd"], 6
-        ),
-        "pricing_usd_per_mtok": completed["pricing_usd_per_mtok"],
-        "pricing_note": completed["pricing_note"],
-    }
 
 
 def select_bdns_hold_pilot(
@@ -2578,7 +2125,10 @@ def run_bdns_hold_pilot(
             f"  [hold {index}/{len(selected)}] {hold_reason} · "
             f"{conv.get('title', '')[:65]}..."
         )
-        evidence = retrieve_bdns_hold_evidence(conv, session=session)
+        evidence = retrieve_bdns_hold_evidence(
+            conv, session=session,
+            intrinsic_exclusion=_bdns_intrinsic_exclusion,
+        )
         resolution = resolve_hold_deterministically(conv, hold_reason, evidence)
         cached = False
         usage = {}
@@ -2797,7 +2347,10 @@ def replay_bdns_hold_report(
             continue
         current = deterministic_prefilter(conv)
         evidence = (
-            retrieve_bdns_hold_evidence(conv, session=session)
+            retrieve_bdns_hold_evidence(
+                conv, session=session,
+                intrinsic_exclusion=_bdns_intrinsic_exclusion,
+            )
             if current.get("decision") == "hold_manual"
             else {"documents": [], "metrics": {}}
         )
@@ -2891,7 +2444,10 @@ def resolve_bdns_holds_for_pipeline(
             f"  [BDNS auto {index}/{len(deterministic_holds)}] "
             f"{initial_reason} · {conv.get('title', '')[:65]}"
         )
-        evidence = retrieve_bdns_hold_evidence(conv, session=client)
+        evidence = retrieve_bdns_hold_evidence(
+            conv, session=client,
+            intrinsic_exclusion=_bdns_intrinsic_exclusion,
+        )
         for key, value in evidence.get("metrics", {}).items():
             if isinstance(value, (int, float)):
                 evidence_totals[key] += value

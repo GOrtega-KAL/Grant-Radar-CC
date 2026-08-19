@@ -54,9 +54,9 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l`: 4.286 líneas
-en el script y 8.254 en los 31 módulos del paquete —ya hay casi el doble de
-código en el paquete que en el script—, tras las ocho rondas del 19/08/2026
+`import`). Recuento verificado con `wc -l`: 3.842 líneas
+en el script y 8.847 en los 34 módulos del paquete —más del doble de código en
+el paquete que en el script—, tras las nueve rondas del 19/08/2026
 (el script tenía 9.199 al empezar el día; la cifra
 "8.835" de una nota anterior de este archivo estaba mal calculada — ver
 AGENTS.md sección 24, nota de discrepancia). Progresivamente movida a `grant_radar/` (paquete con nombre
@@ -95,6 +95,9 @@ importable):
 | `publishing.py` | Subida a GitHub Pages (credenciales como parámetros, nunca leídas aquí) |
 | `claude_selection.py` | Qué se manda a Claude y la barrera de coste previa |
 | `coverage_watch.py` | Vigilancia de programas recurrentes conocidos |
+| `hold_quotes.py` | Validación de que una cita prueba la conclusión de un hold |
+| `claude_usage.py` | Recuento de tokens y coste, incluidos los intentos fallidos |
+| `hold_evidence.py` | Documentos oficiales de un hold BDNS y su caché documental |
 
 Lo que se ha descubierto y aún no se ha hecho —hallazgos abiertos y propuestas,
 con su motivo y lo que costaría retomarlos— está reunido en **AGENTS.md
@@ -116,10 +119,11 @@ la investigación y de los números reales de verificación en AGENTS.md
 sección 26.
 
 Pendiente, en el orden que tiene sentido moverlo (detalle en AGENTS.md
-sección 37): el dominio de holds de BDNS (~1.000 líneas, independiente y
-siguiente candidato natural), `save_discovery_audit()` (encaja en `audit.py`),
-la capa de análisis con Haiku (~545 líneas, atada a `_hard_out_of_scope()`), la
-matriz de reglas (sesión dedicada) y, por último, `run_pipeline()`.
+secciones 37 y 38): `save_discovery_audit()` (encaja en `audit.py`), la capa de
+análisis con Haiku (~545 líneas, atada a `_hard_out_of_scope()`), la segunda
+mitad del dominio de holds (resolución determinista, piloto y replay, que
+necesitan reglas y Claude), la matriz de reglas (sesión dedicada) y, por
+último, `run_pipeline()`.
 **Los ocho conectores ya están en `grant_radar/sources/`.** ECCP recibe el
 prefiltro como parámetro (`is_relevant_enough`) para no depender de las reglas:
 quien lo llame debe pasárselo.

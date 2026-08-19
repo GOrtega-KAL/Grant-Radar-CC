@@ -480,6 +480,18 @@ ofrecería git.
    referencia completos, BOE incluido. `Grant-Radar-prueba.py`: 5.018 → 4.286
    líneas, -53,4 % en el día; el paquete ya tiene casi el doble de código que
    el script.
+   **[Decimocuarto incremento, 19/08/2026 — primera mitad del dominio de
+   holds]** Las ~1.171 líneas del dominio de holds no se podían mover enteras:
+   dependen de la matriz de reglas y de la capa de Haiku. Se midió por
+   subgrupos y salió la mitad limpia: `hold_quotes.py` (validación de que una
+   cita prueba la conclusión, cero dependencias), `claude_usage.py` (recuento
+   de tokens y coste) y `hold_evidence.py` (documentos oficiales y caché
+   documental de BDNS, con la regla intrínseca inyectada como parámetro). La
+   resolución determinista y el piloto se quedan: su cometido es aplicar la
+   matriz, así que se mueven con ella. 381 pruebas y un `--no-claude` idéntico,
+   incluida la resolución automática de holds (`ambiguous=38, reject=35,
+   revisión manual=0`). `Grant-Radar-prueba.py`: 4.286 → 3.842 líneas, -58,2 %
+   en el día, y ya solo 33 funciones de las 68 iniciales.
 3. Hacerlo de forma incremental y verificada: extraer un módulo, ejecutar
    `py_compile` y la suite completa de `unittest`, confirmar comportamiento
    idéntico con `--no-claude`, y solo entonces continuar con el siguiente

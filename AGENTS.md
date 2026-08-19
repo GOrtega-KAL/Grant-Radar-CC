@@ -2415,7 +2415,8 @@ rondas el mismo día.
 | 8 | La matriz de reglas (`_bdns_pre_claude_gate()`, `deterministic_prefilter()`) | Sesión dedicada; es la lógica más ajustada del proyecto (siete niveles de precedencia, sección 4.1) |
 | 9 | Motor de reglas genérico, declarativo | `SUGERENCIAS.MD` 3.3 punto 2. Requiere formalizar antes todas las variantes de condición existentes |
 | 10 | Retirar el patrón `runpy` + fusión de `APP` en `tests/test_grant_radar.py` | Tiene sentido revisarlo cuando el script principal quede reducido a configuración y punto de entrada |
-| 15 | Orden de extracción medido (sección 37): holds BDNS → `save_discovery_audit` → capa Haiku → reglas → `run_pipeline()` | `run_pipeline()` arrastra hoy 64 de 68 funciones: va el último, no el siguiente |
+| 15 | Orden de extracción medido (secciones 37 y 38): `save_discovery_audit` → capa Haiku → segunda mitad de holds → reglas → `run_pipeline()` | La primera mitad de holds ya salió (sección 38). `run_pipeline()` arrastra el resto: va el último, no el siguiente |
+| 21 | Ejecutar `tests/test_grant_radar_script_names.py` **antes** que la suite completa tras cada extracción | Señala el módulo y el nombre exactos en un segundo; la suite completa los presenta como errores en pruebas de otra cosa (pasó tres veces) |
 | 16 | Usar `node.end_lineno`, nunca `max(lineno)`, al cortar bloques por AST | Un `return (` multilínea pierde el paréntesis de cierre; ocurrió en la sección 37 |
 
 ### 36.4. Huecos de cobertura de pruebas, medidos
@@ -2512,3 +2513,58 @@ fue de minutos.
 | Dominio de holds BDNS (evidencia, resolución, piloto, replay) | ~1.000 | Independiente: es el siguiente candidato natural |
 | Auditoría persistida (`save_discovery_audit`) | ~117 | Independiente, encaja en `grant_radar/audit.py` |
 | `run_pipeline()` + `parse_args()` | ~840 | Último, por definición |
+
+## 38. Decimocuarta ronda a 19/08/2026: primera mitad del dominio de holds
+
+El dominio de holds de BDNS son ~1.171 líneas en 28 funciones, y el análisis
+previo mostró que **no se puede mover entero**: depende de la matriz de reglas
+(`_bdns_intrinsic_exclusion()`, `deterministic_prefilter()`) y de la capa de
+análisis con Haiku (`_structured_claude_call()`). Se midió por subgrupos y se
+extrajo la mitad que sí tiene frontera limpia.
+
+- `grant_radar/hold_quotes.py` (~114 líneas, cero dependencias): la validación
+  de que una cita **prueba** la conclusión y no solo aparece en el documento.
+  Es la capa que distingue "el modelo dijo que sí" de "la fuente lo dice", y la
+  que evita el falso rechazo que invalidó el piloto v1: aceptar una cita sobre
+  el plazo de ejecución como prueba de cierre (sección 13).
+- `grant_radar/claude_usage.py` (~96 líneas): el recuento de tokens y coste,
+  incluidos los intentos fallidos, con las tarifas por millón de tokens. Cada
+  respuesta HTTP se contabiliza antes de validar su JSON, porque un intento
+  truncado ya se ha facturado.
+- `grant_radar/hold_evidence.py` (~253 líneas): la descarga de documentos
+  oficiales, su extracción de texto y la caché documental de BDNS.
+  `retrieve_bdns_hold_evidence()` recibe ahora `intrinsic_exclusion` como
+  parámetro, igual que ECCP recibe su prefiltro (sección 35): con los
+  documentos completos delante conviene repetir el control de
+  incompatibilidades intrínsecas, pero esa regla es de la matriz, así que el
+  módulo la pide en vez de conocerla. Las tres llamadas del script la pasan
+  explícitamente. La ruta de la caché se calcula en el módulo, como en
+  `documents.py`, y se verificó que apunta al mismo archivo de siempre.
+
+**Lo que se queda, y por qué:** la resolución determinista de holds
+(`resolve_hold_deterministically()`, `_validated_hold_resolution()`,
+`apply_verified_bdns_hold_resolution()`, ~305 líneas) necesita **dos** reglas de
+la matriz, y su cometido es precisamente volver a ejecutarla cuando aparece un
+hecho verificado. Inyectar la matriz entera en la función cuyo propósito es
+aplicarla sería invertir la dependencia en la dirección equivocada: se mueve
+con la sesión de reglas. Lo mismo el piloto y el replay, que llaman a
+`_structured_claude_call()`.
+
+**Verificación:** `Grant-Radar-prueba.py` bajó de 4.286 a 3.842 líneas (-10,4 %
+en esta ronda; **-58,2 % acumulado en el día** desde 9.199) y ya solo tiene 33
+funciones de las 68 con las que empezó la tarde. El paquete son 34 módulos y
+8.847 líneas. 381 pruebas `unittest` y `py_compile` en verde. La ejecución
+`--no-claude` de cierre (702,55 s, código 0) repitió todos los números de
+referencia —953 detectadas, 33 duplicadas fusionadas, 77 vigentes con el
+desglose habitual, BOE incluido— y, lo que importa en esta ronda, la
+**resolución automática de holds dio exactamente lo mismo**: `ambiguous=38,
+reject=35, revisión manual=0`. La regla inyectada se comporta igual que la
+llamada directa.
+
+Nota de método: por tercera vez, el análisis AST previo no vio dependencias que
+eran nombres **importados** (`_fold_text`, `_parse_flexible_date`,
+`select_evidence_excerpt`). Esa clase de fallo la detecta
+`tests/test_grant_radar_script_names.py`, que conviene ejecutar **antes** que la
+suite completa tras cada extracción: señala el módulo y el nombre exactos en un
+segundo, mientras que la suite los presenta como errores en pruebas de otra
+cosa.

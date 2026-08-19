@@ -32,6 +32,8 @@ APP = runpy.run_path(str(ROOT / "Grant-Radar-prueba.py"))
 from grant_radar import cache as _cache_module
 from grant_radar import deterministic_rules as _rules_module
 from grant_radar import claude_selection as _selection_module
+from grant_radar import claude_usage as _usage_module
+from grant_radar import hold_quotes as _quotes_module
 from grant_radar import coverage_watch as _coverage_module
 from grant_radar import public_output as _public_output_module
 from grant_radar.sources import bdns as _bdns_module
@@ -42,7 +44,7 @@ from grant_radar.sources import idae as _idae_module
 
 for _module in (
     _cache_module, _rules_module, _public_output_module,
-    _selection_module, _coverage_module,
+    _selection_module, _coverage_module, _usage_module, _quotes_module,
     _bdns_module, _cdti_module, _eccp_module, _een_module, _idae_module,
 ):
     for _name in dir(_module):
@@ -262,8 +264,15 @@ class SourceParserTests(unittest.TestCase):
                         "BDNS_DOCUMENT_CACHE_FILE": cache_path,
                         "_http_get": http_get,
                     }):
-                first = APP["retrieve_bdns_hold_evidence"](conv)
-                second = APP["retrieve_bdns_hold_evidence"](conv)
+                # La regla intrínseca se inyecta: aquí no se prueba el
+                # filtrado, solo que el texto ya descargado no se vuelve a pedir.
+                sin_exclusion = lambda conv, texto="": None  # noqa: E731
+                first = APP["retrieve_bdns_hold_evidence"](
+                    conv, intrinsic_exclusion=sin_exclusion
+                )
+                second = APP["retrieve_bdns_hold_evidence"](
+                    conv, intrinsic_exclusion=sin_exclusion
+                )
             self.assertTrue(Path(cache_path).exists())
         self.assertEqual(http_get.call_count, 1)
         self.assertEqual(first["metrics"]["cache_misses"], 1)
