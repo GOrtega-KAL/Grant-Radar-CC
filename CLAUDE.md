@@ -54,9 +54,10 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l`: 5.018 líneas
-en el script y 7.339 en los 27 módulos del paquete, tras las siete rondas del
-19/08/2026 (el script tenía 9.199 al empezar el día; la cifra
+`import`). Recuento verificado con `wc -l`: 4.286 líneas
+en el script y 8.254 en los 31 módulos del paquete —ya hay casi el doble de
+código en el paquete que en el script—, tras las ocho rondas del 19/08/2026
+(el script tenía 9.199 al empezar el día; la cifra
 "8.835" de una nota anterior de este archivo estaba mal calculada — ver
 AGENTS.md sección 24, nota de discrepancia). Progresivamente movida a `grant_radar/` (paquete con nombre
 importable):
@@ -90,6 +91,15 @@ importable):
 | `documents.py` | Documentos oficiales: descarga, extracción de texto y su caché |
 | `sources/cdti.py` | Conector CDTI: calendario oficial con Chromium + catálogo curado |
 | `sources/eccp.py` | Conector ECCP: calls y rastreo acotado de webs de proyectos |
+| `public_output.py` | Registro público del dashboard, estadísticas, estado por fuente y URLs |
+| `publishing.py` | Subida a GitHub Pages (credenciales como parámetros, nunca leídas aquí) |
+| `claude_selection.py` | Qué se manda a Claude y la barrera de coste previa |
+| `coverage_watch.py` | Vigilancia de programas recurrentes conocidos |
+
+Lo que se ha descubierto y aún no se ha hecho —hallazgos abiertos y propuestas,
+con su motivo y lo que costaría retomarlos— está reunido en **AGENTS.md
+sección 36**, para no tener que releer todas las rondas. Consultarla antes de
+proponer trabajo nuevo, y actualizarla al cerrar cualquiera de sus puntos.
 
 Comportamientos concretos ya verificados con código (identidad de programa,
 extracción de presupuesto, bloqueo por ámbito del navegador, y por qué el
@@ -105,11 +115,17 @@ ventana de `convocatorias/ultimas` ampliada a ~79 días. Detalle completo de
 la investigación y de los números reales de verificación en AGENTS.md
 sección 26.
 
-Pendiente: `pipeline.py` (`run_pipeline()` y el ensamblado del JSON) y la
-sesión dedicada a la matriz de reglas. **Los ocho conectores ya están en
-`grant_radar/sources/`** (AGENTS.md secciones 25, 29, 30, 32, 33, 34 y 35).
-ECCP recibe el prefiltro como parámetro (`is_relevant_enough`) para no depender
-de las reglas: quien lo llame debe pasárselo. El plan por etapas y el orden de dependencias están en
+Pendiente, en el orden que tiene sentido moverlo (detalle en AGENTS.md
+sección 37): el dominio de holds de BDNS (~1.000 líneas, independiente y
+siguiente candidato natural), `save_discovery_audit()` (encaja en `audit.py`),
+la capa de análisis con Haiku (~545 líneas, atada a `_hard_out_of_scope()`), la
+matriz de reglas (sesión dedicada) y, por último, `run_pipeline()`.
+**Los ocho conectores ya están en `grant_radar/sources/`.** ECCP recibe el
+prefiltro como parámetro (`is_relevant_enough`) para no depender de las reglas:
+quien lo llame debe pasárselo.
+
+Medido antes de intentarlo: extraer `run_pipeline()` hoy arrastraría 64 de las
+68 funciones restantes. El orquestador va el último, no el siguiente. El plan por etapas y el orden de dependencias están en
 AGENTS.md sección 28. El filtro previo a Claude
 (`_bdns_pre_claude_gate()`, `deterministic_prefilter()`, sección 4.1 de
 `AGENTS.md`) sigue deliberadamente sin extraer: es la lógica más compleja y

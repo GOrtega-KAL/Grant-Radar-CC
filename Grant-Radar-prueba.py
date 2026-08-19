@@ -208,6 +208,29 @@ from grant_radar.documents import (
     _hold_document_text,
     enrich_with_official_documents,
 )
+from grant_radar.publishing import github_upload
+from grant_radar.claude_selection import (
+    CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS,
+    CLAUDE_MAX_ANALYSES_PER_RUN,
+    CLAUDE_MAX_ESTIMATED_COST_USD,
+    build_claude_analysis_selection,
+    build_no_claude_candidate_inventory,
+    claude_safety_preflight,
+    select_claude_candidates,
+)
+from grant_radar.coverage_watch import (
+    build_recurrent_coverage_watch,
+    probe_missing_recurrent_coverage,
+)
+from grant_radar.public_output import (
+    _assemble_public_record,
+    build_keywords,
+    build_source_status,
+    build_stats,
+    derive_eligible_actions,
+    post_procesar_texto,
+    verificar_urls,
+)
 from grant_radar.dedup import (
     _add_discovery_source,
     _deduplicate_raw_convocations,
@@ -282,9 +305,6 @@ CLAUDE_CACHE_WRITE_USD_PER_MTOK = 1.25
 CLAUDE_CACHE_READ_USD_PER_MTOK = 0.10
 # Barrera previa a cualquier llamada. El coste usa el extremo superior observado
 # por convocatoria; sigue siendo una estimación, no una garantía de facturación.
-CLAUDE_MAX_ANALYSES_PER_RUN = 200
-CLAUDE_MAX_ESTIMATED_COST_USD = 5.0
-CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS = 0.035
 # PROFILE_VERSION, EXTRACTOR_VERSION, EVALUATOR_VERSION,
 # PARTNER_CATALOG_VERSION, ANALYSIS_PROMPT_VERSION y CACHE_SCHEMA_VERSION
 # viven en grant_radar/versions.py. Subir cualquiera invalida de forma
@@ -332,58 +352,6 @@ log = logging.getLogger("grant_radar")
 # Vigilancia de regresiones para oportunidades estratégicas conocidas. Estas
 # reglas NO crean convocatorias ni alteran la relevancia: únicamente verifican
 # si el descubrimiento genérico observó su identidad en la ejecución actual.
-RECURRENT_COVERAGE_WATCH = [
-    {
-        "key": "programa_innovae",
-        "label": "Programa INNOVAE",
-        "aliases": [
-            "innovae",
-            "proyectos singulares innovadores de ahorro y eficiencia energética",
-        ],
-        "url": "https://www.idae.es/ayudas-y-financiacion/programa-innovae",
-    },
-    {
-        "key": "aragon_tecnologias_limpias",
-        "label": "Ayudas Aragón para inversiones productivas en tecnologías limpias",
-        "aliases": [
-            "inversiones productivas en tecnologías limpias",
-            "inversiones productivas en tecnologias limpias",
-        ],
-        "url": (
-            "https://www.aragon.es/tramitador/-/tramite/"
-            "ayudas-para-el-fomento-de-inversiones-productivas-en-tecnologias-"
-            "limpias-y-eficientes-en-el-uso-de-los-recursos/convocatoria-2026"
-        ),
-    },
-    {
-        "key": "paip_aragon",
-        "label": "PAIP Aragón",
-        "aliases": [
-            "programa de ayudas a la industria y la pyme en aragón",
-            "programa de ayudas a la industria y la pyme en aragon",
-            "paip",
-        ],
-        "url": (
-            "https://www.aragon.es/tramitador/-/tramite/"
-            "ayudas-industria-digital-integradora-sostenible-marco-programa-"
-            "ayudas-industria-pyme-aragon-paip/convocatoria-2026-en-desarrollo"
-        ),
-        "recurrence": "annual",
-        "expected_start_month": 9,
-    },
-    {
-        "key": "horizon_heat_upgrade",
-        "label": "HORIZON-CL5-2026-09-D4-08",
-        "aliases": [
-            "horizon-cl5-2026-09-d4-08",
-            "full-scale demonstration of heat upgrade solutions in industrial processes",
-        ],
-        "url": (
-            "https://ec.europa.eu/info/funding-tenders/opportunities/portal/"
-            "screen/opportunities/topic-details/HORIZON-CL5-2026-09-D4-08"
-        ),
-    },
-]
 
 print(f"✓ Ejecución local Windows — proyecto: {PROJECT_DIR}")
 print(f"✓ Caché local: {CACHE_FILE}")
@@ -1229,268 +1197,18 @@ def deterministic_prefilter(conv: dict) -> dict:
     }
 
 
-def build_recurrent_coverage_watch(items: list[dict]) -> list[dict]:
-    """
-    Comprueba identidades recurrentes sin introducir datos manuales en el radar.
-
-    ``active_captured`` indica que una fuente produjo una convocatoria;
-    ``landing_only`` que solo se observó su página de programa; ``not_observed``
-    activa una advertencia para revisar si cambió una fuente o aún no se publicó.
-    """
-    checks = []
-    for expected in RECURRENT_COVERAGE_WATCH:
-        matches = []
-        for item in items:
-            searchable = _fold_text(" ".join(str(value) for value in (
-                item.get("identifier", ""),
-                item.get("title", ""),
-                item.get("description", ""),
-                item.get("url", ""),
-            )))
-            if any(_fold_text(alias) in searchable for alias in expected["aliases"]):
-                matches.append(item)
-
-        active = [item for item in matches if not item.get("identity_only", False)]
-        if active:
-            status = "active_captured"
-        elif matches:
-            status = "landing_only"
-        else:
-            status = "not_observed"
-
-        checks.append({
-            "key": expected["key"],
-            "label": expected["label"],
-            "status": status,
-            "matches": len(matches),
-            "sources": sorted({
-                str(item.get("source", "")) for item in matches
-                if item.get("source")
-            }),
-            "url": expected.get("url", ""),
-            "deadline_date": "",
-            "recurrence": expected.get("recurrence", ""),
-            "expected_start_month": expected.get("expected_start_month"),
-        })
-    return checks
 
 
-def select_claude_candidates(
-    candidates: list[dict],
-    match_values: list[str] | None,
-) -> list[dict]:
-    """Filtra de forma determinista el modo limitado sin llamar a Claude."""
-    normalized_matches = [
-        _fold_text(value) for value in (match_values or []) if value.strip()
-    ]
-    if not normalized_matches:
-        return list(candidates)
-    return [
-        conv for conv in candidates
-        if any(
-            match in _fold_text(" ".join(str(value) for value in (
-                conv.get("identifier", ""),
-                conv.get("title", ""),
-                conv.get("url", ""),
-                conv.get("description", ""),
-            )))
-            for match in normalized_matches
-        )
-    ]
 
 
-def build_claude_analysis_selection(
-    all_items: list[dict],
-    cache: dict,
-    match_values: list[str] | None,
-    force_reanalysis: bool = False,
-) -> dict:
-    """Planifica análisis nuevos o reanálisis selectivos sin alterar la caché."""
-    new_items = [item for item in all_items if cache_key(item) not in cache]
-    cached_items = [item for item in all_items if cache_key(item) in cache]
-    pool = all_items if force_reanalysis else new_items
-    candidates = select_claude_candidates(pool, match_values)
-    forced_cached = [
-        item for item in candidates if cache_key(item) in cache
-    ] if force_reanalysis else []
-    return {
-        "new_items": new_items,
-        "cached_items": cached_items,
-        "pool": pool,
-        "candidates": candidates,
-        "forced_cached": forced_cached,
-    }
 
 
-def claude_safety_preflight(planned_analyses: int) -> dict:
-    """Impide iniciar Claude cuando el volumen o el coste superior exceden límites."""
-    planned = max(0, int(planned_analyses))
-    estimated_upper = round(
-        planned * CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS, 4
-    )
-    breaches = []
-    if planned > CLAUDE_MAX_ANALYSES_PER_RUN:
-        breaches.append("candidate_limit")
-    if estimated_upper > CLAUDE_MAX_ESTIMATED_COST_USD:
-        breaches.append("estimated_cost_limit")
-    return {
-        "allowed": not breaches,
-        "planned_analyses": planned,
-        "max_analyses": CLAUDE_MAX_ANALYSES_PER_RUN,
-        "estimated_upper_cost_usd": estimated_upper,
-        "max_estimated_cost_usd": CLAUDE_MAX_ESTIMATED_COST_USD,
-        "upper_cost_per_analysis_usd": (
-            CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS
-        ),
-        "effective_max_analyses": min(
-            CLAUDE_MAX_ANALYSES_PER_RUN,
-            int(
-                CLAUDE_MAX_ESTIMATED_COST_USD
-                / CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS
-            ),
-        ),
-        "breaches": breaches,
-    }
 
 
-def _candidate_cache_identity_tokens(conv: dict) -> set[str]:
-    """Identidades exactas para distinguir novedad de cambio factual."""
-    tokens = set()
-    for field in ("identifier", "bdns_id", "programme_key", "catalog_ref"):
-        value = _fold_text(str(conv.get(field, ""))).strip()
-        if value:
-            tokens.add(f"{field}:{value}")
-    url = re.sub(r"[?#].*$", "", str(conv.get("url", "")).strip()).rstrip("/").casefold()
-    if url:
-        tokens.add(f"url:{url}")
-    source = _fold_text(str(conv.get("source", ""))).strip()
-    title = _fold_text(str(conv.get("title", ""))).strip()
-    if source and title:
-        tokens.add(f"source_title:{source}|{title}")
-    return tokens
 
 
-def build_no_claude_candidate_inventory(all_items: list[dict], cache: dict) -> dict:
-    """Construye el inventario compacto y reproducible del run sin Claude."""
-    cached_identity_index = set()
-    for record in cache.values():
-        cached_conv = (
-            (record.get("raw_document") or record.get("conv", {}))
-            if isinstance(record, dict) else {}
-        )
-        if isinstance(cached_conv, dict):
-            cached_identity_index.update(_candidate_cache_identity_tokens(cached_conv))
-
-    items = []
-    cache_counts = Counter()
-    inclusion_counts = Counter()
-    for conv in all_items:
-        current_cache_key = cache_key(conv)
-        identity_tokens = _candidate_cache_identity_tokens(conv)
-        if current_cache_key in cache:
-            cache_status = "hit"
-        elif identity_tokens.intersection(cached_identity_index):
-            cache_status = "content_changed"
-        else:
-            cache_status = "new"
-        cache_counts[cache_status] += 1
-
-        prefilter = conv.get("deterministic_prefilter", {})
-        if not isinstance(prefilter, dict):
-            prefilter = {}
-        hold_resolution = conv.get("bdns_hold_resolution", {})
-        if not isinstance(hold_resolution, dict):
-            hold_resolution = {}
-        reason_code = str(prefilter.get("reason_code", "generic_prefilter"))
-        inclusion_counts[reason_code] += 1
-        items.append({
-            "identifier": str(conv.get("identifier", "")),
-            "bdns_id": str(conv.get("bdns_id", "")),
-            "programme_key": str(conv.get("programme_key", "")),
-            "title": " ".join(str(conv.get("title", "")).split())[:500],
-            "source": str(conv.get("source", "")),
-            "discovery_sources": list(conv.get("discovery_sources", [])),
-            "url": str(conv.get("url", "")),
-            "deadline_date": str(conv.get("deadline_date", "")),
-            "deadline_unconfirmed": bool(conv.get("fecha_sin_confirmar", False)),
-            "funding_mechanism": str(conv.get("funding_mechanism", "unknown")),
-            "opportunity_role": str(conv.get("opportunity_role", "unknown")),
-            "opportunity_labels": list(conv.get("opportunity_labels", [])),
-            "inclusion": {
-                "decision": str(prefilter.get("decision", "ambiguous")),
-                "reason_code": reason_code,
-                "reason": " ".join(str(prefilter.get("reason", "")).split())[:500],
-                "score": prefilter.get("score", 0),
-                "signals": prefilter.get("signals", {}),
-                "initial_hold_reason": str(conv.get("bdns_initial_hold_reason", "")),
-                "hold_resolution": dict(hold_resolution),
-            },
-            "bdns_scope": {
-                "admin_type": str(conv.get("bdns_admin_type", "")),
-                "regions": list(conv.get("bdns_regions", [])),
-                "beneficiary_types": list(conv.get("bdns_beneficiary_types", [])),
-                "nace_sections": list(conv.get("bdns_nace_sections", [])),
-                "finality": str(conv.get("bdns_finality", "")),
-                "territorial_requirement": str(
-                    conv.get("bdns_territorial_requirement", "")
-                ),
-            } if conv.get("bdns_filter_ready") else {},
-            "cache": {
-                "status": cache_status,
-                "cache_key": current_cache_key,
-                "source_hash": source_hash(conv),
-            },
-        })
-
-    items.sort(key=lambda item: (
-        item["source"].casefold(), item["title"].casefold(), item["identifier"]
-    ))
-    return {
-        "schema_version": 1,
-        "count": len(items),
-        "cache_status_counts": dict(cache_counts),
-        "inclusion_reason_counts": dict(inclusion_counts),
-        "items": items,
-    }
 
 
-def probe_missing_recurrent_coverage(browser, items: list[dict]) -> list[dict]:
-    """
-    Verifica las landings conocidas solo cuando el descubrimiento general falla.
-
-    Es un control de calidad: no añade esas páginas a las convocatorias. Permite
-    distinguir una convocatoria cerrada conocida de una regresión real.
-    """
-    checks = build_recurrent_coverage_watch(items)
-    for check in checks:
-        if check["status"] != "not_observed" or not check.get("url"):
-            continue
-        html = browser.html(check["url"])
-        if not html:
-            continue
-        text = BeautifulSoup(html, "html.parser").get_text(" ", strip=True)
-        _, deadline_date = _extract_application_dates(text)
-        check["deadline_date"] = deadline_date
-        folded = _fold_text(text)
-        if (
-            (deadline_date and (_days_until(deadline_date) or 0) <= 0)
-            or "fuera de plazo" in folded
-            or "plazo cerrado" in folded
-        ):
-            if check.get("recurrence") == "annual":
-                expected_month = int(check.get("expected_start_month") or 1)
-                check["status"] = (
-                    "seasonal_pending"
-                    if datetime.now().month < expected_month
-                    else "republication_not_observed"
-                )
-            else:
-                check["status"] = "closed_observed"
-        elif deadline_date and (_days_until(deadline_date) or 0) > 0:
-            check["status"] = "active_not_captured"
-        else:
-            check["status"] = "landing_observed"
-    return checks
 
 
 def save_discovery_audit(
@@ -1733,30 +1451,8 @@ print("✓ Funciones de fuentes cargadas")
 # Se aplica DESPUÉS de recibir la respuesta de Haiku y ANTES de guardar el
 # JSON. No sustituye la verificación de veracidad por una segunda llamada a
 # IA: es una corrección determinista contra una lista blanca conocida.
-ENTIDADES_CANONICAS = ["ITAINNOVA", "CIRCE", "Unizar", "CDTI", "IDAE"]
 
 
-def post_procesar_texto(texto: str, whitelist: list = None) -> str:
-    """
-    Normaliza variantes cercanas (alucinadas) de nombres de entidad a su forma
-    canónica, usando distancia de Levenshtein <= 2 sobre tokens alfabéticos de
-    4+ caracteres. Se aplica SOLO a los campos "summary" y "action" generados
-    por Claude Haiku (texto libre) — nunca a título, descripción, URL o
-    cualquier campo que provenga directamente de la fuente original.
-    """
-    if not texto:
-        return texto
-    whitelist = whitelist or ENTIDADES_CANONICAS
-    tokens = re.findall(r"[A-Za-zÀ-ÿ]+|[^A-Za-zÀ-ÿ]+", texto)
-    corregido = []
-    for tok in tokens:
-        if tok.isalpha() and len(tok) >= 4:
-            mejor = min(whitelist, key=lambda e: _levenshtein(tok.upper(), e.upper()))
-            dist = _levenshtein(tok.upper(), mejor.upper())
-            corregido.append(mejor if 0 < dist <= 2 else tok)
-        else:
-            corregido.append(tok)
-    return "".join(corregido)
 
 print("✓ Normalización determinista de entidades cargada")
 
@@ -1771,131 +1467,14 @@ def claude_key_format_is_valid() -> bool:
     )
 
 
-def github_token_format_is_valid() -> bool:
-    """Validación local de los formatos habituales de token de GitHub."""
-    return (
-        isinstance(GITHUB_TOKEN, str)
-        and GITHUB_TOKEN == GITHUB_TOKEN.strip()
-        and GITHUB_TOKEN.startswith(("github_pat_", "ghp_"))
-        and len(GITHUB_TOKEN) >= 40
-    )
 
 
-def _public_deadline_values(conv: dict) -> tuple[int | None, str, bool]:
-    """Impide publicar como plazo real el centinela interno de un hold BDNS."""
-    deadline_date = str(conv.get("deadline_date", "") or "")
-    bdns_status = str(conv.get("bdns_active_status", ""))
-    if bdns_status in {"unverified_recent", "unverified_old"} and not deadline_date:
-        return None, "", True
-    deadline_days = conv.get("deadline_days")
-    return (
-        int(deadline_days) if isinstance(deadline_days, (int, float)) else None,
-        deadline_date,
-        bool(conv.get("fecha_sin_confirmar", False)),
-    )
 
 
-def _compact_eligible_action_values(values, limit: int = 6) -> list[str]:
-    """Normaliza actuaciones sin convertir temas o resultados en hechos nuevos."""
-    cleaned = []
-    seen = set()
-    for raw_value in values or []:
-        value = " ".join(str(raw_value or "").split()).strip(" -–—;:.")
-        if not value:
-            continue
-        if len(value) > 320:
-            value = value[:317].rsplit(" ", 1)[0] + "…"
-        key = _fold_text(value)
-        if key in seen:
-            continue
-        seen.add(key)
-        cleaned.append(value)
-        if len(cleaned) >= limit:
-            break
-    return cleaned
 
 
-def _eligible_actions_from_source_text(conv: dict) -> list[str]:
-    """Recupera un extracto solo tras un epígrafe inequívoco de las bases.
-
-    Es una salvaguarda para análisis antiguos sin el campo estructurado. No
-    interpreta la relevancia ni infiere conceptos: conserva texto literal de la
-    fuente alrededor de ``actuaciones/gastos elegibles``.
-    """
-    documents = [str(conv.get("description", ""))]
-    documents.extend(
-        str(document.get("description", ""))
-        for document in conv.get("related_document_contents", [])
-        if isinstance(document, dict)
-    )
-    heading = re.compile(
-        r"(?:actuaciones?|inversiones?|gastos?|costes?)\s+"
-        r"(?:subvencionables?|elegibles?|financiables?)|"
-        r"financiaci[oó]n\s+de\s+(?:proyectos?|actuaciones?|inversiones?|costes?|gastos?)|"
-        r"(?:ayudas?|subvenciones?)\s+(?:destinadas?\s+a|para)\s+|"
-        r"(?:objeto|finalidad)\s*[.º°:;-]+\s*|"
-        r"eligible\s+(?:activities|actions|investments|costs|expenditure)|"
-        r"activities\s+eligible\s+for\s+funding",
-        re.IGNORECASE,
-    )
-    for text in documents:
-        match = heading.search(text)
-        if not match:
-            continue
-        excerpt = BeautifulSoup(
-            text[match.start():match.start() + 850], "html.parser"
-        ).get_text(" ", strip=True)
-        excerpt = " ".join(excerpt.split())
-        # Evita arrastrar el epígrafe siguiente de unas bases largas.
-        excerpt = re.split(
-            r"\s+(?:Artículo|Article)\s+\d+[.º°]?\s+",
-            excerpt,
-            maxsplit=1,
-            flags=re.IGNORECASE,
-        )[0]
-        if len(excerpt) > 650:
-            excerpt = excerpt[:647].rsplit(" ", 1)[0] + "…"
-        return _compact_eligible_action_values([excerpt], limit=1)
-    return []
 
 
-def derive_eligible_actions(conv: dict, facts: dict) -> tuple[list[str], str]:
-    """Obtiene actuaciones visibles con una precedencia factual auditable.
-
-    ``explicit`` procede del nuevo campo del extractor; ``funding_lines`` de
-    líneas alternativas; ``required_topics`` es un respaldo etiquetado como
-    tema obligatorio, no como categoría de gasto; y ``source_excerpt`` conserva
-    un fragmento literal cuando los hechos antiguos no ofrecen nada mejor.
-    """
-    facts = facts if isinstance(facts, dict) else {}
-    explicit = _compact_eligible_action_values(facts.get("eligible_actions", []))
-    if explicit:
-        return explicit, "explicit"
-
-    line_actions = []
-    for line in facts.get("funding_lines", []):
-        if not isinstance(line, dict):
-            continue
-        line_name = " ".join(str(line.get("name", "")).split())
-        for action in line.get("eligible_actions", []):
-            action_text = " ".join(str(action).split())
-            line_actions.append(
-                f"{line_name}: {action_text}" if line_name else action_text
-            )
-    line_actions = _compact_eligible_action_values(line_actions)
-    if line_actions:
-        return line_actions, "funding_lines"
-
-    required_topics = _compact_eligible_action_values(
-        facts.get("required_topics", [])
-    )
-    if required_topics:
-        return required_topics, "required_topics"
-
-    source_actions = _eligible_actions_from_source_text(conv)
-    if source_actions:
-        return source_actions, "source_excerpt"
-    return [], "unavailable"
 
 
 def _structured_claude_call(
@@ -3801,143 +3380,10 @@ print("✓ Función de análisis Claude Haiku 4.5 cargada")
 # CELDA 6 — FUNCIONES DE ENSAMBLADO DEL JSON FINAL
 # ─────────────────────────────────────────────────────────────────────
 
-def build_stats(
-    convocatorias: list,
-    detected_total: int = None,
-    closed_total: int = 0,
-) -> dict:
-    """
-    Separa cobertura, vigencia y relevancia para evitar que las descartadas por
-    Claude se interpreten como oportunidades activas recomendadas.
-    """
-    active_items = [
-        c for c in convocatorias
-        if c.get("deadline") is None or c.get("deadline", 0) > 0
-    ]
-    relevant_items = [c for c in active_items if not c.get("descartada", False)]
-    discarded = sum(1 for c in active_items if c.get("descartada", False))
-    high = sum(1 for c in relevant_items if c.get("priority") == "high")
-    urgent = sum(
-        1 for c in relevant_items
-        if isinstance(c.get("deadline"), (int, float))
-        and 0 < c["deadline"] < 30
-    )
-    review = sum(1 for c in active_items if c.get("review_required", False))
-    data_pending = sum(1 for c in relevant_items if c.get("data_pending", False))
-    attention = sum(1 for c in relevant_items if c.get("monitoring_flags", []))
-    budget = sum(
-        float(str(c.get("budget_raw", 0)).replace("€", "").replace("M", "").strip() or 0)
-        for c in relevant_items
-    )
-    return {
-        "detected": detected_total if detected_total is not None else len(convocatorias),
-        "active": len(active_items),
-        "closed": closed_total,
-        "discarded": discarded,
-        "relevant": len(relevant_items),
-        "high": high,
-        "urgent": urgent,
-        "review": review,
-        "data_pending": data_pending,
-        "attention": attention,
-        "budget": round(budget, 1),
-    }
 
 
-def build_source_status(
-    results_by_source: dict,
-    descartadas_por_fuente: dict = None,
-    source_timings: dict = None,
-    consolidated_items: list[dict] | None = None,
-) -> list:
-    descartadas_por_fuente = descartadas_por_fuente or {}
-    source_timings = source_timings or {}
-    default_source_meta = {
-        "HORIZON EUROPE": "API REST",
-        "BDNS":           "API REST SNPSAP",
-        "ECCP":           "Scraping HTML + webs de proyectos",
-        "EEN":            "Scraping de noticias y Call details",
-        "CDTI":           "Playwright + catálogo curado",
-        "IDAE":           "Playwright",
-        "IDAE CATÁLOGO":  "Playwright (descubrimiento agregado)",
-        "BOE / MITECO":   "Playwright",
-        "BOA ARAGÓN":     "Playwright / respaldo",
-    }
-    now_str = datetime.now().strftime("%H:%M")
-    consolidated_items = consolidated_items or []
-
-    def source_key(value: str) -> str:
-        return re.sub(r"[^a-z0-9]+", "", _fold_text(value))
-
-    status = []
-    for name, default_type in default_source_meta.items():
-        source_results = results_by_source.get(name, [])
-        detected_types = sorted({
-            item.get("source_type", "") for item in source_results
-            if item.get("source_type")
-        })
-        source_versions = sorted({
-            item.get("source_version", "") for item in source_results
-            if item.get("source_version")
-        })
-        source_version_labels = sorted({
-            item.get("source_version_label", "") for item in source_results
-            if item.get("source_version_label")
-        })
-        canonical_name = source_key(name)
-        consolidated_count = sum(
-            1 for item in consolidated_items
-            if canonical_name in {
-                source_key(value) for value in [
-                    item.get("source", ""),
-                    *item.get("discovery_sources", []),
-                ] if value
-            }
-        )
-        raw_count = len(source_results)
-        source_status = {
-            "name":   name,
-            "type":   " + ".join(detected_types) if detected_types else default_type,
-            "status": "ok" if source_results else "warn",
-            # `count` se conserva como alias compatible del volumen bruto.
-            "count":  raw_count,
-            "raw_count": raw_count,
-            "consolidated_count": consolidated_count,
-            # Encontradas por la fuente pero descartadas antes del análisis por
-            # tener deadline_days <= 0 (plazo ya cerrado en el momento de la
-            # ejecución). Si count > 0 y count == count_cerradas, la fuente SÍ
-            # está funcionando pero no ofrece hoy ninguna convocatoria vigente.
-            "count_cerradas": descartadas_por_fuente.get(name, 0),
-            "duration_seconds": round(source_timings.get(name, 0.0), 2),
-            "time":   f"actualizado {now_str}",
-            "source_version": source_versions[-1] if source_versions else "",
-            "source_version_label": (
-                source_version_labels[-1] if source_version_labels else ""
-            ),
-        }
-        source_status.update(SOURCE_RUNTIME_METADATA.get(name, {}))
-        status.append(source_status)
-    return status
 
 
-def build_keywords(convs: list) -> list:
-    counter = Counter()
-    for c in convs:
-        for kw in c.get("keywords_found", []):
-            counter[kw] += 1
-    colors = {
-        "hidrógeno":            "var(--teal)",
-        "hydrogen":             "var(--teal)",
-        "eficiencia energética":"var(--accent)",
-        "descarbonización":     "var(--blue)",
-        "hornos industriales":  "#a080e0",
-        "emisiones industriales":"var(--red)",
-        "combustión limpia":    "var(--teal)",
-    }
-    return [
-        {"name": kw, "count": cnt, "color": colors.get(kw, "var(--accent)")}
-        for kw, cnt in counter.most_common(8)
-    ]
 
 print("✓ Funciones de ensamblado cargadas")
 
@@ -3945,64 +3391,8 @@ print("✓ Funciones de ensamblado cargadas")
 # ─────────────────────────────────────────────────────────────────────
 # VERIFICACIÓN TÉCNICA DE URLs (HTTP, no IA)
 # ─────────────────────────────────────────────────────────────────────
-def _normalize_public_url(url: str) -> str:
-    """Anade HTTPS solo a dominios inequivocos sin esquema.
-
-    No intenta reparar rutas, buscar destinos alternativos ni convertir correos
-    electronicos: conserva el valor original cuando no es un host web claro.
-    """
-    value = str(url or "").strip()
-    if not value or re.match(r"^[a-z][a-z0-9+.-]*://", value, re.I):
-        return value
-    if "@" in value or re.search(r"\s", value):
-        return value
-    if re.match(
-        r"^(?:localhost|(?:[a-z0-9-]+\.)+[a-z]{2,})(?::\d+)?(?:[/?#].*)?$",
-        value,
-        re.I,
-    ):
-        return f"https://{value}"
-    return value
 
 
-def verificar_urls(convocatorias: list, timeout: int = 8) -> None:
-    """
-    Comprueba que cada URL responde correctamente antes de publicar el JSON.
-    NUNCA modifica, genera ni "corrige" la URL — solo la señaliza mediante el
-    campo url_rota si no se puede confirmar una respuesta HTTP < 400.
-    Esta comprobación es deliberadamente determinista (peticiones HTTP reales),
-    no delegada en un LLM: un LLM no puede confirmar si una URL es correcta,
-    solo si el servidor responde.
-    """
-    log.info("Verificando accesibilidad HTTP de URLs antes de publicar...")
-    vistas = {}
-    for c in convocatorias:
-        url = c.get("url", "")
-        if not url:
-            c["url_rota"] = False
-            continue
-        if url in vistas:
-            c["url_rota"] = vistas[url]
-            continue
-        ok = False
-        try:
-            r = requests.head(url, timeout=timeout, allow_redirects=True,
-                               headers={"User-Agent": "GrantRadar-Bot/1.0"})
-            if r.status_code >= 400:
-                r = requests.get(url, timeout=timeout, allow_redirects=True,
-                                  headers={"User-Agent": "GrantRadar-Bot/1.0"})
-            ok = r.status_code < 400
-        except Exception as e:
-            log.warning(f"  URL no verificable ({url}): {e}")
-            ok = False
-        c["url_rota"] = not ok
-        vistas[url] = c["url_rota"]
-
-    n_rotas = sum(1 for c in convocatorias if c.get("url_rota"))
-    if n_rotas:
-        log.warning(f"  ⚠ {n_rotas} URL(s) no respondieron correctamente (marcadas url_rota=True)")
-    else:
-        log.info("  ✓ Todas las URLs respondieron correctamente")
 
 print("✓ Verificación técnica de URLs cargada")
 
@@ -4011,49 +3401,6 @@ print("✓ Verificación técnica de URLs cargada")
 # CELDA 6B — CONFIGURACIÓN GITHUB PAGES Y FUNCIÓN DE SUBIDA
 # ─────────────────────────────────────────────────────────────────────
 
-def github_upload(filepath: str):
-    """
-    Sube el convocatorias.json al repositorio GitHub usando la API REST.
-    GitHub Pages servirá automáticamente el archivo actualizado.
-    """
-    if not github_token_format_is_valid():
-        print("⚠ Formato de GITHUB_TOKEN no válido — se omite la publicación")
-        return
-
-    filename = os.path.basename(filepath)
-    url      = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{filename}"
-    headers  = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept":        "application/vnd.github.v3+json",
-    }
-
-    # Leer el archivo y codificarlo en base64 (requerido por GitHub API)
-    import base64
-    with open(filepath, "rb") as f:
-        content_b64 = base64.b64encode(f.read()).decode("utf-8")
-
-    # Obtener el SHA actual del archivo (necesario para actualizar, no para crear)
-    sha = None
-    resp = requests.get(url, headers=headers)
-    if resp.status_code == 200:
-        sha = resp.json().get("sha")
-
-    # Subir o actualizar el archivo
-    payload = {
-        "message": f"Grant-Radar: actualización automática {datetime.now().strftime('%Y-%m-%d %H:%M')} UTC",
-        "content": content_b64,
-        "branch":  GITHUB_BRANCH,
-    }
-    if sha:
-        payload["sha"] = sha  # necesario para sobreescribir un archivo existente
-
-    resp = requests.put(url, headers=headers, json=payload)
-
-    if resp.status_code in (200, 201):
-        print(f"✓ convocatorias.json subido a GitHub Pages")
-        print(f"  URL pública: https://{GITHUB_USER}.github.io/{GITHUB_REPO}/convocatorias.json")
-    else:
-        print(f"⚠ Error subiendo a GitHub: {resp.status_code} — {resp.json().get('message','')}")
 
 print("✓ Función GitHub Pages cargada")
 
@@ -4063,91 +3410,6 @@ print("✓ Función GitHub Pages cargada")
 # Ejecuta todo el proceso: recolección → análisis → JSON
 # ─────────────────────────────────────────────────────────────────────
 
-def _assemble_public_record(record_id: int, conv: dict, analysis: dict) -> dict:
-    """Construye el registro público (una fila de `convocatorias.json`) a
-    partir de una convocatoria recopilada (`conv`) y su análisis (`analysis`,
-    de caché o recién calculado). Es el único sitio del backend que decide
-    los nombres de campo publicados; `index.html` (`normalizeConv()`) debe
-    seguir entendiéndolos. Se separó de `run_pipeline()` para poder probarla
-    de forma aislada, sin recopilar fuentes ni llamar a Claude — ver
-    `tests/test_grant_radar.py::test_backend_record_fields_are_understood_by_frontend`.
-    """
-    public_deadline, public_deadline_date, public_deadline_unconfirmed = (
-        _public_deadline_values(conv)
-    )
-    eligible_actions, eligible_actions_basis = derive_eligible_actions(
-        conv, analysis.get("call_facts", {})
-    )
-    return {
-        "id":                  record_id,
-        "source":              conv["source"],
-        "identifier":          conv.get("identifier", ""),
-        "discovery_sources":   conv.get("discovery_sources", [conv["source"]]),
-        "funding_mechanism":   conv.get("funding_mechanism", "unknown"),
-        "opportunity_role":    conv.get("opportunity_role", "unknown"),
-        "opportunity_labels":  conv.get("opportunity_labels", []),
-        "title":               conv["title"],
-        "description":         conv["description"],
-        "match":               analysis.get("match_score", 50),
-        "fit_score":           analysis.get("fit_score", 50),
-        "actionability_score": analysis.get("actionability_score", 0),
-        "confidence":          analysis.get("confidence", 0),
-        "priority":            analysis.get("priority", "medium"),
-        "descartada":          analysis.get("descartada", False),
-        "motivo_descarte":     analysis.get("motivo_descarte", ""),
-        "decision":            analysis.get("decision", "manual_review"),
-        "eligibility":         analysis.get("eligibility", "unknown"),
-        "eligibility_reason":  analysis.get("eligibility_reason", ""),
-        "recommended_role":    analysis.get("recommended_role", "unknown"),
-        "scores":              analysis.get("scores", {}),
-        "evidence_quality":    analysis.get("evidence_quality", "low"),
-        "positive_evidence":   analysis.get("positive_evidence", []),
-        "risks_and_unknowns":  analysis.get("risks_and_unknowns", []),
-        "partner_needs":       analysis.get("partner_needs", []),
-        "recommended_partners": analysis.get("recommended_partners", []),
-        "review_required":     analysis.get("review_required", False),
-        "review_reasons":      analysis.get("review_reasons", []),
-        "data_pending":        analysis.get("data_pending", False),
-        "data_gaps":           analysis.get("data_gaps", []),
-        "monitoring_flags":    analysis.get("monitoring_flags", []),
-        "token_usage":         analysis.get("token_usage", {}),
-        "call_facts":          analysis.get("call_facts", {}),
-        "eligible_actions":    eligible_actions,
-        "eligible_actions_basis": eligible_actions_basis,
-        "trl_min":             analysis.get("trl_min"),
-        "trl_max":             analysis.get("trl_max"),
-        "socio_consorcio":     analysis.get("socio_consorcio", ""),
-        "deadline":            public_deadline,
-        "deadline_date":       public_deadline_date,
-        "eoi_deadline_date":   conv.get("eoi_deadline_date", ""),
-        "open_date":           conv.get("open_date", ""),
-        "fecha_sin_confirmar": public_deadline_unconfirmed,
-        "fecha_prevista":      conv.get("fecha_prevista", False),
-        "budget":              conv.get("budget", "Ver convocatoria"),
-        "budget_raw":          0,
-        "url":                 _normalize_public_url(conv["url"]),
-        "org":                 conv["org"],
-        "tags":                analysis.get("tags", ["ee"]),
-        "tech_tags":           analysis.get("tech_tags", []),
-        "summary":             post_procesar_texto(analysis.get("resumen", "")),
-        "action":              post_procesar_texto(analysis.get("accion", "")),
-        "dims":                analysis.get("dimensiones", []),
-        "keywords_found":      conv["keywords_found"],
-        "source_type":         conv["source_type"],
-        "discovered_via":      conv.get("discovered_via", ""),
-        "catalog_scope":       conv.get("catalog_scope", ""),
-        "catalog_category":    conv.get("catalog_category", ""),
-        "catalog_ref":         conv.get("catalog_ref", ""),
-        "bdns_id":             conv.get("bdns_id", ""),
-        "bdns_url":            conv.get("bdns_url", ""),
-        "related_documents_count": conv.get("related_documents_count", 0),
-        "related_documents":   conv.get("related_documents_trace", []),
-        "document_role":       conv.get("document_role", ""),
-        "programme_key":       conv.get("programme_key", ""),
-        "programme_name":      conv.get("programme_name", ""),
-        "url_generica":        conv.get("url_generica", False),
-        "url_rota":            False,  # se actualiza en verificar_urls() antes de publicar
-    }
 
 
 def run_pipeline(
@@ -4891,7 +4153,13 @@ def run_pipeline(
     print(f"✓ Archivo guardado en: {os.path.abspath(OUTPUT_FILE)}")
 
     # ── SUBIDA AUTOMÁTICA A GITHUB PAGES ──────────────────────────────
-    github_upload(OUTPUT_FILE)
+    github_upload(
+        OUTPUT_FILE,
+        token=GITHUB_TOKEN,
+        user=GITHUB_USER,
+        repo=GITHUB_REPO,
+        branch=GITHUB_BRANCH,
+    )
 
 
 # ── EJECUTAR ──────────────────────────────────────────────────────────

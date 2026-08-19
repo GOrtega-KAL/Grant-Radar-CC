@@ -468,6 +468,18 @@ ofrecería git.
    —antes solo miraba llamadas directas— y a los parámetros de `lambda`.
    371 pruebas. `Grant-Radar-prueba.py`: 5.384 → 5.018 líneas, -45,5 % en el
    día. Queda `pipeline.py` y la sesión de reglas.
+   **[Decimotercer incremento, 19/08/2026 — salida pública y decisiones de
+   coste]** La etapa planeada era `pipeline.py`, pero al medirla resultó
+   inviable: extraer `run_pipeline()` arrastraría 64 de las 68 funciones
+   restantes, incluida la matriz de reglas. Se reformuló sobre los cuatro
+   dominios con frontera limpia: `public_output.py` (registro público,
+   estadísticas, estado por fuente, URLs), `publishing.py` (GitHub Pages, con
+   las credenciales como parámetros en vez de leídas en el módulo),
+   `claude_selection.py` (qué se manda a Haiku y la barrera de coste) y
+   `coverage_watch.py`. 381 pruebas y un `--no-claude` con los números de
+   referencia completos, BOE incluido. `Grant-Radar-prueba.py`: 5.018 → 4.286
+   líneas, -53,4 % en el día; el paquete ya tiene casi el doble de código que
+   el script.
 3. Hacerlo de forma incremental y verificada: extraer un módulo, ejecutar
    `py_compile` y la suite completa de `unittest`, confirmar comportamiento
    idéntico con `--no-claude`, y solo entonces continuar con el siguiente

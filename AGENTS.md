@@ -2369,3 +2369,121 @@ varias rondas en el mismo día.
 
 Sigue pendiente: `pipeline.py` (`run_pipeline()` y el ensamblado del JSON), y
 la sesión dedicada a la matriz de reglas.
+
+## 36. Hallazgos abiertos y propuestas para iteraciones posteriores
+
+Índice único de lo que se ha descubierto y **no** se ha hecho, con el motivo y
+lo que costaría retomarlo. Las rondas anteriores lo documentan en su contexto;
+esta sección existe para no tener que releerlas todas. Actualizar al cerrar o
+al añadir cada punto.
+
+### 36.1. Reglas de negocio (requieren decisión, no solo código)
+
+| # | Hallazgo | Dónde | Por qué sigue abierto |
+|---|---|---|---|
+| 1 | `_bdns_company_eligible()`: la condición positiva está en singular y su guardián en plural, así que el guardián nunca se aplica | 31.5 | Impacto medido nulo sobre las cuatro categorías reales de SNPSAP. Antes del plural hay que decidir si esa rama debe conceder elegibilidad a un perfil que es persona jurídica: arreglarla crearía un falso positivo con convocatorias solo para autónomos |
+| 2 | `_idae_catalog_document_rank()`: "Modificación de la convocatoria" queda por encima de un documento neutro | 32 | Es coherente (habla de la convocatoria) y siempre pierde frente al extracto real. Cambiarlo altera qué documento manda al consolidar |
+| 3 | El contrato de entrada de `_bdns_company_eligible()` no está escrito: espera etiquetas cortas de categoría, no texto libre | 31.5 | Sobre texto completo de unas bases, `empresas?` acertaría con cualquier mención incidental, incluidas las de cláusulas de exclusión |
+
+Los tres comparten condición: tocan la matriz previa a Claude, que decide qué
+llega a Haiku y por tanto el coste. Disciplina obligatoria (`SUGERENCIAS.MD`
+3.3): ampliar primero `tests/fixtures/bdns_filter_cases.json` con casos reales,
+y solo después la condición. Además, mientras duren las rondas de
+modularización conviene no mezclarlos: el recuento estable de 77 vigentes es el
+invariante con el que se verifica cada extracción, y cambiar una regla lo haría
+ambiguo.
+
+### 36.2. Fragilidad frente a las fuentes
+
+| # | Propuesta | Origen |
+|---|---|---|
+| 4 | Reintento con espera ante `HTTP 429` en `PlaywrightBrowser`, en vez de tratarlo como fuente caída | 35 |
+| 5 | Modo de verificación por fuente (algo como `--no-claude --source BOE`) para no recorrer las ocho cuando un cambio solo toca una | 35 |
+| 6 | Instantánea de la estructura esperada de cada fuente, comparada en cada ejecución, con historial | `SUGERENCIAS.MD` 3.4 punto 2 |
+| 7 | Ejecución periódica automatizada en `--no-claude` solo para vigilar salud de fuentes | `SUGERENCIAS.MD` 3.4 punto 3 |
+
+El 429 del 19/08/2026 tuvo cooldown de minutos: una sonda de una sola petición,
+7 minutos después, devolvió la página completa. No impone restricción horaria,
+pero sí aconseja espaciar las ejecuciones completas cuando se encadenan varias
+rondas el mismo día.
+
+### 36.3. Modularización pendiente
+
+| # | Qué falta | Notas |
+|---|---|---|
+| 8 | La matriz de reglas (`_bdns_pre_claude_gate()`, `deterministic_prefilter()`) | Sesión dedicada; es la lógica más ajustada del proyecto (siete niveles de precedencia, sección 4.1) |
+| 9 | Motor de reglas genérico, declarativo | `SUGERENCIAS.MD` 3.3 punto 2. Requiere formalizar antes todas las variantes de condición existentes |
+| 10 | Retirar el patrón `runpy` + fusión de `APP` en `tests/test_grant_radar.py` | Tiene sentido revisarlo cuando el script principal quede reducido a configuración y punto de entrada |
+| 15 | Orden de extracción medido (sección 37): holds BDNS → `save_discovery_audit` → capa Haiku → reglas → `run_pipeline()` | `run_pipeline()` arrastra hoy 64 de 68 funciones: va el último, no el siguiente |
+| 16 | Usar `node.end_lineno`, nunca `max(lineno)`, al cortar bloques por AST | Un `return (` multilínea pierde el paréntesis de cierre; ocurrió en la sección 37 |
+
+### 36.4. Otros, heredados de la evaluación externa
+
+| # | Qué | Origen |
+|---|---|---|
+| 11 | Cinco campos que el backend publica y el frontend no consume (`catalog_scope`, `catalog_category`, `catalog_ref`, `related_documents_count`, `bdns_url`) | `SUGERENCIAS.MD` 2.8 |
+| 12 | `requires-python = ">=3.11"` no se ha probado sobre un intérprete 3.11 real | `SUGERENCIAS.MD` 3.9 |
+| 13 | Limpieza de `Obsoleto/` y `Frontend alternativo/` ahora que hay historial de git | `SUGERENCIAS.MD` 3.10 punto 2 |
+| 14 | Rotación de credenciales si `API KEYs.txt` estuvo en copias compartidas fuera de control | `SUGERENCIAS.MD` 3.1 punto 4; solo el usuario puede confirmarlo |
+
+## 37. Decimotercera ronda a 19/08/2026: salida pública, publicación, selección y cobertura
+
+Etapa 8 del plan de la sección 28, **reformulada tras medirla**. Ese plan la
+definía como "extraer `pipeline.py`", pero antes de tocar nada se calculó el
+cierre transitivo de `run_pipeline()`: arrastraría **64 de las 68 funciones**
+que quedaban en el script, incluida toda la matriz de reglas. El orquestador es
+por definición lo último que se mueve, cuando ya no queda nada que orquestar
+dentro del propio archivo. Lo que sí tenía frontera limpia eran cuatro
+dominios, y esos son los que se han extraído:
+
+- `grant_radar/public_output.py` (461 líneas): el registro público que consume
+  el dashboard (`_assemble_public_record()`), las estadísticas, el estado por
+  fuente, las palabras clave, la verificación técnica de URLs, las acciones
+  elegibles y `post_procesar_texto()` con su lista blanca de entidades. Es la
+  frontera con `index.html`, y el test de contrato del frontend sigue
+  ejerciéndola sin red ni Claude.
+- `grant_radar/publishing.py` (82 líneas): `github_upload()` y
+  `github_token_format_is_valid()`. **Las credenciales pasaron a ser
+  parámetros**: el módulo ya no lee `GITHUB_TOKEN`, `GITHUB_USER`,
+  `GITHUB_REPO` ni `GITHUB_BRANCH`, los recibe. El script principal sigue
+  siendo el único que carga secretos desde `.env`, de modo que ningún módulo
+  del paquete puede filtrarlos por error (sección 7).
+- `grant_radar/claude_selection.py`: qué convocatorias necesitan análisis nuevo,
+  la barrera presupuestaria previa (`claude_safety_preflight()`, con los
+  límites autorizados de 200 análisis y 5 USD) y el inventario de candidatas
+  que guarda `--no-claude`.
+- `grant_radar/coverage_watch.py`: la vigilancia de programas recurrentes
+  conocidos, con su catálogo.
+
+**Un fallo propio, y la lección de método.** El primer intento de extraer
+`public_output.py` rompió el script: se calculó el final de cada función con
+`max(lineno)` de sus nodos, que en un `return (` multilínea se queda en la
+última expresión y deja fuera el paréntesis de cierre. `py_compile` lo detectó
+al instante y se restauró desde git sin más consecuencias. La forma correcta es
+`node.end_lineno`, que es lo que se usa desde entonces. Anotado aquí porque el
+mismo error volvería a aparecer en la extracción del dominio de reglas, que
+está lleno de expresiones multilínea.
+
+**Verificación:** `Grant-Radar-prueba.py` bajó de 5.018 a 4.286 líneas (-14,6 %
+en esta ronda; **-53,4 % acumulado en el día** desde 9.199). El paquete son ya
+31 módulos y 8.254 líneas: por primera vez hay casi el doble de código en
+`grant_radar/` que en el script. 381 pruebas `unittest` (371 + 10) y
+`py_compile` en verde. La ejecución `--no-claude` de cierre (544,66 s, código 0)
+devolvió los números de referencia completos, **BOE incluido**: 953
+convocatorias detectadas, 33 duplicadas fusionadas, 39 tras el prefiltro
+inicial, 77 vigentes con el desglose habitual (BDNS 47, Horizon 19, CDTI 5,
+ECCP 4, EEN 2, IDAE 1, BOE 1, BOA 0), mismo prefiltro común y misma previsión
+de coste. Eso confirma además lo dicho en la sección 35: la desviación de BOE
+de la ronda anterior fue el `HTTP 429` y nada más. Una sonda de una sola
+petición, hecha antes de esta ronda, ya mostró la página accesible: el cooldown
+fue de minutos.
+
+**Lo que queda en el script, y en qué orden tiene sentido moverlo:**
+
+| Dominio | ~Líneas | Bloqueo |
+|---|---|---|
+| Matriz de reglas previa a Claude | ~570 | Sesión dedicada (secciones 4.1, 24, 27) |
+| Análisis con Haiku (`analyze_with_claude`, `_structured_claude_call`, `_build_compatible_analysis`) | ~545 | Depende de `_hard_out_of_scope()`, que es matriz de reglas; se podría inyectar como se hizo con ECCP |
+| Dominio de holds BDNS (evidencia, resolución, piloto, replay) | ~1.000 | Independiente: es el siguiente candidato natural |
+| Auditoría persistida (`save_discovery_audit`) | ~117 | Independiente, encaja en `grant_radar/audit.py` |
+| `run_pipeline()` + `parse_args()` | ~840 | Último, por definición |

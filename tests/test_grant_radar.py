@@ -31,6 +31,9 @@ APP = runpy.run_path(str(ROOT / "Grant-Radar-prueba.py"))
 # donde queda definida, no al script principal.
 from grant_radar import cache as _cache_module
 from grant_radar import deterministic_rules as _rules_module
+from grant_radar import claude_selection as _selection_module
+from grant_radar import coverage_watch as _coverage_module
+from grant_radar import public_output as _public_output_module
 from grant_radar.sources import bdns as _bdns_module
 from grant_radar.sources import cdti as _cdti_module
 from grant_radar.sources import eccp as _eccp_module
@@ -38,7 +41,8 @@ from grant_radar.sources import een as _een_module
 from grant_radar.sources import idae as _idae_module
 
 for _module in (
-    _cache_module, _rules_module,
+    _cache_module, _rules_module, _public_output_module,
+    _selection_module, _coverage_module,
     _bdns_module, _cdti_module, _eccp_module, _een_module, _idae_module,
 ):
     for _name in dir(_module):
