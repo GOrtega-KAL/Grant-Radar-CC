@@ -54,8 +54,8 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l`: 5.384 líneas
-en el script y 6.903 en los 26 módulos del paquete, tras las seis rondas del
+`import`). Recuento verificado con `wc -l`: 5.018 líneas
+en el script y 7.339 en los 27 módulos del paquete, tras las siete rondas del
 19/08/2026 (el script tenía 9.199 al empezar el día; la cifra
 "8.835" de una nota anterior de este archivo estaba mal calculada — ver
 AGENTS.md sección 24, nota de discrepancia). Progresivamente movida a `grant_radar/` (paquete con nombre
@@ -89,6 +89,7 @@ importable):
 | `sources/bdns.py` | Conector BDNS/SNPSAP: inventario transversal y detalle de convocatorias |
 | `documents.py` | Documentos oficiales: descarga, extracción de texto y su caché |
 | `sources/cdti.py` | Conector CDTI: calendario oficial con Chromium + catálogo curado |
+| `sources/eccp.py` | Conector ECCP: calls y rastreo acotado de webs de proyectos |
 
 Comportamientos concretos ya verificados con código (identidad de programa,
 extracción de presupuesto, bloqueo por ámbito del navegador, y por qué el
@@ -104,10 +105,11 @@ ventana de `convocatorias/ultimas` ampliada a ~79 días. Detalle completo de
 la investigación y de los números reales de verificación en AGENTS.md
 sección 26.
 
-Pendiente: un conector, ECCP —que no espera por infraestructura sino por
-`deterministic_prefilter()`, o sea por la sesión dedicada a las reglas— y
-`pipeline.py` (`run_pipeline()`). Los otros siete ya están en
-`grant_radar/sources/` (AGENTS.md secciones 25, 29, 30, 32, 33 y 34). El plan por etapas y el orden de dependencias están en
+Pendiente: `pipeline.py` (`run_pipeline()` y el ensamblado del JSON) y la
+sesión dedicada a la matriz de reglas. **Los ocho conectores ya están en
+`grant_radar/sources/`** (AGENTS.md secciones 25, 29, 30, 32, 33, 34 y 35).
+ECCP recibe el prefiltro como parámetro (`is_relevant_enough`) para no depender
+de las reglas: quien lo llame debe pasárselo. El plan por etapas y el orden de dependencias están en
 AGENTS.md sección 28. El filtro previo a Claude
 (`_bdns_pre_claude_gate()`, `deterministic_prefilter()`, sección 4.1 de
 `AGENTS.md`) sigue deliberadamente sin extraer: es la lógica más compleja y

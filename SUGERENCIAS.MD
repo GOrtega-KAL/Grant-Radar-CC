@@ -456,6 +456,18 @@ ofrecería git.
    que espera por `deterministic_prefilter()`. 361 pruebas y un `--no-claude`
    idéntico por sexta vez. `Grant-Radar-prueba.py`: 6.409 → 5.384 líneas,
    -41,5 % acumulado en el día.
+   **[Duodécimo incremento, 19/08/2026 — conector ECCP; los ocho ya fuera]**
+   ECCP se movió con el prefiltro inyectado como parámetro
+   (`is_relevant_enough`), sin tocar la matriz de reglas: sus dos usos eran de
+   predicado de relevancia, no de elegibilidad. La ronda destapó dos
+   `NameError`: uno propio (`statistics` sin importar), que solo cazó la
+   ejecución `--no-claude` porque ni `py_compile` ni los tests recorren esa
+   ruta, y otro preexistente desde el commit inicial en `fetch_idae_catalog()`,
+   que habría tumbado la fuente el día que el catálogo IDAE volviera a aportar
+   una convocatoria. El detector de nombres se amplió a cualquier nombre leído
+   —antes solo miraba llamadas directas— y a los parámetros de `lambda`.
+   371 pruebas. `Grant-Radar-prueba.py`: 5.384 → 5.018 líneas, -45,5 % en el
+   día. Queda `pipeline.py` y la sesión de reglas.
 3. Hacerlo de forma incremental y verificada: extraer un módulo, ejecutar
    `py_compile` y la suite completa de `unittest`, confirmar comportamiento
    idéntico con `--no-claude`, y solo entonces continuar con el siguiente

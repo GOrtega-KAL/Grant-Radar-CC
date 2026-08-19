@@ -774,7 +774,14 @@ def fetch_idae_catalog(browser: PlaywrightBrowser) -> list:
             "source": source,
             "title": candidate["title"][:300],
             "description": select_evidence_excerpt(
-                description, title, 20_000
+                # `title` no existía en este ámbito: era un NameError latente,
+                # presente desde antes de extraer el conector y nunca disparado
+                # porque el catálogo IDAE lleva tiempo sin aportar convocatorias
+                # incorporables, así que esta línea no llegaba a ejecutarse.
+                # Detectado por tests/test_grant_radar_script_names.py (ver
+                # AGENTS.md sección 35). El título de la convocatoria es el que
+                # se usa dos líneas más arriba.
+                description, candidate["title"], 20_000
             ),
             "deadline_days": deadline_days,
             "deadline_date": deadline_date,

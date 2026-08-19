@@ -2296,3 +2296,76 @@ inicial, 77 vigentes con idéntico desglose —CDTI en sus 5—, mismo prefiltro
 común y misma previsión de coste. Las cuatro fuentes con control de salud
 siguen `healthy` y la caché documental se leyó y escribió con normalidad desde
 el módulo nuevo.
+
+## 35. Duodécima ronda a 19/08/2026: conector ECCP y dos NameError latentes
+
+Etapa 7 del plan de la sección 28, y con ella los ocho conectores están fuera
+del script principal.
+
+**Cambio de criterio respecto a la sección 28, con motivo.** Aquel plan
+recomendaba esperar a la sesión de reglas antes de mover ECCP, y advertía de no
+"forzar la inyección solo para cerrar la lista". Al leer el código real, los
+dos usos de `deterministic_prefilter()` en ECCP resultaron ser un **predicado de
+relevancia**, no la matriz de elegibilidad: filtrar páginas al rastrear la web
+de un proyecto beneficiario, y elegir la muestra del experimento de
+profundidad. Con eso, `is_relevant_enough` como parámetro no es un
+contorsionismo sino la costura natural: el conector declara que necesita "algo
+que diga si esto merece conservarse" y el script le pasa
+`deterministic_prefilter()`, que no se ha tocado.
+
+- `grant_radar/sources/eccp.py`: inventario de calls y rastreo acotado de webs
+  de proyectos, con `robots.txt`, HTTPS y límites de peticiones, bytes y
+  tiempo. `fetch_eccp(is_relevant_enough)` y
+  `_crawl_project_domain(..., is_relevant_enough)`.
+- `tests/test_grant_radar_sources_eccp.py`: prueba la costura nueva con
+  predicados de mentira —uno que acepta todo y otro que rechaza todo—, de modo
+  que el rastreo se ejercita sin depender de las reglas.
+
+**Dos NameError, y lo que enseñan sobre las tres redes de seguridad:**
+
+1. `statistics` faltaba en los imports del módulo nuevo. No lo vieron ni
+   `py_compile` (no resuelve nombres) ni las 369 pruebas (el cuerpo de
+   `fetch_eccp()` solo se ejecuta con red). **Lo cazó la ejecución
+   `--no-claude`**, que abortó con código 1. Es exactamente el motivo por el
+   que esa ejecución es obligatoria al cerrar cada ronda y no un trámite.
+2. Al ampliar el detector de nombres para cubrir ese hueco apareció un segundo
+   fallo, **preexistente desde el commit inicial**: `fetch_idae_catalog()`
+   llamaba a `select_evidence_excerpt(description, title, ...)` con un `title`
+   que nunca se define en ese ámbito. Nunca ha estallado porque el catálogo
+   IDAE lleva tiempo sin aportar convocatorias incorporables (0 en todas las
+   ejecuciones recientes), así que esa línea no se ejecuta; el día que el
+   catálogo tenga una convocatoria abierta, la fuente entera caería. Corregido
+   a `candidate["title"]`, que es el título que la propia función usa dos
+   líneas más arriba.
+
+`tests/test_grant_radar_script_names.py` tenía dos puntos ciegos, ambos
+cerrados en esta ronda: solo miraba llamadas a nombres desnudos —por eso
+`statistics.median(...)` pasó, ya que ahí el nombre ausente es el objeto del
+atributo— y no reconocía los parámetros de una `lambda` como ámbito propio.
+Ahora comprueba todo nombre leído. Los dos casos quedan fijados como pruebas
+sintéticas: una comprobación que no falla cuando debe no protege de nada.
+
+**Verificación:** `Grant-Radar-prueba.py` bajó de 5.384 a 5.018 líneas (-6,8 %
+en esta ronda; -45,5 % acumulado en el día desde 9.199). 371 pruebas
+`unittest` (361 + 10) y `py_compile` en verde. En la ejecución `--no-claude` de
+cierre (630,15 s, código 0): 953 convocatorias detectadas, 39 tras el prefiltro
+inicial, 77 vigentes, mismo prefiltro común y misma previsión de coste. ECCP,
+que es lo que toca esta ronda, dio exactamente lo mismo que antes: 6 calls
+vigentes, profundidad seleccionada 1 y 4 convocatorias tras consolidar.
+
+**Salvedad honesta sobre esa ejecución:** BOE/MITECO devolvió 0 en vez de 1, y
+las duplicadas fusionadas bajaron de 33 a 31, por una causa externa que el
+propio sistema detectó y avisó: `HTTP 429` de `boe.es`, con estado de salud
+`unhealthy` e `inventory_unreachable`. No es una regresión —esta ronda no toca
+el conector BOE, extraído en la sección 32— y el total se mantuvo en 77 porque
+INNOVAE también entra por IDAE. El control de salud hizo justo su trabajo:
+avisar en vez de perder cobertura en silencio.
+
+**Nota operativa que se deriva de ese 429:** las ejecuciones `--no-claude` no
+consumen tokens, pero sí consumen paciencia de las fuentes públicas. Hoy se han
+hecho ocho, y cada una carga unas 180 fichas del BOE. Conviene espaciarlas o
+limitar la verificación a las fuentes que toca cada cambio cuando se encadenen
+varias rondas en el mismo día.
+
+Sigue pendiente: `pipeline.py` (`run_pipeline()` y el ensamblado del JSON), y
+la sesión dedicada a la matriz de reglas.

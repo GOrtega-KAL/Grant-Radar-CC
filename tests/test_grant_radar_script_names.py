@@ -48,6 +48,15 @@ def _own_names(node: ast.AST) -> set[str]:
             if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
                 names.add(child.name)
                 continue  # su cuerpo es otro ámbito
+            if isinstance(child, ast.Lambda):
+                # Una lambda sí es parte de esta expresión: sus parámetros
+                # deben verse aquí (`min(x, key=lambda e: f(e))`).
+                for arg in (*child.args.posonlyargs, *child.args.args,
+                            *child.args.kwonlyargs):
+                    names.add(arg.arg)
+                for extra in (child.args.vararg, child.args.kwarg):
+                    if extra is not None:
+                        names.add(extra.arg)
             if isinstance(child, ast.Name) and isinstance(child.ctx, ast.Store):
                 names.add(child.id)
             elif isinstance(child, (ast.Import, ast.ImportFrom)):
@@ -63,7 +72,15 @@ def _own_names(node: ast.AST) -> set[str]:
 
 
 def _missing_called_names(node: ast.AST, visible: set[str], missing: dict) -> None:
-    """Recorre los ámbitos encadenando los nombres visibles en cada nivel."""
+    """Recorre los ámbitos encadenando los nombres visibles en cada nivel.
+
+    Comprueba **todo** nombre leído, no solo el de una llamada directa. La
+    primera versión solo miraba `ast.Call` con `func` de tipo `ast.Name`, y por
+    eso dejó pasar `statistics.median(...)` al extraer el conector ECCP: ahí el
+    nombre que falta, `statistics`, es el objeto de un atributo, no el de la
+    llamada. Lo cazó la ejecución `--no-claude`, ya en producción (AGENTS.md
+    sección 35).
+    """
     scope = visible | _own_names(node)
     for child in ast.iter_child_nodes(node):
         if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
@@ -72,11 +89,10 @@ def _missing_called_names(node: ast.AST, visible: set[str], missing: dict) -> No
         for inner in ast.walk(child):
             if isinstance(inner, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
                 continue
-            if isinstance(inner, ast.Call) and isinstance(inner.func, ast.Name):
-                name = inner.func.id
-                if name not in scope:
+            if isinstance(inner, ast.Name) and isinstance(inner.ctx, ast.Load):
+                if inner.id not in scope:
                     owner = getattr(node, "name", "<módulo>")
-                    missing.setdefault(name, []).append(f"{owner}:{inner.lineno}")
+                    missing.setdefault(inner.id, []).append(f"{owner}:{inner.lineno}")
         for grandchild in ast.iter_child_nodes(child):
             if isinstance(grandchild, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
                 _missing_called_names(grandchild, scope, missing)
@@ -87,7 +103,9 @@ class DetectorSanityTests(unittest.TestCase):
 
     def _missing(self, code: str) -> dict:
         missing = {}
-        _missing_called_names(ast.parse(dedent(code)), {"print", "len"}, missing)
+        _missing_called_names(
+            ast.parse(dedent(code)), set(dir(builtins)), missing
+        )
         return missing
 
     def test_detects_a_call_to_a_name_that_does_not_exist(self):
@@ -143,6 +161,26 @@ class DetectorSanityTests(unittest.TestCase):
                     def walk(node):
                         return walk(node)
                     return walk(v)
+            """),
+            {},
+        )
+
+    def test_detects_a_missing_module_used_through_an_attribute(self):
+        # El hueco que dejó pasar `statistics.median(...)` en el conector ECCP:
+        # el nombre que falta es el objeto del atributo, no el de la llamada.
+        self.assertEqual(
+            self._missing("""
+                def f(valores):
+                    return statistics.median(valores)
+            """),
+            {"statistics": ["f:3"]},
+        )
+
+    def test_a_lambda_parameter_is_not_reported(self):
+        self.assertEqual(
+            self._missing("""
+                def f(opciones):
+                    return min(opciones, key=lambda e: len(e))
             """),
             {},
         )
