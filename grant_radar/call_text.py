@@ -97,12 +97,35 @@ def _external_links(soup: BeautifulSoup, base_url: str) -> list[str]:
 
 
 def _extract_funding_budget(text: str) -> str:
-    """Recupera un presupuesto explícito sin inferir ni sumar importes."""
+    """Recupera un presupuesto explícito sin inferir ni sumar importes.
+
+    Tres detalles del patrón, todos corregidos el 19/08/2026 tras detectarse
+    al escribir los tests de este módulo:
+
+    - la preposición intermedia de "2,5 millones DE euros" (y de "3.000.000 DE
+      euros") rompía la coincidencia y el importe se perdía entero;
+    - `euros?` va antes que `EUR` en la alternancia de moneda porque, al ser
+      insensible a mayúsculas, `EUR` capturaba solo las tres primeras letras y
+      el importe se publicaba como "2,5 millones de eur";
+    - "dotación" solo coincidía sin tilde, cuando el texto real de las fuentes
+      españolas la lleva casi siempre (aquí no se pliega el texto, a
+      diferencia de `_extract_deadline_from_text()`, porque se devuelve el
+      literal encontrado).
+
+    Se sigue devolviendo el respaldo cuando el importe no es el de la
+    convocatoria: "el presupuesto mínimo del proyecto es de 175.000 euros"
+    describe un umbral por proyecto, no la dotación, y no debe publicarse como
+    tal.
+    """
     compact = " ".join(str(text or "").split())
     number = r"\d(?:[\d\s.,]*\d)?"
-    amount = rf"(?:EUR|EURO|euros?|€)\s*{number}(?:\s*(?:million|millones?))?|{number}\s*(?:million|millones?)?\s*(?:EUR|EURO|euros?|€)"
+    currency = r"(?:€|euros?|EUR)"
+    amount = (
+        rf"{currency}\s*{number}(?:\s*(?:million|millones?))?"
+        rf"|{number}\s*(?:million|millones?)?\s*(?:de\s+)?{currency}"
+    )
     for pattern in (
-        rf"(?:total available budget|total budget|overall budget|presupuesto total|dotacion)\s*(?:of|de)?\s*[:\-]?\s*({amount})",
+        rf"(?:total available budget|total budget|overall budget|presupuesto total|dotaci[oó]n)\s*(?:of|de)?\s*[:\-]?\s*({amount})",
         rf"(?:budget|presupuesto)\s*[:\-]?\s*({amount})",
     ):
         match = re.search(pattern, compact, re.IGNORECASE)

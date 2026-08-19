@@ -120,22 +120,50 @@ class FundingBudgetTests(unittest.TestCase):
             "2,5 millones EUR total",
         )
 
-    def test_known_gap_millones_de_euros_is_not_recognised(self):
-        # Limitación real del patrón, anterior a la extracción del módulo: la
-        # preposición intermedia ("millones DE euros") rompe la coincidencia y
-        # el importe se pierde. Se fija aquí para que quede visible; corregirlo
-        # sería un cambio de comportamiento, no parte de esta extracción.
+    def test_reads_millones_de_euros_with_the_preposition(self):
+        # Antes del 19/08/2026 la preposición intermedia rompía el patrón y el
+        # importe se perdía entero (ver docstring de _extract_funding_budget).
         self.assertEqual(
             _extract_funding_budget("Presupuesto: 2,5 millones de euros"),
-            "Ver convocatoria",
+            "2,5 millones de euros total",
         )
 
-    def test_falls_back_without_inventing_an_amount(self):
+    def test_reads_an_amount_followed_by_de_euros(self):
         self.assertEqual(
-            _extract_funding_budget("La dotación se publicará más adelante"),
-            "Ver convocatoria",
+            _extract_funding_budget("Dotación: 3.000.000 de euros"),
+            "3.000.000 de euros total",
         )
 
+    def test_dotacion_is_recognised_with_and_without_the_accent(self):
+        self.assertEqual(
+            _extract_funding_budget("Dotación de 2.500.000 euros"),
+            "2.500.000 euros total",
+        )
+        self.assertEqual(
+            _extract_funding_budget("Dotacion de 2.500.000 euros"),
+            "2.500.000 euros total",
+        )
+
+    def test_the_currency_word_is_not_truncated_to_eur(self):
+        self.assertEqual(
+            _extract_funding_budget("Total budget: 2.5 million euros"),
+            "2.5 million euros total",
+        )
+
+    def test_reads_an_amount_in_symbols(self):
+        self.assertEqual(
+            _extract_funding_budget("Presupuesto: 500.000 €"), "500.000 € total"
+        )
+
+    def test_a_minimum_project_cost_is_not_published_as_the_call_budget(self):
+        # Es un umbral por proyecto, no la dotación de la convocatoria: el
+        # respaldo es la respuesta correcta, no una carencia del patrón.
+        self.assertEqual(
+            _extract_funding_budget(
+                "El presupuesto mínimo del proyecto es de 175.000 euros"
+            ),
+            "Ver convocatoria",
+        )
 
 class SharedVocabularyTests(unittest.TestCase):
     def test_the_two_shared_term_tuples_are_non_empty_and_lowercase(self):
