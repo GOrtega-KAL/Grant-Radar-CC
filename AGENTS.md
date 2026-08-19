@@ -16,15 +16,17 @@ de evidencia, normalización o reglas deterministas reutilizables.
 
 - Backend principal: `Grant-Radar-prueba.py`. Sigue siendo el punto de entrada
   (`poetry run python "Grant-Radar-prueba.py"`) y no se importa: su nombre con
-  guiones no es válido para `import`. A 19/08/2026 conserva 6.976 líneas, y lo
-  que queda en él es la matriz de reglas previa a Claude (sección 4.1), los
-  conectores BDNS, CDTI y ECCP, el análisis con Haiku y la orquestación de
-  `run_pipeline()`.
-- Paquete `grant_radar/`: 22 módulos, 5.119 líneas, con la lógica ya extraída
-  del backend principal (división en curso; historial por rondas en las
-  secciones 21-32 y en `SUGERENCIAS.MD` 3.2/3.3). `Grant-Radar-prueba.py` los
-  importa con `from grant_radar.X import ...`, y `CLAUDE.md` mantiene la tabla
-  de qué contiene cada uno.
+  guiones no es válido para `import`. Lo que queda en él es la matriz de reglas
+  previa a Claude (sección 4.1), los conectores CDTI y ECCP, el análisis con
+  Haiku y la orquestación de `run_pipeline()`.
+- Paquete `grant_radar/`: la lógica ya extraída del backend principal (división
+  en curso; historial por rondas en las secciones 21-33 y en `SUGERENCIAS.MD`
+  3.2/3.3). `Grant-Radar-prueba.py` los importa con
+  `from grant_radar.X import ...`, y `CLAUDE.md` mantiene la tabla de qué
+  contiene cada módulo, además del recuento de líneas al día.
+  Los recuentos concretos envejecen rápido mientras la división avanza: la
+  cifra vigente está en `CLAUDE.md` y se comprueba siempre con `wc -l`, nunca
+  de memoria (ver nota de discrepancia en la sección 24).
   Antes de mover más código aquí, comprobar sus dependencias reales con un
   análisis previo: no todo se puede extraer de forma aislada. El acoplamiento
   entre caché y reglas que bloqueó el primer intento se resolvió extrayendo
@@ -2094,27 +2096,54 @@ limpios.
 Detectado al escribir los tests de `grant_radar/bdns_fields.py` (sección 33).
 La condición positiva busca `"persona fisica"` en **singular** y el guardián
 que la anula busca `"no desarrollan"` en **plural verbal**. Ninguna cadena real
-puede cumplir las dos a la vez, así que el guardián nunca llega a aplicarse:
+puede cumplir las dos a la vez, así que el guardián nunca llega a aplicarse.
 
-| Categoría de beneficiario | Resultado | Comentario |
-|---|---|---|
-| `Persona física que desarrolla actividad económica` | `True` | correcto |
-| `Persona física que **no** desarrolla actividad económica` | `True` | **el guardián no se aplica** |
-| `Personas físicas que desarrollan actividad económica` | `False` | forma real del catálogo SNPSAP |
-| `Personas físicas que desarrollan…` + `Empresas` | `True` | lo salva la regla general |
+**Impacto real medido: ninguno.** Estas son las únicas categorías de
+beneficiario que SNPSAP entrega, con sus apariciones en los artefactos
+locales, y la función acierta en las cuatro:
 
-**No se ha corregido, a propósito.** Esta función la usa `_bdns_pre_claude_gate()`,
-es decir la matriz de reglas que las secciones 24 y 27 reservan para su propia
-sesión: cambiarla altera qué convocatorias llegan a Haiku y, por tanto, el
-coste. Su efecto práctico hoy es pequeño —el catálogo de SNPSAP usa el plural,
-que devuelve `False`, la respuesta conservadora, y en cuanto la lista incluye
-"Empresas", que es el caso habitual, la regla general la reconoce igualmente—,
-pero es una incoherencia real y queda anotada como candidata a revisar.
+| Categoría real de SNPSAP | Veces | Resultado | ¿Correcto? |
+|---|---|---|---|
+| `PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA` | 644 | `True` | sí, por "PYME" |
+| `GRAN EMPRESA` | 264 | `True` | sí |
+| `PERSONAS JURÍDICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA` | 134 | `False` | sí |
+| `PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA` | 20 | `False` | sí |
 
-Si se retoma, aplica la disciplina de `SUGERENCIAS.MD` 3.3: ampliar primero
-`tests/fixtures/bdns_filter_cases.json` con categorías reales de SNPSAP, y solo
+La rama de personas físicas nunca llega a decidir: cuando aparece, viene
+acompañada de "PYME", que resuelve antes. Los casos sintéticos en singular que
+exponen la incoherencia no existen en la fuente.
+
+**Nota sobre acentos:** no hacen falta variantes acentuadas. `_fold_text()` se
+aplica antes de comparar y los elimina; por eso el código escribe `pequena`,
+`fisica` y `economica`. Añadir `física` o `económica` sería código muerto.
+
+**Qué haría falta si se retoma**, por orden de importancia:
+
+1. **Decidir primero si esa rama debe existir para este perfil.** Kalfrisa es
+   una empresa mediana, o sea una persona jurídica: una convocatoria dirigida
+   solo a autónomos la excluye. Arreglar el plural haría que esas
+   convocatorias pasaran a contar como elegibles para empresa, un falso
+   positivo nuevo. Hoy el fallo actúa como red de seguridad accidental. Es una
+   decisión de negocio, no técnica.
+2. Si se conserva la rama, hacerla simétrica: `personas? fisicas?` en el
+   positivo y `"no desarrolla"` en el guardián (que cubre singular y plural
+   por ser prefijo), más `actividad(es) economica(s)` para el plural del
+   complemento.
+3. Documentar el contrato de entrada: la función espera **etiquetas cortas de
+   categoría** de SNPSAP, no texto libre. `re.search(r"empresas?", ...)`
+   es seguro sobre "GRAN EMPRESA", pero sobre el texto completo de unas bases
+   acertaría con cualquier mención incidental a "empresas", incluidas las de
+   las cláusulas de exclusión.
+
+Cualquiera de los tres, con la disciplina de `SUGERENCIAS.MD` 3.3: ampliar
+primero `tests/fixtures/bdns_filter_cases.json` con categorías reales, y solo
 después tocar la condición. El comportamiento actual está fijado en
 `tests/test_grant_radar_bdns_fields.py` para que un cambio no pase inadvertido.
+
+**No se hace durante las etapas de modularización a propósito:** cambiar la
+matriz altera qué convocatorias llegan a Haiku, y el recuento estable de 77
+vigentes es justamente el invariante con el que se verifica que cada
+extracción no rompió nada. Mezclarlo haría ambiguo ese control.
 
 ## 32. Novena ronda a 19/08/2026: conectores BOE/MITECO e IDAE
 

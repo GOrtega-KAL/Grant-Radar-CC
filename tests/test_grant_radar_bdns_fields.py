@@ -123,6 +123,24 @@ class CompanyEligibleTests(unittest.TestCase):
             ["Personas físicas que no desarrollan actividad económica"]
         ))
 
+    def test_the_four_real_snpsap_categories_are_classified_correctly(self):
+        """Las únicas categorías que la fuente entrega de verdad.
+
+        Recuento sobre los artefactos locales: 644, 264, 134 y 20 apariciones
+        respectivamente. Con datos reales la función acierta en las cuatro, y
+        por eso la incoherencia singular/plural de la prueba anterior no tiene
+        efecto observable (ver AGENTS.md 31.5).
+        """
+        casos = {
+            "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA": True,
+            "GRAN EMPRESA": True,
+            "PERSONAS JURÍDICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA": False,
+            "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA": False,
+        }
+        for categoria, esperado in casos.items():
+            with self.subTest(categoria=categoria):
+                self.assertEqual(_bdns_company_eligible([categoria]), esperado)
+
     def test_an_empty_list_is_not_a_yes(self):
         self.assertFalse(_bdns_company_eligible([]))
 

@@ -54,8 +54,9 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l`: 6.409
-líneas tras las cinco rondas del 19/08/2026 (9.199 al empezar el día; la cifra
+`import`). Recuento verificado con `wc -l`: 6.409 líneas
+en el script y 5.782 en los 24 módulos del paquete, tras las cinco rondas del
+19/08/2026 (el script tenía 9.199 al empezar el día; la cifra
 "8.835" de una nota anterior de este archivo estaba mal calculada — ver
 AGENTS.md sección 24, nota de discrepancia). Progresivamente movida a `grant_radar/` (paquete con nombre
 importable):
