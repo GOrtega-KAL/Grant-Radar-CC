@@ -686,7 +686,21 @@ exista todavía un segundo cliente real que lo justifique.
 
 ---
 
-## 4. Estado del backlog a 19/08/2026
+## 4. Estado a 19/08/2026 tras la sesión de modularización
+
+El punto 3.2 de este documento —"dividir el monolito en paquetes por
+responsabilidad"— pasó de un primer incremento a estar sustancialmente
+completo en una sola sesión de nueve rondas: `Grant-Radar-prueba.py` bajó de
+9.199 a 3.842 líneas (-58,2 %), el paquete `grant_radar/` tiene 34 módulos y
+8.847 líneas, los ocho conectores de fuentes están extraídos y las pruebas
+pasaron de 238 a 381. El balance completo y el orden ya medido de lo que
+queda están en `AGENTS.md` sección 39.
+
+Lo que sigue pendiente de 3.2 no es "más de lo mismo": la matriz de reglas
+(punto 3.3) merece su propia sesión, y `run_pipeline()` va el último por
+definición, porque hoy arrastraría todo lo demás.
+
+## 5. Estado del backlog a 19/08/2026
 
 Los hallazgos abiertos y las propuestas que han ido apareciendo durante las
 ocho rondas de modularización de hoy están reunidos, con su motivo y lo que

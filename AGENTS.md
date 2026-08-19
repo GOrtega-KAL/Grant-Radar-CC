@@ -2568,3 +2568,97 @@ eran nombres **importados** (`_fold_text`, `_parse_flexible_date`,
 suite completa tras cada extracción: señala el módulo y el nombre exactos en un
 segundo, mientras que la suite los presenta como errores en pruebas de otra
 cosa.
+
+## 39. Cierre de la sesión del 19/08/2026 y punto de partida para la siguiente
+
+Resumen de una sola sesión con nueve rondas de extracción (secciones 28-38),
+pensado para arrancar en frío sin releerlas.
+
+### 39.1. Qué cambió
+
+| Métrica | Al empezar | Al cerrar |
+|---|---|---|
+| `Grant-Radar-prueba.py` | 9.199 líneas, 68 funciones | **3.842 líneas, 33 funciones** (-58,2 %) |
+| Paquete `grant_radar/` | 12 módulos | **34 módulos, 8.847 líneas** |
+| Pruebas `unittest` | 238 | **381**, todas en verde |
+| Conectores fuera del script | 1 de 8 (BOA) | **8 de 8** |
+
+El paquete tiene ya más del doble de código que el script. Lo que queda en
+`Grant-Radar-prueba.py` es: credenciales y configuración, la matriz de reglas
+previa a Claude, la capa de análisis con Haiku, la segunda mitad del dominio de
+holds, `run_pipeline()` y `parse_args()`.
+
+### 39.2. Tres fallos reales encontrados por el camino
+
+Ninguno introducido por las extracciones; los tres estaban latentes y se
+corrigieron:
+
+1. **14 funciones de `deterministic_rules` sin reimportar** (sección 29). La
+   siguiente ejecución con Claude habría fallado con `NameError` **después de
+   pagar la primera llamada a Haiku**. Invisible para `py_compile` y para
+   `--no-claude`, y tapado además por el bloque de fusión de `APP` de los tests.
+2. **`title` inexistente en `fetch_idae_catalog()`** (sección 35), presente
+   desde el commit inicial. No estalla porque el catálogo IDAE lleva tiempo sin
+   aportar convocatorias; el día que aporte una, la fuente entera caería.
+3. **Tres fallos en `_extract_funding_budget()`** (sección 31.1), que perdían
+   el importe cuando la fuente escribía "2,5 millones **de** euros" o
+   "Dotación" con tilde, y truncaban "euros" a "eur" en el dashboard.
+
+De ahí nació `tests/test_grant_radar_script_names.py`, que ahora vigila que ni
+el script ni ningún módulo llamen a nombres que no tienen.
+
+### 39.3. Siguiente paso, ya medido
+
+Por orden, con el motivo de cada posición (detalle en 36.3 y en la sección 38):
+
+1. `save_discovery_audit()` (~117 líneas) → encaja en `grant_radar/audit.py`.
+   Es el candidato más limpio que queda.
+2. La capa de análisis con Haiku (~545 líneas: `_structured_claude_call()`,
+   `analyze_with_claude()`, `_build_compatible_analysis()`). Depende de
+   `_hard_out_of_scope()`, que es matriz de reglas; se puede inyectar como
+   predicado, igual que se hizo con ECCP (sección 35) y con la evidencia de
+   holds (sección 38).
+3. La segunda mitad del dominio de holds: resolución determinista, piloto y
+   replay. Necesitan reglas **y** Claude.
+4. La matriz de reglas, en sesión dedicada. Es la lógica más ajustada del
+   proyecto (siete niveles de precedencia, sección 4.1) y no debe encadenarse
+   detrás de otra tarea.
+5. `run_pipeline()` y `parse_args()`, al final por definición: hoy arrastrarían
+   todo lo anterior.
+
+### 39.4. Lo que está pendiente y no es refactor
+
+**El producto lleva sin actualizarse desde el 14/08/2026.** `convocatorias.json`
+es de esa fecha y la caché no contiene ninguna de las 77 convocatorias vigentes
+actuales: la previsión es de **77 análisis nuevos, 154 llamadas y $2,04 de coste
+central** ($1,39-$2,70), dentro de la barrera de $5. Una ejecución completa
+refrescaría el dashboard.
+
+Merece considerarse antes que seguir refactorizando, por dos razones: el valor
+del refactor ya está asegurado y verificado nueve veces, y una ejecución
+completa ejercitaría por primera vez la ruta de análisis con Claude, que es
+justamente la única que ninguna de las tres redes de seguridad cubre (36.5) y
+donde ya apareció uno de los tres fallos latentes.
+
+**Requiere autorización expresa del usuario**, como cualquier llamada a la API.
+
+### 39.5. Cómo verificar cualquier cambio, en orden
+
+1. `poetry run python -m unittest tests.test_grant_radar_script_names` —un
+   segundo, señala módulo y nombre exactos si falta un import.
+2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`.
+3. `poetry run python -m unittest discover -s tests` —381 pruebas, el número
+   solo puede subir.
+4. `poetry run python "Grant-Radar-prueba.py" --no-claude` —diez minutos, sin
+   coste. Los números de referencia estables, repetidos en nueve ejecuciones
+   consecutivas:
+
+   > 953 convocatorias detectadas · 33 duplicadas fusionadas · 39 tras el
+   > prefiltro inicial · **77 vigentes** (BDNS 47, Horizon 19, CDTI 5, ECCP 4,
+   > EEN 2, IDAE 1, BOE 1, BOA 0) · prefiltro común `retain=32, ambiguous=7,
+   > hold_manual=73, reject=841` · resolución automática de holds
+   > `ambiguous=38, reject=35, revisión manual=0` · previsión $2,0405.
+
+   Si un número se desvía, comprobar primero el estado de salud de las fuentes:
+   el 19/08 un `HTTP 429` de `boe.es` bajó BOE de 1 a 0 y las duplicadas de 33 a
+   31, y no era una regresión (secciones 35 y 37).

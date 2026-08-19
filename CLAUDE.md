@@ -7,6 +7,12 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
+> **Para retomar el trabajo, empezar por `AGENTS.md` sección 39**: cierra la
+> sesión del 19/08/2026, resume las nueve rondas de modularización de ese día,
+> el siguiente paso ya medido, lo que está pendiente y **los números de
+> referencia con los que se verifica cualquier cambio**. La sección 36 reúne
+> los hallazgos abiertos y las propuestas.
+
 ## Qué es esto
 
 Grant-Radar-CC monitoriza subvenciones para Kalfrisa (PYME industrial de
@@ -34,16 +40,31 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
 - `--no-claude` nunca debe llamar a Claude, modificar la caché IA, generar
   JSON ni publicar. Es el modo de validación por defecto tras un cambio de
   código: `poetry run python "Grant-Radar-prueba.py" --no-claude`.
-- Después de cualquier cambio en `Grant-Radar-prueba.py` o `grant_radar/`:
-  `poetry run python -m py_compile "Grant-Radar-prueba.py"` y
-  `poetry run python -m unittest discover -s tests` deben terminar en
-  verde antes de dar el cambio por bueno.
+- Después de cualquier cambio en `Grant-Radar-prueba.py` o `grant_radar/`,
+  en este orden (el detalle y los números de referencia, en AGENTS.md 39.5):
+  1. `poetry run python -m unittest tests.test_grant_radar_script_names`
+     —un segundo, señala módulo y nombre exactos si falta un import;
+  2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`;
+  3. `poetry run python -m unittest discover -s tests` —381 pruebas;
+  4. `poetry run python "Grant-Radar-prueba.py" --no-claude` al cerrar la
+     ronda, comparando contra los números de referencia.
 - Al extraer código a `grant_radar/`, comprobar que el script principal
   reimporta todo lo que sigue usando. `py_compile` no resuelve nombres y
   `--no-claude` no recorre la ruta de análisis, así que un `NameError` puede
   quedar latente hasta la primera ejecución de pago: pasó de verdad con
   catorce funciones de `deterministic_rules` (AGENTS.md sección 29).
   `tests/test_grant_radar_script_names.py` vigila justamente eso.
+- **Llamar a Claude/Haiku por API requiere SIEMPRE autorización expresa del
+  usuario**, sin excepción, porque cuesta dinero real. En cambio, el usuario
+  autorizó el 19/08/2026 a ejecutar `--no-claude` sin preguntar (tarda 10-15
+  min, no consume tokens) y a hacer `commit` y `push` a `Grant-Radar-CC` sin
+  pedir permiso, por ser esta una carpeta paralela de iteración.
+- Las ejecuciones `--no-claude` son gratis en tokens pero **no para las
+  fuentes públicas**: el 19/08, tras ocho ejecuciones en un día, `boe.es`
+  respondió con `HTTP 429`. Espaciarlas cuando se encadenen varias rondas.
+- Al cerrar cada ronda de trabajo, dejar `AGENTS.md`, `CLAUDE.md` y
+  `SUGERENCIAS.MD` al día para que otra sesión pueda arrancar en frío. Es
+  requisito del usuario, no una cortesía.
 - Este equipo tiene una variable de entorno `VIRTUAL_ENV` heredada que
   apunta al `.venv` de la carpeta original `Grant-Radar`, no al de esta
   copia. Antes de cualquier `poetry run`/`poetry install`/`poetry add` en
