@@ -674,6 +674,21 @@ exista todavía un segundo cliente real que lo justifique.
 
 ---
 
+## 4. Estado del backlog a 19/08/2026
+
+Los hallazgos abiertos y las propuestas que han ido apareciendo durante las
+ocho rondas de modularización de hoy están reunidos, con su motivo y lo que
+costaría retomarlos, en **`AGENTS.md` sección 36**: reglas de negocio que
+requieren una decisión de negocio antes que código, fragilidad frente a las
+fuentes, modularización pendiente con su orden ya medido, huecos de cobertura
+de pruebas contados uno a uno, y un mapa de qué caza y qué se le escapa a cada
+una de las tres redes de seguridad del proyecto.
+
+Se mantiene ahí y no aquí para que exista un solo índice: este documento es la
+evaluación externa del 17/08/2026 y su seguimiento; aquel es el estado vivo.
+
+---
+
 ## Nota de alcance
 
 Este documento es una evaluación externa de solo lectura, ampliada con una

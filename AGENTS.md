@@ -2401,6 +2401,7 @@ ambiguo.
 | 5 | Modo de verificación por fuente (algo como `--no-claude --source BOE`) para no recorrer las ocho cuando un cambio solo toca una | 35 |
 | 6 | Instantánea de la estructura esperada de cada fuente, comparada en cada ejecución, con historial | `SUGERENCIAS.MD` 3.4 punto 2 |
 | 7 | Ejecución periódica automatizada en `--no-claude` solo para vigilar salud de fuentes | `SUGERENCIAS.MD` 3.4 punto 3 |
+| 17 | Prueba de humo por conector: llamar a cada `fetch_*()` con el HTTP simulado y comprobar que recorre su camino sin `NameError` | 35. Habría cazado el `statistics` ausente en segundos en vez de en una recopilación de diez minutos |
 
 El 429 del 19/08/2026 tuvo cooldown de minutos: una sonda de una sola petición,
 7 minutos después, devolvió la página completa. No impone restricción horaria,
@@ -2417,7 +2418,31 @@ rondas el mismo día.
 | 15 | Orden de extracción medido (sección 37): holds BDNS → `save_discovery_audit` → capa Haiku → reglas → `run_pipeline()` | `run_pipeline()` arrastra hoy 64 de 68 funciones: va el último, no el siguiente |
 | 16 | Usar `node.end_lineno`, nunca `max(lineno)`, al cortar bloques por AST | Un `return (` multilínea pierde el paréntesis de cierre; ocurrió en la sección 37 |
 
-### 36.4. Otros, heredados de la evaluación externa
+### 36.4. Huecos de cobertura de pruebas, medidos
+
+Recuento sobre los 31 módulos del paquete a 19/08/2026:
+
+| # | Qué | Detalle |
+|---|---|---|
+| 18 | `grant_radar/coverage_watch.py` no tiene **ninguna** prueba | Ni un solo test menciona `build_recurrent_coverage_watch()` ni `probe_missing_recurrent_coverage()`. Es el mecanismo que avisa cuando un programa conocido deja de aparecer: una red de seguridad que no tiene red |
+| 19 | `build_keywords()` y `verificar_urls()` tampoco aparecen en ninguna prueba | Ambas afectan a lo que se publica: la primera al panel de palabras clave, la segunda a marcar URLs rotas |
+| 20 | Sin archivo de test dedicado, aunque sí cubiertos de forma indirecta vía `runpy`: `sources/bdns.py`, `sources/cdti.py`, `sources/een.py`, `sources/horizon_europe.py`, `public_output.py`, `versions.py` | No es urgente —el camino principal de cada uno se ejercita en `tests/test_grant_radar.py`—, pero un archivo propio con import estándar hace la regresión más legible y sobreviviría a retirar el patrón `runpy` (punto 10) |
+
+### 36.5. Mapa de las tres redes de seguridad, y qué se escapa de cada una
+
+Aprendido a base de que fallaran, en las secciones 29, 33 y 35:
+
+| Red | Qué caza | Qué se le escapa |
+|---|---|---|
+| `py_compile` | Sintaxis rota (cazó el corte mal calculado con `max(lineno)`, sección 37) | No resuelve nombres: un import olvidado pasa entero |
+| Suite `unittest` | Todo lo que el test toca de verdad, incluida la integridad de los módulos con `test_grant_radar_script_names.py` | Rutas que solo se ejecutan con red; y el bloque de fusión de `APP` puede **tapar** un `NameError` real del script inyectando el nombre que falta |
+| Ejecución `--no-claude` | El comportamiento real de punta a punta (cazó `statistics`, sección 35) | Tarda diez minutos, consume paciencia de las fuentes públicas y no recorre la ruta de análisis con Claude, que solo se ejercita pagando |
+
+De ahí que ninguna sustituya a las otras, y que las tres sean obligatorias al
+cerrar una ronda. El punto 17 propone tapar el hueco más caro: lo único que hoy
+solo detecta la ejecución real.
+
+### 36.6. Otros, heredados de la evaluación externa
 
 | # | Qué | Origen |
 |---|---|---|
