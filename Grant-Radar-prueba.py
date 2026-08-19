@@ -58,7 +58,6 @@ import calendar
 import copy
 import hashlib
 import io
-import ipaddress
 import json
 import time
 import logging
@@ -81,10 +80,12 @@ from pydantic import BaseModel, Field, ValidationError
 from playwright.sync_api import BrowserContext, TimeoutError as PlaywrightTimeoutError, sync_playwright
 from dotenv import load_dotenv  # Lee credenciales desde el archivo .env local (no versionado)
 
-# Utilidades de texto y fechas sin estado, extraídas a un módulo aparte
-# (ver grant_radar/parsing_helpers.py) para poder probarlas y leerlas sin
-# el resto del pipeline. Es el primer paso de la división en módulos
-# propuesta en SUGERENCIAS.MD (3.2); el resto del script sigue igual.
+# Módulos ya extraídos de este script al paquete `grant_radar/` (división en
+# curso propuesta en SUGERENCIAS.MD 3.2; historial por rondas en AGENTS.md,
+# secciones 21-28). Cada uno se puede leer y probar sin ejecutar el resto del
+# pipeline. Lo que sigue aquí es lo que todavía no se ha podido separar: los
+# siete conectores de fuentes que quedan, la matriz de reglas previa a Claude
+# y la orquestación de `run_pipeline()`.
 from grant_radar.cache import cache_key, cache_load, cache_save, source_hash
 from grant_radar.claude_schemas import (
     BdnsHoldFacts,
@@ -157,6 +158,27 @@ from grant_radar.parsing_helpers import (
     select_evidence_excerpt,
 )
 from grant_radar.audit import DISCOVERY_AUDIT, audit_exclusion
+from grant_radar.runtime_state import (
+    COVERAGE_WATCH_RESULTS,
+    IDENTITY_LANDINGS,
+    RUN_DIAGNOSTICS,
+    SOURCE_RUNTIME_METADATA,
+)
+from grant_radar.http_client import (
+    HTTP_USER_AGENT,
+    _http_get,
+    _is_safe_public_https_url,
+)
+from grant_radar.source_health import assess_web_inventory_health
+from grant_radar.call_text import (
+    CALL_LINK_TERMS,
+    FUNDING_CONTEXT_TERMS,
+    _extract_deadline_from_text,
+    _extract_funding_budget,
+    _external_links,
+    _funding_mechanism,
+    _official_call_identifier,
+)
 from grant_radar.bdns_scope import (
     _bdns_is_aragon_regional_administration,
     _bdns_is_prefilter_candidate,
@@ -250,97 +272,10 @@ logging.basicConfig(
     datefmt="%H:%M:%S"
 )
 log = logging.getLogger("grant_radar")
-SOURCE_RUNTIME_METADATA = {}
-IDENTITY_LANDINGS = []
-COVERAGE_WATCH_RESULTS = []
-RUN_DIAGNOSTICS = {}
+# SOURCE_RUNTIME_METADATA, IDENTITY_LANDINGS, COVERAGE_WATCH_RESULTS y
+# RUN_DIAGNOSTICS viven en grant_radar/runtime_state.py y se importan arriba:
+# son los mismos objetos mutables, no copias (ver ese módulo).
 
-
-def assess_web_inventory_health(
-    source: str,
-    *,
-    inventory_loaded: bool,
-    structure_ok: bool,
-    discovered_count: int,
-    detail_attempted: int = 0,
-    detail_loaded: int = 0,
-    dated_count: int = 0,
-    expected_min_inventory: int = 1,
-    expected_date_coverage: float = 0.0,
-    source_version: str = "",
-    max_version_age_days: int | None = None,
-) -> dict:
-    """Evalúa de forma común si un inventario web sigue siendo utilizable.
-
-    El control se ejecuta en cada recopilación de la fuente. No decide la
-    relevancia de las convocatorias: detecta caídas de acceso, roturas del HTML,
-    descensos anómalos de cobertura, fallos de fichas y calendarios obsoletos.
-    """
-    issues = []
-    critical = []
-    discovered_count = max(int(discovered_count or 0), 0)
-    detail_attempted = max(int(detail_attempted or 0), 0)
-    detail_loaded = max(int(detail_loaded or 0), 0)
-    dated_count = max(int(dated_count or 0), 0)
-    detail_load_rate = (
-        detail_loaded / detail_attempted if detail_attempted else None
-    )
-    date_coverage = dated_count / discovered_count if discovered_count else 0.0
-
-    if not inventory_loaded:
-        critical.append("inventory_unreachable")
-    elif not structure_ok:
-        critical.append("expected_structure_missing")
-    if discovered_count < expected_min_inventory:
-        critical.append("inventory_below_expected_minimum")
-    if detail_load_rate is not None:
-        if detail_load_rate < 0.5:
-            critical.append("detail_load_rate_below_50pct")
-        elif detail_load_rate < 0.9:
-            issues.append("detail_load_rate_below_90pct")
-    if expected_date_coverage and discovered_count:
-        if date_coverage < expected_date_coverage * 0.5:
-            critical.append("date_coverage_critically_low")
-        elif date_coverage < expected_date_coverage:
-            issues.append("date_coverage_below_expected")
-
-    version_age_days = None
-    if max_version_age_days is not None:
-        try:
-            version_dt = datetime.strptime(source_version, "%Y-%m-%d").date()
-            version_age_days = (datetime.now().date() - version_dt).days
-            if version_age_days > max_version_age_days:
-                issues.append("source_version_stale")
-        except (TypeError, ValueError):
-            issues.append("source_version_missing")
-
-    status = "unhealthy" if critical else "degraded" if issues else "healthy"
-    health = {
-        "source": source,
-        "checked_at": datetime.now(timezone.utc).isoformat(),
-        "status": status,
-        "issues": [*critical, *issues],
-        "inventory_loaded": bool(inventory_loaded),
-        "structure_ok": bool(structure_ok),
-        "discovered_count": discovered_count,
-        "expected_min_inventory": expected_min_inventory,
-        "detail_attempted": detail_attempted,
-        "detail_loaded": detail_loaded,
-        "detail_load_rate": (
-            round(detail_load_rate, 4) if detail_load_rate is not None else None
-        ),
-        "dated_count": dated_count,
-        "date_coverage": round(date_coverage, 4),
-        "source_version": source_version,
-        "version_age_days": version_age_days,
-    }
-    RUN_DIAGNOSTICS.setdefault("web_source_health", {})[source] = health
-    if status != "healthy":
-        log.warning(
-            f"{source}: estado de salud {status} "
-            f"({', '.join(health['issues']) or 'sin detalle'})"
-        )
-    return health
 
 # Vigilancia de regresiones para oportunidades estratégicas conocidas. Estas
 # reglas NO crean convocatorias ni alteran la relevancia: únicamente verifican
@@ -409,11 +344,6 @@ print("✓ Configuración cargada correctamente")
 # CELDA 3 — FUNCIONES AUXILIARES
 # ─────────────────────────────────────────────────────────────────────
 
-FUNDING_CONTEXT_TERMS = (
-    "subvencion", "ayuda", "grant", "funding", "financial support",
-    "open call", "convocatoria", "call for proposal", "cascade funding",
-    "lump sum", "cofinanciacion", "co-financing",
-)
 INNOVATION_CONTEXT_TERMS = (
     "innovacion", "innovation", "investigacion", "research and development",
     "i+d", "r&d", "demostracion", "demonstration", "pilot", "piloto",
@@ -494,20 +424,6 @@ def _explicit_profile_incompatibility(conv: dict) -> str | None:
             "pilotos ejecutados por empresas miembro."
         )
     return None
-
-
-def _funding_mechanism(text: str) -> str:
-    folded = _fold_text(text)
-    if any(term in folded for term in (
-        "cascade funding", "financial support to third parties", "fstp",
-        "financiacion en cascada", "open call for smes", "eurocluster",
-        "grant amount provided by", "funding provided by the project",
-        "third party support", "sub-grant", "subgrant",
-    )):
-        return "cascade"
-    if any(_term_present(folded, term) for term in FUNDING_CONTEXT_TERMS):
-        return "direct"
-    return "unknown"
 
 
 BDNS_NEW_ESTABLISHMENT_MIN_DAYS = 730
@@ -1360,27 +1276,6 @@ def _add_discovery_source(item: dict, source: str) -> None:
     item["discovery_sources"] = values
 
 
-def _official_call_identifier(text: str) -> str:
-    """Extrae identificadores europeos sin depender de una call concreta."""
-    folded_original = " ".join(str(text).split())
-    patterns = (
-        r"\b(?:HORIZON|DIGITAL|LIFE|SMP|CEF|EIC|EIT|INTERREG)-[A-Z0-9][A-Z0-9._-]{5,}\b",
-        r"/competitive-calls-cs/(\d+)\b",
-    )
-    for pattern in patterns:
-        match = re.search(pattern, folded_original, re.IGNORECASE)
-        if match:
-            return (match.group(1) if match.lastindex else match.group(0)).upper()
-    eurostars = re.search(
-        r"\bEUROSTARS(?:\s+3)?\s+CALL\s+(\d{1,3})\b",
-        folded_original,
-        re.IGNORECASE,
-    )
-    if eurostars:
-        return f"EUROSTARS-CALL-{eurostars.group(1)}"
-    return ""
-
-
 def build_recurrent_coverage_watch(items: list[dict]) -> list[dict]:
     """
     Comprueba identidades recurrentes sin introducir datos manuales en el radar.
@@ -1966,70 +1861,6 @@ print("✓ Funciones auxiliares cargadas")
 # ─────────────────────────────────────────────────────────────────────
 # CELDA 4 — FUNCIONES DE CONSULTA DE FUENTES
 # ─────────────────────────────────────────────────────────────────────
-
-HTTP_USER_AGENT = "GrantRadar-Kalfrisa/3.0 (+public-funding-monitor)"
-
-
-def _http_get(
-    url: str,
-    *,
-    params: dict | None = None,
-    session: requests.Session | None = None,
-    timeout: int = 30,
-    retries: int = 3,
-    headers: dict | None = None,
-    max_bytes: int | None = None,
-) -> requests.Response | None:
-    """GET público con reintentos acotados; nunca oculta un fallo como éxito."""
-    client = session or requests
-    request_headers = {
-        "User-Agent": HTTP_USER_AGENT,
-        "Accept-Language": "es,en;q=0.8",
-        **(headers or {}),
-    }
-    for attempt in range(retries):
-        try:
-            response = client.get(
-                url,
-                params=params,
-                headers=request_headers,
-                timeout=timeout,
-                allow_redirects=True,
-                stream=max_bytes is not None,
-            )
-            if response.status_code == 429 or response.status_code >= 500:
-                raise requests.HTTPError(f"HTTP {response.status_code}")
-            response.raise_for_status()
-            if max_bytes is not None:
-                declared_size = response.headers.get("content-length", "")
-                if declared_size.isdigit() and int(declared_size) > max_bytes:
-                    response.close()
-                    log.warning(
-                        f"Descarga omitida por tamaño ({declared_size} bytes): {url}"
-                    )
-                    return None
-                chunks = []
-                downloaded = 0
-                for chunk in response.iter_content(chunk_size=64 * 1024):
-                    if not chunk:
-                        continue
-                    downloaded += len(chunk)
-                    if downloaded > max_bytes:
-                        response.close()
-                        log.warning(
-                            f"Descarga interrumpida al superar {max_bytes} bytes: {url}"
-                        )
-                        return None
-                    chunks.append(chunk)
-                response._content = b"".join(chunks)
-                response._content_consumed = True
-            return response
-        except requests.RequestException as exc:
-            if attempt + 1 >= retries:
-                log.warning(f"HTTP agotado para {url}: {exc}")
-                return None
-            time.sleep(0.6 * (2 ** attempt))
-    return None
 
 
 def _sedia_meta(item: dict, key: str, default="") -> str:
@@ -4194,24 +4025,6 @@ BDNS_SEARCH_GROUPS = (
 )
 
 
-def _is_safe_public_https_url(value: str) -> bool:
-    """Limita las descargas documentales a HTTPS público; evita SSRF local."""
-    try:
-        parsed = urlparse(str(value or "").strip())
-    except ValueError:
-        return False
-    host = (parsed.hostname or "").strip("[]").casefold()
-    if parsed.scheme != "https" or not host:
-        return False
-    if host in {"localhost", "localhost.localdomain"} or host.endswith(".local"):
-        return False
-    try:
-        address = ipaddress.ip_address(host)
-    except ValueError:
-        return True
-    return address.is_global
-
-
 def _bdns_document_records(detail: dict) -> list[dict]:
     """Extrae enlaces oficiales de documentos/anuncios sin asumir claves fijas."""
     records = []
@@ -4696,38 +4509,6 @@ ECCP_DOMAIN_MAX_SECONDS = 20
 ECCP_DETAIL_WORKERS = 4
 ECCP_SELECTED_CRAWL_DEPTH = 1
 ECCP_MIN_EXPECTED_INVENTORY = 10
-CALL_LINK_TERMS = (
-    "call", "apply", "application", "funding", "grant", "guideline",
-    "eligibility", "convocatoria", "solicitud", "financiacion", "open-call",
-)
-
-
-def _extract_deadline_from_text(text: str) -> str:
-    folded = _fold_text(text)
-    for pattern in (
-        r"(?:deadline|closing date|fecha limite|cierre)\s*[:\-]?\s*([^\n|]{4,50})",
-        r"(?:apply by|applications? close|submit by)\s*[:\-]?\s*([^\n|]{4,50})",
-        r"(?:until|hasta)\s+([^\n|]{4,40})",
-    ):
-        match = re.search(pattern, folded, re.IGNORECASE)
-        if match:
-            parsed = _parse_flexible_date(match.group(1))
-            if parsed:
-                return parsed
-    return ""
-
-
-def _external_links(soup: BeautifulSoup, base_url: str) -> list[str]:
-    host = urlparse(base_url).netloc.casefold()
-    links = []
-    for anchor in soup.find_all("a", href=True):
-        href = urljoin(base_url, anchor.get("href", ""))
-        parsed = urlparse(href)
-        if parsed.scheme != "https" or not parsed.netloc or parsed.netloc.casefold() == host:
-            continue
-        if href not in links:
-            links.append(href)
-    return links
 
 
 def _parse_eccp_inventory_html(page_url: str, html: str) -> dict:
@@ -4767,21 +4548,6 @@ def _fetch_eccp_detail_html(url: str) -> tuple[str, str]:
         url, session=requests.Session(), timeout=20, retries=2,
     )
     return url, response.text if response is not None else ""
-
-
-def _extract_funding_budget(text: str) -> str:
-    """Recupera un presupuesto explícito sin inferir ni sumar importes."""
-    compact = " ".join(str(text or "").split())
-    number = r"\d(?:[\d\s.,]*\d)?"
-    amount = rf"(?:EUR|EURO|euros?|€)\s*{number}(?:\s*(?:million|millones?))?|{number}\s*(?:million|millones?)?\s*(?:EUR|EURO|euros?|€)"
-    for pattern in (
-        rf"(?:total available budget|total budget|overall budget|presupuesto total|dotacion)\s*(?:of|de)?\s*[:\-]?\s*({amount})",
-        rf"(?:budget|presupuesto)\s*[:\-]?\s*({amount})",
-    ):
-        match = re.search(pattern, compact, re.IGNORECASE)
-        if match:
-            return f"{match.group(1).strip().rstrip('.,;:')} total"
-    return "Ver convocatoria"
 
 
 def _robots_allows(url: str, session: requests.Session) -> bool:

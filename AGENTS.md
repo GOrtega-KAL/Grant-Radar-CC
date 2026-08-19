@@ -1802,3 +1802,97 @@ inviables, solo aplazadas:
 Cualquiera de las dos, si se retoma, debe seguir la disciplina ya vigente
 en `SUGERENCIAS.MD` 3.3: ampliar primero los fixtures de test con los casos
 reales encontrados, antes de tocar la lógica de `_bdns_pre_claude_gate()`.
+
+## 28. Sexta ronda de modularización a 19/08/2026: capa de infraestructura
+
+Punto de partida de la sesión: `Grant-Radar-prueba.py` con 9.199 líneas
+(`wc -l`) y 238 pruebas en verde. Antes de mover ningún conector nuevo se
+analizaron con AST las dependencias reales de los siete que quedaban, y el
+resultado cambió el orden de trabajo previsto.
+
+**Hallazgo 1 — repetir el patrón BOA conector a conector no funciona.** BOA se
+pudo extraer (sección 25) porque no dependía de nada del script. Los demás sí:
+
+| Conector | ~Líneas | Depende de (entonces en el script principal) |
+|---|---|---|
+| Horizon | 326 | `log`, `SOURCE_RUNTIME_METADATA`, 6 constantes propias |
+| EEN | 182 | + `_http_get`, `_funding_mechanism`, `_official_call_identifier`, `_extract_deadline_from_text`, `_external_links`, `FUNDING_CONTEXT_TERMS` |
+| BDNS | 459 | + `_bdns_descriptions/_codes/_company_eligible/_execution_days`, `_nace_section`, `_is_safe_public_https_url` |
+| BOE | 246 | + `PlaywrightBrowser`, `assess_web_inventory_health`, `_document_role`, `_programme_identity` |
+| IDAE (+catálogo) | 713 | + `IDENTITY_LANDINGS`, `RUN_DIAGNOSTICS`, `_extract_funding_budget` |
+| CDTI | 742 | + `enrich_with_official_documents` (arrastra la caché documental) |
+| ECCP | 377 | + `deterministic_prefilter` → la matriz de reglas, reservada |
+
+Es decir: lo que queda no es "mover siete bloques" sino extraer primero una
+capa fina de infraestructura compartida. Con ella fuera, seis de los siete
+conectores caen casi solos; ECCP queda deliberadamente al final porque lo único
+que le falta es la lógica que las secciones 24 y 27 reservan para su propia
+sesión.
+
+**Hallazgo 2 — el patrón de tests actual sobrevive a la extracción.**
+`tests/test_grant_radar.py` sustituye dependencias con
+`mock.patch.dict(APP["fn"].__globals__, {...})`. `__globals__` apunta al módulo
+**donde la función está definida**, así que en cuanto un conector se mueva a
+`grant_radar/sources/x.py` e importe `_http_get` a su propio espacio de nombres,
+ese mismo test seguirá funcionando sin tocarlo. Y `APP["fetch_x"]` sigue
+resolviendo mientras el script principal reimporte el nombre público. Esto
+abarata mucho las etapas siguientes.
+
+**Extraído en esta ronda (cuatro módulos, uno a uno y verificado entre medias):**
+
+- `grant_radar/runtime_state.py`: `SOURCE_RUNTIME_METADATA`, `IDENTITY_LANDINGS`,
+  `COVERAGE_WATCH_RESULTS` y `RUN_DIAGNOSTICS`. Mismo patrón que `audit.py`:
+  objetos mutables compartidos, no copias. Se comprobó antes de mover que las
+  cuatro se asignan una sola vez en todo el script y que el resto son
+  mutaciones (`.clear()`, `.append()`, `d[k] = v`); reasignar cualquiera de
+  ellas dentro de una función rompería el enlace sin fallar de forma visible,
+  y así queda documentado en el módulo.
+- `grant_radar/http_client.py`: `HTTP_USER_AGENT`, `_http_get()` y
+  `_is_safe_public_https_url()`. `ipaddress` dejó de usarse en el script
+  principal y se retiró de sus imports.
+- `grant_radar/source_health.py`: `assess_web_inventory_health()`. Tras extraer
+  `runtime_state` solo dependía de `RUN_DIAGNOSTICS` y `log`.
+- `grant_radar/call_text.py`: helpers de texto de convocatoria compartidos entre
+  fuentes — `FUNDING_CONTEXT_TERMS`, `CALL_LINK_TERMS`, `_funding_mechanism()`,
+  `_official_call_identifier()`, `_extract_deadline_from_text()`,
+  `_external_links()` y `_extract_funding_budget()`. Módulo propio y no
+  `parsing_helpers.py` porque ese es deliberadamente texto/fechas puro y
+  `_external_links()` necesita BeautifulSoup.
+
+**Verificación:** `Grant-Radar-prueba.py` bajó de 9.199 a 8.963 líneas (-2,6 %;
+recuento con `wc -l`). 283 pruebas `unittest` (238 + 45 nuevas en cuatro
+archivos con import estándar) y `py_compile` en verde tras cada extracción.
+
+La ejecución `--no-claude` de cierre (19/08/2026, 05:53-06:04 UTC, 617,97 s de
+recopilación, código de salida 0) devolvió **exactamente el mismo resultado que
+la referencia de la sección 26**, fuente por fuente:
+
+| Fuente | Sección 26 (18/08) | Tras esta ronda (19/08) |
+|---|---|---|
+| BDNS | 47 | 47 |
+| Horizon Europe | 19 | 19 |
+| CDTI | 5 | 5 |
+| ECCP | 4 | 4 |
+| EEN | 2 | 2 |
+| IDAE | 1 | 1 |
+| BOE / MITECO | 1 | 1 |
+| BOA Aragón | 0 | 0 |
+| **Total vigentes** | **77** | **77** |
+
+También coincide la previsión de coste ($2,0405 central, 154 llamadas) y las
+cuatro fuentes con control de salud siguen `healthy`. Las diferencias están solo
+en el volumen bruto —953 convocatorias detectadas frente a 948, y 904 candidatas
+BDNS frente a 899—, variación normal de datos reales entre dos días distintos.
+Invariantes confirmadas: no se llamó a Claude, no se modificó la caché IA
+(`grant_radar_cache.json` sigue con fecha 14/08) y no se generó ni publicó
+`convocatorias.json`.
+
+Nota de comportamiento observada al escribir los tests, **no** corregida por
+quedar fuera del alcance de una extracción: `_extract_funding_budget()` no
+reconoce "2,5 millones **de** euros" (la preposición intermedia rompe el
+patrón) aunque sí reconoce "2,5 millones EUR". Queda fijado como test explícito
+en `tests/test_grant_radar_call_text.py` para que la limitación sea visible.
+
+Sigue pendiente: `browser.py` (`PlaywrightBrowser`), `dedup.py` (identidad y
+deduplicación documental), los siete conectores, `documents.py` (enriquecimiento
+documental, necesario para CDTI) y `pipeline.py`.

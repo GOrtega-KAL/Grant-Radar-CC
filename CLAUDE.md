@@ -44,14 +44,14 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   PowerShell: `$env:VIRTUAL_ENV = $null` primero, o `poetry` puede ejecutar
   silenciosamente contra el entorno equivocado.
 
-## Estructura actual (18/08/2026)
+## Estructura actual (19/08/2026)
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l`: 9.426 líneas antes de la ronda
-de hoy, 9.202 después (la cifra "8.835" de una nota anterior de este
-archivo estaba mal calculada — ver AGENTS.md sección 24, nota de
-discrepancia). Progresivamente movida a `grant_radar/` (paquete con nombre
+`import`). Recuento verificado con `wc -l`: 8.963
+líneas tras la ronda del 19/08/2026 (9.199 antes; la cifra "8.835" de una nota
+anterior de este archivo estaba mal calculada — ver AGENTS.md sección 24, nota
+de discrepancia). Progresivamente movida a `grant_radar/` (paquete con nombre
 importable):
 
 | Módulo | Contiene |
@@ -68,6 +68,10 @@ importable):
 | `audit.py` | `DISCOVERY_AUDIT` y `audit_exclusion()` (usado por las 8 fuentes) |
 | `sources/boa_aragon.py` | Conector BOA Aragón (señal secundaria/backup, ver sección 26) |
 | `bdns_scope.py` | Filtro de candidatas BDNS: palabras clave + administración autonómica de Aragón |
+| `runtime_state.py` | Estado compartido de la ejecución (metadatos por fuente, diagnósticos, landings, coverage watch) |
+| `http_client.py` | `_http_get()` con reintentos y límite de bytes + `_is_safe_public_https_url()` |
+| `source_health.py` | `assess_web_inventory_health()`: control común de salud de inventarios web |
+| `call_text.py` | Texto de convocatoria compartido: mecanismo, identificador oficial, deadline, presupuesto, enlaces externos |
 
 El descubrimiento automático principal de convocatorias autonómicas de
 Aragón ya no es el conector BOA (su scraper en vivo no encuentra nada y su
@@ -77,14 +81,18 @@ ventana de `convocatorias/ultimas` ampliada a ~79 días. Detalle completo de
 la investigación y de los números reales de verificación en AGENTS.md
 sección 26.
 
-Pendiente: el resto de `sources/` (7 conectores: Horizon, CDTI, IDAE,
-BOE/MITECO, ECCP, EEN, BDNS — BOA ya se extrajo como prueba, ver AGENTS.md
-sección 25) y `pipeline.py` (`run_pipeline()`). El filtro previo a Claude
+Pendiente: los siete conectores que quedan (Horizon, CDTI, IDAE, BOE/MITECO,
+ECCP, EEN, BDNS — BOA ya se extrajo, ver AGENTS.md sección 25), más
+`browser.py` (`PlaywrightBrowser`), `dedup.py` (identidad/deduplicación),
+`documents.py` (enriquecimiento documental, que bloquea CDTI) y `pipeline.py`
+(`run_pipeline()`). El plan por etapas y el orden de dependencias están en
+AGENTS.md sección 28. El filtro previo a Claude
 (`_bdns_pre_claude_gate()`, `deterministic_prefilter()`, sección 4.1 de
 `AGENTS.md`) sigue deliberadamente sin extraer: es la lógica más compleja y
-ajustada del proyecto: no encadenarla detrás de otra tarea sin que el
-usuario lo pida explícitamente. Detalle completo de cada ronda en
-`AGENTS.md`, secciones 21-26, y en `SUGERENCIAS.MD` (3.2/3.3).
+ajustada del proyecto; no encadenarla detrás de otra tarea sin que el usuario
+lo pida explícitamente. Es también lo único que le falta a ECCP, por eso ese
+conector va el último. Detalle completo de cada ronda en `AGENTS.md`,
+secciones 21-28, y en `SUGERENCIAS.MD` (3.2/3.3).
 
 **Auditoría del embudo determinista (18/08/2026, sin cambios de código):**
 tras ampliar la ventana de BDNS, se comprobó con datos reales si

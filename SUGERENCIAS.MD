@@ -383,6 +383,27 @@ ofrecería git.
    tienen lógica propia de profundidad de rastreo — cada uno necesitará el
    mismo análisis de dependencias antes de moverse, no una repetición
    mecánica del mismo patrón.
+   **[Sexto incremento, 19/08/2026 — la capa de infraestructura]** Antes de
+   mover otro conector se analizaron con AST las dependencias reales de los
+   siete que quedaban, y el resultado reordenó el trabajo: repetir el patrón
+   BOA uno a uno no era posible porque seis de los siete dependen de piezas
+   compartidas que seguían en el script (estado de ejecución, cliente HTTP,
+   control de salud, navegador, helpers de texto, identidad documental). Se
+   extrajo por eso la mitad de esa capa: `grant_radar/runtime_state.py`
+   (`SOURCE_RUNTIME_METADATA`, `IDENTITY_LANDINGS`, `COVERAGE_WATCH_RESULTS`,
+   `RUN_DIAGNOSTICS`, con el patrón de objetos mutables compartidos de
+   `audit.py`), `grant_radar/http_client.py` (`_http_get`,
+   `_is_safe_public_https_url`, `HTTP_USER_AGENT`),
+   `grant_radar/source_health.py` (`assess_web_inventory_health`) y
+   `grant_radar/call_text.py` (mecanismo de financiación, identificador oficial
+   europeo, deadline y presupuesto en prosa, enlaces externos). Hallazgo
+   colateral que abarata las etapas siguientes: los tests que sustituyen
+   dependencias con `mock.patch.dict(APP["fn"].__globals__, ...)` siguen
+   funcionando tras mover una función a un módulo, porque `__globals__` apunta
+   al módulo donde la función queda definida. `Grant-Radar-prueba.py` bajó de
+   9.199 a 8.963 líneas; 283 pruebas (238 + 45) y `py_compile` en verde tras
+   cada extracción, más un `--no-claude` completo al cerrar la ronda. Detalle y
+   plan por etapas del resto en AGENTS.md sección 28.
 3. Hacerlo de forma incremental y verificada: extraer un módulo, ejecutar
    `py_compile` y la suite completa de `unittest`, confirmar comportamiento
    idéntico con `--no-claude`, y solo entonces continuar con el siguiente
