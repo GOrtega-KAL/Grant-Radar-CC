@@ -54,8 +54,8 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l`: 7.977
-líneas tras las tres rondas del 19/08/2026 (9.199 al empezar el día; la cifra
+`import`). Recuento verificado con `wc -l`: 6.976
+líneas tras las cuatro rondas del 19/08/2026 (9.199 al empezar el día; la cifra
 "8.835" de una nota anterior de este archivo estaba mal calculada — ver
 AGENTS.md sección 24, nota de discrepancia). Progresivamente movida a `grant_radar/` (paquete con nombre
 importable):
@@ -82,6 +82,8 @@ importable):
 | `sources/een.py` | Conector EEN: noticias de financiación y perfiles I+D con call verificable |
 | `browser.py` | `PlaywrightBrowser`: sesión Chromium única de las fuentes sin API |
 | `dedup.py` | Identidad de programa, rol documental y consolidación de duplicados |
+| `sources/idae.py` | Conector IDAE: fichas de ayudas y catálogo por ámbito |
+| `sources/boe_miteco.py` | Conector BOE/MITECO: extractos de convocatoria en ayudas.php |
 
 Comportamientos concretos ya verificados con código (identidad de programa,
 extracción de presupuesto, bloqueo por ámbito del navegador, y por qué el
@@ -97,8 +99,8 @@ ventana de `convocatorias/ultimas` ampliada a ~79 días. Detalle completo de
 la investigación y de los números reales de verificación en AGENTS.md
 sección 26.
 
-Pendiente: cinco conectores (CDTI, IDAE, BOE/MITECO, ECCP, BDNS — BOA,
-Horizon y EEN ya extraídos, ver AGENTS.md secciones 25, 29 y 30), más
+Pendiente: tres conectores (CDTI, ECCP, BDNS — BOA, Horizon, EEN, IDAE y
+BOE/MITECO ya extraídos, ver AGENTS.md secciones 25, 29, 30 y 32), más
 `documents.py` (enriquecimiento documental, que bloquea CDTI) y `pipeline.py`
 (`run_pipeline()`). El plan por etapas y el orden de dependencias están en
 AGENTS.md sección 28. El filtro previo a Claude

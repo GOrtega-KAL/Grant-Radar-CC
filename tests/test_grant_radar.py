@@ -32,8 +32,9 @@ APP = runpy.run_path(str(ROOT / "Grant-Radar-prueba.py"))
 from grant_radar import cache as _cache_module
 from grant_radar import deterministic_rules as _rules_module
 from grant_radar.sources import een as _een_module
+from grant_radar.sources import idae as _idae_module
 
-for _module in (_cache_module, _rules_module, _een_module):
+for _module in (_cache_module, _rules_module, _een_module, _idae_module):
     for _name in dir(_module):
         if not _name.startswith("_") or _name.startswith("__"):
             continue

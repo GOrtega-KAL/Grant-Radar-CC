@@ -429,6 +429,14 @@ ofrecería git.
    incluidas las de `browser.py` sin arrancar Chromium) y un `--no-claude` con
    las mismas 33 duplicadas fusionadas y las mismas 77 vigentes.
    `Grant-Radar-prueba.py`: 8.403 → 7.977 líneas.
+   **[Noveno incremento, 19/08/2026 — conectores IDAE y BOE/MITECO]** Primeros
+   conectores que usan la infraestructura completa (navegador, control de salud
+   e identidad documental, ya todos en módulos): `grant_radar/sources/idae.py`
+   y `grant_radar/sources/boe_miteco.py`, 1.090 líneas entre los dos. Tests
+   nuevos complementarios a los existentes: los helpers de catálogo de IDAE y,
+   para BOE, el modo de fallo real (inventario inalcanzable, marcado cambiado,
+   convocatoria sin plazo). 331 pruebas y un `--no-claude` idéntico otra vez.
+   `Grant-Radar-prueba.py`: 7.977 → 6.976 líneas, -24,2 % acumulado en el día.
 3. Hacerlo de forma incremental y verificada: extraer un módulo, ejecutar
    `py_compile` y la suite completa de `unittest`, confirmar comportamiento
    idéntico con `--no-claude`, y solo entonces continuar con el siguiente

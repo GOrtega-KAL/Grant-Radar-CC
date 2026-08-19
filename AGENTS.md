@@ -2080,3 +2080,52 @@ El reverso de esa comodidad está en la sección 29: ese mismo bloque de fusión
 puede tapar un `NameError` real. Por eso existe
 `tests/test_grant_radar_script_names.py`, que carga el script con globals
 limpios.
+
+## 32. Novena ronda a 19/08/2026: conectores BOE/MITECO e IDAE
+
+Etapa 4 del plan de la sección 28, y la primera que se apoya en la
+infraestructura completa: ambos conectores usan navegador, control de salud e
+identidad documental, ya todos en módulos. Tras la sección 30 su única
+dependencia del script principal era `log`.
+
+- `grant_radar/sources/idae.py` (802 líneas): los dos inventarios de la misma
+  casa. `fetch_idae()` recorre fichas de ayudas y financiación con Chromium,
+  recupera fechas de la propia ficha y recoge documentos oficiales enlazados,
+  registrando en `IDENTITY_LANDINGS` las landings de programa que encuentra;
+  `fetch_idae_catalog()` lee el catálogo por ámbito (estatal, Aragón y
+  Zaragoza) e incorpora solo entradas con convocatoria abierta verificable.
+- `grant_radar/sources/boe_miteco.py` (288 líneas): `fetch_boe()`, la vía por
+  la que entran convocatorias estatales sin inventario web propio utilizable y
+  los extractos oficiales de programas que también llegan por IDAE o BDNS.
+- `tests/test_grant_radar.py`: el bloque de fusión de `APP` incorpora el módulo
+  IDAE, por `_parse_idae_inventory_html()`. Es la tercera vez que hace falta y
+  siempre por el mismo motivo: un test usa un helper privado que el script
+  principal no reimporta.
+
+Dos archivos de test nuevos, deliberadamente complementarios a lo que ya
+cubría `tests/test_grant_radar.py`: para IDAE, los helpers del catálogo y de
+documentos oficiales (ámbito, rango documental, filtrado de enlaces), que solo
+se ejercitaban de forma indirecta; para BOE, el modo de fallo real —inventario
+inalcanzable, marcado cambiado, convocatoria sin plazo confirmado—, porque el
+caso positivo ya estaba probado y el parser de esta fuente ya se rompió una vez
+por un cambio de marcado.
+
+**Verificación:** `Grant-Radar-prueba.py` bajó de 7.977 a 6.976 líneas (-12,5 %
+en esta ronda; -24,2 % acumulado en el día desde 9.199). 331 pruebas
+`unittest` (317 + 14) y `py_compile` en verde. La ejecución `--no-claude` de
+cierre (568,97 s, código 0) repite de nuevo los mismos números: 953
+convocatorias detectadas, 33 duplicadas fusionadas, 39 tras el prefiltro
+inicial, 77 vigentes con idéntico desglose, mismo prefiltro común y misma
+previsión de coste. Las cuatro fuentes con control de salud siguen `healthy`,
+con los inventarios esperados (ECCP 227, BOE 179, IDAE 97, CDTI 14).
+
+Nota de comportamiento observada al escribir los tests, sin corregir por quedar
+fuera del alcance de una extracción: en `_idae_catalog_document_rank()`, un
+título como "Modificación de la convocatoria" suma por nombrar la convocatoria
+(+4) y resta por ser modificación (-2), así que queda por encima de un
+documento neutro. Es coherente —habla de la convocatoria— y en cualquier caso
+pierde frente al extracto real, que es lo que decide. Fijado como test
+explícito.
+
+Sigue pendiente: los conectores BDNS y CDTI (este último tras `documents.py`),
+ECCP —que solo espera por `deterministic_prefilter()`— y `pipeline.py`.
