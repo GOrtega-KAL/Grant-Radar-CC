@@ -404,6 +404,20 @@ ofrecería git.
    9.199 a 8.963 líneas; 283 pruebas (238 + 45) y `py_compile` en verde tras
    cada extracción, más un `--no-claude` completo al cerrar la ronda. Detalle y
    plan por etapas del resto en AGENTS.md sección 28.
+   **[Séptimo incremento, 19/08/2026 — primeros conectores sobre la capa
+   nueva]** Con la infraestructura fuera, se extrajeron
+   `grant_radar/sources/horizon_europe.py` y `grant_radar/sources/een.py`, los
+   dos que ya no dependían de nada más. Confirmado en la práctica que los tests
+   con `mock.patch.dict(APP["fn"].__globals__, ...)` no necesitan cambios; solo
+   hubo que añadir el módulo EEN al bloque de fusión de `APP`, porque siete
+   tests usan un helper privado que el script no reimporta. La ronda destapó
+   además un `NameError` latente desde el tercer incremento: catorce funciones
+   de `deterministic_rules` que `_build_compatible_analysis()` llamaba sin que
+   el script las importara, invisible para `py_compile` y para `--no-claude`, y
+   tapado sin querer por el propio bloque de fusión de `APP`. Corregido y
+   cubierto con `tests/test_grant_radar_script_names.py`. 295 pruebas y un
+   `--no-claude` con resultados idénticos (77 vigentes, mismo desglose).
+   `Grant-Radar-prueba.py`: 8.963 → 8.403 líneas.
 3. Hacerlo de forma incremental y verificada: extraer un módulo, ejecutar
    `py_compile` y la suite completa de `unittest`, confirmar comportamiento
    idéntico con `--no-claude`, y solo entonces continuar con el siguiente

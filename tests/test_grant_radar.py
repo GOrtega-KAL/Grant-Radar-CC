@@ -17,16 +17,23 @@ ROOT = Path(__file__).resolve().parents[1]
 APP = runpy.run_path(str(ROOT / "Grant-Radar-prueba.py"))
 
 # Estas funciones vivían en Grant-Radar-prueba.py y se probaban vía
-# APP["nombre"]; ahora viven en grant_radar/cache.py y
-# grant_radar/deterministic_rules.py (ver SUGERENCIAS.MD 3.2). El script
-# principal solo las reimporta si las usa él mismo, así que no todas quedan
-# en APP tras el runpy. Se añaden aquí para no reescribir los ~12 sitios de
-# este archivo que ya las buscan por ese nombre; los tests nuevos de esos
-# módulos (test_grant_radar_*.py) las importan de forma estándar.
+# APP["nombre"]; ahora viven en módulos de grant_radar/ (ver SUGERENCIAS.MD
+# 3.2). El script principal solo reimporta las que usa él mismo —los nombres
+# públicos de cada conector, por ejemplo, pero no sus helpers privados—, así
+# que no todas quedan en APP tras el runpy. Se añaden aquí para no reescribir
+# los sitios de este archivo que ya las buscan por ese nombre; los tests
+# nuevos de esos módulos (test_grant_radar_*.py) las importan de forma
+# estándar.
+#
+# Ojo: los tests que sustituyen dependencias con
+# `mock.patch.dict(APP["fn"].__globals__, ...)` siguen funcionando sin cambios
+# tras mover una función a un módulo, porque `__globals__` apunta al módulo
+# donde queda definida, no al script principal.
 from grant_radar import cache as _cache_module
 from grant_radar import deterministic_rules as _rules_module
+from grant_radar.sources import een as _een_module
 
-for _module in (_cache_module, _rules_module):
+for _module in (_cache_module, _rules_module, _een_module):
     for _name in dir(_module):
         if not _name.startswith("_") or _name.startswith("__"):
             continue

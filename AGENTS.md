@@ -1896,3 +1896,66 @@ en `tests/test_grant_radar_call_text.py` para que la limitación sea visible.
 Sigue pendiente: `browser.py` (`PlaywrightBrowser`), `dedup.py` (identidad y
 deduplicación documental), los siete conectores, `documents.py` (enriquecimiento
 documental, necesario para CDTI) y `pipeline.py`.
+
+## 29. Séptima ronda a 19/08/2026: conectores Horizon y EEN, y un NameError latente
+
+Primera etapa de conectores apoyada en la capa de infraestructura de la sección
+28. Ambos se movieron sin cambiar una línea de su lógica.
+
+- `grant_radar/sources/horizon_europe.py`: `fetch_horizon_europe()`,
+  `_fetch_horizon_rss_fallback()`, `_sedia_meta()`, `_sedia_values()` y las seis
+  constantes `_SEDIA_*`/`_HORIZON_*`. Tras la sección 28 su única dependencia
+  del script era `log`.
+- `grant_radar/sources/een.py`: `fetch_een_funding()`, `_een_listing_params()`,
+  `_een_profile_call_links()`, `_een_call_from_page()` y las constantes `EEN_*`.
+  Usa cinco helpers de `call_text.py` y `_http_get()`, ya extraídos.
+- `ENTIDADES_CANONICAS` se había arrastrado sin querer dentro de `een.py` al
+  cortar por rango de texto: no es del conector (la usa `post_procesar_texto()`
+  en la normalización de entidades) y se devolvió al script principal. Lección
+  para las etapas siguientes: el análisis AST da las funciones del grupo, pero
+  el corte por rango puede llevarse constantes vecinas; revisar siempre los
+  nombres de nivel superior del módulo nuevo antes de dar por buena la
+  extracción.
+- `tests/test_grant_radar.py`: el bloque de fusión de `APP` incorpora ahora
+  `grant_radar.sources.een`, porque siete tests usan `_een_call_from_page()`,
+  un helper privado que el script no reimporta. Confirmado en la práctica el
+  hallazgo 2 de la sección 28: los tests que sustituyen dependencias con
+  `mock.patch.dict(APP["fn"].__globals__, ...)` no necesitaron ningún cambio.
+
+**Fallo latente encontrado y corregido (anterior a esta sesión).**
+`_build_compatible_analysis()` llamaba a catorce funciones de
+`grant_radar/deterministic_rules.py` —`_correct_*`, `_enforce_*`,
+`_hard_ineligibility`, `_derive_priority`, `_review_reasons`...— que el script
+principal **nunca reimportó** al extraerlas en la sección 23. Una ejecución real
+con Claude habría fallado con `NameError` justo después de pagar la primera
+llamada a Haiku. Estaba enmascarado por dos motivos independientes:
+
+1. `--no-claude` no ejecuta esa ruta, así que ninguna de las validaciones
+   reales de las secciones 23-28 pudo detectarlo.
+2. El bloque de fusión de `APP` de `tests/test_grant_radar.py` inyecta los
+   nombres que faltan en los propios globals del script —`runpy.run_path()`
+   devuelve ese diccionario, no una copia—, de modo que reparaba el fallo justo
+   antes de probarlo.
+
+Corregido añadiendo las catorce al import existente. Para que no vuelva a
+ocurrir en las etapas siguientes, `tests/test_grant_radar_script_names.py`
+(nuevo) carga el script con `runpy` en unos globals limpios, sin la fusión, y
+comprueba que ningún nombre llamado falte, encadenando ámbitos para no
+confundir parámetros de funciones anidadas, hermanas anidadas ni recursión.
+Incluye seis casos sintéticos que demuestran que el detector sí falla cuando
+debe: una prueba que no puede fallar no protege de nada.
+
+**Verificación:** `Grant-Radar-prueba.py` bajó de 8.963 a 8.403 líneas (-6,2 %
+en esta ronda; -8,7 % acumulado en el día desde 9.199). 295 pruebas `unittest`
+(287 + 8) y `py_compile` en verde. La ejecución `--no-claude` de cierre
+(547,30 s, código 0) volvió a dar exactamente los mismos números que la de la
+sección 28 y que la referencia de la sección 26: 953 convocatorias detectadas,
+39 tras el prefiltro inicial, 77 vigentes con idéntico desglose por fuente
+(BDNS 47, Horizon 19, CDTI 5, ECCP 4, EEN 2, IDAE 1, BOE 1, BOA 0), mismo
+prefiltro común (retain=32, ambiguous=7, hold_manual=73, reject=841) y misma
+previsión de coste ($2,0405). Sin llamadas a Claude, sin tocar la caché IA, sin
+generar ni publicar `convocatorias.json`.
+
+Sigue pendiente: `browser.py` (`PlaywrightBrowser`), `dedup.py`, los conectores
+BOE, IDAE, BDNS y CDTI (este último tras `documents.py`), ECCP —que solo espera
+por `deterministic_prefilter()`— y `pipeline.py`.

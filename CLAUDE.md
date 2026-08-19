@@ -38,6 +38,12 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   `poetry run python -m py_compile "Grant-Radar-prueba.py"` y
   `poetry run python -m unittest discover -s tests` deben terminar en
   verde antes de dar el cambio por bueno.
+- Al extraer código a `grant_radar/`, comprobar que el script principal
+  reimporta todo lo que sigue usando. `py_compile` no resuelve nombres y
+  `--no-claude` no recorre la ruta de análisis, así que un `NameError` puede
+  quedar latente hasta la primera ejecución de pago: pasó de verdad con
+  catorce funciones de `deterministic_rules` (AGENTS.md sección 29).
+  `tests/test_grant_radar_script_names.py` vigila justamente eso.
 - Este equipo tiene una variable de entorno `VIRTUAL_ENV` heredada que
   apunta al `.venv` de la carpeta original `Grant-Radar`, no al de esta
   copia. Antes de cualquier `poetry run`/`poetry install`/`poetry add` en
@@ -48,10 +54,10 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l`: 8.963
-líneas tras la ronda del 19/08/2026 (9.199 antes; la cifra "8.835" de una nota
-anterior de este archivo estaba mal calculada — ver AGENTS.md sección 24, nota
-de discrepancia). Progresivamente movida a `grant_radar/` (paquete con nombre
+`import`). Recuento verificado con `wc -l`: 8.403
+líneas tras las dos rondas del 19/08/2026 (9.199 al empezar el día; la cifra
+"8.835" de una nota anterior de este archivo estaba mal calculada — ver
+AGENTS.md sección 24, nota de discrepancia). Progresivamente movida a `grant_radar/` (paquete con nombre
 importable):
 
 | Módulo | Contiene |
@@ -72,6 +78,8 @@ importable):
 | `http_client.py` | `_http_get()` con reintentos y límite de bytes + `_is_safe_public_https_url()` |
 | `source_health.py` | `assess_web_inventory_health()`: control común de salud de inventarios web |
 | `call_text.py` | Texto de convocatoria compartido: mecanismo, identificador oficial, deadline, presupuesto, enlaces externos |
+| `sources/horizon_europe.py` | Conector Horizon Europe (SEDIA Search API) |
+| `sources/een.py` | Conector EEN: noticias de financiación y perfiles I+D con call verificable |
 
 El descubrimiento automático principal de convocatorias autonómicas de
 Aragón ya no es el conector BOA (su scraper en vivo no encuentra nada y su
@@ -81,8 +89,8 @@ ventana de `convocatorias/ultimas` ampliada a ~79 días. Detalle completo de
 la investigación y de los números reales de verificación en AGENTS.md
 sección 26.
 
-Pendiente: los siete conectores que quedan (Horizon, CDTI, IDAE, BOE/MITECO,
-ECCP, EEN, BDNS — BOA ya se extrajo, ver AGENTS.md sección 25), más
+Pendiente: cinco conectores (CDTI, IDAE, BOE/MITECO, ECCP, BDNS — BOA,
+Horizon y EEN ya extraídos, ver AGENTS.md secciones 25 y 29), más
 `browser.py` (`PlaywrightBrowser`), `dedup.py` (identidad/deduplicación),
 `documents.py` (enriquecimiento documental, que bloquea CDTI) y `pipeline.py`
 (`run_pipeline()`). El plan por etapas y el orden de dependencias están en
