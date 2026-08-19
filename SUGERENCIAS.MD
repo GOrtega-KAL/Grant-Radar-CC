@@ -437,6 +437,16 @@ ofrecería git.
    para BOE, el modo de fallo real (inventario inalcanzable, marcado cambiado,
    convocatoria sin plazo). 331 pruebas y un `--no-claude` idéntico otra vez.
    `Grant-Radar-prueba.py`: 7.977 → 6.976 líneas, -24,2 % acumulado en el día.
+   **[Décimo incremento, 19/08/2026 — conector BDNS]** El caso que exigía más
+   cuidado: BDNS aporta 899 de las 953 convocatorias detectadas y comparte seis
+   primitivas de lectura de campos con la matriz de reglas previa a Claude. Se
+   resolvió extrayéndolas a `grant_radar/bdns_fields.py`, que el script
+   reimporta, de modo que `grant_radar/sources/bdns.py` salió sin tocar una
+   línea de esa matriz. Dos fallos los cazaron las pruebas durante la ronda (un
+   import olvidado en el módulo nuevo y una llamada huérfana en el script), y a
+   raíz del primero se amplió `tests/test_grant_radar_script_names.py` para
+   comprobar también cada módulo del paquete. 349 pruebas y un `--no-claude`
+   idéntico. `Grant-Radar-prueba.py`: 6.976 → 6.409 líneas, -30,3 % en el día.
 3. Hacerlo de forma incremental y verificada: extraer un módulo, ejecutar
    `py_compile` y la suite completa de `unittest`, confirmar comportamiento
    idéntico con `--no-claude`, y solo entonces continuar con el siguiente

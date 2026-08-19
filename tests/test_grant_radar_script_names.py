@@ -16,6 +16,7 @@
 
 import ast
 import builtins
+import importlib
 import runpy
 import unittest
 from textwrap import dedent
@@ -23,6 +24,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "Grant-Radar-prueba.py"
+PACKAGE = ROOT / "grant_radar"
 
 
 def _own_names(node: ast.AST) -> set[str]:
@@ -185,6 +187,37 @@ class ScriptGlobalNamesTests(unittest.TestCase):
                     callable(self.script_globals.get(name)),
                     f"{name} no está disponible en el script principal",
                 )
+
+
+class PackageModuleNamesTests(unittest.TestCase):
+    """La misma comprobación, aplicada a cada módulo de grant_radar/.
+
+    Al mover un bloque al paquete es fácil llevarse una función y dejar atrás
+    el import del helper que usa. El módulo se importa igual (Python no
+    resuelve nombres hasta ejecutarlos) y el fallo solo aparece cuando algo
+    llama a esa función. Pasó de verdad al extraer `bdns_fields.py`, que se
+    quedó sin `_fold_text`: la suite lo detectó, pero como 27 errores en
+    pruebas de otra cosa. Esta comprobación lo señala en el sitio exacto.
+    """
+
+    def test_every_module_resolves_the_names_it_calls(self):
+        problemas = {}
+        for archivo in sorted(PACKAGE.rglob("*.py")):
+            if archivo.name == "__init__.py":
+                continue
+            nombre = ".".join(archivo.relative_to(ROOT).with_suffix("").parts)
+            module = importlib.import_module(nombre)
+            visible = set(vars(module)) | set(dir(builtins))
+            missing = {}
+            _missing_called_names(
+                ast.parse(archivo.read_text(encoding="utf-8")), visible, missing
+            )
+            if missing:
+                problemas[nombre] = missing
+        self.assertEqual(
+            problemas, {},
+            "Un módulo llama a nombres que no tiene: falta un import tras mover código.",
+        )
 
 
 if __name__ == "__main__":

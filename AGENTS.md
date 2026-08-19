@@ -2089,6 +2089,33 @@ puede tapar un `NameError` real. Por eso existe
 `tests/test_grant_radar_script_names.py`, que carga el script con globals
 limpios.
 
+### 31.5. `_bdns_company_eligible()`: la vía de autónomos está partida
+
+Detectado al escribir los tests de `grant_radar/bdns_fields.py` (sección 33).
+La condición positiva busca `"persona fisica"` en **singular** y el guardián
+que la anula busca `"no desarrollan"` en **plural verbal**. Ninguna cadena real
+puede cumplir las dos a la vez, así que el guardián nunca llega a aplicarse:
+
+| Categoría de beneficiario | Resultado | Comentario |
+|---|---|---|
+| `Persona física que desarrolla actividad económica` | `True` | correcto |
+| `Persona física que **no** desarrolla actividad económica` | `True` | **el guardián no se aplica** |
+| `Personas físicas que desarrollan actividad económica` | `False` | forma real del catálogo SNPSAP |
+| `Personas físicas que desarrollan…` + `Empresas` | `True` | lo salva la regla general |
+
+**No se ha corregido, a propósito.** Esta función la usa `_bdns_pre_claude_gate()`,
+es decir la matriz de reglas que las secciones 24 y 27 reservan para su propia
+sesión: cambiarla altera qué convocatorias llegan a Haiku y, por tanto, el
+coste. Su efecto práctico hoy es pequeño —el catálogo de SNPSAP usa el plural,
+que devuelve `False`, la respuesta conservadora, y en cuanto la lista incluye
+"Empresas", que es el caso habitual, la regla general la reconoce igualmente—,
+pero es una incoherencia real y queda anotada como candidata a revisar.
+
+Si se retoma, aplica la disciplina de `SUGERENCIAS.MD` 3.3: ampliar primero
+`tests/fixtures/bdns_filter_cases.json` con categorías reales de SNPSAP, y solo
+después tocar la condición. El comportamiento actual está fijado en
+`tests/test_grant_radar_bdns_fields.py` para que un cambio no pase inadvertido.
+
 ## 32. Novena ronda a 19/08/2026: conectores BOE/MITECO e IDAE
 
 Etapa 4 del plan de la sección 28, y la primera que se apoya en la
@@ -2137,3 +2164,64 @@ explícito.
 
 Sigue pendiente: los conectores BDNS y CDTI (este último tras `documents.py`),
 ECCP —que solo espera por `deterministic_prefilter()`— y `pipeline.py`.
+
+## 33. Décima ronda a 19/08/2026: conector BDNS
+
+Etapa 5 del plan de la sección 28, y la que exigía más cuidado: BDNS aporta 899
+de las 953 convocatorias detectadas, y su conector comparte primitivas con la
+matriz de reglas previa a Claude, que no se debe tocar.
+
+- `grant_radar/bdns_fields.py`: las seis piezas compartidas —
+  `BDNS_NAMED_ACCESS_TERMS`, `_bdns_descriptions()`, `_bdns_codes()`,
+  `_nace_section()`, `_bdns_company_eligible()` y `_bdns_execution_days()`.
+  El análisis previo confirmó que tres las usa solo el conector y tres las
+  comparte con la matriz (`_bdns_pre_claude_gate()`,
+  `_bdns_intrinsic_exclusion()` y `_validated_hold_resolution()`). El script
+  principal las reimporta, igual que ya hacía con
+  `BDNS_DIRECT_OWN_INVESTMENT_TERMS`, de modo que el conector se movió **sin
+  tocar una línea** de la matriz. `_bdns_applicant_section()` y
+  `_bdns_gate_result()` se quedan en el script: son de la matriz, no del
+  conector.
+- `grant_radar/sources/bdns.py`: `fetch_bdns()`, `fetch_bdns_by_id()`,
+  `_bdns_detail_to_raw()`, `_bdns_document_records()`,
+  `_bdns_call_publication_date()`, `_bdns_relative_application_deadline()`,
+  `_add_calendar_months()` y las constantes `BDNS_*` de listado.
+  `resolve_hold_deterministically()` usa
+  `_bdns_relative_application_deadline()` al recalcular un plazo desde la cita
+  de las bases, así que el script la reimporta explícitamente.
+- `tests/test_grant_radar.py`: el módulo BDNS entra en el bloque de fusión de
+  `APP`, y `BDNS_LATEST_MAX_PAGES`/`BDNS_PAGE_SIZE` se añaden aparte, porque el
+  bucle solo copia nombres privados y el script no reimporta esas constantes.
+
+**Dos fallos detectados por las pruebas durante la propia ronda,** los dos
+corregidos antes de cerrarla:
+
+1. `bdns_fields.py` se quedó sin `from grant_radar.parsing_helpers import
+   _fold_text`. El análisis AST previo solo listaba dependencias definidas en
+   el script, no las importadas, y por eso no apareció. La suite lo detectó,
+   pero como 27 errores en pruebas de otra cosa.
+2. `resolve_hold_deterministically()` quedó llamando a una función ya movida.
+   Lo detectó `tests/test_grant_radar_script_names.py`, creado en la sección 29
+   exactamente para esto: señaló el nombre y la línea.
+
+A raíz del primero, esa misma prueba se amplió con `PackageModuleNamesTests`,
+que importa cada módulo de `grant_radar/` y comprueba que resuelve los nombres
+que llama. Verificado que no pasa en vacío: quitando el import de `_fold_text`
+de forma temporal, falla señalando `grant_radar.bdns_fields` y el nombre
+exacto. Ahora un import olvidado se señala en el módulo culpable, no a través
+de errores en pruebas ajenas.
+
+**Verificación:** `Grant-Radar-prueba.py` bajó de 6.976 a 6.409 líneas (-8,1 %
+en esta ronda; -30,3 % acumulado en el día desde 9.199). 349 pruebas
+`unittest` (331 + 18) y `py_compile` en verde. La ejecución `--no-claude` de
+cierre (810,73 s, código 0; el tiempo varía con la latencia de la API, no con
+el código) repite todos los números, incluidos los propios de BDNS: 4.475
+registros inventariados, 904 candidatas del prefiltro de listado, 47 vigentes,
+953 convocatorias detectadas, 33 duplicadas fusionadas, mismo prefiltro común
+y misma previsión de coste.
+
+Nota de comportamiento nueva, sin corregir por ser matriz de reglas: ver 31.5
+sobre `_bdns_company_eligible()`.
+
+Sigue pendiente: CDTI (tras `documents.py`), ECCP —que solo espera por
+`deterministic_prefilter()`— y `pipeline.py`.

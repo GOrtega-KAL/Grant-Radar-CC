@@ -31,10 +31,13 @@ APP = runpy.run_path(str(ROOT / "Grant-Radar-prueba.py"))
 # donde queda definida, no al script principal.
 from grant_radar import cache as _cache_module
 from grant_radar import deterministic_rules as _rules_module
+from grant_radar.sources import bdns as _bdns_module
 from grant_radar.sources import een as _een_module
 from grant_radar.sources import idae as _idae_module
 
-for _module in (_cache_module, _rules_module, _een_module, _idae_module):
+for _module in (
+    _cache_module, _rules_module, _bdns_module, _een_module, _idae_module,
+):
     for _name in dir(_module):
         if not _name.startswith("_") or _name.startswith("__"):
             continue
@@ -46,6 +49,10 @@ APP.setdefault("cache_key", _cache_module.cache_key)
 APP.setdefault("cache_load", _cache_module.cache_load)
 APP.setdefault("cache_save", _cache_module.cache_save)
 APP.setdefault("source_hash", _cache_module.source_hash)
+# Constantes públicas del conector BDNS: el bucle de arriba solo copia nombres
+# privados, y el script principal no las reimporta porque no las usa él.
+APP.setdefault("BDNS_LATEST_MAX_PAGES", _bdns_module.BDNS_LATEST_MAX_PAGES)
+APP.setdefault("BDNS_PAGE_SIZE", _bdns_module.BDNS_PAGE_SIZE)
 
 
 class SourceParserTests(unittest.TestCase):
