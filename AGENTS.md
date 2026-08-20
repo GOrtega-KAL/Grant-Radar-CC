@@ -1,5 +1,10 @@
 # Grant-Radar — contexto e instrucciones del repositorio
 
+> **Arranque en frío: empezar por la sección 43** (cierre del 20/08/2026), que
+> reúne el estado vigente, las cifras con las que se verifica y el siguiente
+> paso. El backlog abierto está en la sección 36. Las secciones 13-42 son
+> historial narrativo fechado: se consultan, no se leen enteras.
+
 ## 1. Objetivo
 
 Grant-Radar monitoriza convocatorias de subvenciones potencialmente relevantes
@@ -16,9 +21,12 @@ de evidencia, normalización o reglas deterministas reutilizables.
 
 - Backend principal: `Grant-Radar-prueba.py`. Sigue siendo el punto de entrada
   (`poetry run python "Grant-Radar-prueba.py"`) y no se importa: su nombre con
-  guiones no es válido para `import`. Lo que queda en él es la matriz de reglas
-  previa a Claude (sección 4.1), los conectores CDTI y ECCP, el análisis con
-  Haiku y la orquestación de `run_pipeline()`.
+  guiones no es válido para `import`. Lo que queda en él, a 20/08/2026: la
+  matriz de reglas previa a Claude (sección 4.1), la capa de análisis con Haiku,
+  la segunda mitad del dominio de holds, `save_discovery_audit()`, la
+  configuración y credenciales, y la orquestación de `run_pipeline()`.
+  **Los ocho conectores de fuentes ya están en `grant_radar/sources/`**,
+  CDTI y ECCP incluidos (secciones 34 y 35).
 - Paquete `grant_radar/`: la lógica ya extraída del backend principal (división
   en curso; historial por rondas en las secciones 21-33 y en `SUGERENCIAS.MD`
   3.2/3.3). `Grant-Radar-prueba.py` los importa con
@@ -34,7 +42,9 @@ de evidencia, normalización o reglas deterministas reutilizables.
   mover hasta extraer antes la infraestructura que compartían (secciones 28
   y 30).
 - Frontend activo: `index.html`.
-- JSON público/local del dashboard: `convocatorias.json`.
+- JSON público/local del dashboard: `convocatorias.json`. Está en `.gitignore`
+  pero rastreado en el remoto, porque lo publica el propio pipeline; ver 43.4
+  antes de extrañarse al verlo en `git status`.
 - No modificar archivos de backup, `Obsoleto/` ni `Frontend alternativo/` salvo
   petición expresa.
 - Conservar los encabezados `CELDA 1`, `CELDA 2`, etc.; sirven para navegar por
@@ -382,6 +392,14 @@ El esquema público vigente es 3. Añade `identifier`, `discovery_sources`,
 `opportunity_labels` sin retirar campos de la versión 2. El frontend debe seguir
 aceptando esquemas 2 y 3.
 
+Desde entonces se han añadido tres campos más **sin subir el número de esquema**,
+por ser puramente aditivos: `eligible_actions` y `eligible_actions_basis`
+(sección 20) y `objeto_y_actuaciones` (sección 40). Un frontend antiguo los
+ignora y sigue funcionando, que es el criterio para no subir versión; a cambio,
+el número de esquema no basta para saber qué campos trae un JSON. Si alguna vez
+se retira o se cambia el tipo de un campo, entonces sí hay que subirlo y adaptar
+`index.html`.
+
 ## 6. Modos de ejecución
 
 Desde PowerShell, en la raíz del proyecto:
@@ -455,8 +473,9 @@ Ejecución completa: recopila, analiza lo que no esté en caché, genera el JSON
 si el token de GitHub es válido, intenta publicarlo. Antes de la primera llamada
 aplica `claude_safety_preflight()`: detiene la ejecución si se han seleccionado
 más de 200 análisis nuevos/cambiados o si el extremo superior estimado supera
-5 USD. Con la calibración vigente de 0,035 USD por convocatoria, el límite
-económico es el efectivo y permite como máximo 142 análisis en una ejecución.
+5 USD. Con la calibración vigente de **0,047 USD** por convocatoria —el p95 de
+los 76 análisis reales del 20/08, sección 42.3— el límite económico es el
+efectivo y permite como máximo **106** análisis en una ejecución.
 
 Para validar sintaxis sin red ni consumo de tokens:
 
@@ -946,7 +965,8 @@ Estado del piloto `hold_manual` a 10/08/2026:
   análisis offline no se modificaron en esta iteración.
 - Se activó la barrera presupuestaria previa a Claude: máximo nominal de 200
   análisis y máximo superior estimado de 5 USD. Con 0,035 USD por análisis, el
-  máximo efectivo vigente es 142. La ejecución se audita y termina antes de la
+  máximo efectivo era entonces 142 (**recalibrado a 106 el 20/08/2026**, sección
+  42.3). La ejecución se audita y termina antes de la
   primera llamada si excede cualquiera de los dos límites.
 - Capa residual ECCP/BDNS validada el 12/08/2026 sin Claude. La regla ECCP
   eliminó `Dual-Use Drones Innovative Programme` por sector restringido y
@@ -1334,7 +1354,8 @@ Estado del piloto `hold_manual` a 10/08/2026:
   como en cada `funding_line`. Solo admite actuaciones, inversiones o gastos que
   la fuente declare financiables. La versión del extractor y del prompt se eleva
   de forma intencionada; una ejecución normal deberá reanalizar las candidatas
-  cacheadas, siempre bajo la barrera de 142 análisis y 5 USD.
+  cacheadas, siempre bajo la barrera de entonces —142 análisis y 5 USD; hoy 106
+y 5 USD—.
 - Para JSON antiguos, `derive_eligible_actions()` no inventa contenido: prioriza
   el nuevo campo, luego las líneas, después `required_topics` y, solo si estos
   faltan, un epígrafe literal inequívoco de actuaciones o gastos elegibles. El frontend cambia
@@ -2410,9 +2431,11 @@ Los tres comparten condición: tocan la matriz previa a Claude, que decide qué
 llega a Haiku y por tanto el coste. Disciplina obligatoria (`SUGERENCIAS.MD`
 3.3): ampliar primero `tests/fixtures/bdns_filter_cases.json` con casos reales,
 y solo después la condición. Además, mientras duren las rondas de
-modularización conviene no mezclarlos: el recuento estable de 77 vigentes es el
-invariante con el que se verifica cada extracción, y cambiar una regla lo haría
-ambiguo.
+modularización conviene no mezclarlos: el recuento de vigentes es la referencia
+con la que se verifica cada extracción —76 desde el 20/08, 77 antes— y cambiar
+una regla lo haría ambiguo. Aviso: ese recuento ya no es un invariante fijo,
+porque la ventana deslizante de BDNS lo mueve por causas externas (punto 26).
+Con más razón conviene no introducir a la vez un cambio de reglas.
 
 ### 36.2. Fragilidad frente a las fuentes
 
@@ -2444,13 +2467,13 @@ rondas el mismo día.
 
 ### 36.4. Huecos de cobertura de pruebas, medidos
 
-Recuento sobre los 31 módulos del paquete a 19/08/2026:
+Recuento sobre los 34 módulos del paquete a 20/08/2026:
 
 | # | Qué | Detalle |
 |---|---|---|
 | 18 | `grant_radar/coverage_watch.py` no tiene **ninguna** prueba | Ni un solo test menciona `build_recurrent_coverage_watch()` ni `probe_missing_recurrent_coverage()`. Es el mecanismo que avisa cuando un programa conocido deja de aparecer: una red de seguridad que no tiene red |
 | 19 | `build_keywords()` y `verificar_urls()` tampoco aparecen en ninguna prueba | Ambas afectan a lo que se publica: la primera al panel de palabras clave, la segunda a marcar URLs rotas |
-| 20 | Sin archivo de test dedicado, aunque sí cubiertos de forma indirecta vía `runpy`: `sources/bdns.py`, `sources/cdti.py`, `sources/een.py`, `sources/horizon_europe.py`, `public_output.py`, `versions.py` | No es urgente —el camino principal de cada uno se ejercita en `tests/test_grant_radar.py`—, pero un archivo propio con import estándar hace la regresión más legible y sobreviviría a retirar el patrón `runpy` (punto 10) |
+| 20 | Sin archivo de test dedicado, aunque sí cubiertos de forma indirecta vía `runpy`: `sources/bdns.py`, `sources/cdti.py`, `sources/een.py`, `sources/horizon_europe.py`, `versions.py`, `publishing.py`, `claude_usage.py`, `hold_quotes.py`, `hold_evidence.py` (`public_output.py` ya tiene el suyo desde el 20/08) | No es urgente —el camino principal de cada uno se ejercita en `tests/test_grant_radar.py`—, pero un archivo propio con import estándar hace la regresión más legible y sobreviviría a retirar el patrón `runpy` (punto 10) |
 
 ### 36.5. Mapa de las tres redes de seguridad, y qué se escapa de cada una
 
@@ -2474,6 +2497,17 @@ solo detecta la ejecución real.
 | 12 | `requires-python = ">=3.11"` no se ha probado sobre un intérprete 3.11 real | `SUGERENCIAS.MD` 3.9 |
 | 13 | Limpieza de `Obsoleto/` y `Frontend alternativo/` ahora que hay historial de git | `SUGERENCIAS.MD` 3.10 punto 2 |
 | 14 | Rotación de credenciales si `API KEYs.txt` estuvo en copias compartidas fuera de control | `SUGERENCIAS.MD` 3.1 punto 4; solo el usuario puede confirmarlo |
+| 25 | `convocatorias.json` está en `.gitignore` pero **versionado en el remoto**: lo sube el propio pipeline por la API de Contents de GitHub, y `.gitignore` no afecta a lo ya rastreado. Consecuencia práctica: cada regeneración local aparece en `git status` y un `push` puede requerir `git rebase origin/main` primero | Sección 43.4. Es inherente a publicar desde la raíz para GitHub Pages; cambiarlo es decisión del usuario |
+| 26 | Las «77 vigentes» dejaron de ser un invariante fijo: la ventana deslizante de BDNS mueve el recuento por causas externas (77 → 76 el 20/08). Conviene verificar con tolerancia y comprobación de causa, no con igualdad exacta | Secciones 40.3 y 40.4 |
+
+### 36.7. Puntos ya cerrados
+
+Se dejan anotados para que el hueco en la numeración no confunda al arrancar en
+frío. No hay que buscarlos en las tablas de arriba: ya no están.
+
+| # | Qué era | Cerrado en |
+|---|---|---|
+| 23 | Recalibrar `CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS` con datos de una ejecución completa, en vez de con la muestra de agosto | Sección 42.3: 76 análisis reales, barrera 0,035 → 0,047 USD |
 
 ## 37. Decimotercera ronda a 19/08/2026: salida pública, publicación, selección y cobertura
 
@@ -2597,6 +2631,11 @@ cosa.
 Resumen de una sola sesión con nueve rondas de extracción (secciones 28-38),
 pensado para arrancar en frío sin releerlas.
 
+> **Superada como punto de arranque por la sección 43** (cierre del 20/08/2026).
+> Las cifras de referencia de 39.4 y 39.5 —77 vigentes, 381 pruebas, previsión de
+> 2,04 USD— corresponden al estado de aquel día y **ya no valen para verificar**.
+> El diagnóstico de 39.1-39.3 sí sigue vigente.
+
 ### 39.1. Qué cambió
 
 | Métrica | Al empezar | Al cerrar |
@@ -2670,8 +2709,8 @@ donde ya apareció uno de los tres fallos latentes.
 1. `poetry run python -m unittest tests.test_grant_radar_script_names` —un
    segundo, señala módulo y nombre exactos si falta un import.
 2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`.
-3. `poetry run python -m unittest discover -s tests` —381 pruebas, el número
-   solo puede subir.
+3. `poetry run python -m unittest discover -s tests` —381 pruebas entonces,
+   **405 desde el 20/08** (sección 43.3); el número solo puede subir.
 4. `poetry run python "Grant-Radar-prueba.py" --no-claude` —diez minutos, sin
    coste. Los números de referencia estables, repetidos en nueve ejecuciones
    consecutivas:
@@ -2947,4 +2986,119 @@ documentos—, que no representan al conjunto. Queda anotado en la sección 11
 como aviso metodológico: para calibrar hace falta una muestra representativa,
 no una de casos extremos.
 
-Con esto se cierran los puntos 23 y 24 del backlog de la sección 36.
+Con esto se cierra el punto 23 del backlog de la sección 36 (recalibrar la
+barrera con datos reales). El punto 24 —endurecer la instrucción contra
+presunciones en `objeto_y_actuaciones`— **sigue abierto**: la ejecución completa
+no lo tocaba.
+
+## 43. Cierre de la sesión del 20/08/2026 y punto de partida para la siguiente
+
+**Esta es la sección de arranque en frío vigente.** Sustituye a la 39 como
+punto de partida. El detalle de la sesión está en las secciones 40, 41 y 42;
+esto es lo que hace falta para retomar sin releerlas.
+
+### 43.1. Qué cambió
+
+La sesión del 19/08 fue de estructura (nueve rondas de modularización). La del
+20/08 fue de **calidad del dato y de producto**: qué se le pasa a Haiku, qué se
+le pide, y una ejecución completa real.
+
+| | Al empezar el 20/08 | Al cerrar |
+|---|---|---|
+| Producto publicado | JSON del 14/08, 49 convocatorias | **JSON del 20/08, 76 convocatorias** |
+| Registros con «datos pendientes» | 57 % | **38 %** |
+| `objeto_y_actuaciones` / `eligible_actions` | nunca producidos | **76/76** y **71/76** |
+| Barrera de coste | 0,035 USD/análisis (muestra de 2) | **0,047 USD** (p95 de 76 reales) |
+| Pruebas `unittest` | 381 | **405**, todas en verde |
+| `Grant-Radar-prueba.py` | 3.842 líneas | 3.988 líneas |
+| Paquete `grant_radar/` | 34 módulos, 8.847 líneas | 34 módulos, 8.901 líneas |
+
+El script creció por primera vez en dos sesiones: la capa de análisis con Haiku
+—que sigue dentro— es justo la que se enriqueció.
+
+### 43.2. Estado del producto, ahora mismo
+
+- El dashboard sirve datos del **20/08/2026**: 955 detectadas, 76 vigentes, 31
+  relevantes para Kalfrisa, 7 con cierre urgente, 0 pendientes de revisión
+  manual.
+- La caché de análisis (`grant_radar_data/grant_radar_cache.json`) tiene
+  **76 entradas, todas en `facts-2026-08-v7` / `fit-2026-08-v6`**, es decir en
+  las versiones actuales de `grant_radar/versions.py`.
+- **Consecuencia para el coste:** una ejecución completa hoy reutilizaría casi
+  toda la caché y solo pagaría las convocatorias nuevas. Lo que hace cara una
+  ejecución no es el tiempo transcurrido, sino **subir cualquiera de las
+  versiones** de `versions.py`: eso invalida las 76 y vuelve a costar ~1,8 USD.
+  Antes de tocarlas, decidirlo a conciencia.
+
+### 43.3. Cómo verificar cualquier cambio, en orden
+
+Sustituye a 39.5, con las cifras al día:
+
+1. `poetry run python -m unittest tests.test_grant_radar_script_names` —un
+   segundo, señala módulo y nombre exactos si falta un import. **Siempre el
+   primero**: la suite completa presenta esos fallos como errores de pruebas de
+   otra cosa (pasó tres veces).
+2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`.
+3. `poetry run python -m unittest discover -s tests` —**405 pruebas**, el
+   número solo puede subir.
+4. `poetry run python "Grant-Radar-prueba.py" --no-claude` —unos 12 minutos,
+   sin coste, sin autorización. Referencia del 20/08/2026:
+
+   > 955 detectadas · 33 duplicadas fusionadas · 39 tras el prefiltro inicial ·
+   > **76 vigentes** · prefiltro común `retain=32, ambiguous=7, hold_manual=72,
+   > reject=844` · resolución automática de holds `ambiguous=37, reject=35,
+   > revisión manual=0`.
+
+**Cómo leer un desvío en el punto 4.** El recuento de vigentes ya no es un
+invariante fijo: la ventana deslizante de BDNS lo mueve por causas externas
+(77 → 76 entre el 19 y el 20/08, por una sola convocatoria en el borde de la
+ventana; sección 40.3). Ante una diferencia, comprobar en este orden:
+salud de las fuentes (un `HTTP 429` de `boe.es` ya bajó BOE de 1 a 0 sin ser
+regresión), registros de exclusión de la convocatoria concreta, y solo después
+sospechar del código. Anotado como punto 26 de la sección 36.
+
+### 43.4. Lo que hay que saber del repositorio
+
+`convocatorias.json` está listado en `.gitignore` **y a la vez versionado en el
+remoto**: lo publica el propio pipeline por la API de Contents de GitHub, que es
+como GitHub Pages lo sirve, y `.gitignore` no afecta a un archivo ya rastreado.
+
+Dos consecuencias prácticas, ambas vistas el 20/08:
+
+1. Tras una ejecución completa, `convocatorias.json` aparece modificado en
+   `git status` aunque nadie lo haya tocado a mano.
+2. El pipeline crea commits propios en `origin/main` («actualización
+   automática»). Un `push` posterior puede ser rechazado; se resuelve con
+   `git rebase origin/main` y volver a empujar, no con `--force`.
+
+Anotado como punto 25 de la sección 36. Cambiar el mecanismo de publicación es
+decisión del usuario, no una corrección pendiente.
+
+### 43.5. Siguiente paso, por orden de valor
+
+1. **Punto 24 del backlog** (el único que dejó abierto esta sesión): endurecer
+   la instrucción del prompt contra presunciones en `objeto_y_actuaciones`.
+   INNOVAE devolvió «se presume inversión en equipos…» donde la fuente no
+   detalla gastos. Barato en código, pero **subir el prompt invalida la caché**:
+   conviene agruparlo con cualquier otro cambio de prompt y pagar una sola vez.
+2. **Punto 22**: la ventana de BDNS bajó de 79 a 65 días y el test de regresión
+   la ata con una densidad optimista (44 filas/día frente a las 54 reales), así
+   que hoy no detectaría una caída por debajo del mínimo de 60. Sin coste.
+3. **Seguir modulando**, en el orden ya medido de 39.3, que sigue vigente:
+   `save_discovery_audit()` → capa de análisis con Haiku → segunda mitad de
+   holds → matriz de reglas (sesión dedicada) → `run_pipeline()`.
+4. **Huecos de cobertura** de 36.4: `coverage_watch.py` sigue sin una sola
+   prueba, y es la red que avisa cuando un programa recurrente deja de
+   aparecer.
+
+### 43.6. Medido y descartado: no volver a intentarlo
+
+- **Cachear el prompt de Anthropic** no es viable: el perfil de Kalfrisa
+  (~690 tokens) más los prompts de sistema no alcanzan el mínimo cacheable.
+- **Reintentar sin cambiar nada ante un JSON truncado**: con `temperature=0`
+  los tres intentos fallan en la misma columna. Costó 0,0896 USD comprobarlo
+  (sección 41.1). Por eso cada reintento amplía ahora el techo de tokens.
+- **Calibrar con una muestra de casos difíciles**: la proyección de ~2,91 USD
+  para la ejecución completa salió de tres convocatorias elegidas por ser las
+  más duras. El coste real fue 1,83. Para calibrar hace falta una muestra
+  representativa (sección 42.3).

@@ -17,6 +17,12 @@ un hallazgo nuevo (2.10 / 3.10) sobre ausencia de control de versiones. No
 se modificó ningún archivo de `Grant-Radar-prueba.py`, `index.html` ni
 `tests/` durante esta verificación.
 
+**Seguimiento:** las secciones 4 y 5 recogen el estado a 19/08/2026 (sesión de
+modularización) y la 6 el de 20/08/2026 (ronda de calidad del dato y primera
+ejecución completa publicada). Para arrancar en frío, el documento vigente es
+`AGENTS.md` sección 43; este de aquí es la evaluación externa y su seguimiento,
+no el estado vivo del proyecto.
+
 ---
 
 ## 1. Evaluación general
@@ -712,6 +718,49 @@ una de las tres redes de seguridad del proyecto.
 
 Se mantiene ahí y no aquí para que exista un solo índice: este documento es la
 evaluación externa del 17/08/2026 y su seguimiento; aquel es el estado vivo.
+
+## 6. Estado a 20/08/2026 tras la ronda de calidad del dato
+
+La sesión del 20/08 no fue de estructura sino de **contenido**: qué datos
+recibe el modelo, qué se le pide y qué acaba publicándose. Toca tres puntos de
+este documento.
+
+**Frente a 2.6 (regresión de columnas del export XLSX): el hueco descrito se
+materializó, y el test hizo su trabajo.** Al añadir la columna «Objeto y
+actuaciones» al export, el test que fija el conjunto de columnas falló de
+inmediato y obligó a actualizarlo de forma consciente. Es exactamente el
+comportamiento que este documento pedía: la divergencia entre lo exportado y lo
+esperado no puede pasar en silencio.
+
+**Frente a 2.8 (contrato frontend-backend):** el campo nuevo
+`objeto_y_actuaciones` se añadió a la vez en el backend, en `index.html` y en el
+export, con el test de contrato verificándolo. Los cinco campos publicados y no
+consumidos que señalaba este punto siguen igual (`catalog_scope`,
+`catalog_category`, `catalog_ref`, `related_documents_count`, `bdns_url`):
+siguen como punto 11 del backlog de `AGENTS.md` sección 36.
+
+**Frente a 2.5 (artefactos generados mezclados con el código):** el caso de
+`convocatorias.json` resultó ser más enredado de lo que este documento
+suponía. No es solo que conviva con el código en la raíz: está en `.gitignore`
+**y a la vez rastreado en el remoto**, porque lo publica el propio pipeline por
+la API de Contents de GitHub, que es como GitHub Pages lo sirve, y `.gitignore`
+no afecta a un archivo ya rastreado. Separar «fuente» de «salida» aquí no es una
+limpieza cosmética: chocaría con el mecanismo de publicación. Anotado como
+punto 25 del backlog.
+
+**Recuentos verificados hoy con `wc -l`**, para no arrastrar cifras viejas:
+`Grant-Radar-prueba.py` tiene 3.988 líneas (creció desde las 3.842 del 19/08,
+porque la capa de análisis con Haiku —que sigue dentro del script— es
+justamente la que se enriqueció), el paquete `grant_radar/` tiene 34 módulos y
+8.901 líneas, y la suite pasó de 381 a **405 pruebas**, todas en verde.
+
+**Estado del producto:** el pipeline se ejecutó completo y se publicó (76
+convocatorias vigentes, 1,83 USD reales), y la barrera de coste se recalibró
+con esos 76 análisis en vez de con la muestra de dos de agosto. Balance
+completo en `AGENTS.md` secciones 40 a 43; **la 43 es el punto de arranque en
+frío vigente**.
+
+---
 
 ---
 

@@ -7,13 +7,22 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
+> **Arranque en frío: leer AGENTS.md sección 43.** Reúne el estado vigente, las
+> cifras con las que se verifica cualquier cambio y el siguiente paso. El
+> backlog abierto está en la sección 36.
+>
 > **Estado a 20/08/2026:** ronda de calidad del dato completa y **ejecución
-> completa hecha y publicada** (AGENTS.md secciones 40-42). 76 convocatorias
+> completa hecha y publicada** (AGENTS.md secciones 40-43). 76 convocatorias
 > vigentes, 31 relevantes, 1,83 USD reales. Los «datos pendientes» bajan del
 > 57 % al 38 %, y `objeto_y_actuaciones` y `eligible_actions` —que nunca se
 > habían producido— se rellenan en 76/76 y 71/76. El coste está recalibrado con
 > esos 76 análisis: la barrera pasa de 0,035 a 0,047 USD por análisis y su
 > máximo efectivo de 142 a 106 (sección 11).
+>
+> La caché de análisis tiene hoy **76 entradas en las versiones actuales**: una
+> ejecución completa ahora reutilizaría casi todo y apenas costaría. Lo que
+> vuelve a hacerla cara es **subir cualquier versión de `grant_radar/versions.py`**,
+> que invalida las 76.
 
 ## Qué es esto
 
@@ -43,13 +52,16 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   JSON ni publicar. Es el modo de validación por defecto tras un cambio de
   código: `poetry run python "Grant-Radar-prueba.py" --no-claude`.
 - Después de cualquier cambio en `Grant-Radar-prueba.py` o `grant_radar/`,
-  en este orden (el detalle y los números de referencia, en AGENTS.md 39.5):
+  en este orden (el detalle y los números de referencia, en AGENTS.md 43.3):
   1. `poetry run python -m unittest tests.test_grant_radar_script_names`
      —un segundo, señala módulo y nombre exactos si falta un import;
   2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`;
-  3. `poetry run python -m unittest discover -s tests` —381 pruebas;
+  3. `poetry run python -m unittest discover -s tests` —**405 pruebas**;
   4. `poetry run python "Grant-Radar-prueba.py" --no-claude` al cerrar la
-     ronda, comparando contra los números de referencia.
+     ronda, comparando contra los números de referencia: 955 detectadas,
+     **76 vigentes**. Ojo: ese recuento **ya no es un invariante fijo**, la
+     ventana deslizante de BDNS lo mueve por causas externas; ante un desvío,
+     mirar salud de fuentes y registros de exclusión antes que el código.
 - Al extraer código a `grant_radar/`, comprobar que el script principal
   reimporta todo lo que sigue usando. `py_compile` no resuelve nombres y
   `--no-claude` no recorre la ruta de análisis, así que un `NameError` puede
@@ -73,17 +85,18 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   PowerShell: `$env:VIRTUAL_ENV = $null` primero, o `poetry` puede ejecutar
   silenciosamente contra el entorno equivocado.
 
-## Estructura actual (19/08/2026)
+## Estructura actual (20/08/2026)
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l`: 3.842 líneas
-en el script y 8.847 en los 34 módulos del paquete —más del doble de código en
-el paquete que en el script—, tras las nueve rondas del 19/08/2026
-(el script tenía 9.199 al empezar el día; la cifra
-"8.835" de una nota anterior de este archivo estaba mal calculada — ver
-AGENTS.md sección 24, nota de discrepancia). Progresivamente movida a `grant_radar/` (paquete con nombre
-importable):
+`import`). Recuento verificado con `wc -l` el 20/08/2026: **3.988 líneas en el
+script y 8.901 en los 34 módulos del paquete** —más del doble de código en el
+paquete que en el script—. El script tenía 9.199 líneas antes de las nueve
+rondas del 19/08/2026 y bajó a 3.842; el 20/08 volvió a crecer un poco, porque
+la ronda de calidad del dato enriqueció la capa de análisis con Haiku, que
+sigue dentro del script. (La cifra "8.835" de una nota anterior de este archivo
+estaba mal calculada — ver AGENTS.md sección 24, nota de discrepancia.)
+Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 
 | Módulo | Contiene |
 |---|---|
@@ -114,8 +127,7 @@ importable):
 | `documents.py` | Documentos oficiales: descarga, extracción de texto y su caché |
 | `sources/cdti.py` | Conector CDTI: calendario oficial con Chromium + catálogo curado |
 | `sources/eccp.py` | Conector ECCP: calls y rastreo acotado de webs de proyectos |
-| `public_output.py` (actualizado) | Publica `objeto_y_actuaciones`; `post_procesar_texto()` ya solo toca acrónimos |
-| `public_output.py` | Registro público del dashboard, estadísticas, estado por fuente y URLs |
+| `public_output.py` | Registro público del dashboard, estadísticas, estado por fuente y URLs. Publica `objeto_y_actuaciones`; `post_procesar_texto()` ya solo corrige acrónimos (antes corrompía palabras comunes: «cierre» → «CIRCE») |
 | `publishing.py` | Subida a GitHub Pages (credenciales como parámetros, nunca leídas aquí) |
 | `claude_selection.py` | Qué se manda a Claude y la barrera de coste previa |
 | `coverage_watch.py` | Vigilancia de programas recurrentes conocidos |
@@ -138,29 +150,39 @@ El descubrimiento automático principal de convocatorias autonómicas de
 Aragón ya no es el conector BOA (su scraper en vivo no encuentra nada y su
 catálogo estático está vencido), sino un filtro estructurado `nivel1`/
 `nivel2` dentro de `fetch_bdns()` (`grant_radar/bdns_scope.py`), con la
-ventana de `convocatorias/ultimas` ampliada a ~79 días. Detalle completo de
-la investigación y de los números reales de verificación en AGENTS.md
-sección 26.
+ventana de `convocatorias/ultimas` ampliada. Esa ventana es **deslizante y se
+estrecha cuando sube el volumen publicado**: medida en 79 días el 18/08 y en
+**65 el 20/08** (densidad real 54 filas/día, no 44). Cumple el mínimo de
+negocio de 60 días con 5 de margen, y explica por sí sola que el recuento de
+vigentes se mueva entre ejecuciones. Detalle en AGENTS.md secciones 26 y 40.4;
+queda como punto 22 del backlog.
 
-Pendiente, en el orden que tiene sentido moverlo (detalle en AGENTS.md
-secciones 37 y 38): `save_discovery_audit()` (encaja en `audit.py`), la capa de
-análisis con Haiku (~545 líneas, atada a `_hard_out_of_scope()`), la segunda
-mitad del dominio de holds (resolución determinista, piloto y replay, que
-necesitan reglas y Claude), la matriz de reglas (sesión dedicada) y, por
+Pendiente de modularizar, en el orden que tiene sentido moverlo (detalle en
+AGENTS.md secciones 37, 38 y 43.5): `save_discovery_audit()` (encaja en
+`audit.py`), la capa de análisis con Haiku (atada a `_hard_out_of_scope()`), la
+segunda mitad del dominio de holds (resolución determinista, piloto y replay,
+que necesitan reglas y Claude), la matriz de reglas (sesión dedicada) y, por
 último, `run_pipeline()`.
+
+**Antes que seguir modulando**, AGENTS.md 43.5 propone dos cosas más baratas y
+con más valor: el punto 24 del backlog (endurecer el prompt contra presunciones
+en `objeto_y_actuaciones`, agrupado con cualquier otro cambio de prompt para
+pagar una sola invalidación de caché) y el punto 22 (la densidad optimista del
+test de la ventana BDNS, sin coste).
 **Los ocho conectores ya están en `grant_radar/sources/`.** ECCP recibe el
 prefiltro como parámetro (`is_relevant_enough`) para no depender de las reglas:
 quien lo llame debe pasárselo.
 
-Medido antes de intentarlo: extraer `run_pipeline()` hoy arrastraría 64 de las
-68 funciones restantes. El orquestador va el último, no el siguiente. El plan por etapas y el orden de dependencias están en
+Medido antes de intentarlo: cuando el script tenía 68 funciones, extraer
+`run_pipeline()` arrastraba 64 de ellas. Hoy quedan **35 funciones de nivel
+superior** y la proporción no ha cambiado de naturaleza. El orquestador va el último, no el siguiente. El plan por etapas y el orden de dependencias están en
 AGENTS.md sección 28. El filtro previo a Claude
 (`_bdns_pre_claude_gate()`, `deterministic_prefilter()`, sección 4.1 de
 `AGENTS.md`) sigue deliberadamente sin extraer: es la lógica más compleja y
 ajustada del proyecto; no encadenarla detrás de otra tarea sin que el usuario
 lo pida explícitamente. Es también lo único que le falta a ECCP, por eso ese
 conector va el último. Detalle completo de cada ronda en `AGENTS.md`,
-secciones 21-32, y en `SUGERENCIAS.MD` (3.2/3.3).
+secciones 21-43, y en `SUGERENCIAS.MD` (3.2/3.3 y sección 6).
 
 **Auditoría del embudo determinista (18/08/2026, sin cambios de código):**
 tras ampliar la ventana de BDNS, se comprobó con datos reales si
@@ -187,5 +209,21 @@ git -c http.extraheader="$authHeader" push origin main
 $token = $null; $authHeader = $null
 ```
 
-Como con cualquier `git push`, confirmar con el usuario antes de hacerlo
-salvo que ya lo haya pedido explícitamente en el turno actual.
+**No hace falta pedir permiso** para `commit` ni `push` en esta carpeta: el
+usuario lo autorizó expresamente el 19/08/2026 por tratarse de una copia
+paralela de iteración. (Una nota anterior de este archivo decía lo contrario;
+manda la autorización del usuario.) Lo que sí sigue requiriendo autorización
+expresa, siempre, es llamar a la API de Claude.
+
+**`convocatorias.json` está en `.gitignore` y a la vez rastreado en el remoto.**
+Lo publica el propio pipeline por la API de Contents de GitHub —así lo sirve
+GitHub Pages— y `.gitignore` no afecta a un archivo ya rastreado. Dos
+consecuencias, ambas vistas el 20/08:
+
+1. Tras una ejecución completa aparece modificado en `git status` sin que nadie
+   lo haya tocado a mano.
+2. El pipeline crea commits propios en `origin/main` («actualización
+   automática»), así que un `push` posterior puede ser rechazado. Se resuelve
+   con `git rebase origin/main` y volver a empujar, **nunca con `--force`**.
+
+Detalle en AGENTS.md 43.4; anotado como punto 25 del backlog.
