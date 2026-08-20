@@ -2417,6 +2417,7 @@ rondas el mismo día.
 | 10 | Retirar el patrón `runpy` + fusión de `APP` en `tests/test_grant_radar.py` | Tiene sentido revisarlo cuando el script principal quede reducido a configuración y punto de entrada |
 | 15 | Orden de extracción medido (secciones 37 y 38): `save_discovery_audit` → capa Haiku → segunda mitad de holds → reglas → `run_pipeline()` | La primera mitad de holds ya salió (sección 38). `run_pipeline()` arrastra el resto: va el último, no el siguiente |
 | 21 | Ejecutar `tests/test_grant_radar_script_names.py` **antes** que la suite completa tras cada extracción | Señala el módulo y el nombre exactos en un segundo; la suite completa los presenta como errores en pruebas de otra cosa (pasó tres veces) |
+| 22 | La ventana de BDNS bajó de 79 a 65 días (densidad real 54 filas/día, no 44). Cumple el mínimo de 60 con 5 días de margen | Revisar `BDNS_LATEST_MAX_PAGES` y actualizar la densidad del test de regresión, que hoy es optimista y no detectaría una caída por debajo de 60 (sección 40.4) |
 | 16 | Usar `node.end_lineno`, nunca `max(lineno)`, al cortar bloques por AST | Un `return (` multilínea pierde el paréntesis de cierre; ocurrió en la sección 37 |
 
 ### 36.4. Huecos de cobertura de pruebas, medidos
@@ -2730,20 +2731,55 @@ JSON publicado, y las que comprueban que los campos estructurados viajan al
 prompt, que las conclusiones del pipeline no se cuelan como si fueran hechos de
 la fuente, y que las bases conservan un rol que el ranking entiende.
 
-**La ejecución `--no-claude` de cierre no pudo completarse.** Dos intentos
-devolvieron 4 convocatorias en vez de 77, con todas las fuentes de red a cero y
-solo el catálogo curado de CDTI sobreviviendo. La causa es externa y está
-documentada en el log: `getaddrinfo failed` y `ERR_NAME_NOT_RESOLVED` en todos
-los hosts. Comprobado después de forma aislada: `api.tech.ec.europa.eu` no
-resuelve nunca, `infosubvenciones.es` y `boe.es` resuelven pero una petición
-HTTPS real a ellos falla igualmente con `ConnectionError`. El equipo no tiene
-salida a internet estable.
+**Primeros dos intentos, fallidos por una caída de red del equipo.**
+Devolvieron 4 convocatorias en vez de 77, con todas las fuentes de red a cero y
+solo el catálogo curado de CDTI sobreviviendo: `getaddrinfo failed` y
+`ERR_NAME_NOT_RESOLVED` en todos los hosts. El sistema se comportó como debía —
+marcó las cuatro fuentes con control de salud como `unhealthy` con
+`inventory_unreachable`, no generó `convocatorias.json`, no tocó la caché de
+análisis y terminó con código 0.
 
-El sistema se comportó como debía ante el corte: marcó las cuatro fuentes con
-control de salud como `unhealthy` con `inventory_unreachable`, no generó
-`convocatorias.json`, no tocó la caché de análisis y terminó con código 0.
+**Tercer intento, con red restablecida (20/08/2026, 724,51 s, código 0):**
 
-**Pendiente antes de gastar:** repetir `--no-claude` con red y comprobar los
-números de referencia de la sección 39.5. Solo entonces tiene sentido la prueba
-dirigida de pago sobre tres convocatorias (~$0,10) y, si convence, la ejecución
-completa (~$2,04). Ambas requieren autorización expresa.
+| Métrica | Referencia 19/08 | Hoy 20/08 |
+|---|---|---|
+| Detectadas | 953 | 955 |
+| Duplicadas fusionadas | 33 | 33 |
+| Tras el prefiltro inicial | 39 | 39 |
+| Prefiltro común | retain 32 · ambiguous 7 · hold 73 · reject 841 | retain 32 · ambiguous 7 · hold 72 · reject 844 |
+| Resolución automática de holds | ambiguous 38 · reject 35 · revisión 0 | ambiguous 37 · reject 35 · revisión 0 |
+| **Vigentes** | **77** | **76** |
+
+**La única diferencia está explicada y no es una regresión.** Comparando los
+inventarios de candidatas de ambas ejecuciones, la convocatoria que falta es
+una sola: *Programa Pyme Cibersegura 2026* (BDNS 913401). No caducó —cierra el
+31/10— ni fue excluida: no hay ningún registro de exclusión para ella. Es que
+**no se detectó**, y la razón es la ventana deslizante de BDNS.
+
+### 40.4. La ventana de BDNS se ha estrechado de 79 a 65 días
+
+Medido contra la API el 20/08/2026, pidiendo la primera y la última página de
+`convocatorias/ultimas`:
+
+- Página 0: del 20/08 al 17/08. Página 34: del 17/06 al **16/06**.
+- Ventana real: **65 días**, no los ~79 que documenta la sección 26.
+- Densidad real: **54 filas/día**, no las 44 medidas el 17-18/08.
+- Mínimo de negocio (60 días): **se cumple, con 5 días de margen**.
+
+La convocatoria perdida tiene `fechaRecepcion` 2026-06-16, exactamente la fecha
+más antigua que devuelve la última página: está en el borde y entra o sale
+según el volumen publicado cada día.
+
+Conviene saber que `tests/test_grant_radar.py::test_bdns_latest_window_covers_at_least_sixty_days`
+ata la constante al mínimo de 60 días **usando la densidad de 44 filas/día**, de
+modo que hoy es optimista: seguiría en verde aunque la ventana real bajara de
+60. Queda anotado en la sección 36 como punto 22.
+
+### 40.5. Estado
+
+Los cambios de esta ronda están verificados: 400 pruebas, `py_compile` y una
+ejecución real cuyo único desvío tiene causa externa identificada. Falta
+todavía ver **lo que Haiku devuelve de verdad**, que es el objetivo de la
+ronda y no puede comprobarse sin gastar: la prueba dirigida sobre tres
+convocatorias (~$0,10) y, si convence, la ejecución completa (~$2,04). Ambas
+requieren autorización expresa.

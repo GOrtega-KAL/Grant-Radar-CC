@@ -7,10 +7,11 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
-> **Estado a 20/08/2026:** hay una ronda de calidad del dato aplicada y
-> **verificada solo con pruebas** (AGENTS.md sección 40): falta repetir
-> `--no-claude` con red, porque el equipo la perdió durante la verificación.
-> Hasta que esos números coincidan con los de referencia, no lanzar nada de pago.
+> **Estado a 20/08/2026:** ronda de calidad del dato aplicada y verificada
+> (AGENTS.md sección 40): 400 pruebas y un `--no-claude` real con 76 vigentes,
+> uno menos que la referencia por la ventana deslizante de BDNS, no por el
+> código (40.4). Lo que falta es ver qué devuelve Haiku de verdad, y eso
+> requiere gasto y autorización expresa.
 >
 > **Para retomar el trabajo, empezar por `AGENTS.md` sección 39**: cierra la
 > sesión del 19/08/2026, resume las nueve rondas de modularización de ese día,
