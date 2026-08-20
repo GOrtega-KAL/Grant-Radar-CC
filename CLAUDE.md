@@ -7,11 +7,15 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
-> **Estado a 20/08/2026:** ronda de calidad del dato aplicada y verificada
-> (AGENTS.md sección 40): 400 pruebas y un `--no-claude` real con 76 vigentes,
-> uno menos que la referencia por la ventana deslizante de BDNS, no por el
-> código (40.4). Lo que falta es ver qué devuelve Haiku de verdad, y eso
-> requiere gasto y autorización expresa.
+> **Estado a 20/08/2026:** ronda de calidad del dato aplicada, verificada y
+> **probada contra la API real** (AGENTS.md secciones 40 y 41). 404 pruebas, un
+> `--no-claude` con 76 vigentes y una prueba dirigida de pago sobre tres
+> convocatorias que confirma que `objeto_y_actuaciones` sale con el detalle
+> buscado, que los campos estructurados de BDNS llegan al modelo y que los
+> `data_gaps` bajan. Esa prueba destapó y corrigió una truncación de salida
+> (sección 41.1). **Pendiente:** la ejecución completa de las 75 restantes,
+> ~$2,91 reales —no los $2,01 que muestra la previsión, con la calibración
+> vieja—, que requiere autorización expresa.
 >
 > **Para retomar el trabajo, empezar por `AGENTS.md` sección 39**: cierra la
 > sesión del 19/08/2026, resume las nueve rondas de modularización de ese día,

@@ -2870,6 +2870,84 @@ class FrontendLayoutTests(unittest.TestCase):
         page.close()
 
 
+class StructuredCallRetryTests(unittest.TestCase):
+    """Un JSON truncado no se arregla repitiendo la misma petición.
+
+    Con temperature=0 la respuesta es idéntica, así que los reintentos solo
+    gastaban. Ocurrió con el Programa INNOVAE el 20/08/2026: tres intentos
+    fallando en la misma columna, $0,0896 y una ejecución abortada.
+    """
+
+    def _cliente_que_trunca(self, techos):
+        """Devuelve siempre un JSON cortado a la mitad, como el caso real."""
+
+        class FakeMessages:
+            def create(self, **kwargs):
+                techos.append(kwargs["max_tokens"])
+                return SimpleNamespace(
+                    content=[SimpleNamespace(type="text", text='{"call_status": "open"')],
+                    usage=SimpleNamespace(
+                        input_tokens=1_000, output_tokens=kwargs["max_tokens"],
+                        cache_creation_input_tokens=0, cache_read_input_tokens=0,
+                        service_tier="standard",
+                    ),
+                )
+
+        return SimpleNamespace(messages=FakeMessages())
+
+    def test_each_retry_raises_the_output_ceiling(self):
+        techos = []
+        with mock.patch.dict(APP["_structured_claude_call"].__globals__,
+                             {"CLAUDE_SLEEP_S": 0}):
+            with self.assertRaises(APP["ClaudeAnalysisError"]):
+                APP["_structured_claude_call"](
+                    self._cliente_que_trunca(techos), APP["CallFacts"],
+                    "sistema", "prompt", 2_000,
+                    "Convocatoria de prueba", "extracción factual", 3,
+                )
+        self.assertEqual(len(techos), 3, techos)
+        self.assertEqual(techos[0], 2_000)
+        self.assertGreater(techos[1], techos[0])
+        self.assertGreater(techos[2], techos[1])
+
+    def test_the_ceiling_is_bounded(self):
+        techos = []
+        with mock.patch.dict(APP["_structured_claude_call"].__globals__,
+                             {"CLAUDE_SLEEP_S": 0}):
+            with self.assertRaises(APP["ClaudeAnalysisError"]):
+                APP["_structured_claude_call"](
+                    self._cliente_que_trunca(techos), APP["CallFacts"],
+                    "sistema", "prompt", 9_000,
+                    "Convocatoria de prueba", "extracción factual", 3,
+                )
+        for techo in techos:
+            self.assertLessEqual(techo, APP["STRUCTURED_OUTPUT_TOKEN_CEILING"])
+
+    def test_the_partial_spend_of_failed_attempts_is_reported(self):
+        # El aborto debe poder explicar qué se gastó sin resultado.
+        techos = []
+        with mock.patch.dict(APP["_structured_claude_call"].__globals__,
+                             {"CLAUDE_SLEEP_S": 0}):
+            try:
+                APP["_structured_claude_call"](
+                    self._cliente_que_trunca(techos), APP["CallFacts"],
+                    "sistema", "prompt", 2_000,
+                    "Convocatoria de prueba", "extracción factual", 3,
+                )
+            except APP["ClaudeAnalysisError"] as exc:
+                self.assertEqual(len(exc.partial_usages), 3)
+                self.assertTrue(all(not u["valid_output"] for u in exc.partial_usages))
+            else:
+                self.fail("debería haber abortado")
+
+    def test_extraction_has_more_room_than_evaluation(self):
+        # La extracción es la etapa que recibió la evidencia enriquecida y la
+        # que se truncó en producción: necesita más techo, no menos.
+        fuente = (ROOT / "Grant-Radar-prueba.py").read_text(encoding="utf-8")
+        self.assertIn("extraction_prompt, 5000,", fuente)
+        self.assertIn("evaluation_prompt, 3000,", fuente)
+
+
 class HaikuPayloadTests(unittest.TestCase):
     """Qué evidencia viaja realmente a Haiku.
 

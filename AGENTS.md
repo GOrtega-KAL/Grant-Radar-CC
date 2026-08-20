@@ -2417,6 +2417,8 @@ rondas el mismo día.
 | 10 | Retirar el patrón `runpy` + fusión de `APP` en `tests/test_grant_radar.py` | Tiene sentido revisarlo cuando el script principal quede reducido a configuración y punto de entrada |
 | 15 | Orden de extracción medido (secciones 37 y 38): `save_discovery_audit` → capa Haiku → segunda mitad de holds → reglas → `run_pipeline()` | La primera mitad de holds ya salió (sección 38). `run_pipeline()` arrastra el resto: va el último, no el siguiente |
 | 21 | Ejecutar `tests/test_grant_radar_script_names.py` **antes** que la suite completa tras cada extracción | Señala el módulo y el nombre exactos en un segundo; la suite completa los presenta como errores en pruebas de otra cosa (pasó tres veces) |
+| 23 | Recalibrar el coste por análisis: la evidencia enriquecida lo sube de $0,0265 a ~$0,0389 y la previsión del pipeline se queda corta un 45 % | Con datos de la primera ejecución completa; la barrera de $5 no bloquea pero el margen real es menor (sección 41.3) |
+| 24 | Endurecer la instrucción contra presunciones en `objeto_y_actuaciones` | INNOVAE devolvió «se presume inversión en equipos…» cuando la fuente no detalla gastos. Es una presunción declarada, no una invención, pero mejor evitarla (sección 41.2) |
 | 22 | La ventana de BDNS bajó de 79 a 65 días (densidad real 54 filas/día, no 44). Cumple el mínimo de 60 con 5 días de margen | Revisar `BDNS_LATEST_MAX_PAGES` y actualizar la densidad del test de regresión, que hoy es optimista y no detectaría una caída por debajo de 60 (sección 40.4) |
 | 16 | Usar `node.end_lineno`, nunca `max(lineno)`, al cortar bloques por AST | Un `return (` multilínea pierde el paréntesis de cierre; ocurrió en la sección 37 |
 
@@ -2783,3 +2785,87 @@ todavía ver **lo que Haiku devuelve de verdad**, que es el objetivo de la
 ronda y no puede comprobarse sin gastar: la prueba dirigida sobre tres
 convocatorias (~$0,10) y, si convence, la ejecución completa (~$2,04). Ambas
 requieren autorización expresa.
+
+## 41. Prueba dirigida de pago a 20/08/2026: lo que la ronda de calidad produce
+
+Tres convocatorias deliberadamente distintas, autorizadas expresamente:
+**INNOVAE** (multilínea, con documentos BOE), **BDNS 918271 / PAIP Aragón**
+(con bases recuperadas de un hold) y **HORIZON-CL5-2027-02-D3-07** (sin ningún
+documento oficial).
+
+### 41.1. Primer intento: abortó, y por eso valía la pena hacerlo
+
+INNOVAE agotó los tres reintentos de extracción con
+`Invalid JSON: EOF while parsing a string at line 1 column 9028`. Salida
+truncada: la etapa de extracción tenía `max_tokens=2800` y la evidencia
+enriquecida de esta ronda produce respuestas más largas —cuatro
+`funding_lines` con sus importes, más `eligible_actions`—. Se subió el techo
+de la evaluación (2.200 → 3.000) pero **no el de la extracción**, que es
+justo la etapa que se había enriquecido.
+
+Peor aún: con `temperature=0` los tres intentos fallaron **en la misma
+columna**. Repetir una petición idéntica ante un JSON truncado no puede
+funcionar, y costó $0,0896 para nada antes de abortar la ejecución.
+
+Correcciones: extracción a `max_tokens=5000`, y cada reintento amplía el techo
+un 60 % hasta un tope de 12.000. Ampliarlo no cuesta —Anthropic factura los
+tokens generados, no el máximo autorizado— y convierte una truncación de fallo
+fatal en recuperable. Cubierto por `StructuredCallRetryTests`, que simula
+exactamente la respuesta truncada del caso real.
+
+### 41.2. Segundo intento: los tres casos completos
+
+`objeto_y_actuaciones` funciona, y con el nivel de detalle que se buscaba. Para
+INNOVAE:
+
+> INNOVAE financia subvenciones a proyectos singulares de mejora de eficiencia
+> energética en industria, movilidad sostenible, edificios terciarios y
+> sistemas de refrigeración. La línea industrial (presupuesto 30 M€, máximo
+> 2 M€/proyecto) fomenta actuaciones de mejora tecnológica en procesos
+> industriales que reduzcan consumo de energía final con ahorro mínimo del
+> 20 %, coste elegible mínimo 100.000 €, plazo máximo 24 meses; excluye
+> cogeneración y renovables sin ahorro de energía final.
+
+Las cuatro líneas de INNOVAE se extraen por separado con sus importes, sin
+mezclar sus requisitos.
+
+**Los campos estructurados de BDNS llegan y se usan.** En PAIP Aragón,
+`applicant_types` y `eligible_entity_types` recogen literalmente la categoría
+oficial `PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA` y
+`eligible_geographies` queda como `ES24 - ARAGON`. Antes eran de los campos
+más ausentes: `applicant_types` faltaba en 19 de 49 y `eligible_entity_types`
+en 18.
+
+**Los `data_gaps` bajan.** INNOVAE pasa de tres a uno (solo
+`eligibility_unknown`); PAIP de tres a dos, resuelto el presupuesto. El
+`eligibility_unknown` que queda es correcto y conservador: la categoría oficial
+es «PYME», y Kalfrisa es mediana, así que la condición jurídica debe
+verificarse en vez de presumirse.
+
+**Una reserva sobre la redacción.** En los dos casos donde la fuente no
+detalla los gastos, el modelo lo dice —«Gastos elegibles no detallados en
+metadatos disponibles»—, pero en INNOVAE añade «se presume inversión en
+equipos, instalación, ingeniería y validación». Es una presunción declarada,
+no una invención encubierta, y el prompt pedía no inventar; aun así conviene
+endurecer esa instrucción si vuelve a aparecer.
+
+### 41.3. El coste real sube un 45 % sobre la calibración
+
+| | Antes (extractor v5) | Ahora (v7) |
+|---|---|---|
+| Entrada media por convocatoria | 7.875 tokens | **15.278** |
+| Salida media | 2.078 | 4.717 |
+| Coste medio | $0,0265 | **$0,0389** |
+
+La evidencia enriquecida casi duplica la entrada, que es exactamente lo que se
+buscaba, pero encarece cada análisis. Para las 75 que faltan la proyección real
+es **~$2,91**, no los $2,01 que muestra la previsión del pipeline, que sigue
+usando la calibración de agosto.
+
+La barrera de seguridad no bloquea —calcula 76 × $0,035 = $2,66 frente al
+límite de $5,00— pero conviene saber que el margen es menor de lo que sugiere.
+Recalibrar `CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS` con datos de la ejecución
+completa queda anotado en la sección 36 como punto 23.
+
+Gasto acumulado de las dos pruebas: **$0,0896 perdidos** en el primer intento y
+**$0,1166** en análisis útiles (tres convocatorias completas).

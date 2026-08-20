@@ -1488,6 +1488,12 @@ def claude_key_format_is_valid() -> bool:
 
 
 
+# Techo absoluto de salida por llamada. Existe para que la ampliación
+# progresiva de los reintentos no crezca sin límite, no como control de coste:
+# solo se facturan los tokens realmente generados.
+STRUCTURED_OUTPUT_TOKEN_CEILING = 12_000
+
+
 def _structured_claude_call(
     client,
     output_model: type[BaseModel],
@@ -1533,6 +1539,7 @@ def _structured_claude_call(
                 + cache_write_tokens + cache_read_tokens
             ),
             "estimated_cost_usd": round(estimated_cost_usd, 6),
+            "max_tokens": attempt_max_tokens,
             "service_tier": getattr(usage, "service_tier", None),
         }
 
@@ -1558,11 +1565,21 @@ def _structured_claude_call(
 
     for attempt in range(max_retries):
         attempt_recorded = False
+        # Un JSON cortado a la mitad no se arregla repitiendo la misma
+        # petición: con temperature=0 la respuesta es idéntica y el reintento
+        # solo gasta. Pasó de verdad con el Programa INNOVAE el 20/08/2026,
+        # que agotó tres intentos fallando siempre en la misma columna y se
+        # llevó $0,0896 por nada. Cada reintento amplía el techo de salida, y
+        # ampliarlo no cuesta: Anthropic factura los tokens generados, no el
+        # máximo autorizado.
+        attempt_max_tokens = min(
+            int(max_tokens * (1.6 ** attempt)), STRUCTURED_OUTPUT_TOKEN_CEILING
+        )
         try:
             # Use create so usage is captured before local JSON validation.
             message = client.messages.create(
                 model=CLAUDE_MODEL,
-                max_tokens=max_tokens,
+                max_tokens=attempt_max_tokens,
                 temperature=0,
                 system=system_prompt,
                 messages=[{"role": "user", "content": user_prompt}],
@@ -2919,7 +2936,7 @@ def analyze_with_claude(conv: dict, max_retries: int = 3) -> dict:
             + "\n</official_structured_data>"
         )
     facts_model, extraction_usage = _structured_claude_call(
-        client, CallFacts, extraction_system, extraction_prompt, 2800,
+        client, CallFacts, extraction_system, extraction_prompt, 5000,
         conv.get("title", ""), "extracción factual", max_retries,
     )
 
