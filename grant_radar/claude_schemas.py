@@ -105,6 +105,11 @@ class CallEvaluation(BaseModel):
     risks_and_unknowns: list[str]
     partner_needs: list[str]
     recommended_partner_ids: list[str]
+    # Qué financia la convocatoria y qué gastos cubre, antes de cualquier
+    # valoración de encaje. Va separado de `resumen` para poder mostrarlo
+    # destacado en el dashboard, exportarlo y buscarlo: es lo primero que
+    # necesita saber quien abre una convocatoria (ver AGENTS.md sección 40).
+    objeto_y_actuaciones: str
     resumen: str
     accion: str
     tags: list[str]

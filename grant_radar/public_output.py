@@ -152,13 +152,41 @@ def derive_eligible_actions(conv: dict, facts: dict) -> tuple[list[str], str]:
     return [], "unavailable"
 
 
+# Acrónimos del dominio que colisionan con la lista blanca y nunca deben
+# reescribirse. `CNAE` está aquí por un caso real: se publicó "los IDAE
+# elegibles" y "verificación de que IDAE 2899 esté incluido en el anexo",
+# cuando la fuente decía CNAE (ver AGENTS.md sección 40).
+ACRONIMOS_PROTEGIDOS = frozenset({
+    "CNAE", "NACE", "PYME", "PYMES", "BDNS", "BOE", "BOA", "MRR", "PRTR",
+    "FEDER", "TRL", "IVA", "SNPSAP", "CEDEC", "CIEMAT",
+})
+
+
 def post_procesar_texto(texto: str, whitelist: list = None) -> str:
     """
-    Normaliza variantes cercanas (alucinadas) de nombres de entidad a su forma
-    canónica, usando distancia de Levenshtein <= 2 sobre tokens alfabéticos de
-    4+ caracteres. Se aplica SOLO a los campos "summary" y "action" generados
-    por Claude Haiku (texto libre) — nunca a título, descripción, URL o
-    cualquier campo que provenga directamente de la fuente original.
+    Normaliza variantes alucinadas de nombres de entidad a su forma canónica.
+    Se aplica SOLO a los campos "summary" y "action" generados por Claude Haiku
+    (texto libre) — nunca a título, descripción, URL o cualquier campo que
+    provenga directamente de la fuente original.
+
+    **Dos restricciones deliberadas, ambas por daños reales observados.** La
+    versión anterior comparaba cualquier token alfabético de 4+ caracteres con
+    distancia de Levenshtein <= 2, y eso corrompía prosa española corriente:
+    en las 49 convocatorias publicadas el 14/08/2026 aparecían "Plazo de
+    CIRCE" (era *cierre*), "reference_IDAE" (era *date*), "fin de IDAE" (era
+    *vida*) y "los IDAE elegibles" (era *CNAE*). Por eso ahora:
+
+    1. Solo se consideran tokens que el modelo escribió **en mayúsculas**, que
+       es la forma en la que aparece una entidad mal escrita (ITAINNOMA). Una
+       palabra en minúsculas ya no puede convertirse en un acrónimo.
+    2. El umbral de distancia depende de la longitud: 1 para tokens cortos, 2
+       a partir de seis caracteres. Sin esto, `CNAE` seguiría cayendo en
+       `IDAE`, que está a distancia 2.
+
+    El precio es no corregir una entidad mal escrita en minúsculas o en
+    capitalización de título ("Itainnoma"). Es preferible a reescribir texto
+    correcto: una entidad mal escrita se lee igual, una fecha convertida en
+    "IDAE" no.
     """
     if not texto:
         return texto
@@ -166,12 +194,16 @@ def post_procesar_texto(texto: str, whitelist: list = None) -> str:
     tokens = re.findall(r"[A-Za-zÀ-ÿ]+|[^A-Za-zÀ-ÿ]+", texto)
     corregido = []
     for tok in tokens:
-        if tok.isalpha() and len(tok) >= 4:
-            mejor = min(whitelist, key=lambda e: _levenshtein(tok.upper(), e.upper()))
-            dist = _levenshtein(tok.upper(), mejor.upper())
-            corregido.append(mejor if 0 < dist <= 2 else tok)
-        else:
+        if not (tok.isalpha() and len(tok) >= 4 and tok.isupper()):
             corregido.append(tok)
+            continue
+        if tok in ACRONIMOS_PROTEGIDOS:
+            corregido.append(tok)
+            continue
+        mejor = min(whitelist, key=lambda e: _levenshtein(tok.upper(), e.upper()))
+        dist = _levenshtein(tok.upper(), mejor.upper())
+        limite = 1 if len(tok) <= 5 else 2
+        corregido.append(mejor if 0 < dist <= limite else tok)
     return "".join(corregido)
 
 
@@ -440,6 +472,12 @@ def _assemble_public_record(record_id: int, conv: dict, analysis: dict) -> dict:
         "org":                 conv["org"],
         "tags":                analysis.get("tags", ["ee"]),
         "tech_tags":           analysis.get("tech_tags", []),
+        # Qué financia la convocatoria, antes que ninguna valoración. Los
+        # análisis en caché anteriores al esquema que lo introdujo no lo
+        # traen: se publica vacío y el frontend cae al resumen.
+        "objeto_y_actuaciones": post_procesar_texto(
+            analysis.get("objeto_y_actuaciones", "")
+        ),
         "summary":             post_procesar_texto(analysis.get("resumen", "")),
         "action":              post_procesar_texto(analysis.get("accion", "")),
         "dims":                analysis.get("dimensiones", []),

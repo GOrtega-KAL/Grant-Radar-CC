@@ -2662,3 +2662,88 @@ donde ya apareció uno de los tres fallos latentes.
    Si un número se desvía, comprobar primero el estado de salud de las fuentes:
    el 19/08 un `HTTP 429` de `boe.es` bajó BOE de 1 a 0 y las duplicadas de 33 a
    31, y no era una regresión (secciones 35 y 37).
+
+## 40. Calidad del dato que entra y sale de Haiku, a 20/08/2026
+
+Ronda previa a la primera ejecución completa de pago desde el 14/08. El objetivo
+no era estructura sino **qué se le pasa al modelo y qué se le pide**, porque un
+fallo de formato descubierto después obliga a subir versión y pagar dos veces
+las 77 convocatorias.
+
+### 40.1. Lo que mostraron los datos reales
+
+Medido sobre las 49 convocatorias publicadas y las 102 entradas de caché:
+
+- **Los 21 campos estructurados de BDNS no llegaban al modelo.** El pipeline
+  extrae de SNPSAP tipos de beneficiario, CNAE, regiones, finalidad e
+  instrumentos, los usa en la matriz de reglas y **no** los incluía en el
+  prompt: se le preguntaba a Haiku quién puede solicitar cuando la respuesta
+  oficial ya estaba en casa. `eligibility_unknown` aparecía en 27 de 49.
+- **Las bases recuperadas perdían la mitad del texto.**
+  `_attach_bdns_hold_evidence()` guarda 12.000 caracteres y el prompt los
+  recortaba a 6.000.
+- **Y además se ordenaban las últimas.** Esas bases llevaban `document_role`
+  igual al `kind` de la API (`document`/`announcement`), valores que
+  `related_role_rank` no reconoce: puntuaban 0 y competían por el corte de los
+  cinco primeros contra documentos menos informativos.
+- **`post_procesar_texto()` corrompía el resumen publicado.** Comparaba
+  cualquier token de 4+ letras contra la lista blanca de entidades con
+  distancia ≤ 2, así que reescribía prosa española corriente. En el JSON del
+  14/08 estaban publicados `Plazo de CIRCE` (era *cierre*), `reference_IDAE`
+  (era *date*), `fin de IDAE` (era *vida*) y, en INNOVAE, `verificación de que
+  IDAE 2899 esté incluido en el anexo` (era *CNAE*). 18 menciones sospechosas
+  en 49 registros.
+- **El prompt no decía nada sobre `resumen`.** El campo existía en el esquema
+  sin una sola instrucción sobre qué contener, de ahí que los resúmenes
+  abrieran con fechas y puntuaciones en vez de con el objeto de la ayuda.
+- **`eligible_actions` nunca se había producido.** Las 102 entradas de caché
+  son del extractor `facts-2026-08-v5`; la v6 que introdujo el campo no llegó a
+  ejecutarse nunca contra la API.
+
+**Medido y descartado:** cachear el prompt no es viable. El perfil de Kalfrisa
+(~690 tokens) más los prompts de sistema no alcanzan el mínimo cacheable.
+
+**Corregido durante la ejecución del plan:** se había previsto bajar el límite
+de 14.000 caracteres de la descripción por considerarlo inactivo, a partir de
+la mediana (3.451). Al comprobar el máximo publicado —13.955— resultó que sí se
+alcanza, y bajarlo habría recortado los topics largos de Horizon. Se mantuvo, y
+el margen se dio solo a los documentos.
+
+### 40.2. Cambios aplicados
+
+| Área | Cambio |
+|---|---|
+| Corrupción | `post_procesar_texto()` solo corrige tokens escritos **en mayúsculas**, con umbral de distancia 1 para tokens cortos y 2 desde seis caracteres —sin eso `CNAE` seguía cayendo en `IDAE`— y una lista de acrónimos del dominio protegidos |
+| Entrada | Bloque `<official_structured_data>` con 14 campos oficiales de SNPSAP, en extracción y evaluación, declarado en el prompt como evidencia de primer orden frente al `<source_document>` no confiable. Solo hechos de la fuente: las conclusiones del pipeline (`bdns_company_eligible`…) se excluyen para no difuminar la frontera entre evidencia y reglas |
+| Entrada | Rol documental de las bases BDNS traducido al vocabulario que el ranking entiende (`regulatory_bases`/`call_extract`) |
+| Entrada | Presupuesto de evidencia explícito: 10.000 caracteres por documento (antes 6.000) con tope total de 26.000 compartido, para que unas bases largas puedan usar más sin disparar el coste |
+| Salida | Campo nuevo `objeto_y_actuaciones` en `CallEvaluation`, con instrucción de redactar qué financia la convocatoria, qué gastos cubre y qué excluye, desde la convocatoria y sin valoración de encaje. `resumen` recibe instrucción de no repetirlo |
+| Salida | `max_tokens` de evaluación 2.200 → 3.000: el máximo observado (4.594 de 5.000 combinados) ya rozaba el techo y el campo nuevo alarga la respuesta |
+| Frontend | Bloque destacado al inicio del resumen ejecutivo, más columna de exportación |
+| Versiones | `facts-2026-08-v7-official-structured-data`, `fit-2026-08-v6-purpose-and-actions`, prompt `2026-08-v10`. Coste adicional cero: la caché ya era toda v5 |
+
+### 40.3. Verificación: parcial, por una caída de red
+
+400 pruebas `unittest` (381 + 19) y `py_compile` en verde. Entre las nuevas, las
+que fijan los cinco daños reales de `post_procesar_texto()` con literales del
+JSON publicado, y las que comprueban que los campos estructurados viajan al
+prompt, que las conclusiones del pipeline no se cuelan como si fueran hechos de
+la fuente, y que las bases conservan un rol que el ranking entiende.
+
+**La ejecución `--no-claude` de cierre no pudo completarse.** Dos intentos
+devolvieron 4 convocatorias en vez de 77, con todas las fuentes de red a cero y
+solo el catálogo curado de CDTI sobreviviendo. La causa es externa y está
+documentada en el log: `getaddrinfo failed` y `ERR_NAME_NOT_RESOLVED` en todos
+los hosts. Comprobado después de forma aislada: `api.tech.ec.europa.eu` no
+resuelve nunca, `infosubvenciones.es` y `boe.es` resuelven pero una petición
+HTTPS real a ellos falla igualmente con `ConnectionError`. El equipo no tiene
+salida a internet estable.
+
+El sistema se comportó como debía ante el corte: marcó las cuatro fuentes con
+control de salud como `unhealthy` con `inventory_unreachable`, no generó
+`convocatorias.json`, no tocó la caché de análisis y terminó con código 0.
+
+**Pendiente antes de gastar:** repetir `--no-claude` con red y comprobar los
+números de referencia de la sección 39.5. Solo entonces tiene sentido la prueba
+dirigida de pago sobre tres convocatorias (~$0,10) y, si convence, la ejecución
+completa (~$2,04). Ambas requieren autorización expresa.

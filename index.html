@@ -1084,6 +1084,18 @@
   }
   .content-copy { color: var(--text-2); font-size: 12.5px; line-height: 1.65; }
   .content-copy strong { color: var(--text); }
+  .call-purpose {
+    margin-bottom: 12px;
+    padding: 12px 14px;
+    border-left: 3px solid var(--brand);
+    background: var(--surface-2, rgba(21, 86, 168, 0.06));
+    border-radius: 0 6px 6px 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .call-purpose:empty { display: none; }
   .eligible-actions-summary {
     margin-top: 12px;
     padding-top: 10px;
@@ -1617,7 +1629,7 @@
       </section>
 
       <section class="modal-summary-grid">
-        <div class="content-card"><h3>Resumen ejecutivo</h3><div class="content-copy" id="ov-summary">—</div><div class="eligible-actions-summary" id="ov-eligible-actions">—</div></div>
+        <div class="content-card"><h3>Resumen ejecutivo</h3><div class="call-purpose" id="ov-purpose"></div><div class="content-copy" id="ov-summary">—</div><div class="eligible-actions-summary" id="ov-eligible-actions">—</div></div>
         <div class="content-card action-card"><h3>Acción recomendada</h3><div class="content-copy" id="ov-action">—</div></div>
       </section>
 
@@ -1845,6 +1857,7 @@
       monitoring_flags: Array.isArray(raw.monitoring_flags) ? raw.monitoring_flags : [],
       token_usage: raw.token_usage && typeof raw.token_usage === 'object' ? raw.token_usage : {},
       call_facts: raw.call_facts && typeof raw.call_facts === 'object' ? raw.call_facts : {},
+      objeto_y_actuaciones: typeof raw.objeto_y_actuaciones === 'string' ? raw.objeto_y_actuaciones : '',
       eligible_actions: eligibleActionInfo.actions,
       eligible_actions_basis: eligibleActionInfo.basis,
       tech_tags: Array.isArray(raw.tech_tags) ? raw.tech_tags : [],
@@ -2099,7 +2112,7 @@
       'Decisión', 'Papel de oportunidad', 'Rol recomendado', 'Presupuesto publicado', 'Presupuesto total EUR',
       'Coste mínimo de proyecto EUR', 'Ayuda máxima EUR', 'Financiación %', 'TRL mínimo', 'TRL máximo',
       'Consorcio obligatorio', 'Geografías elegibles', 'Tipos de solicitante', 'Actuaciones elegibles', 'Temas requeridos', 'Temáticas',
-      'Taxonomía tecnológica', 'Resumen', 'Siguiente acción', 'Evidencias positivas', 'Riesgos e incógnitas',
+      'Taxonomía tecnológica', 'Objeto y actuaciones', 'Resumen', 'Siguiente acción', 'Evidencias positivas', 'Riesgos e incógnitas',
       'Datos pendientes', 'Datos no localizados', 'Contradicción reglas-modelo',
       'Motivos de contradicción', 'Alertas de seguimiento', 'Socios recomendados', 'Necesidades de socio',
       'Calidad de evidencia', 'Descartada', 'URL oficial'
@@ -2143,7 +2156,7 @@
       yesNo(facts.consortium_required), listText(facts.eligible_geographies),
       listText(facts.applicant_types?.length ? facts.applicant_types : facts.eligible_entity_types),
       listText(c.eligible_actions), listText(facts.required_topics), listText((c.tags || []).map(tag => tagMap[tag] || tag)),
-      listText((c.tech_tags || []).map(tag => techTagMap[tag] || tag)), c.summary || '', c.action || '',
+      listText((c.tech_tags || []).map(tag => techTagMap[tag] || tag)), c.objeto_y_actuaciones || '', c.summary || '', c.action || '',
       listText(c.positive_evidence), listText(c.risks_and_unknowns), yesNo(c.data_pending),
       listText((c.data_gaps || []).map(reason => reviewReasonMap[reason] || reason)),
       yesNo(c.review_required),
@@ -2188,7 +2201,7 @@
 
   function xlsxColumnWidth(header) {
     if (header === 'Título') return 52;
-    if (['Resumen', 'Siguiente acción'].includes(header)) return 58;
+    if (['Objeto y actuaciones', 'Resumen', 'Siguiente acción'].includes(header)) return 58;
     if (['Evidencias positivas', 'Riesgos e incógnitas', 'Motivo de elegibilidad', 'Motivos de comprobación'].includes(header)) return 42;
     if (['Geografías elegibles', 'Tipos de solicitante', 'Temas requeridos', 'Taxonomía tecnológica', 'Necesidades de socio'].includes(header)) return 30;
     if (['Organismo', 'Programa', 'Fuentes de descubrimiento', 'Presupuesto publicado', 'Socios recomendados'].includes(header)) return 26;
@@ -2701,6 +2714,10 @@
       ? `Cierre ${deadlineDate}${c.fecha_prevista ? ' · previsto' : ''}`
       : c.fecha_sin_confirmar ? 'Fecha de cierre sin confirmar' : 'Fecha exacta pendiente';
 
+    // Qué financia la convocatoria, antes de cualquier valoración de encaje.
+    // Los JSON anteriores al campo no lo traen: el bloque queda vacío y se
+    // oculta solo por CSS, dejando el resumen como estaba.
+    document.getElementById('ov-purpose').textContent = c.objeto_y_actuaciones || '';
     document.getElementById('ov-summary').textContent = c.summary || 'No se ha generado un resumen.';
     const eligibleActions = Array.isArray(c.eligible_actions) ? c.eligible_actions : [];
     const eligibleBasisLabels = {

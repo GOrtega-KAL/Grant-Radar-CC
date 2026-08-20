@@ -2831,7 +2831,7 @@ class FrontendLayoutTests(unittest.TestCase):
             'Decisión', 'Papel de oportunidad', 'Rol recomendado', 'Presupuesto publicado', 'Presupuesto total EUR',
             'Coste mínimo de proyecto EUR', 'Ayuda máxima EUR', 'Financiación %', 'TRL mínimo', 'TRL máximo',
             'Consorcio obligatorio', 'Geografías elegibles', 'Tipos de solicitante', 'Actuaciones elegibles', 'Temas requeridos', 'Temáticas',
-            'Taxonomía tecnológica', 'Resumen', 'Siguiente acción', 'Evidencias positivas', 'Riesgos e incógnitas',
+            'Taxonomía tecnológica', 'Objeto y actuaciones', 'Resumen', 'Siguiente acción', 'Evidencias positivas', 'Riesgos e incógnitas',
             'Datos pendientes', 'Datos no localizados', 'Contradicción reglas-modelo',
             'Motivos de contradicción', 'Alertas de seguimiento', 'Socios recomendados', 'Necesidades de socio',
             'Calidad de evidencia', 'Descartada', 'URL oficial',
@@ -2868,6 +2868,96 @@ class FrontendLayoutTests(unittest.TestCase):
         self.assertTrue(label.is_visible())
         self.assertEqual(label.text_content(), "Socio de consorcio")
         page.close()
+
+
+class HaikuPayloadTests(unittest.TestCase):
+    """Qué evidencia viaja realmente a Haiku.
+
+    Antes de la ronda del 20/08/2026, el pipeline extraía 21 campos
+    estructurados de la API de SNPSAP, los usaba en la matriz de reglas y no se
+    los pasaba al modelo: se le preguntaba quién puede solicitar cuando la
+    respuesta oficial ya estaba en casa. Y las bases recuperadas de un hold
+    llegaban con `document_role` = "document", valor que el orden de prioridad
+    documental no reconoce, así que se ordenaban las últimas.
+    """
+
+    def test_official_structured_fields_travel_to_the_prompt(self):
+        conv = {
+            "bdns_id": "900123",
+            "bdns_beneficiary_types": ["PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"],
+            "bdns_nace_codes": ["25.11"],
+            "bdns_nace_sections": ["C"],
+            "bdns_regions": ["ARAGÓN"],
+            "bdns_finality": "Industria y energía",
+            "bdns_instruments": ["SUBVENCIÓN"],
+            "bdns_project_execution_days": 730,
+        }
+        facts = APP["_official_structured_facts"](conv)
+        self.assertEqual(
+            facts["tipos_de_beneficiario"],
+            ["PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"],
+        )
+        self.assertEqual(facts["codigos_cnae"], ["25.11"])
+        self.assertEqual(facts["regiones"], ["ARAGÓN"])
+        self.assertEqual(facts["dias_de_ejecucion"], 730)
+
+    def test_pipeline_conclusions_are_not_sent_as_if_they_were_source_facts(self):
+        # bdns_company_eligible y bdns_call_access son decisiones de la matriz,
+        # no datos de la fuente: mezclarlas difuminaría esa frontera.
+        conv = {
+            "bdns_beneficiary_types": ["GRAN EMPRESA"],
+            "bdns_company_eligible": True,
+            "bdns_call_access": "named",
+            "bdns_territorial_requirement": "existing_establishment",
+        }
+        facts = APP["_official_structured_facts"](conv)
+        for prohibido in ("bdns_company_eligible", "bdns_call_access",
+                          "bdns_territorial_requirement"):
+            self.assertNotIn(prohibido, facts)
+        self.assertEqual(facts["tipos_de_beneficiario"], ["GRAN EMPRESA"])
+
+    def test_a_call_without_structured_data_yields_nothing(self):
+        # Horizon, ECCP o EEN no traen estos campos: el bloque no debe añadirse.
+        self.assertEqual(APP["_official_structured_facts"]({"title": "x"}), {})
+
+    def test_recovered_bases_keep_a_role_the_ranking_understands(self):
+        conv = {"related_document_contents": []}
+        evidence = {"documents": [
+            {"title": "Bases reguladoras", "url": "https://x.test/bases.pdf",
+             "kind": "document", "text": "Beneficiarios: empresas. " * 40},
+            {"title": "Anuncio", "url": "https://x.test/anuncio",
+             "kind": "announcement", "text": "Extracto de la convocatoria. " * 40},
+        ]}
+        actualizado = APP["_attach_bdns_hold_evidence"](conv, evidence)
+        roles = [d["document_role"] for d in actualizado["related_document_contents"]]
+        self.assertEqual(roles, ["regulatory_bases", "call_extract"])
+
+    def test_the_document_budget_is_shared_and_bounded(self):
+        presupuesto = {"remaining": APP["EVIDENCE_TOTAL_DOCUMENT_BUDGET"]}
+        documento = {
+            "title": "Bases", "url": "https://x.test/a",
+            "document_role": "regulatory_bases",
+            "description": "Requisitos de los beneficiarios. " * 2_000,
+        }
+        primero = APP["_related_document_evidence"](documento, presupuesto)
+        self.assertIsNotNone(primero)
+        self.assertLessEqual(
+            len(primero["description"]), APP["EVIDENCE_PER_DOCUMENT_BUDGET"]
+        )
+        self.assertLess(
+            presupuesto["remaining"], APP["EVIDENCE_TOTAL_DOCUMENT_BUDGET"]
+        )
+
+    def test_a_document_is_dropped_when_the_budget_is_exhausted(self):
+        presupuesto = {"remaining": 100}
+        self.assertIsNone(APP["_related_document_evidence"](
+            {"title": "Bases", "description": "texto " * 500}, presupuesto
+        ))
+
+    def test_recovered_bases_get_more_room_than_before(self):
+        # La regresión concreta: se guardaban 12.000 caracteres y el prompt los
+        # recortaba a 6.000, perdiendo la mitad de la evidencia recuperada.
+        self.assertGreater(APP["EVIDENCE_PER_DOCUMENT_BUDGET"], 6_000)
 
 
 if __name__ == "__main__":

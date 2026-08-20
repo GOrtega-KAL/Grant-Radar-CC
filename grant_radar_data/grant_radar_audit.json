@@ -262337,6 +262337,968 @@
         "6a61cf5cdd62e9c03e52121b",
         "640da0f93f3b6656d3eca0ec"
       ]
+    },
+    {
+      "started_at": "2026-08-20T07:05:47.122265+00:00",
+      "completed_at": "2026-08-20T07:06:58.708822+00:00",
+      "status": "completed_no_claude",
+      "excluded_count": 2,
+      "reason_counts": {
+        "deadline_closed": 2
+      },
+      "source_counts": {
+        "HORIZON EUROPE": 0,
+        "BDNS": 0,
+        "ECCP": 0,
+        "EEN": 0,
+        "CDTI": 4,
+        "IDAE": 0,
+        "IDAE CATÁLOGO": 0,
+        "BOE / MITECO": 0,
+        "BOA ARAGÓN": 0
+      },
+      "coverage_watch": [
+        {
+          "key": "programa_innovae",
+          "label": "Programa INNOVAE",
+          "status": "not_observed",
+          "matches": 0,
+          "sources": [],
+          "url": "https://www.idae.es/ayudas-y-financiacion/programa-innovae",
+          "deadline_date": "",
+          "recurrence": "",
+          "expected_start_month": null
+        },
+        {
+          "key": "aragon_tecnologias_limpias",
+          "label": "Ayudas Aragón para inversiones productivas en tecnologías limpias",
+          "status": "not_observed",
+          "matches": 0,
+          "sources": [],
+          "url": "https://www.aragon.es/tramitador/-/tramite/ayudas-para-el-fomento-de-inversiones-productivas-en-tecnologias-limpias-y-eficientes-en-el-uso-de-los-recursos/convocatoria-2026",
+          "deadline_date": "",
+          "recurrence": "",
+          "expected_start_month": null
+        },
+        {
+          "key": "paip_aragon",
+          "label": "PAIP Aragón",
+          "status": "not_observed",
+          "matches": 0,
+          "sources": [],
+          "url": "https://www.aragon.es/tramitador/-/tramite/ayudas-industria-digital-integradora-sostenible-marco-programa-ayudas-industria-pyme-aragon-paip/convocatoria-2026-en-desarrollo",
+          "deadline_date": "",
+          "recurrence": "annual",
+          "expected_start_month": 9
+        },
+        {
+          "key": "horizon_heat_upgrade",
+          "label": "HORIZON-CL5-2026-09-D4-08",
+          "status": "not_observed",
+          "matches": 0,
+          "sources": [],
+          "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2026-09-D4-08",
+          "deadline_date": "",
+          "recurrence": "",
+          "expected_start_month": null
+        }
+      ],
+      "diagnostics": {
+        "web_source_health": {
+          "ECCP": {
+            "source": "ECCP",
+            "checked_at": "2026-08-20T07:06:22.147574+00:00",
+            "status": "unhealthy",
+            "issues": [
+              "inventory_unreachable",
+              "inventory_below_expected_minimum"
+            ],
+            "inventory_loaded": false,
+            "structure_ok": true,
+            "discovered_count": 0,
+            "expected_min_inventory": 10,
+            "detail_attempted": 0,
+            "detail_loaded": 0,
+            "detail_load_rate": null,
+            "dated_count": 0,
+            "date_coverage": 0.0,
+            "source_version": "",
+            "version_age_days": null
+          },
+          "IDAE": {
+            "source": "IDAE",
+            "checked_at": "2026-08-20T07:06:56.138418+00:00",
+            "status": "unhealthy",
+            "issues": [
+              "inventory_unreachable",
+              "inventory_below_expected_minimum"
+            ],
+            "inventory_loaded": false,
+            "structure_ok": false,
+            "discovered_count": 0,
+            "expected_min_inventory": 40,
+            "detail_attempted": 0,
+            "detail_loaded": 0,
+            "detail_load_rate": null,
+            "dated_count": 0,
+            "date_coverage": 0.0,
+            "source_version": "",
+            "version_age_days": null
+          },
+          "BOE / MITECO": {
+            "source": "BOE / MITECO",
+            "checked_at": "2026-08-20T07:06:56.318784+00:00",
+            "status": "unhealthy",
+            "issues": [
+              "inventory_unreachable",
+              "inventory_below_expected_minimum"
+            ],
+            "inventory_loaded": false,
+            "structure_ok": false,
+            "discovered_count": 0,
+            "expected_min_inventory": 25,
+            "detail_attempted": 0,
+            "detail_loaded": 0,
+            "detail_load_rate": null,
+            "dated_count": 0,
+            "date_coverage": 0.0,
+            "source_version": "",
+            "version_age_days": null
+          },
+          "CDTI": {
+            "source": "CDTI",
+            "checked_at": "2026-08-20T07:06:57.232448+00:00",
+            "status": "unhealthy",
+            "issues": [
+              "inventory_unreachable",
+              "inventory_below_expected_minimum",
+              "source_version_missing"
+            ],
+            "inventory_loaded": false,
+            "structure_ok": false,
+            "discovered_count": 0,
+            "expected_min_inventory": 10,
+            "detail_attempted": 0,
+            "detail_loaded": 0,
+            "detail_load_rate": null,
+            "dated_count": 0,
+            "date_coverage": 0.0,
+            "source_version": "",
+            "version_age_days": null
+          }
+        },
+        "eccp_crawl_experiment": {
+          "mode": "production_fixed_depth",
+          "selection_basis": "experimento 2026-08-04",
+          "sample_size": 0,
+          "selected_depth": 1,
+          "metrics": [
+            {
+              "depth": 0,
+              "requests": 0,
+              "bytes": 0,
+              "irrelevant": 0,
+              "errors": 0,
+              "critical_fields": 0,
+              "median_requests_per_call": 0,
+              "unique_call_gain_pct": 0
+            },
+            {
+              "depth": 1,
+              "requests": 0,
+              "bytes": 0,
+              "irrelevant": 0,
+              "errors": 0,
+              "critical_fields": 0,
+              "median_requests_per_call": 0,
+              "unique_call_gain_pct": 0.0
+            }
+          ]
+        },
+        "eccp_scrape_audit": {
+          "pages_read": 0,
+          "listing_errors": 1,
+          "inventory_unique": 0,
+          "detail_attempted": 0,
+          "detail_loaded": 0,
+          "detail_failed": 0,
+          "dated_details": 0,
+          "active_calls": 0,
+          "health": {
+            "source": "ECCP",
+            "checked_at": "2026-08-20T07:06:22.147574+00:00",
+            "status": "unhealthy",
+            "issues": [
+              "inventory_unreachable",
+              "inventory_below_expected_minimum"
+            ],
+            "inventory_loaded": false,
+            "structure_ok": true,
+            "discovered_count": 0,
+            "expected_min_inventory": 10,
+            "detail_attempted": 0,
+            "detail_loaded": 0,
+            "detail_load_rate": null,
+            "dated_count": 0,
+            "date_coverage": 0.0,
+            "source_version": "",
+            "version_age_days": null
+          }
+        },
+        "idae_scrape_audit": {
+          "attempted_inventory_urls": [
+            "https://www.idae.es/ayudas-y-financiacion",
+            "https://www.idae.es/financiacion-y-ayudas",
+            "https://www.idae.es/convocatorias"
+          ],
+          "inventory_loaded": false,
+          "health": {
+            "source": "IDAE",
+            "checked_at": "2026-08-20T07:06:56.138418+00:00",
+            "status": "unhealthy",
+            "issues": [
+              "inventory_unreachable",
+              "inventory_below_expected_minimum"
+            ],
+            "inventory_loaded": false,
+            "structure_ok": false,
+            "discovered_count": 0,
+            "expected_min_inventory": 40,
+            "detail_attempted": 0,
+            "detail_loaded": 0,
+            "detail_load_rate": null,
+            "dated_count": 0,
+            "date_coverage": 0.0,
+            "source_version": "",
+            "version_age_days": null
+          }
+        },
+        "deterministic_prefilter": {
+          "retain": 3,
+          "ambiguous": 1
+        },
+        "deterministic_prefilter_by_source": {
+          "CDTI": {
+            "retain": 3,
+            "ambiguous": 1
+          }
+        },
+        "bdns_prefilter": {
+          "reasons": {},
+          "retained_roles": {}
+        },
+        "stable_cached_evidence": {
+          "calls_restored": 0,
+          "documents_restored": 0,
+          "sources": {}
+        },
+        "claude_forecast": {
+          "candidates": 4,
+          "cache_hits": 0,
+          "new_or_changed": 4,
+          "expected_api_calls": 8,
+          "estimated_cost_central_usd": 0.106,
+          "estimated_cost_range_usd": [
+            0.072,
+            0.14
+          ]
+        },
+        "claude_safety": {
+          "allowed": true,
+          "planned_analyses": 4,
+          "max_analyses": 200,
+          "estimated_upper_cost_usd": 0.14,
+          "max_estimated_cost_usd": 5.0,
+          "upper_cost_per_analysis_usd": 0.035,
+          "effective_max_analyses": 142,
+          "breaches": []
+        },
+        "candidate_inventory": {
+          "schema_version": 1,
+          "count": 4,
+          "cache_status_counts": {
+            "new": 4
+          },
+          "inclusion_reason_counts": {
+            "generic_prefilter": 4
+          },
+          "items": [
+            {
+              "identifier": "",
+              "bdns_id": "",
+              "programme_key": "",
+              "title": "Infraestructuras de Ensayo y Experimentación CDTI (ventanilla abierta)",
+              "source": "CDTI",
+              "discovery_sources": [
+                "CDTI"
+              ],
+              "url": "https://www.cdti.es/ayudas/infraestructuras-ensayo-experimentacion",
+              "deadline_date": "",
+              "deadline_unconfirmed": true,
+              "funding_mechanism": "unknown",
+              "opportunity_role": "unknown",
+              "opportunity_labels": [],
+              "inclusion": {
+                "decision": "retain",
+                "reason_code": "generic_prefilter",
+                "reason": "Conexión tecnológica e industrial suficiente.",
+                "score": 6,
+                "signals": {
+                  "tech_tags": [
+                    "hydrogen_combustion"
+                  ],
+                  "industrial": [],
+                  "funding": [],
+                  "innovation": [
+                    "demostracion"
+                  ],
+                  "enterprise": [
+                    "empresas"
+                  ],
+                  "own_investment": [],
+                  "explicit_ineligible": [],
+                  "unrelated_sector": []
+                },
+                "initial_hold_reason": "",
+                "hold_resolution": {}
+              },
+              "bdns_scope": {},
+              "cache": {
+                "status": "new",
+                "cache_key": "6a643500537e1b7e52a620be4fc3e97ab2fc57c80f2b6b426d3c3d498a7474da",
+                "source_hash": "aec888ea41c06da770511c185e0f161c02cb1968861016dcb049d9b225933694"
+              }
+            },
+            {
+              "identifier": "",
+              "bdns_id": "",
+              "programme_key": "",
+              "title": "Proyectos Bilaterales CDTI — 13ª convocatoria (todo 2026)",
+              "source": "CDTI",
+              "discovery_sources": [
+                "CDTI"
+              ],
+              "url": "https://www.cdti.es/ayudas/proyectos-bilaterales",
+              "deadline_date": "2026-12-31",
+              "deadline_unconfirmed": false,
+              "funding_mechanism": "unknown",
+              "opportunity_role": "unknown",
+              "opportunity_labels": [],
+              "inclusion": {
+                "decision": "retain",
+                "reason_code": "generic_prefilter",
+                "reason": "Conexión tecnológica e industrial suficiente.",
+                "score": 11,
+                "signals": {
+                  "tech_tags": [
+                    "energy_efficiency"
+                  ],
+                  "industrial": [
+                    "combustion",
+                    "combustión"
+                  ],
+                  "funding": [
+                    "convocatoria"
+                  ],
+                  "innovation": [
+                    "i+d"
+                  ],
+                  "enterprise": [],
+                  "own_investment": [],
+                  "explicit_ineligible": [],
+                  "unrelated_sector": []
+                },
+                "initial_hold_reason": "",
+                "hold_resolution": {}
+              },
+              "bdns_scope": {},
+              "cache": {
+                "status": "new",
+                "cache_key": "ea3b1eb69902fa4b530487f1dc828bb16ddc83c7a342f3aeeb3dd19c873a9c31",
+                "source_hash": "c5299219ca8324dd46a198030d9e802a5b14eab445787cb54909249f964bdc56"
+              }
+            },
+            {
+              "identifier": "",
+              "bdns_id": "",
+              "programme_key": "",
+              "title": "Proyectos de I+D — Línea PID (ventanilla abierta)",
+              "source": "CDTI",
+              "discovery_sources": [
+                "CDTI"
+              ],
+              "url": "https://www.cdti.es/ayudas/proyectos-de-i-d",
+              "deadline_date": "",
+              "deadline_unconfirmed": true,
+              "funding_mechanism": "unknown",
+              "opportunity_role": "unknown",
+              "opportunity_labels": [],
+              "inclusion": {
+                "decision": "retain",
+                "reason_code": "generic_prefilter",
+                "reason": "Conexión tecnológica e industrial suficiente.",
+                "score": 16,
+                "signals": {
+                  "tech_tags": [
+                    "hydrogen_combustion",
+                    "energy_efficiency"
+                  ],
+                  "industrial": [
+                    "combustion",
+                    "combustión"
+                  ],
+                  "funding": [
+                    "ayuda"
+                  ],
+                  "innovation": [
+                    "i+d",
+                    "investigacion"
+                  ],
+                  "enterprise": [],
+                  "own_investment": [],
+                  "explicit_ineligible": [],
+                  "unrelated_sector": []
+                },
+                "initial_hold_reason": "",
+                "hold_resolution": {}
+              },
+              "bdns_scope": {},
+              "cache": {
+                "status": "new",
+                "cache_key": "c733d9e8d9646e17095caeaa01deabcb1d4be06c0c3e73b78abc9f23caa3f053",
+                "source_hash": "ac22be444b08b83cbb50a4c03f788e8063981bbbb0d3ef7e6a3b11aeb4b2042d"
+              }
+            },
+            {
+              "identifier": "",
+              "bdns_id": "",
+              "programme_key": "",
+              "title": "Proyectos Transferencia Tecnológica Cervera (ventanilla abierta)",
+              "source": "CDTI",
+              "discovery_sources": [
+                "CDTI"
+              ],
+              "url": "https://www.cdti.es/ayudas/proyectos-cervera",
+              "deadline_date": "",
+              "deadline_unconfirmed": true,
+              "funding_mechanism": "unknown",
+              "opportunity_role": "unknown",
+              "opportunity_labels": [],
+              "inclusion": {
+                "decision": "ambiguous",
+                "reason_code": "generic_prefilter",
+                "reason": "Evidencia insuficiente para excluir con seguridad.",
+                "score": 2,
+                "signals": {
+                  "tech_tags": [],
+                  "industrial": [],
+                  "funding": [],
+                  "innovation": [
+                    "i+d"
+                  ],
+                  "enterprise": [],
+                  "own_investment": [],
+                  "explicit_ineligible": [],
+                  "unrelated_sector": []
+                },
+                "initial_hold_reason": "",
+                "hold_resolution": {}
+              },
+              "bdns_scope": {},
+              "cache": {
+                "status": "new",
+                "cache_key": "b90ee17a89c567b0fe8fd60e9ebac1296d9623dfe6a0bcf23b7dff5a4618efbd",
+                "source_hash": "53ccc7776a310a0c20f09975ace7b17cddab46fac7374b8afdbecd76e5591029"
+              }
+            }
+          ]
+        }
+      },
+      "excluded_ids": [
+        "a9d0440e387dc8018786784d",
+        "13c6dac861f60dcb692da2cc"
+      ]
+    },
+    {
+      "started_at": "2026-08-20T07:08:21.817414+00:00",
+      "completed_at": "2026-08-20T07:10:11.515232+00:00",
+      "status": "completed_no_claude",
+      "excluded_count": 2,
+      "reason_counts": {
+        "deadline_closed": 2
+      },
+      "source_counts": {
+        "HORIZON EUROPE": 0,
+        "BDNS": 0,
+        "ECCP": 0,
+        "EEN": 0,
+        "CDTI": 4,
+        "IDAE": 0,
+        "IDAE CATÁLOGO": 0,
+        "BOE / MITECO": 0,
+        "BOA ARAGÓN": 0
+      },
+      "coverage_watch": [
+        {
+          "key": "programa_innovae",
+          "label": "Programa INNOVAE",
+          "status": "not_observed",
+          "matches": 0,
+          "sources": [],
+          "url": "https://www.idae.es/ayudas-y-financiacion/programa-innovae",
+          "deadline_date": "",
+          "recurrence": "",
+          "expected_start_month": null
+        },
+        {
+          "key": "aragon_tecnologias_limpias",
+          "label": "Ayudas Aragón para inversiones productivas en tecnologías limpias",
+          "status": "not_observed",
+          "matches": 0,
+          "sources": [],
+          "url": "https://www.aragon.es/tramitador/-/tramite/ayudas-para-el-fomento-de-inversiones-productivas-en-tecnologias-limpias-y-eficientes-en-el-uso-de-los-recursos/convocatoria-2026",
+          "deadline_date": "",
+          "recurrence": "",
+          "expected_start_month": null
+        },
+        {
+          "key": "paip_aragon",
+          "label": "PAIP Aragón",
+          "status": "not_observed",
+          "matches": 0,
+          "sources": [],
+          "url": "https://www.aragon.es/tramitador/-/tramite/ayudas-industria-digital-integradora-sostenible-marco-programa-ayudas-industria-pyme-aragon-paip/convocatoria-2026-en-desarrollo",
+          "deadline_date": "",
+          "recurrence": "annual",
+          "expected_start_month": 9
+        },
+        {
+          "key": "horizon_heat_upgrade",
+          "label": "HORIZON-CL5-2026-09-D4-08",
+          "status": "not_observed",
+          "matches": 0,
+          "sources": [],
+          "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2026-09-D4-08",
+          "deadline_date": "",
+          "recurrence": "",
+          "expected_start_month": null
+        }
+      ],
+      "diagnostics": {
+        "web_source_health": {
+          "ECCP": {
+            "source": "ECCP",
+            "checked_at": "2026-08-20T07:09:37.049718+00:00",
+            "status": "unhealthy",
+            "issues": [
+              "inventory_unreachable",
+              "inventory_below_expected_minimum"
+            ],
+            "inventory_loaded": false,
+            "structure_ok": true,
+            "discovered_count": 0,
+            "expected_min_inventory": 10,
+            "detail_attempted": 0,
+            "detail_loaded": 0,
+            "detail_load_rate": null,
+            "dated_count": 0,
+            "date_coverage": 0.0,
+            "source_version": "",
+            "version_age_days": null
+          },
+          "IDAE": {
+            "source": "IDAE",
+            "checked_at": "2026-08-20T07:09:41.797683+00:00",
+            "status": "unhealthy",
+            "issues": [
+              "inventory_unreachable",
+              "inventory_below_expected_minimum"
+            ],
+            "inventory_loaded": false,
+            "structure_ok": false,
+            "discovered_count": 0,
+            "expected_min_inventory": 40,
+            "detail_attempted": 0,
+            "detail_loaded": 0,
+            "detail_load_rate": null,
+            "dated_count": 0,
+            "date_coverage": 0.0,
+            "source_version": "",
+            "version_age_days": null
+          },
+          "BOE / MITECO": {
+            "source": "BOE / MITECO",
+            "checked_at": "2026-08-20T07:10:02.993423+00:00",
+            "status": "unhealthy",
+            "issues": [
+              "inventory_unreachable",
+              "inventory_below_expected_minimum"
+            ],
+            "inventory_loaded": false,
+            "structure_ok": false,
+            "discovered_count": 0,
+            "expected_min_inventory": 25,
+            "detail_attempted": 0,
+            "detail_loaded": 0,
+            "detail_load_rate": null,
+            "dated_count": 0,
+            "date_coverage": 0.0,
+            "source_version": "",
+            "version_age_days": null
+          },
+          "CDTI": {
+            "source": "CDTI",
+            "checked_at": "2026-08-20T07:10:03.908794+00:00",
+            "status": "unhealthy",
+            "issues": [
+              "inventory_unreachable",
+              "inventory_below_expected_minimum",
+              "source_version_missing"
+            ],
+            "inventory_loaded": false,
+            "structure_ok": false,
+            "discovered_count": 0,
+            "expected_min_inventory": 10,
+            "detail_attempted": 0,
+            "detail_loaded": 0,
+            "detail_load_rate": null,
+            "dated_count": 0,
+            "date_coverage": 0.0,
+            "source_version": "",
+            "version_age_days": null
+          }
+        },
+        "eccp_crawl_experiment": {
+          "mode": "production_fixed_depth",
+          "selection_basis": "experimento 2026-08-04",
+          "sample_size": 0,
+          "selected_depth": 1,
+          "metrics": [
+            {
+              "depth": 0,
+              "requests": 0,
+              "bytes": 0,
+              "irrelevant": 0,
+              "errors": 0,
+              "critical_fields": 0,
+              "median_requests_per_call": 0,
+              "unique_call_gain_pct": 0
+            },
+            {
+              "depth": 1,
+              "requests": 0,
+              "bytes": 0,
+              "irrelevant": 0,
+              "errors": 0,
+              "critical_fields": 0,
+              "median_requests_per_call": 0,
+              "unique_call_gain_pct": 0.0
+            }
+          ]
+        },
+        "eccp_scrape_audit": {
+          "pages_read": 0,
+          "listing_errors": 1,
+          "inventory_unique": 0,
+          "detail_attempted": 0,
+          "detail_loaded": 0,
+          "detail_failed": 0,
+          "dated_details": 0,
+          "active_calls": 0,
+          "health": {
+            "source": "ECCP",
+            "checked_at": "2026-08-20T07:09:37.049718+00:00",
+            "status": "unhealthy",
+            "issues": [
+              "inventory_unreachable",
+              "inventory_below_expected_minimum"
+            ],
+            "inventory_loaded": false,
+            "structure_ok": true,
+            "discovered_count": 0,
+            "expected_min_inventory": 10,
+            "detail_attempted": 0,
+            "detail_loaded": 0,
+            "detail_load_rate": null,
+            "dated_count": 0,
+            "date_coverage": 0.0,
+            "source_version": "",
+            "version_age_days": null
+          }
+        },
+        "idae_scrape_audit": {
+          "attempted_inventory_urls": [
+            "https://www.idae.es/ayudas-y-financiacion",
+            "https://www.idae.es/financiacion-y-ayudas",
+            "https://www.idae.es/convocatorias"
+          ],
+          "inventory_loaded": false,
+          "health": {
+            "source": "IDAE",
+            "checked_at": "2026-08-20T07:09:41.797683+00:00",
+            "status": "unhealthy",
+            "issues": [
+              "inventory_unreachable",
+              "inventory_below_expected_minimum"
+            ],
+            "inventory_loaded": false,
+            "structure_ok": false,
+            "discovered_count": 0,
+            "expected_min_inventory": 40,
+            "detail_attempted": 0,
+            "detail_loaded": 0,
+            "detail_load_rate": null,
+            "dated_count": 0,
+            "date_coverage": 0.0,
+            "source_version": "",
+            "version_age_days": null
+          }
+        },
+        "deterministic_prefilter": {
+          "retain": 3,
+          "ambiguous": 1
+        },
+        "deterministic_prefilter_by_source": {
+          "CDTI": {
+            "retain": 3,
+            "ambiguous": 1
+          }
+        },
+        "bdns_prefilter": {
+          "reasons": {},
+          "retained_roles": {}
+        },
+        "stable_cached_evidence": {
+          "calls_restored": 0,
+          "documents_restored": 0,
+          "sources": {}
+        },
+        "claude_forecast": {
+          "candidates": 4,
+          "cache_hits": 0,
+          "new_or_changed": 4,
+          "expected_api_calls": 8,
+          "estimated_cost_central_usd": 0.106,
+          "estimated_cost_range_usd": [
+            0.072,
+            0.14
+          ]
+        },
+        "claude_safety": {
+          "allowed": true,
+          "planned_analyses": 4,
+          "max_analyses": 200,
+          "estimated_upper_cost_usd": 0.14,
+          "max_estimated_cost_usd": 5.0,
+          "upper_cost_per_analysis_usd": 0.035,
+          "effective_max_analyses": 142,
+          "breaches": []
+        },
+        "candidate_inventory": {
+          "schema_version": 1,
+          "count": 4,
+          "cache_status_counts": {
+            "new": 4
+          },
+          "inclusion_reason_counts": {
+            "generic_prefilter": 4
+          },
+          "items": [
+            {
+              "identifier": "",
+              "bdns_id": "",
+              "programme_key": "",
+              "title": "Infraestructuras de Ensayo y Experimentación CDTI (ventanilla abierta)",
+              "source": "CDTI",
+              "discovery_sources": [
+                "CDTI"
+              ],
+              "url": "https://www.cdti.es/ayudas/infraestructuras-ensayo-experimentacion",
+              "deadline_date": "",
+              "deadline_unconfirmed": true,
+              "funding_mechanism": "unknown",
+              "opportunity_role": "unknown",
+              "opportunity_labels": [],
+              "inclusion": {
+                "decision": "retain",
+                "reason_code": "generic_prefilter",
+                "reason": "Conexión tecnológica e industrial suficiente.",
+                "score": 6,
+                "signals": {
+                  "tech_tags": [
+                    "hydrogen_combustion"
+                  ],
+                  "industrial": [],
+                  "funding": [],
+                  "innovation": [
+                    "demostracion"
+                  ],
+                  "enterprise": [
+                    "empresas"
+                  ],
+                  "own_investment": [],
+                  "explicit_ineligible": [],
+                  "unrelated_sector": []
+                },
+                "initial_hold_reason": "",
+                "hold_resolution": {}
+              },
+              "bdns_scope": {},
+              "cache": {
+                "status": "new",
+                "cache_key": "6a643500537e1b7e52a620be4fc3e97ab2fc57c80f2b6b426d3c3d498a7474da",
+                "source_hash": "aec888ea41c06da770511c185e0f161c02cb1968861016dcb049d9b225933694"
+              }
+            },
+            {
+              "identifier": "",
+              "bdns_id": "",
+              "programme_key": "",
+              "title": "Proyectos Bilaterales CDTI — 13ª convocatoria (todo 2026)",
+              "source": "CDTI",
+              "discovery_sources": [
+                "CDTI"
+              ],
+              "url": "https://www.cdti.es/ayudas/proyectos-bilaterales",
+              "deadline_date": "2026-12-31",
+              "deadline_unconfirmed": false,
+              "funding_mechanism": "unknown",
+              "opportunity_role": "unknown",
+              "opportunity_labels": [],
+              "inclusion": {
+                "decision": "retain",
+                "reason_code": "generic_prefilter",
+                "reason": "Conexión tecnológica e industrial suficiente.",
+                "score": 11,
+                "signals": {
+                  "tech_tags": [
+                    "energy_efficiency"
+                  ],
+                  "industrial": [
+                    "combustion",
+                    "combustión"
+                  ],
+                  "funding": [
+                    "convocatoria"
+                  ],
+                  "innovation": [
+                    "i+d"
+                  ],
+                  "enterprise": [],
+                  "own_investment": [],
+                  "explicit_ineligible": [],
+                  "unrelated_sector": []
+                },
+                "initial_hold_reason": "",
+                "hold_resolution": {}
+              },
+              "bdns_scope": {},
+              "cache": {
+                "status": "new",
+                "cache_key": "ea3b1eb69902fa4b530487f1dc828bb16ddc83c7a342f3aeeb3dd19c873a9c31",
+                "source_hash": "c5299219ca8324dd46a198030d9e802a5b14eab445787cb54909249f964bdc56"
+              }
+            },
+            {
+              "identifier": "",
+              "bdns_id": "",
+              "programme_key": "",
+              "title": "Proyectos de I+D — Línea PID (ventanilla abierta)",
+              "source": "CDTI",
+              "discovery_sources": [
+                "CDTI"
+              ],
+              "url": "https://www.cdti.es/ayudas/proyectos-de-i-d",
+              "deadline_date": "",
+              "deadline_unconfirmed": true,
+              "funding_mechanism": "unknown",
+              "opportunity_role": "unknown",
+              "opportunity_labels": [],
+              "inclusion": {
+                "decision": "retain",
+                "reason_code": "generic_prefilter",
+                "reason": "Conexión tecnológica e industrial suficiente.",
+                "score": 16,
+                "signals": {
+                  "tech_tags": [
+                    "hydrogen_combustion",
+                    "energy_efficiency"
+                  ],
+                  "industrial": [
+                    "combustion",
+                    "combustión"
+                  ],
+                  "funding": [
+                    "ayuda"
+                  ],
+                  "innovation": [
+                    "i+d",
+                    "investigacion"
+                  ],
+                  "enterprise": [],
+                  "own_investment": [],
+                  "explicit_ineligible": [],
+                  "unrelated_sector": []
+                },
+                "initial_hold_reason": "",
+                "hold_resolution": {}
+              },
+              "bdns_scope": {},
+              "cache": {
+                "status": "new",
+                "cache_key": "c733d9e8d9646e17095caeaa01deabcb1d4be06c0c3e73b78abc9f23caa3f053",
+                "source_hash": "ac22be444b08b83cbb50a4c03f788e8063981bbbb0d3ef7e6a3b11aeb4b2042d"
+              }
+            },
+            {
+              "identifier": "",
+              "bdns_id": "",
+              "programme_key": "",
+              "title": "Proyectos Transferencia Tecnológica Cervera (ventanilla abierta)",
+              "source": "CDTI",
+              "discovery_sources": [
+                "CDTI"
+              ],
+              "url": "https://www.cdti.es/ayudas/proyectos-cervera",
+              "deadline_date": "",
+              "deadline_unconfirmed": true,
+              "funding_mechanism": "unknown",
+              "opportunity_role": "unknown",
+              "opportunity_labels": [],
+              "inclusion": {
+                "decision": "ambiguous",
+                "reason_code": "generic_prefilter",
+                "reason": "Evidencia insuficiente para excluir con seguridad.",
+                "score": 2,
+                "signals": {
+                  "tech_tags": [],
+                  "industrial": [],
+                  "funding": [],
+                  "innovation": [
+                    "i+d"
+                  ],
+                  "enterprise": [],
+                  "own_investment": [],
+                  "explicit_ineligible": [],
+                  "unrelated_sector": []
+                },
+                "initial_hold_reason": "",
+                "hold_resolution": {}
+              },
+              "bdns_scope": {},
+              "cache": {
+                "status": "new",
+                "cache_key": "b90ee17a89c567b0fe8fd60e9ebac1296d9623dfe6a0bcf23b7dff5a4618efbd",
+                "source_hash": "53ccc7776a310a0c20f09975ace7b17cddab46fac7374b8afdbecd76e5591029"
+              }
+            }
+          ]
+        }
+      },
+      "excluded_ids": [
+        "a9d0440e387dc8018786784d",
+        "13c6dac861f60dcb692da2cc"
+      ]
     }
   ]
 }

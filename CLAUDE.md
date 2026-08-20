@@ -7,6 +7,11 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
+> **Estado a 20/08/2026:** hay una ronda de calidad del dato aplicada y
+> **verificada solo con pruebas** (AGENTS.md sección 40): falta repetir
+> `--no-claude` con red, porque el equipo la perdió durante la verificación.
+> Hasta que esos números coincidan con los de referencia, no lanzar nada de pago.
+>
 > **Para retomar el trabajo, empezar por `AGENTS.md` sección 39**: cierra la
 > sesión del 19/08/2026, resume las nueve rondas de modularización de ese día,
 > el siguiente paso ya medido, lo que está pendiente y **los números de
@@ -112,6 +117,7 @@ importable):
 | `documents.py` | Documentos oficiales: descarga, extracción de texto y su caché |
 | `sources/cdti.py` | Conector CDTI: calendario oficial con Chromium + catálogo curado |
 | `sources/eccp.py` | Conector ECCP: calls y rastreo acotado de webs de proyectos |
+| `public_output.py` (actualizado) | Publica `objeto_y_actuaciones`; `post_procesar_texto()` ya solo toca acrónimos |
 | `public_output.py` | Registro público del dashboard, estadísticas, estado por fuente y URLs |
 | `publishing.py` | Subida a GitHub Pages (credenciales como parámetros, nunca leídas aquí) |
 | `claude_selection.py` | Qué se manda a Claude y la barrera de coste previa |
