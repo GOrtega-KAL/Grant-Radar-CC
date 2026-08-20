@@ -563,27 +563,48 @@ Después de editar:
 
 ## 11. Coste de Claude
 
-Calibración real del 03/08/2026 con Horizon e INNOVAE, muestra de dos casos:
+**Calibración vigente: 20/08/2026, sobre una ejecución completa de 76
+análisis.** Es la primera con el extractor v7 y la evidencia enriquecida
+(sección 40), y sustituye a la del 03/08/2026, que se hizo con una muestra de
+dos convocatorias.
 
-- Coste observado por convocatoria: 0,0180-0,0350 USD.
-- Coste central medio: 0,0265 USD.
-- JSON inicial de unas 60 convocatorias: centro 1,59 USD y horquilla observada
-  1,08-2,10 USD.
-- Actualización de 1-5 convocatorias: centro 0,0265-0,1325 USD y horquilla
-  observada 0,018-0,175 USD.
+Por convocatoria (dos llamadas, extracción y evaluación):
 
-La muestra es pequeña. Recalibrar tras una ejecución completa. Incrementar
-`max_tokens` no consume automáticamente el máximo: Anthropic factura los tokens
-realmente procesados y generados.
+| Métrica | Valor |
+|---|---|
+| Entrada | 6.482-26.353 tokens (media 12.610) |
+| Salida | 1.202-6.483 tokens (media 2.590) |
+| Coste mediano | 0,0242 USD |
+| Coste medio | 0,0256 USD |
+| Percentil 95 | 0,0464 USD |
+| Máximo observado | 0,0550 USD |
 
-Límite operativo autorizado el 11/08/2026:
+Ejecución completa de 76 convocatorias: **1,83 USD reales**, 1.095.295 tokens.
 
-- Máximo nominal: 200 convocatorias nuevas, modificadas o forzadas por ejecución.
+Qué cambió respecto a la calibración anterior: la media apenas se movió
+(0,0265 → 0,0256), pero **la cola era mucho más larga de lo que sugería la
+muestra de dos**. El máximo observado, 0,0550 USD, supera el 0,035 que la
+barrera usaba como "extremo superior". Una barrera calibrada con la media no
+protege de la cola, que es justo de lo que debe proteger.
+
+Límite operativo vigente:
+
+- Máximo nominal: 200 convocatorias nuevas, modificadas o forzadas por
+  ejecución.
 - Máximo de coste superior estimado: 5 USD.
-- Coste superior unitario usado por la barrera: 0,035 USD.
-- Máximo efectivo actual: 142 convocatorias, porque 143 estiman 5,005 USD.
-- Es una barrera presupuestaria previa basada en la calibración observada; no es
-  una garantía contractual sobre la factura final de Anthropic.
+- Coste superior unitario usado por la barrera: **0,047 USD**, el percentil 95
+  redondeado hacia arriba (antes 0,035).
+- Máximo efectivo actual: **106 convocatorias**, porque 107 estiman 5,029 USD
+  (antes 142).
+- La previsión que muestra el pipeline usa la media observada como valor
+  central y el rango p05-p95 como horquilla.
+- Sigue siendo una barrera presupuestaria previa basada en lo observado, no una
+  garantía contractual sobre la factura de Anthropic.
+
+Aviso metodológico, aprendido el 20/08/2026: una proyección hecha con tres
+convocatorias elegidas por ser las más difíciles sobrestimó el coste total en
+un 60 % (2,92 USD proyectados frente a 1,83 reales). Para calibrar hace falta
+una muestra representativa, no una muestra de casos extremos.
 
 ## 12. Criterio de finalización
 
@@ -2417,8 +2438,7 @@ rondas el mismo día.
 | 10 | Retirar el patrón `runpy` + fusión de `APP` en `tests/test_grant_radar.py` | Tiene sentido revisarlo cuando el script principal quede reducido a configuración y punto de entrada |
 | 15 | Orden de extracción medido (secciones 37 y 38): `save_discovery_audit` → capa Haiku → segunda mitad de holds → reglas → `run_pipeline()` | La primera mitad de holds ya salió (sección 38). `run_pipeline()` arrastra el resto: va el último, no el siguiente |
 | 21 | Ejecutar `tests/test_grant_radar_script_names.py` **antes** que la suite completa tras cada extracción | Señala el módulo y el nombre exactos en un segundo; la suite completa los presenta como errores en pruebas de otra cosa (pasó tres veces) |
-| 23 | Recalibrar el coste por análisis: la evidencia enriquecida lo sube de $0,0265 a ~$0,0389 y la previsión del pipeline se queda corta un 45 % | Con datos de la primera ejecución completa; la barrera de $5 no bloquea pero el margen real es menor (sección 41.3) |
-| 24 | Endurecer la instrucción contra presunciones en `objeto_y_actuaciones` | INNOVAE devolvió «se presume inversión en equipos…» cuando la fuente no detalla gastos. Es una presunción declarada, no una invención, pero mejor evitarla (sección 41.2) |
+| 24 | Endurecer la instrucción contra presunciones en `objeto_y_actuaciones` | INNOVAE devolvió «se presume inversión en equipos…» cuando la fuente no detalla gastos. Es una presunción declarada, no una invención, pero mejor evitarla (sección 41.2). **Sigue abierto** |
 | 22 | La ventana de BDNS bajó de 79 a 65 días (densidad real 54 filas/día, no 44). Cumple el mínimo de 60 con 5 días de margen | Revisar `BDNS_LATEST_MAX_PAGES` y actualizar la densidad del test de regresión, que hoy es optimista y no detectaría una caída por debajo de 60 (sección 40.4) |
 | 16 | Usar `node.end_lineno`, nunca `max(lineno)`, al cortar bloques por AST | Un `return (` multilínea pierde el paréntesis de cierre; ocurrió en la sección 37 |
 
@@ -2869,3 +2889,62 @@ completa queda anotado en la sección 36 como punto 23.
 
 Gasto acumulado de las dos pruebas: **$0,0896 perdidos** en el primer intento y
 **$0,1166** en análisis útiles (tres convocatorias completas).
+
+## 42. Ejecución completa a 20/08/2026: resultado y recalibración
+
+Primera ejecución completa desde el 14/08 y primera con la ronda de calidad del
+dato (secciones 40 y 41). Autorizada expresamente; publicada en GitHub Pages.
+
+### 42.1. Resultado
+
+| | Valor |
+|---|---|
+| Convocatorias detectadas | 955 |
+| Vigentes | 76 |
+| Descartadas tras el análisis | 45 |
+| Relevantes para Kalfrisa | 31 |
+| Cierre urgente (<30 días) | 7 |
+| Revisión manual requerida | 0 |
+| Tokens | 1.095.295 |
+| **Coste real** | **1,83 USD** |
+
+### 42.2. El objetivo de la ronda, medido
+
+Comparando el JSON publicado el 14/08 con el de hoy:
+
+| | 14/08 (49 registros) | 20/08 (76 registros) |
+|---|---|---|
+| Con «datos pendientes» | 28 (57 %) | 29 (**38 %**) |
+| `eligibility_unknown` | 27 (55 %) | 26 (34 %) |
+| `budget_missing` | 17 (35 %) | 16 (21 %) |
+| `consortium_requirement_missing` | 15 (31 %) | 20 (26 %) |
+| Con `objeto_y_actuaciones` | 0 | **76 de 76** |
+| Con `eligible_actions` | 0 | **71 de 76** |
+
+Las tres causas de «datos pendientes» bajan en proporción, y los dos campos
+que la ronda añadía se rellenan casi siempre. El `eligibility_unknown` que
+queda es en su mayoría correcto: la categoría oficial de SNPSAP suele ser
+«PYME», Kalfrisa es mediana, y la condición jurídica debe verificarse en vez de
+presumirse.
+
+### 42.3. Recalibración con datos reales
+
+Los detalles están en la sección 11, que ya se ha reescrito. Lo esencial:
+
+- La media apenas se movió: 0,0265 → **0,0256 USD** por convocatoria.
+- La cola sí: el máximo observado es **0,0550 USD**, por encima del 0,035 que
+  la barrera usaba como extremo superior.
+- La barrera pasa a usar el percentil 95, **0,047 USD**, y su máximo efectivo
+  baja de 142 a **106 convocatorias** por ejecución.
+- La previsión del pipeline usa ahora la media observada y el rango p05-p95, en
+  vez de tres constantes fijas de agosto.
+
+**Corrección de un error propio.** Tras la prueba dirigida se avisó de que la
+ejecución completa costaría ~2,91 USD y que la previsión de 2,01 se quedaba
+corta un 45 %. Fue al revés: costó 1,83. La proyección se hizo con tres
+convocatorias elegidas **por ser las más difíciles** —multilínea y con
+documentos—, que no representan al conjunto. Queda anotado en la sección 11
+como aviso metodológico: para calibrar hace falta una muestra representativa,
+no una de casos extremos.
+
+Con esto se cierran los puntos 23 y 24 del backlog de la sección 36.

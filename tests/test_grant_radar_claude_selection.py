@@ -10,6 +10,7 @@ from grant_radar.claude_selection import (
     CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS,
     CLAUDE_MAX_ANALYSES_PER_RUN,
     CLAUDE_MAX_ESTIMATED_COST_USD,
+    CLAUDE_OBSERVED_MEAN_USD_PER_ANALYSIS,
     claude_safety_preflight,
 )
 from grant_radar.publishing import github_token_format_is_valid
@@ -17,22 +18,24 @@ from grant_radar.publishing import github_token_format_is_valid
 
 class SafetyPreflightTests(unittest.TestCase):
     def test_a_normal_run_is_allowed(self):
-        resultado = claude_safety_preflight(77)  # el volumen real del 19/08/2026
+        resultado = claude_safety_preflight(76)  # el volumen real del 20/08/2026
         self.assertTrue(resultado["allowed"])
         self.assertEqual(resultado["breaches"], [])
-        self.assertAlmostEqual(resultado["estimated_upper_cost_usd"], 2.695, places=3)
+        self.assertAlmostEqual(resultado["estimated_upper_cost_usd"], 3.572, places=3)
 
     def test_the_cost_limit_bites_before_the_count_limit(self):
-        """142 análisis pasan y 143 no, aunque el máximo nominal sean 200.
+        """106 análisis pasan y 107 no, aunque el máximo nominal sean 200.
 
-        Es la barrera efectiva documentada en AGENTS.md sección 11: con 0,035
-        USD por análisis, 143 estiman 5,005 USD.
+        Es la barrera efectiva tras la recalibración del 20/08/2026: con 0,047
+        USD por análisis —el percentil 95 medido sobre 76 análisis reales—,
+        107 estiman 5,029 USD. Antes eran 142, con un 0,035 que salía de una
+        muestra de dos convocatorias y subestimaba la cola.
         """
-        self.assertTrue(claude_safety_preflight(142)["allowed"])
-        rechazado = claude_safety_preflight(143)
+        self.assertTrue(claude_safety_preflight(106)["allowed"])
+        rechazado = claude_safety_preflight(107)
         self.assertFalse(rechazado["allowed"])
         self.assertEqual(rechazado["breaches"], ["estimated_cost_limit"])
-        self.assertEqual(rechazado["effective_max_analyses"], 142)
+        self.assertEqual(rechazado["effective_max_analyses"], 106)
 
     def test_a_huge_volume_breaches_both_limits(self):
         resultado = claude_safety_preflight(500)
@@ -53,7 +56,15 @@ class SafetyPreflightTests(unittest.TestCase):
         # Si alguien los sube, que sea una decisión consciente y no un descuido.
         self.assertEqual(CLAUDE_MAX_ANALYSES_PER_RUN, 200)
         self.assertEqual(CLAUDE_MAX_ESTIMATED_COST_USD, 5.0)
-        self.assertEqual(CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS, 0.035)
+        self.assertEqual(CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS, 0.047)
+
+    def test_the_barrier_cost_is_above_the_observed_mean(self):
+        # Una barrera calibrada con la media no protege de la cola: el 20/08 la
+        # media fue 0,0256 y el máximo observado 0,0550.
+        self.assertGreater(
+            CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS,
+            CLAUDE_OBSERVED_MEAN_USD_PER_ANALYSIS,
+        )
 
 
 class GithubTokenFormatTests(unittest.TestCase):

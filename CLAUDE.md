@@ -7,21 +7,13 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
-> **Estado a 20/08/2026:** ronda de calidad del dato aplicada, verificada y
-> **probada contra la API real** (AGENTS.md secciones 40 y 41). 404 pruebas, un
-> `--no-claude` con 76 vigentes y una prueba dirigida de pago sobre tres
-> convocatorias que confirma que `objeto_y_actuaciones` sale con el detalle
-> buscado, que los campos estructurados de BDNS llegan al modelo y que los
-> `data_gaps` bajan. Esa prueba destapó y corrigió una truncación de salida
-> (sección 41.1). **Pendiente:** la ejecución completa de las 75 restantes,
-> ~$2,91 reales —no los $2,01 que muestra la previsión, con la calibración
-> vieja—, que requiere autorización expresa.
->
-> **Para retomar el trabajo, empezar por `AGENTS.md` sección 39**: cierra la
-> sesión del 19/08/2026, resume las nueve rondas de modularización de ese día,
-> el siguiente paso ya medido, lo que está pendiente y **los números de
-> referencia con los que se verifica cualquier cambio**. La sección 36 reúne
-> los hallazgos abiertos y las propuestas.
+> **Estado a 20/08/2026:** ronda de calidad del dato completa y **ejecución
+> completa hecha y publicada** (AGENTS.md secciones 40-42). 76 convocatorias
+> vigentes, 31 relevantes, 1,83 USD reales. Los «datos pendientes» bajan del
+> 57 % al 38 %, y `objeto_y_actuaciones` y `eligible_actions` —que nunca se
+> habían producido— se rellenan en 76/76 y 71/76. El coste está recalibrado con
+> esos 76 análisis: la barrera pasa de 0,035 a 0,047 USD por análisis y su
+> máximo efectivo de 142 a 106 (sección 11).
 
 ## Qué es esto
 

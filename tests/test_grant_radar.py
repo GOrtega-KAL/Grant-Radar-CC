@@ -1022,12 +1022,14 @@ class IdentityAndFilterTests(unittest.TestCase):
         self.assertEqual(stored, inventory)
 
     def test_claude_safety_preflight_enforces_candidate_and_cost_limits(self):
-        within_budget = APP["claude_safety_preflight"](142)
+        # 106/107 desde la recalibración del 20/08/2026 (antes 142/143, con un
+        # coste unitario que salía de una muestra de dos convocatorias).
+        within_budget = APP["claude_safety_preflight"](106)
         self.assertTrue(within_budget["allowed"])
-        self.assertEqual(within_budget["effective_max_analyses"], 142)
+        self.assertEqual(within_budget["effective_max_analyses"], 106)
         self.assertLessEqual(within_budget["estimated_upper_cost_usd"], 5.0)
 
-        over_cost = APP["claude_safety_preflight"](143)
+        over_cost = APP["claude_safety_preflight"](107)
         self.assertFalse(over_cost["allowed"])
         self.assertEqual(over_cost["breaches"], ["estimated_cost_limit"])
 

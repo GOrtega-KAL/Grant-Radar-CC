@@ -34,17 +34,18 @@
 # uniones anulables para mantenerse dentro de los límites de las salidas
 # estructuradas. No usa la caché de prompts de Anthropic.
 #
-# Calibración real del 03/08/2026 (Horizon + INNOVAE, muestra n=2):
-# 6.852-17.450 tokens de entrada y 2.230-3.502 de salida por convocatoria.
-# Coste observado: 0,0180-0,0350 USD; coste central medio: 0,0265 USD.
-# JSON inicial con ~60 convocatorias:
-#   coste central estimado: 1,59 USD; horquilla observada: 1,08-2,10 USD.
-# Actualización habitual con 1-5 convocatorias nuevas/modificadas:
-#   coste central estimado: 0,0265-0,1325 USD;
-#   horquilla observada según longitud: 0,018-0,175 USD.
-# Son estimaciones, no límites: descripciones/documentos más largos elevan el coste
-# y una modificación del perfil/prompt/versión puede invalidar toda la caché.
-# La muestra es pequeña; recalibrar cuando exista una ejecución completa.
+# Calibración real del 20/08/2026 sobre una ejecución completa (n=76), la
+# primera con el extractor v7 y la evidencia enriquecida:
+# 6.482-26.353 tokens de entrada (media 12.610) y 1.202-6.483 de salida
+# (media 2.590) por convocatoria.
+# Coste por convocatoria: mediana 0,0242 USD, media 0,0256 USD,
+#   p95 0,0464 USD y máximo observado 0,0550 USD.
+# Ejecución completa de 76 convocatorias: 1,83 USD reales.
+# Sustituye a la calibración del 03/08/2026, que se hizo con una muestra de
+# dos y daba 0,0265 central: acertó en la media pero subestimaba la cola, que
+# es lo que importa para la barrera de seguridad.
+# Siguen siendo estimaciones, no límites: documentos más largos elevan el coste
+# y un cambio de perfil/prompt/versión puede invalidar toda la caché.
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -230,6 +231,8 @@ from grant_radar.hold_quotes import (
 )
 from grant_radar.claude_selection import (
     CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS,
+    CLAUDE_OBSERVED_MEAN_USD_PER_ANALYSIS,
+    CLAUDE_OBSERVED_P05_USD_PER_ANALYSIS,
     CLAUDE_MAX_ANALYSES_PER_RUN,
     CLAUDE_MAX_ESTIMATED_COST_USD,
     build_claude_analysis_selection,
@@ -3466,10 +3469,15 @@ def run_pipeline(
             "cache_hits": len(forecast_selection["cached_items"]),
             "new_or_changed": forecast_new,
             "expected_api_calls": forecast_new * 2,
-            "estimated_cost_central_usd": round(forecast_new * 0.0265, 4),
+            # Calibración del 20/08/2026 sobre 76 análisis reales, la primera
+            # con el extractor v7 (ver AGENTS.md sección 11). Antes eran
+            # 0,0265 central y 0,0180-0,0350, de una muestra de dos.
+            "estimated_cost_central_usd": round(
+                forecast_new * CLAUDE_OBSERVED_MEAN_USD_PER_ANALYSIS, 4
+            ),
             "estimated_cost_range_usd": [
-                round(forecast_new * 0.0180, 4),
-                round(forecast_new * 0.0350, 4),
+                round(forecast_new * CLAUDE_OBSERVED_P05_USD_PER_ANALYSIS, 4),
+                round(forecast_new * CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS, 4),
             ],
         }
         safety = claude_safety_preflight(forecast_new)

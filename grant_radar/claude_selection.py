@@ -23,11 +23,22 @@ from grant_radar.parsing_helpers import _fold_text
 
 log = logging.getLogger("grant_radar")
 
-# Límites autorizados el 11/08/2026 (ver AGENTS.md sección 11). El coste
-# unitario es el extremo superior observado, no la media.
+# Límites autorizados el 11/08/2026 (ver AGENTS.md sección 11).
 CLAUDE_MAX_ANALYSES_PER_RUN = 200
 CLAUDE_MAX_ESTIMATED_COST_USD = 5.0
-CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS = 0.035
+
+# Calibración del 20/08/2026 sobre una ejecución completa de 76 análisis, la
+# primera con la evidencia enriquecida del extractor v7. La anterior salía de
+# una muestra de dos convocatorias: acertaba en la media pero subestimaba la
+# cola, que es justo lo que debe cubrir una barrera de seguridad.
+#
+# El valor de la barrera es el percentil 95 observado (0,0464), redondeado
+# hacia arriba. Con él, el límite de 5 USD permite 106 análisis por ejecución
+# en vez de los 142 que autorizaba el 0,035 anterior: menos margen nominal,
+# pero un margen que ahora refleja el coste real de las convocatorias caras.
+CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS = 0.047
+CLAUDE_OBSERVED_MEAN_USD_PER_ANALYSIS = 0.0256
+CLAUDE_OBSERVED_P05_USD_PER_ANALYSIS = 0.0155
 
 
 def _candidate_cache_identity_tokens(conv: dict) -> set[str]:
