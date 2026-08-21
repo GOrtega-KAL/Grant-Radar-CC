@@ -7,9 +7,14 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
-> **Arranque en frío: AGENTS.md secciones 43, 44 y 45.** La 43 tiene el estado del
-> producto; la 44 y la **45 son la ronda vigente, y 45.4 tiene las cifras de
-> referencia**. El backlog abierto está en la sección 36.
+> **Arranque en frío: AGENTS.md secciones 43 a 46.** La sesión del 21/08/2026 son
+> la 44, la 45 y la **46, que es el cierre**. Cifras de referencia: 45.4
+> (recopilación) y 46.2 (última publicación). Backlog abierto en la sección 36.
+>
+> **Producto al día:** `convocatorias.json` publicado el **21/08/2026 12:12 UTC**
+> —956 detectadas, 77 vigentes, 31 relevantes, 7 con cierre urgente, 0,20 USD—
+> con las URLs de CDTI ya corregidas. La caché queda al día: otra ejecución hoy
+> costaría casi nada, salvo que se suba una versión de `versions.py`.
 >
 > **Último trabajo (21/08/2026, secciones 44 y 45):** dos avisos del usuario sobre el
 > producto, los dos ciertos. Seis de las diez URLs del catálogo curado de CDTI
@@ -24,8 +29,8 @@ desactualizado si no se mantiene junto a ellos.
 > las cuatro fuentes y `compare_funnels()` compara cada etapa con la ejecución
 > anterior —lo único que caza una avería cuyo síntoma es su estado normal—.
 >
-> **Estado a 20/08/2026:** ronda de calidad del dato completa y **ejecución
-> completa hecha y publicada** (AGENTS.md secciones 40-43). 76 convocatorias
+> **Antecedente (20/08/2026):** ronda de calidad del dato y primera ejecución
+> completa publicada (AGENTS.md secciones 40-43). 76 convocatorias
 > vigentes, 31 relevantes, 1,83 USD reales. Los «datos pendientes» bajan del
 > 57 % al 38 %, y `objeto_y_actuaciones` y `eligible_actions` —que nunca se
 > habían producido— se rellenan en 76/76 y 71/76. El coste está recalibrado con
@@ -69,7 +74,7 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   1. `poetry run python -m unittest tests.test_grant_radar_script_names`
      —un segundo, señala módulo y nombre exactos si falta un import;
   2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`;
-  3. `poetry run python -m unittest discover -s tests` —**430 pruebas**. Una,
+  3. `poetry run python -m unittest discover -s tests` —**448 pruebas**. Una,
      `FrontendLayoutTests::test_consortium_role_is_visible...`, es intermitente
      bajo carga porque conduce Chromium de verdad: repetir antes de investigar
      (AGENTS.md 44.7, nota sobre pruebas intermitentes);
@@ -146,7 +151,7 @@ Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 | `public_output.py` | Registro público del dashboard, estadísticas, estado por fuente y URLs. Publica `objeto_y_actuaciones`; `post_procesar_texto()` ya solo corrige acrónimos (antes corrompía palabras comunes: «cierre» → «CIRCE») |
 | `publishing.py` | Subida a GitHub Pages (credenciales como parámetros, nunca leídas aquí) |
 | `claude_selection.py` | Qué se manda a Claude y la barrera de coste previa |
-| `coverage_watch.py` | Vigilancia de programas recurrentes conocidos |
+| `coverage_watch.py` | Vigilancia de programas recurrentes conocidos. `active_not_captured` es el único estado que significa avería: abierta en su landing y no encontrada (sección 46.4) |
 | `hold_quotes.py` | Validación de que una cita prueba la conclusión de un hold |
 | `claude_usage.py` | Recuento de tokens y coste, incluidos los intentos fallidos |
 | `hold_evidence.py` | Documentos oficiales de un hold BDNS y su caché documental |

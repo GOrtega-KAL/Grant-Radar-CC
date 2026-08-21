@@ -20,9 +20,9 @@ se modificó ningún archivo de `Grant-Radar-prueba.py`, `index.html` ni
 **Seguimiento:** las secciones 4 y 5 recogen el estado a 19/08/2026 (sesión de
 modularización), la 6 el de 20/08/2026 (ronda de calidad del dato y primera
 ejecución completa publicada) y la 7 el de 21/08/2026 (URLs muertas en CDTI y
-el embudo del IDAE) y la 8 el mismo día por la tarde (el indicador de embudo).
+el embudo del IDAE), la 8 el indicador de embudo y la 9 el cierre de esa sesión.
 Para arrancar en frío, los documentos vigentes son `AGENTS.md` secciones 43 a
-45; este de aquí es la evaluación externa y su seguimiento, no el estado vivo
+46; este de aquí es la evaluación externa y su seguimiento, no el estado vivo
 del proyecto.
 
 ---
@@ -848,6 +848,39 @@ sin registro.
 
 Estado tras la ronda: **430 pruebas** en verde y una ejecución `--no-claude`
 completa con 956 detectadas y 77 vigentes (`AGENTS.md` 45.4).
+
+---
+
+## 9. Estado a 21/08/2026 (cierre): la brecha entre el código y el producto
+
+Al valorar el estado del programa apareció un problema que no está en ninguno de
+los diez puntos de esta evaluación, y que conviene añadir: **las mejoras se
+acumulaban en el repositorio sin llegar al usuario**. Las dos rondas de ese día
+habían corregido seis URLs rotas de CDTI y un prefiltro que descartaba fichas
+industriales, y el dashboard seguía sirviendo el JSON del día anterior **con las
+URLs rotas dentro**. El pipeline no publica solo.
+
+Se publicó (0,20 USD reales frente a 0,2048 previstos: la calibración de la
+sección 6 se valida con un 0,2 % de desviación) y las tres URLs que motivaron
+todo salen ya correctas. Pero el patrón queda anotado: mientras la publicación
+dependa de una autorización manual, el producto envejece por defecto.
+
+**Frente a 2.4, un hallazgo que amplía el de la sección 8.** La sonda de hosts
+opacos se estrenó en una ejecución completa y el problema no era de `cdti.es`:
+**nueve hosts** responden 200 a una ruta inexistente —cuatro subdominios de
+FECYT, dos sedes electrónicas, `gov.pl`, `manresa.cat`— afectando a 13 URLs
+publicadas. Sedes electrónicas y fundaciones públicas, sobre todo. En esas 13,
+decir que la URL no está rota no significa nada, y hasta ese día se decía.
+
+**Frente a 2.8**, también se cerró el hueco de cobertura más incómodo:
+`coverage_watch.py` —la alarma que avisa cuando un programa recurrente conocido
+deja de aparecer— pasa de **cero** pruebas a 18, cubriendo sobre todo la
+distinción que importa: `closed_observed` y `seasonal_pending` no son
+regresiones, y `active_not_captured` —abierta en su landing y no encontrada— sí.
+
+Estado tras la sesión: **448 pruebas** en verde, producto publicado al día, y un
+backlog que crece más rápido de lo que se cierra (32 puntos; esa sesión cerró 2
+y abrió 6). No es alarmante todavía, pero la tendencia sí conviene mirarla.
 
 ---
 

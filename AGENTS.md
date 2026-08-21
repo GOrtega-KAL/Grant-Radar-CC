@@ -1,10 +1,11 @@
 # Grant-Radar — contexto e instrucciones del repositorio
 
-> **Arranque en frío: secciones 43, 44 y 45.** La 43 (20/08/2026) reúne el estado
-> del producto; la 44 y la **45 (21/08/2026)** son la ronda vigente, y **45.4
-> tiene las cifras con las que se verifica cualquier cambio**. El backlog abierto
-> está en la sección 36. Las secciones 13-42 son historial narrativo fechado: se
-> consultan, no se leen enteras.
+> **Arranque en frío: secciones 43 a 46.** La sesión del 21/08/2026 son las
+> secciones 44, 45 y 46; la **46 es el cierre** y tiene el estado del producto
+> publicado. Las cifras con las que se verifica cualquier cambio están en 45.4
+> (recopilación) y 46.2 (última publicación). El backlog abierto está en la
+> sección 36. Las secciones 13-42 son historial narrativo fechado: se consultan,
+> no se leen enteras.
 
 ## 1. Objetivo
 
@@ -2451,6 +2452,8 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 28 | El catálogo estático de `sources/boa_aragon.py` sigue con «última revisión 2026-04-09» y una de sus dos entradas está cerrada desde enero | Mismo problema que el 27, en la fuente que además ya no es el mecanismo principal para Aragón (sección 26). Conviene decidir si se mantiene o se retira |
 | 29 | El prefiltro de listado del BOE descarta 153 de 168 entradas **sin registrar exclusión**: solo deja rastro el filtro posterior, sobre el documento ya abierto | Sección 45.2. Auditar las 153 inflaría el catálogo (365 ejecuciones guardadas); lo razonable es un recuento por organismo, no una entrada por ficha |
 | 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
+| 31 | Una convocatoria publica como URL una frase entera con el esquema mal escrito (`hhtp://www.aragon.es/tramites), incluyendo en el buscador…`) | Sección 46.3. La extracción de URL toma texto corrido de las bases; conviene validar el esquema y cortar en el primer espacio antes de publicar |
+| 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
 
 El 429 del 19/08/2026 tuvo cooldown de minutos: una sonda de una sola petición,
 7 minutos después, devolvió la página completa. No impone restricción horaria,
@@ -2476,7 +2479,6 @@ Recuento sobre los 34 módulos del paquete a 20/08/2026:
 
 | # | Qué | Detalle |
 |---|---|---|
-| 18 | `grant_radar/coverage_watch.py` no tiene **ninguna** prueba | Ni un solo test menciona `build_recurrent_coverage_watch()` ni `probe_missing_recurrent_coverage()`. Es el mecanismo que avisa cuando un programa conocido deja de aparecer: una red de seguridad que no tiene red |
 | 19 | `build_keywords()` sigue sin aparecer en ninguna prueba | Afecta al panel de palabras clave. `verificar_urls()` sí tiene pruebas desde el 21/08 (sección 44.3), incluida la sonda de control por host |
 | 20 | Sin archivo de test dedicado, aunque sí cubiertos de forma indirecta vía `runpy`: `sources/bdns.py`, `sources/cdti.py`, `sources/een.py`, `sources/horizon_europe.py`, `versions.py`, `publishing.py`, `claude_usage.py`, `hold_quotes.py`, `hold_evidence.py` (`public_output.py` ya tiene el suyo desde el 20/08) | No es urgente —el camino principal de cada uno se ejercita en `tests/test_grant_radar.py`—, pero un archivo propio con import estándar hace la regresión más legible y sobreviviría a retirar el patrón `runpy` (punto 10) |
 
@@ -2513,6 +2515,7 @@ frío. No hay que buscarlos en las tablas de arriba: ya no están.
 | # | Qué era | Cerrado en |
 |---|---|---|
 | 23 | Recalibrar `CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS` con datos de una ejecución completa, en vez de con la muestra de agosto | Sección 42.3: 76 análisis reales, barrera 0,035 → 0,047 USD |
+| 18 | `coverage_watch.py` sin ninguna prueba: la alarma que avisa cuando un programa recurrente deja de aparecer era una red de seguridad sin red | Sección 46: 18 pruebas, incluidos los cinco estados de la sonda y la forma del catálogo real |
 
 ## 37. Decimotercera ronda a 19/08/2026: salida pública, publicación, selección y cobertura
 
@@ -3469,3 +3472,88 @@ columnas se hunda, ahora se dirá.
 
 Pruebas: **430**, todas en verde (420 + 10: 5 de las tasas nuevas y 5 de la
 lista de organismos del BOE).
+
+## 46. Publicación del 21/08/2026 y la alarma de recurrencia, ya con pruebas
+
+Cierre de la sesión: las dos rondas anteriores llegan al producto, y se tapa el
+hueco de cobertura más incoherente que quedaba.
+
+### 46.1. Por qué hacía falta publicar
+
+Al valorar el estado apareció algo incómodo: **las secciones 44 y 45 no habían
+cambiado nada de lo que el usuario ve**. El dashboard seguía sirviendo el JSON
+del 20/08 a las 11:40 UTC, **con las tres URLs rotas que él mismo había
+reportado**. Las correcciones existían solo en git.
+
+Es el patrón a vigilar: el pipeline no publica solo, así que cada mejora se
+queda en el repositorio hasta que alguien autoriza una ejecución de pago. Con la
+caché al día ese paso era casi gratis y no se había dado.
+
+### 46.2. La ejecución
+
+Autorizada expresamente. 956 detectadas, **77 vigentes**, 46 descartadas tras el
+análisis, 31 relevantes, 7 con cierre urgente, 0 de revisión manual.
+
+| | Previsión | Real |
+|---|---|---|
+| Análisis nuevos o cambiados | 8 | 8 |
+| Coste | 0,2048 USD | **0,2000 USD** |
+
+**La recalibración de la sección 42 se valida sola**: 0,2 % de desviación, frente
+al 45 % con que falló la proyección hecha con la muestra de casos difíciles. 120.223
+tokens.
+
+Las tres URLs de CDTI que motivaron todo salen ya correctas en
+`convocatorias.json`: `proyectos-de-id-de-transferencia-tecnologica-cervera-0`,
+`linea-de-ayudas-infraestructuras-de-ensayo-y-experimentacion` y
+`programas-de-cooperacion-tecnologica-internacional-pcti`.
+
+### 46.3. La sonda de hosts opacos: no era solo CDTI
+
+Primera ejecución completa con el control de la sección 44.3, y resulta que el
+problema era más común de lo que sugería el caso que lo destapó. **Nueve hosts
+responden 200 a una ruta inexistente**, afectando a 13 URLs publicadas:
+
+> `convocatoria.fecyt.es`, `convocatoriamariadeguzman.fecyt.es`,
+> `gestion.convocatoriaip.fecyt.es`, `gestion.estanciasip.fecyt.es`,
+> `sede.carm.es`, `sede.institutofomentomurcia.es`, `www.cdti.es`,
+> `www.gov.pl`, `www.manresa.cat`
+
+Sedes electrónicas y portales de fundaciones públicas, sobre todo. En esas 13,
+`url_rota=False` **no prueba que la ficha exista**; antes se afirmaba que
+estaban bien sin base ninguna.
+
+Y apareció un fallo de extracción que nadie había visto: una convocatoria
+publica como URL una **frase entera con el esquema mal escrito** —
+`hhtp://www.aragon.es/tramites), incluyendo en el buscador de trámites el
+procedimiento número 11810 “Ayudas para actuaciones en materia de certámenes
+feriales en Aragón”`. Queda como punto 31 del backlog.
+
+### 46.4. `coverage_watch.py`, con 18 pruebas
+
+Era el punto 18 del backlog y el hueco más incoherente del proyecto: el
+mecanismo que avisa cuando un programa recurrente conocido deja de aparecer
+—la red que vigila que no se pierda nada— no tenía **ni una** prueba.
+
+Lo que ahora queda cubierto, con la distinción que de verdad importa:
+
+| Estado | Qué significa |
+|---|---|
+| `active_captured` | una fuente produjo la convocatoria |
+| `landing_only` | solo se vio su página de programa |
+| `closed_observed` | la landing dice que está cerrada: **no es regresión** |
+| `seasonal_pending` | programa anual, aún no toca: **no es regresión** |
+| `republication_not_observed` | anual, ya pasó su mes y no ha salido |
+| **`active_not_captured`** | **está abierta en su landing y no la hemos encontrado** |
+
+El último es el único que significa «hay una avería», y ahora tiene prueba
+propia. También se cubre que la sonda **no** se lance para programas ya
+capturados —es un recurso de última hora, no una comprobación rutinaria— y que
+una landing inalcanzable deje la alarma intacta en vez de concluir nada.
+
+Una prueba propia se escribió mal al principio: daba por hecho que una tilde
+separaba un alias de su título. `_fold_text` normaliza los dos lados, así que no
+lo hace —y menos mal, porque los alias reales mezclan «Aragón» y «Aragon»—. La
+aserción estaba equivocada, no el código; se corrigió en el sentido contrario.
+
+Pruebas: **448**, todas en verde (430 + 18).
