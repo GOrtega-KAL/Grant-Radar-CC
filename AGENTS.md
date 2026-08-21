@@ -1,10 +1,10 @@
 # Grant-Radar — contexto e instrucciones del repositorio
 
-> **Arranque en frío: secciones 43 y 44.** La 43 (cierre del 20/08/2026) reúne el
-> estado del producto y el siguiente paso; la **44 (21/08/2026) tiene las cifras
-> de referencia vigentes** con las que se verifica cualquier cambio, en 44.7. El
-> backlog abierto está en la sección 36. Las secciones 13-42 son historial
-> narrativo fechado: se consultan, no se leen enteras.
+> **Arranque en frío: secciones 43, 44 y 45.** La 43 (20/08/2026) reúne el estado
+> del producto; la 44 y la **45 (21/08/2026)** son la ronda vigente, y **45.4
+> tiene las cifras con las que se verifica cualquier cambio**. El backlog abierto
+> está en la sección 36. Las secciones 13-42 son historial narrativo fechado: se
+> consultan, no se leen enteras.
 
 ## 1. Objetivo
 
@@ -2449,6 +2449,8 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 17 | Prueba de humo por conector: llamar a cada `fetch_*()` con el HTTP simulado y comprobar que recorre su camino sin `NameError` | 35. Habría cazado el `statistics` ausente en segundos en vez de en una recopilación de diez minutos |
 | 27 | Los catálogos curados se teclean a mano y caducan en silencio: el 21/08, seis de las diez URLs del de CDTI eran 404 (sección 44.1). Las rutas correctas estaban en el calendario oficial que el conector ya recorre | Vale la pena estudiar si las entradas de ventanilla permanente pueden **derivarse** del listado oficial en vez de mantenerse a mano. `_drop_catalog_entries_with_dead_urls()` ya evita publicarlas rotas, pero no las repara |
 | 28 | El catálogo estático de `sources/boa_aragon.py` sigue con «última revisión 2026-04-09» y una de sus dos entradas está cerrada desde enero | Mismo problema que el 27, en la fuente que además ya no es el mecanismo principal para Aragón (sección 26). Conviene decidir si se mantiene o se retira |
+| 29 | El prefiltro de listado del BOE descarta 153 de 168 entradas **sin registrar exclusión**: solo deja rastro el filtro posterior, sobre el documento ya abierto | Sección 45.2. Auditar las 153 inflaría el catálogo (365 ejecuciones guardadas); lo razonable es un recuento por organismo, no una entrada por ficha |
+| 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
 
 El 429 del 19/08/2026 tuvo cooldown de minutos: una sonda de una sola petición,
 7 minutos después, devolvió la página completa. No impone restricción horaria,
@@ -3319,3 +3321,151 @@ terminada y varios Chromium en marcha. Nada de esta ronda toca `index.html` ni e
 ruta. **Si vuelve a fallar, repetir la suite antes de investigar**; si falla dos
 veces seguidas con la máquina en reposo, entonces sí es real y conviene sustituir
 `is_visible()` por una espera explícita.
+
+## 45. El indicador de embudo y el hueco industrial del BOE, a 21/08/2026
+
+Continuación directa de la sección 44. Allí se arreglaron dos fallos concretos;
+aquí se ataca **por qué ninguno se detectó solo**, que es lo que se repetiría.
+
+### 45.1. Un indicador que hubo que apagar para que no molestara
+
+El control de salud por fuente tenía los datos delante. De la ejecución del
+21/08:
+
+| Fuente | Inventario | Detalle | `date_coverage` | Veredicto |
+|---|---|---|---|---|
+| ECCP | 227 | 227/227 | 100 % | healthy |
+| CDTI | 14 | 14/14 | 100 % | healthy |
+| **IDAE** | 97 | 71/71 | **6,2 %** | **healthy** |
+| **BOE / MITECO** | 168 | **8/168** | **1,8 %** | **healthy** |
+
+Las dos fuentes con el embudo hundido eran justo las dos con el umbral apagado:
+CDTI y ECCP declaraban `expected_date_coverage=0.8`, el IDAE **no lo pasaba**
+—se quedaba en el 0.0 por defecto— y el BOE lo fijaba en `0.0` con este
+comentario:
+
+> *«La cobertura de fecha se mide sobre el inventario completo en el helper
+> común; por ello no se fija umbral: solo algunas entradas del BOE son
+> convocatorias con plazo y se visitan tras el prefiltro.»*
+
+Es decir: **la métrica tenía el denominador equivocado**. Contaba fechas
+encontradas contra el inventario entero, incluidas las fichas que nadie llega a
+abrir, así que daba cifras absurdas y la única salida fue silenciarla. Un
+indicador que hay que apagar para que no moleste no es un indicador.
+
+Ahora cada tasa se mide contra su propio denominador:
+
+| Tasa | Fórmula | Pregunta que responde |
+|---|---|---|
+| `selection_rate` | `detail_attempted / discovered_count` | ¿cuánto del inventario merece abrirse? |
+| `detail_load_rate` | `detail_loaded / detail_attempted` | ¿carga lo que se abre? |
+| `date_coverage` | `dated_count / detail_loaded` | ¿tienen plazo las que se abren? |
+| `publication_rate` | `published_count / detail_loaded` | ¿cuánto acaba publicándose? |
+
+Con el denominador correcto, el BOE pasa del 1,8 % al **37,5 %** de cobertura
+de fecha, que sí describe a esa fuente, y su umbral puede encenderse en 0,20.
+
+**Y una limitación que conviene decir en voz alta:** ningún umbral absoluto
+habría cazado el caso del IDAE. Convertir 71 fichas en 1 convocatoria era a la
+vez el síntoma del fallo **y su estado normal** —es una fuente de landings de
+programa—, así que cualquier umbral o bien no salta nunca o salta siempre. Lo
+único que delata ese tipo de avería es el **cambio**. Por eso se añade
+`compare_funnels()`, que compara cada etapa con la ejecución anterior guardada
+en la auditoría —que conserva 365— y avisa de caídas superiores al 40 % sobre
+etapas de al menos 8 elementos, para no confundir ruido con señal.
+
+### 45.2. El BOE: la taxonomía técnica no admitía a nadie
+
+Auditando el embudo del BOE con el mismo método que el del IDAE apareció algo
+que no esperaba. Replicando su puerta de listado regla a regla sobre las 168
+entradas reales:
+
+| Regla que admite | Entradas |
+|---|---|
+| Taxonomía técnica (`is_relevant`) | **0** |
+| Señal de descubrimiento | **0** |
+| Autoridad vigilada (IDAE, MITECO, Fundación Biodiversidad) | **8** |
+
+**Las ocho que se abren entran por autoridad; la taxonomía no aporta ni una.**
+Y tiene su lógica: el listado del BOE son citas legales —«Extracto de la Orden
+… por la que se convocan las subvenciones dispuestas en el Real Decreto
+309/2022»— sin una sola palabra sobre la materia. Un vocabulario técnico no
+puede funcionar ahí, y el conector ya lo sabía: por eso tenía la excepción por
+organismo.
+
+El problema es que esa lista **no incluía la parte industrial**. Contando sobre
+el listado real, con palabra de ayuda presente:
+
+| Organismo | Entradas | Decisión |
+|---|---|---|
+| Ministerio de Industria y Turismo | 5 | **añadido** |
+| Sociedad Estatal de Promoción Industrial (SEPIDES) | 2 | **añadido** |
+| Ciencia, Innovación y Universidades | 17 | **fuera** |
+
+Entre las que se perdían: las ayudas a **Agrupaciones Empresariales
+Innovadoras**, dos convocatorias de SEPIDES y la Orden ITU/498/2026 que modifica
+las bases de varios programas. Ciencia e Innovación queda deliberadamente fuera:
+sus 17 entradas de ese día eran institutos de salud, universidades y FECYT, y la
+parte que sí interesa de ese ministerio es el CDTI, que tiene conector propio.
+
+Son 7 fichas más que abrir, no 7 convocatorias más que publicar: la relevancia
+de verdad la sigue decidiendo después el texto completo del documento.
+
+### 45.3. Qué se ha cambiado
+
+1. **`assess_web_inventory_health()` mide el embudo entero**, cada tasa contra
+   su denominador (tabla de 45.1), y acepta `published_count`. Umbrales nuevos
+   opcionales: `expected_selection_rate` y `expected_publication_rate`. Un
+   umbral en 0 sigue significando «no lo compruebes».
+2. **Umbrales encendidos donde estaban apagados**: el IDAE declara
+   `expected_selection_rate=0.40` (medido: 0,73) y el BOE recupera su
+   `expected_date_coverage`, ahora en 0,20 (medido: 0,27). CDTI y ECCP reportan
+   además `published_count`.
+3. **`compare_funnels()` y `previous_source_health()`**: comparación de cada
+   etapa contra la ejecución anterior, con el resultado impreso en el resumen de
+   recopilación y guardado en `RUN_DIAGNOSTICS["source_funnel_regressions"]`. Es
+   la única forma de cazar una avería cuyo síntoma coincide con el estado normal.
+4. **`BOE_TRACKED_AUTHORITIES`**: la lista de organismos pasa a ser una
+   constante con nombre —antes estaba incrustada en la condición— y suma
+   Industria y Turismo y SEPIDES. `is_miteco_aid` se renombra a
+   `is_tracked_authority_aid`, que es lo que de verdad comprueba.
+
+### 45.4. Resultado medido
+
+Ejecución `--no-claude` completa del 21/08/2026, código 0:
+
+| | Antes | Después |
+|---|---|---|
+| BOE: fichas abiertas | 8 de 168 | **15 de 168** |
+| BOE: aceptadas por el conector | 2 | **3** |
+| BOE: `date_coverage` | 1,8 % (denominador malo) | **26,7 %** |
+| Total vigentes | 77 | 77 |
+| Previsión de coste | 0,2048 USD | 0,2048 USD |
+
+**Ninguna convocatoria publicada nueva, y conviene decirlo así.** La tercera que
+acepta el BOE es la Orden ITU/498/2026, que modifica bases reguladoras: no tiene
+plazo propio, así que entra como documento regulatorio para consolidar, no como
+convocatoria. Las de SEPIDES y las Agrupaciones Empresariales Innovadoras **sí
+se abren ahora**, se juzgan por el texto completo del documento y se rechazan
+ahí, dejando registro en la auditoría (`boe_detail_filter`). Antes desaparecían
+en el listado sin dejar rastro de ninguna clase.
+
+Es decir: lo que se gana no es cobertura hoy, es que la decisión pasa de «nunca
+se miró» a «se miró y se decidió, y consta». Si mañana el Ministerio de
+Industria convoca algo que encaje, ya no se pierde.
+
+Salud tras el cambio, con las tasas nuevas:
+
+| Fuente | selección | carga | fecha | publicación |
+|---|---|---|---|---|
+| ECCP | 1,00 | 1,00 | 1,00 | 6/227 |
+| CDTI | 1,00 | 1,00 | 1,00 | 1/14 |
+| IDAE | 0,73 | 1,00 | 0,08 | 1/71 |
+| BOE / MITECO | 0,09 | 1,00 | 0,27 | 3/15 |
+
+Las cuatro `healthy`, sin regresiones de embudo frente a la ejecución anterior
+—que es lo esperable cuando nada se ha roto—. La primera vez que una de estas
+columnas se hunda, ahora se dirá.
+
+Pruebas: **430**, todas en verde (420 + 10: 5 de las tasas nuevas y 5 de la
+lista de organismos del BOE).

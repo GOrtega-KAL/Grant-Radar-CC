@@ -192,7 +192,11 @@ from grant_radar.http_client import (
     _is_safe_public_https_url,
 )
 from grant_radar.browser import PlaywrightBrowser
-from grant_radar.source_health import assess_web_inventory_health
+from grant_radar.source_health import (
+    assess_web_inventory_health,
+    compare_funnels,
+    previous_source_health,
+)
 from grant_radar.call_text import (
     CALL_LINK_TERMS,
     FUNDING_CONTEXT_TERMS,
@@ -3234,6 +3238,24 @@ def run_pipeline(
         for source, health in unhealthy_sources.items():
             issues = ", ".join(health.get("issues", [])) or "sin detalle"
             print(f"  {source:<18} {health.get('status'):<10} {issues}")
+
+    # Ningun umbral absoluto habria detectado el embudo del IDAE (AGENTS.md 45):
+    # 71 fichas para una convocatoria era a la vez el sintoma y su estado normal.
+    # Lo que delata ese tipo de fallo es el cambio, asi que cada etapa se compara
+    # con la ejecucion anterior guardada en la auditoria.
+    funnel_regressions = compare_funnels(
+        previous_source_health(AUDIT_FILE),
+        RUN_DIAGNOSTICS.get("web_source_health", {}),
+    )
+    RUN_DIAGNOSTICS["source_funnel_regressions"] = funnel_regressions
+    if funnel_regressions:
+        print("\n⚠ Etapas que caen respecto a la ejecución anterior:")
+        for regression in funnel_regressions:
+            print(
+                f"  {regression['source']:<18} {regression['label']:<16} "
+                f"{regression['previous']} -> {regression['current']} "
+                f"(-{regression['drop']:.0%})"
+            )
 
     all_raw_with_duplicates = [
         item for items in raw_by_source.values() for item in items

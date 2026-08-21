@@ -130,6 +130,13 @@ def _scrape_idae_dates(browser: PlaywrightBrowser, url: str) -> tuple[str, str]:
         return "", ""
 
 
+# Proporcion del inventario que merece abrirse. No se fija umbral de fecha
+# ni de publicacion: el IDAE es una fuente de landings de programa, y que
+# de 71 fichas salga una convocatoria es tambien su estado normal (seccion
+# 44.6). Ese caso lo vigila la comparacion entre ejecuciones, no un umbral.
+IDAE_MIN_EXPECTED_SELECTION_RATE = 0.40
+
+
 def fetch_idae(browser: PlaywrightBrowser) -> list:
     """Navega con Chromium por el portal IDAE y sus páginas de detalle."""
     log.info("Consultando IDAE (Playwright)...")
@@ -431,7 +438,12 @@ def fetch_idae(browser: PlaywrightBrowser) -> list:
         detail_attempted=detail_attempted,
         detail_loaded=detail_loaded,
         dated_count=dated_details,
+        published_count=len(results),
         expected_min_inventory=IDAE_MIN_EXPECTED_INVENTORY,
+        # Medido el 21/08/2026: se abren 71 de 97 fichas (73 %). El umbral va
+        # holgado porque busca un hundimiento —que el inventario deje de
+        # reconocerse—, no la variacion normal del portal.
+        expected_selection_rate=IDAE_MIN_EXPECTED_SELECTION_RATE,
     )
     RUN_DIAGNOSTICS["idae_scrape_audit"] = {
         "attempted_inventory_urls": attempted_inventory_urls,

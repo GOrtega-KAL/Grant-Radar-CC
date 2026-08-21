@@ -74,6 +74,7 @@ class WebInventoryHealthTests(unittest.TestCase):
         degraded = assess_web_inventory_health(
             "CDTI",
             inventory_loaded=True, structure_ok=True, discovered_count=10,
+            detail_attempted=10, detail_loaded=10,
             dated_count=7, expected_date_coverage=0.9,
         )
         self.assertEqual(degraded["status"], "degraded")
@@ -82,10 +83,75 @@ class WebInventoryHealthTests(unittest.TestCase):
         critical = assess_web_inventory_health(
             "CDTI",
             inventory_loaded=True, structure_ok=True, discovered_count=10,
+            detail_attempted=10, detail_loaded=10,
             dated_count=2, expected_date_coverage=0.9,
         )
         self.assertEqual(critical["status"], "unhealthy")
         self.assertIn("date_coverage_critically_low", critical["issues"])
+
+    def test_date_coverage_is_measured_over_loaded_pages_not_the_inventory(self):
+        """El denominador correcto (AGENTS.md 45.1).
+
+        Una fecha solo puede encontrarse en una ficha que se haya cargado. Con
+        el denominador antiguo —el inventario completo— una fuente que abre 8
+        de 168 fichas y les saca fecha a 3 daba 1,8 % y pareceria rota, asi que
+        hubo que apagarle el umbral. Sobre las cargadas da 37,5 %, que es lo
+        que de verdad describe a esa fuente.
+        """
+        health = assess_web_inventory_health(
+            "BOE / MITECO",
+            inventory_loaded=True, structure_ok=True, discovered_count=168,
+            detail_attempted=8, detail_loaded=8, dated_count=3,
+        )
+        self.assertEqual(health["date_coverage"], 0.375)
+
+    def test_selection_rate_catches_a_source_that_stops_opening_records(self):
+        """Si una fuente deja de abrir fichas, el embudo se hunde en silencio."""
+        sano = assess_web_inventory_health(
+            "IDAE",
+            inventory_loaded=True, structure_ok=True, discovered_count=100,
+            detail_attempted=70, detail_loaded=70, expected_selection_rate=0.5,
+        )
+        self.assertEqual(sano["status"], "healthy")
+        self.assertEqual(sano["selection_rate"], 0.7)
+
+        hundida = assess_web_inventory_health(
+            "IDAE",
+            inventory_loaded=True, structure_ok=True, discovered_count=100,
+            detail_attempted=10, detail_loaded=10, expected_selection_rate=0.5,
+        )
+        self.assertEqual(hundida["status"], "unhealthy")
+        self.assertIn("selection_rate_critically_low", hundida["issues"])
+
+    def test_publication_rate_catches_a_source_that_stops_producing(self):
+        """El caso del IDAE: 71 fichas cargadas y una sola convocatoria."""
+        health = assess_web_inventory_health(
+            "IDAE",
+            inventory_loaded=True, structure_ok=True, discovered_count=97,
+            detail_attempted=71, detail_loaded=71, published_count=1,
+            expected_publication_rate=0.05,
+        )
+        self.assertIn("publication_rate_critically_low", health["issues"])
+        self.assertEqual(health["status"], "unhealthy")
+
+    def test_rates_are_none_when_there_is_nothing_to_divide_by(self):
+        health = assess_web_inventory_health(
+            "BOA ARAGÓN",
+            inventory_loaded=True, structure_ok=True, discovered_count=0,
+        )
+        self.assertIsNone(health["selection_rate"])
+        self.assertIsNone(health["publication_rate"])
+        self.assertEqual(health["date_coverage"], 0.0)
+
+    def test_an_unset_expectation_never_raises_an_issue(self):
+        """Un umbral en 0 sigue significando «no lo compruebes»."""
+        health = assess_web_inventory_health(
+            "BOE / MITECO",
+            inventory_loaded=True, structure_ok=True, discovered_count=168,
+            detail_attempted=8, detail_loaded=8, dated_count=0, published_count=0,
+        )
+        self.assertEqual(health["status"], "healthy")
+        self.assertEqual(health["issues"], [])
 
     def test_a_stale_or_missing_source_version_degrades(self):
         stale = assess_web_inventory_health(

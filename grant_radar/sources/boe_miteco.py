@@ -39,6 +39,26 @@ from grant_radar.tech_taxonomy import (
 
 log = logging.getLogger("grant_radar")
 
+# Organismos cuyas ayudas se abren aunque el listado no traiga vocabulario
+# técnico. Hace falta porque el listado del BOE son citas legales —«Extracto de
+# la Orden … por la que se convocan las subvenciones dispuestas en el Real
+# Decreto 309/2022»— sin una sola palabra sobre la materia: medido el
+# 21/08/2026 sobre las 168 entradas reales, la taxonomía técnica admitía cero, y
+# las 8 que se abrían entraban todas por aquí (AGENTS.md, sección 45.2).
+#
+# Es una excepción acotada, no una puerta abierta: exige además una palabra de
+# ayuda, y la relevancia de verdad la decide después el texto del documento.
+# Deliberadamente fuera: Ciencia, Innovación y Universidades, cuyas 17 entradas
+# de ese día eran institutos de salud, universidades y FECYT; la parte que sí
+# interesa de ese ministerio es el CDTI, que tiene su propio conector.
+BOE_TRACKED_AUTHORITIES = (
+    "ministerio para la transicion ecologica y el reto demografico",
+    "secretaria de estado de energia",
+    "fundacion biodiversidad",
+    "ministerio de industria y turismo",
+    "sociedad estatal de promocion industrial y desarrollo empresarial",
+)
+
 
 def fetch_boe(browser: PlaywrightBrowser) -> list:
     """
@@ -123,12 +143,8 @@ def fetch_boe(browser: PlaywrightBrowser) -> list:
                 folded_listing,
             ))
         )
-        is_miteco_aid = bool(
-            any(authority in folded_listing for authority in (
-                "ministerio para la transicion ecologica y el reto demografico",
-                "secretaria de estado de energia",
-                "fundacion biodiversidad",
-            ))
+        is_tracked_authority_aid = bool(
+            any(authority in folded_listing for authority in BOE_TRACKED_AUTHORITIES)
             and re.search(
                 r"\b(convocatoria|programa|incentivos?|ayudas?|subvenciones?)\b",
                 folded_listing,
@@ -153,7 +169,7 @@ def fetch_boe(browser: PlaywrightBrowser) -> list:
                 is_relevant(combined)
                 or has_technology_discovery_signal(combined)
                 or is_idae_aid
-                or is_miteco_aid
+                or is_tracked_authority_aid
                 or is_related_program_document
             )
         ):
@@ -222,7 +238,7 @@ def fetch_boe(browser: PlaywrightBrowser) -> list:
                 "boe_detail_filter",
                 {
                     "listing_idae_aid": is_idae_aid,
-                    "listing_miteco_aid": is_miteco_aid,
+                    "listing_tracked_authority": is_tracked_authority_aid,
                     "detail_loaded": bool(detail_text),
                 },
             )
@@ -265,11 +281,14 @@ def fetch_boe(browser: PlaywrightBrowser) -> list:
         detail_attempted=detail_attempted,
         detail_loaded=detail_loaded,
         dated_count=dated_count,
+        published_count=len(results),
         expected_min_inventory=25,
-        # La cobertura de fecha se mide sobre el inventario completo en el
-        # helper común; por ello no se fija umbral: solo algunas entradas del
-        # BOE son convocatorias con plazo y se visitan tras el prefiltro.
-        expected_date_coverage=0.0,
+        # Desde el 21/08/2026 la cobertura se mide sobre las fichas cargadas, no
+        # sobre el inventario completo, así que ya es una cifra con sentido para
+        # esta fuente y el umbral puede activarse: medido, 3 de 8 (37 %). Antes
+        # daba 1,8 % —porque el BOE lista ayudas de todos los ministerios y solo
+        # se abre lo que pasa el prefiltro— y hubo que apagarlo (AGENTS.md 45.1).
+        expected_date_coverage=0.20,
     )
     SOURCE_RUNTIME_METADATA["BOE / MITECO"] = {
         "status": "ok" if health["status"] == "healthy" else "warn",

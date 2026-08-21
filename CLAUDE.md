@@ -7,16 +7,22 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
-> **Arranque en frío: AGENTS.md secciones 43 y 44.** La 43 tiene el estado del
-> producto y el siguiente paso; la **44 (21/08/2026) tiene las cifras de
-> referencia vigentes**, en 44.7. El backlog abierto está en la sección 36.
+> **Arranque en frío: AGENTS.md secciones 43, 44 y 45.** La 43 tiene el estado del
+> producto; la 44 y la **45 son la ronda vigente, y 45.4 tiene las cifras de
+> referencia**. El backlog abierto está en la sección 36.
 >
-> **Último trabajo (21/08/2026, sección 44):** dos avisos del usuario sobre el
+> **Último trabajo (21/08/2026, secciones 44 y 45):** dos avisos del usuario sobre el
 > producto, los dos ciertos. Seis de las diez URLs del catálogo curado de CDTI
 > eran 404 y `verificar_urls()` no podía verlo porque el WAF de cdti.es responde
 > 200 a cualquier ruta; y el prefiltro temático rechazaba 68 de las 71 fichas del
 > IDAE porque el vocabulario de contexto industrial no contenía «industria» ni
 > «sector industrial» en ninguna forma.
+>
+> Después (45) se atacó **por qué ninguno se detectó solo**: el control de salud
+> medía la cobertura de fecha contra el inventario completo, daba cifras absurdas
+> y había que apagarlo. Ahora cada tasa va contra su denominador, hay umbrales en
+> las cuatro fuentes y `compare_funnels()` compara cada etapa con la ejecución
+> anterior —lo único que caza una avería cuyo síntoma es su estado normal—.
 >
 > **Estado a 20/08/2026:** ronda de calidad del dato completa y **ejecución
 > completa hecha y publicada** (AGENTS.md secciones 40-43). 76 convocatorias
@@ -59,17 +65,17 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   JSON ni publicar. Es el modo de validación por defecto tras un cambio de
   código: `poetry run python "Grant-Radar-prueba.py" --no-claude`.
 - Después de cualquier cambio en `Grant-Radar-prueba.py` o `grant_radar/`,
-  en este orden (el detalle en AGENTS.md 43.3; las cifras, en **44.7**):
+  en este orden (el detalle en AGENTS.md 43.3; las cifras, en **45.4**):
   1. `poetry run python -m unittest tests.test_grant_radar_script_names`
      —un segundo, señala módulo y nombre exactos si falta un import;
   2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`;
-  3. `poetry run python -m unittest discover -s tests` —**420 pruebas**. Una,
+  3. `poetry run python -m unittest discover -s tests` —**430 pruebas**. Una,
      `FrontendLayoutTests::test_consortium_role_is_visible...`, es intermitente
      bajo carga porque conduce Chromium de verdad: repetir antes de investigar
-     (AGENTS.md 44.7);
+     (AGENTS.md 44.7, nota sobre pruebas intermitentes);
   4. `poetry run python "Grant-Radar-prueba.py" --no-claude` al cerrar la
-     ronda, comparando contra los números de referencia: 956 detectadas,
-     **77 vigentes** (21/08/2026). Ojo: ese recuento **ya no es un invariante fijo**, la
+     ronda, comparando contra los números de referencia de AGENTS.md 45.4:
+     956 detectadas, **77 vigentes** (21/08/2026). Ojo: ese recuento **ya no es un invariante fijo**, la
      ventana deslizante de BDNS lo mueve por causas externas; ante un desvío,
      mirar salud de fuentes y registros de exclusión antes que el código.
 - Al extraer código a `grant_radar/`, comprobar que el script principal
@@ -124,14 +130,14 @@ Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 | `bdns_scope.py` | Filtro de candidatas BDNS: palabras clave + administración autonómica de Aragón |
 | `runtime_state.py` | Estado compartido de la ejecución (metadatos por fuente, diagnósticos, landings, coverage watch) |
 | `http_client.py` | `_http_get()` con reintentos y límite de bytes + `_is_safe_public_https_url()` |
-| `source_health.py` | `assess_web_inventory_health()`: control común de salud de inventarios web |
+| `source_health.py` | Salud de inventarios web: `assess_web_inventory_health()` mide el embudo entero (selección, carga, fecha, publicación) y `compare_funnels()` lo contrasta con la ejecución anterior |
 | `call_text.py` | Texto de convocatoria compartido: mecanismo, identificador oficial, deadline, presupuesto, enlaces externos |
 | `sources/horizon_europe.py` | Conector Horizon Europe (SEDIA Search API) |
 | `sources/een.py` | Conector EEN: noticias de financiación y perfiles I+D con call verificable |
 | `browser.py` | `PlaywrightBrowser`: sesión Chromium única de las fuentes sin API. `status()` devuelve el código HTTP, que `html()` no puede distinguir de un bloqueo |
 | `dedup.py` | Identidad de programa, rol documental y consolidación de duplicados |
 | `sources/idae.py` | Conector IDAE: fichas de ayudas y catálogo por ámbito |
-| `sources/boe_miteco.py` | Conector BOE/MITECO: extractos de convocatoria en ayudas.php |
+| `sources/boe_miteco.py` | Conector BOE/MITECO: extractos de convocatoria en ayudas.php. Quién entra lo decide `BOE_TRACKED_AUTHORITIES`, no la taxonomía: el listado son citas legales sin materia (sección 45.2) |
 | `bdns_fields.py` | Lectura de campos de la API BDNS, compartida con la matriz de reglas |
 | `sources/bdns.py` | Conector BDNS/SNPSAP: inventario transversal y detalle de convocatorias |
 | `documents.py` | Documentos oficiales: descarga, extracción de texto y su caché |

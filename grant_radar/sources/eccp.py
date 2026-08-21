@@ -394,6 +394,7 @@ def fetch_eccp(is_relevant_enough) -> list:
         detail_attempted=len(detail_urls),
         detail_loaded=detail_loaded,
         dated_count=dated_details,
+        published_count=len(results),
         expected_min_inventory=ECCP_MIN_EXPECTED_INVENTORY,
         expected_date_coverage=0.8,
     )

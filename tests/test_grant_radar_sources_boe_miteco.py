@@ -67,3 +67,77 @@ class BoeInventoryHealthTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class BoeTrackedAuthorityTests(unittest.TestCase):
+    """
+    El listado del BOE son citas legales, no descripciones.
+
+    Medido el 21/08/2026 sobre las 168 entradas reales: la taxonomía técnica
+    admitía **cero**, y las 8 que el conector abre entran todas por la regla de
+    autoridad. Por eso la lista de organismos vigilados es la que decide la
+    cobertura de esta fuente, y le faltaba justo la parte industrial: el
+    Ministerio de Industria y Turismo (5 entradas ese día) y SEPIDES (2), con
+    convocatorias como las Agrupaciones Empresariales Innovadoras.
+    """
+
+    def setUp(self):
+        SOURCE_RUNTIME_METADATA.clear()
+        RUN_DIAGNOSTICS.clear()
+
+    tearDown = setUp
+
+    @staticmethod
+    def _listado(organismo, titulo):
+        return (
+            '<ul><li class="resultado-busqueda">'
+            f'<p class="linea-dem">{organismo}</p>'
+            f"<p>{titulo}</p>"
+            '<a href="/diario_boe/txt.php?id=BOE-B-2026-1">Ir al documento</a>'
+            "</li></ul>"
+        )
+
+    def _abre_la_ficha(self, organismo, titulo):
+        navegador = FakeBrowser(
+            inventory=self._listado(organismo, titulo), detail="",
+        )
+        fetch_boe(navegador)
+        return any("diario_boe" in url for url in navegador.urls)
+
+    def test_industry_ministry_aid_is_opened(self):
+        self.assertTrue(self._abre_la_ficha(
+            "Ministerio de Industria y Turismo",
+            "Extracto de la Orden de 26 de mayo por la que se efectúa la "
+            "convocatoria correspondiente a 2026 de las ayudas de apoyo a "
+            "Agrupaciones Empresariales Innovadoras",
+        ))
+
+    def test_sepides_aid_is_opened(self):
+        self.assertTrue(self._abre_la_ficha(
+            "Ministerio de Industria y Turismo",
+            "Extracto de la Resolución de 12 de junio de 2026 de la Sociedad "
+            "Estatal de Promoción Industrial y Desarrollo Empresarial, Entidad "
+            "Pública Empresarial, por la que se convocan ayudas",
+        ))
+
+    def test_the_ecological_transition_authorities_still_work(self):
+        self.assertTrue(self._abre_la_ficha(
+            "Ministerio para la Transición Ecológica y el Reto Demográfico",
+            "Extracto de la Orden por la que se convoca el programa de "
+            "incentivos correspondiente a 2026",
+        ))
+
+    def test_an_unrelated_ministry_is_not_opened(self):
+        """La lista de organismos es una excepción acotada, no una puerta abierta."""
+        self.assertFalse(self._abre_la_ficha(
+            "Ministerio de Cultura",
+            "Extracto de la Resolución por la que se convocan subvenciones "
+            "para la promoción del teatro y la danza",
+        ))
+
+    def test_an_authority_without_an_aid_word_is_not_opened(self):
+        self.assertFalse(self._abre_la_ficha(
+            "Ministerio de Industria y Turismo",
+            "Resolución por la que se publica el listado de personal "
+            "funcionario de carrera del cuerpo correspondiente",
+        ))

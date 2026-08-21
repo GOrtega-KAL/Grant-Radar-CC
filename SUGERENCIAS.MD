@@ -20,9 +20,10 @@ se modificó ningún archivo de `Grant-Radar-prueba.py`, `index.html` ni
 **Seguimiento:** las secciones 4 y 5 recogen el estado a 19/08/2026 (sesión de
 modularización), la 6 el de 20/08/2026 (ronda de calidad del dato y primera
 ejecución completa publicada) y la 7 el de 21/08/2026 (URLs muertas en CDTI y
-el embudo del IDAE). Para arrancar en frío, los documentos vigentes son
-`AGENTS.md` secciones 43 y 44; este de aquí es la evaluación externa y su
-seguimiento, no el estado vivo del proyecto.
+el embudo del IDAE) y la 8 el mismo día por la tarde (el indicador de embudo).
+Para arrancar en frío, los documentos vigentes son `AGENTS.md` secciones 43 a
+45; este de aquí es la evaluación externa y su seguimiento, no el estado vivo
+del proyecto.
 
 ---
 
@@ -805,6 +806,48 @@ en cuando el producto publicado**.
 
 Estado tras la ronda: **420 pruebas** en verde y una ejecución `--no-claude`
 completa con 956 detectadas y 77 vigentes (`AGENTS.md` 44.7).
+
+---
+
+## 8. Estado a 21/08/2026 (tarde): el indicador que había que apagar
+
+Continuación de la sección 7. Allí se arreglaron dos fallos; aquí, la razón de
+que ninguno se detectara solo. Toca de lleno el punto 2.4 de esta evaluación.
+
+**El control de salud por fuente tenía los datos y no los miraba.** Medía la
+cobertura de fecha contra el **inventario completo**, incluidas las fichas que
+nadie llega a abrir. Para el BOE eso daba 1,8 %, una cifra sin sentido, y la
+única salida fue fijar su umbral en `0.0` con un comentario que explicaba por
+qué. El IDAE ni siquiera lo pasaba. Resultado: las dos fuentes cuyo embudo se
+había hundido eran exactamente las dos declaradas `healthy` sin comprobación.
+Un indicador que hay que apagar para que no moleste no es un indicador; es
+ruido con permiso.
+
+Ahora cada tasa se mide contra su propio denominador —selección sobre el
+inventario, carga sobre lo abierto, fecha y publicación sobre lo cargado— y con
+eso el BOE pasa de 1,8 % a 26,7 %, que sí lo describe, y su umbral puede
+encenderse.
+
+**Una limitación que conviene no maquillar.** Ningún umbral absoluto habría
+cazado el caso del IDAE: convertir 71 fichas en 1 convocatoria era el síntoma
+del fallo **y** su estado normal. Lo único que delata esa clase de avería es el
+cambio, así que se añadió una comparación de cada etapa contra la ejecución
+anterior, aprovechando que la auditoría ya guarda 365. Es la primera vez que el
+historial de auditoría se usa para algo más que consultarlo a mano.
+
+**Y un hallazgo sobre el BOE que cambia cómo hay que pensar esa fuente.**
+Replicando su puerta de listado regla a regla sobre las 168 entradas reales, la
+taxonomía técnica admite **cero**: las 8 que se abrían entraban todas por la
+excepción de organismo. Es coherente —el listado del BOE son citas legales, sin
+una palabra sobre la materia— pero significa que la cobertura de esa fuente la
+decide una lista de organismos, no el vocabulario, y esa lista no incluía la
+parte industrial. Añadidos Industria y Turismo y SEPIDES: se abren 15 en vez de
+8, y las de SEPIDES y Agrupaciones Empresariales Innovadoras ahora se juzgan por
+el texto del documento y dejan rastro en la auditoría, en lugar de desaparecer
+sin registro.
+
+Estado tras la ronda: **430 pruebas** en verde y una ejecución `--no-claude`
+completa con 956 detectadas y 77 vigentes (`AGENTS.md` 45.4).
 
 ---
 

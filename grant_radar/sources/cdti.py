@@ -701,6 +701,7 @@ def _fetch_cdti_playwright(browser: PlaywrightBrowser) -> list:
             bool(item.get("open_date") or item.get("deadline_date"))
             for item in checked
         ),
+        published_count=len(results),
         expected_min_inventory=CDTI_MIN_EXPECTED_CALENDAR_CALLS,
         expected_date_coverage=0.8,
         source_version=calendar_meta["source_version"],
