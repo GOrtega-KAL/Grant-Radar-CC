@@ -2464,6 +2464,8 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
 | 31 | Una convocatoria publica como URL una frase entera con el esquema mal escrito (`hhtp://www.aragon.es/tramites), incluyendo en el buscador…`) | Sección 46.3. La extracción de URL toma texto corrido de las bases; conviene validar el esquema y cortar en el primer espacio antes de publicar |
 | 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
+| 33 | `extraction_system` sigue siendo una variable local dentro de `analyze_with_claude()`, igual que lo era `evaluation_system` cuando se partió su frase de consorcio y nadie pudo verlo durante cuatro días | Sección 47.2. Sacarlo a constante de módulo y darle las mismas pruebas de integridad es trabajo de minutos; el riesgo es idéntico y ya se materializó una vez |
+| 34 | Programar la recopilación `--no-claude` diaria en el Programador de tareas de Windows | Sección 47.6 tiene el comando. **Es una acción del usuario en su equipo**, no del agente: queda anotada para no darla por hecha |
 
 El 429 del 19/08/2026 tuvo cooldown de minutos: una sonda de una sola petición,
 7 minutos después, devolvió la página completa. No impone restricción horaria,
@@ -3050,8 +3052,10 @@ El script creció por primera vez en dos sesiones: la capa de análisis con Haik
 
 ### 43.3. Cómo verificar cualquier cambio, en orden
 
-Sustituye a 39.5. **El orden sigue vigente; las cifras las actualiza 44.7**
-(21/08/2026: 420 pruebas, 956 detectadas, 77 vigentes):
+Sustituye a 39.5. **El orden sigue vigente; las cifras las actualiza 47.7**
+(21/08/2026: 471 pruebas, 956 detectadas, 77 vigentes). Las cifras que aparecen
+en los puntos de abajo son las del 20/08 y se conservan para no reescribir la
+sección cada ronda: mandan siempre las de 47.7.
 
 1. `poetry run python -m unittest tests.test_grant_radar_script_names` —un
    segundo, señala módulo y nombre exactos si falta un import. **Siempre el

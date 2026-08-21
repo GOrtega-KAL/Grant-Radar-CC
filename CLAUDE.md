@@ -103,6 +103,14 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
 - Las ejecuciones `--no-claude` son gratis en tokens pero **no para las
   fuentes públicas**: el 19/08, tras ocho ejecuciones en un día, `boe.es`
   respondió con `HTTP 429`. Espaciarlas cuando se encadenen varias rondas.
+- **Flujo previsto desde el 21/08/2026** (decidido con el usuario, AGENTS.md
+  47.5): una recopilación `--no-claude` diaria programada, y la llamada a
+  Claude decidida a mano cuando el desfase lo justifique — en subvenciones el
+  ciclo real es de días o semanas, no de horas. Para saber cuánto se está
+  desfasando lo publicado, sin red y sin coste:
+  `poetry run python "Grant-Radar-prueba.py" --staleness-report`.
+  El comando para programar la tarea diaria en Windows está en AGENTS.md 47.6.
+  **Programarla es una acción pendiente del usuario, no del agente.**
 - Al cerrar cada ronda de trabajo, dejar `AGENTS.md`, `CLAUDE.md` y
   `SUGERENCIAS.MD` al día para que otra sesión pueda arrancar en frío. Es
   requisito del usuario, no una cortesía.
@@ -112,16 +120,16 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   PowerShell: `$env:VIRTUAL_ENV = $null` primero, o `poetry` puede ejecutar
   silenciosamente contra el entorno equivocado.
 
-## Estructura actual (20/08/2026)
+## Estructura actual (21/08/2026)
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l` el 20/08/2026: **3.988 líneas en el
-script y 8.901 en los 34 módulos del paquete** —más del doble de código en el
+`import`). Recuento verificado con `wc -l` el 21/08/2026: **4.086 líneas en el
+script y 9.409 en los 35 módulos del paquete** —más del doble de código en el
 paquete que en el script—. El script tenía 9.199 líneas antes de las nueve
-rondas del 19/08/2026 y bajó a 3.842; el 20/08 volvió a crecer un poco, porque
-la ronda de calidad del dato enriqueció la capa de análisis con Haiku, que
-sigue dentro del script. (La cifra "8.835" de una nota anterior de este archivo
+rondas del 19/08/2026 y bajó a 3.842; desde entonces vuelve a crecer despacio,
+porque las rondas de calidad del dato y de prompt enriquecen la capa de
+análisis con Haiku, que sigue dentro del script. (La cifra "8.835" de una nota anterior de este archivo
 estaba mal calculada — ver AGENTS.md sección 24, nota de discrepancia.)
 Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 
