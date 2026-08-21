@@ -1,11 +1,12 @@
 # Grant-Radar — contexto e instrucciones del repositorio
 
-> **Arranque en frío: secciones 43 a 46.** La sesión del 21/08/2026 son las
-> secciones 44, 45 y 46; la **46 es el cierre** y tiene el estado del producto
-> publicado. Las cifras con las que se verifica cualquier cambio están en 45.4
-> (recopilación) y 46.2 (última publicación). El backlog abierto está en la
-> sección 36. Las secciones 13-42 son historial narrativo fechado: se consultan,
-> no se leen enteras.
+> **Arranque en frío: secciones 43 a 47.** La sesión del 21/08/2026 son las
+> secciones 44 a 47. Cifras de referencia en 45.4 (recopilación) y 46.2 (última
+> publicación). **La 47 deja la caché invalidada a propósito**: se subieron perfil,
+> evaluador y prompt, así que la próxima ejecución completa reanaliza las 77 y
+> cuesta ~1,8 USD, no ~0,2. El backlog abierto está en la sección 36. Las
+> secciones 13-42 son historial narrativo fechado: se consultan, no se leen
+> enteras.
 
 ## 1. Objetivo
 
@@ -423,6 +424,15 @@ poetry run python -m unittest discover -s tests -v
 Incluyen fixtures sintéticos de BDNS, ECCP, EEN, deduplicación, filtro común y
 contrato del frontend. PowerUp NetZero es una regresión de prueba, no una regla
 especial de producción.
+
+```powershell
+poetry run python "Grant-Radar-prueba.py" --staleness-report
+```
+
+Informa de cuántas convocatorias esperan análisis y desde cuándo, leyendo solo
+la auditoría. No recopila, no consulta ninguna fuente, no cuesta nada y es
+instantáneo. Es un modo aislado: no se combina con ningún otro. Cada
+`--no-claude` imprime además ese resumen en una línea al cerrar (sección 47.5).
 
 ```powershell
 poetry run python "Grant-Radar-prueba.py" --hold-pilot 20
@@ -2469,7 +2479,7 @@ rondas el mismo día.
 | 10 | Retirar el patrón `runpy` + fusión de `APP` en `tests/test_grant_radar.py` | Tiene sentido revisarlo cuando el script principal quede reducido a configuración y punto de entrada |
 | 15 | Orden de extracción medido (secciones 37 y 38): `save_discovery_audit` → capa Haiku → segunda mitad de holds → reglas → `run_pipeline()` | La primera mitad de holds ya salió (sección 38). `run_pipeline()` arrastra el resto: va el último, no el siguiente |
 | 21 | Ejecutar `tests/test_grant_radar_script_names.py` **antes** que la suite completa tras cada extracción | Señala el módulo y el nombre exactos en un segundo; la suite completa los presenta como errores en pruebas de otra cosa (pasó tres veces) |
-| 24 | Endurecer la instrucción contra presunciones en `objeto_y_actuaciones` | INNOVAE devolvió «se presume inversión en equipos…» cuando la fuente no detalla gastos. Es una presunción declarada, no una invención, pero mejor evitarla (sección 41.2). **Sigue abierto** |
+| 24 | Endurecer la instrucción contra presunciones en `objeto_y_actuaciones` | INNOVAE devolvió «se presume inversión en equipos…» cuando la fuente no detalla gastos. Es una presunción declarada, no una invención, pero mejor evitarla (sección 41.2). **Sigue abierto**, y desde el 21/08 es el candidato natural a agruparse con la reanalisis pendiente de la seccion 47: ambos son cambios de prompt y comparten la misma invalidacion de cache |
 | 22 | La ventana de BDNS bajó de 79 a 65 días (densidad real 54 filas/día, no 44). Cumple el mínimo de 60 con 5 días de margen | Revisar `BDNS_LATEST_MAX_PAGES` y actualizar la densidad del test de regresión, que hoy es optimista y no detectaría una caída por debajo de 60 (sección 40.4) |
 | 16 | Usar `node.end_lineno`, nunca `max(lineno)`, al cortar bloques por AST | Un `return (` multilínea pierde el paréntesis de cierre; ocurrió en la sección 37 |
 
@@ -3557,3 +3567,199 @@ lo hace —y menos mal, porque los alias reales mezclan «Aragón» y «Aragon»
 aserción estaba equivocada, no el código; se corrigió en el sentido contrario.
 
 Pruebas: **448**, todas en verde (430 + 18).
+
+
+## 47. Un falso negativo del evaluador y el informe de desfase, a 21/08/2026
+
+Dos encargos del usuario. El primero, un caso concreto de mala puntuación; el
+segundo, una idea suya para vigilar cuánto envejece la información sin pagar por
+ello.
+
+### 47.1. PowerUp NetZero: 35 % de encaje en una convocatoria a la que la empresa se presenta
+
+El usuario avisó de que **PowerUp NetZero Open Call for Innovation Projects**
+recibía un `fit_score` de 35 y salía como descartada, siendo una convocatoria a
+la que Kalfrisa va a concurrir, y apuntó a sus líneas de I+D en consorcio sobre
+validación de simulaciones y gemelos digitales.
+
+**Causa principal: el evaluador ignoró un dato que su propia extracción había
+recuperado.** La etapa factual leyó el documento oficial de Piemonte Innova y
+capturó los ocho temas admisibles:
+
+> Waste management of solar panels and batteries · Materials and critical raw
+> materials · Storage alternatives to batteries · **Digital solutions for
+> PowerUp NetZero NZT** · **Value chain efficiency** · **CO2 and hydrogen
+> coupling** · **Carbon capture technologies** · City of Turin Challenges
+
+Y la evaluación escribió que «las capacidades de Kalfrisa […] no figuran en los
+temas obligatorios listados». Es falso, y lo desmiente un campo que viajaba en
+su propio payload: `evaluation_payload["facts"]` incluye `required_topics`.
+Comprobado. Razonó solo sobre los **cinco titulares** del programa —Solar,
+Baterías, Hidrógeno, Biogás, CCS— que aparecen en la descripción de portada.
+
+Causas concurrentes, todas verificadas:
+
+| # | Causa | Evidencia |
+|---|---|---|
+| 1 | El prompt tenía regla para `funding_lines` («basta la mejor línea») pero **ninguna para `required_topics`** | El modelo trató la lista como conjunción que satisfacer entera |
+| 2 | La cláusula «FUERA DE FOCO» del perfil excluye «hidrógeno genérico sin uso térmico industrial», y el paraguas del programa es exactamente eso | El modelo cruzó portada con exclusión y paró antes de bajar al tema concreto |
+| 3 | El perfil mencionaba gemelos digitales **dentro** de la frase «vinculados a equipos y procesos térmicos» | Se leía como capacidad subordinada, no como línea propia. EHAT no aparecía |
+| 4 | Se cargó a la convocatoria lo que es limitación nuestra: «no se proporcionan candidatos de socio» | Es una propiedad del catálogo de socios, no de la oportunidad |
+| 5 | Presupuesto pequeño y plazo corto entraron en el motivo de descarte | Para eso existe `actionability_score`, que ya valía 25 por separado |
+
+### 47.2. Y una frase que yo mismo partí por la mitad
+
+Revisando el prompt de sistema apareció una regresión introducida el 20/08 al
+insertar la instrucción de `objeto_y_actuaciones`: partió en dos la frase de
+`consortium_required`, que quedó así durante cuatro días —
+
+> «…`consortium_required=false` significa que la evidencia admite solicitantes
+> individuales además de **objeto_y_actuaciones debe abrir el análisis**: una
+> sola frase densa…»
+
+— con el resto de la frase (`consorcios; no lo presentes como requisito
+pendiente`) huérfano cien palabras más abajo. El evaluador leyó cuatro días una
+instrucción rota sobre consorcios, y PowerUp NetZero penalizó precisamente el
+consorcio (`consortium_readiness: 30`).
+
+**Ninguna prueba podía verlo** porque `evaluation_system` era una variable local
+dentro de `analyze_with_claude()`. Ahora es la constante de módulo
+`CLAUDE_EVALUATION_SYSTEM_PROMPT`, y hay pruebas que comprueban que la frase
+sigue entera y que ningún nombre de campo del esquema aparece detrás de una
+preposición, que es la huella que deja este tipo de empalme.
+
+### 47.3. Lo que se ha cambiado
+
+1. **Prompt de evaluación**: `required_topics` se trata como las líneas —basta
+   encajar en uno— con obligación de **declarar en cuál** si concluye que hay
+   encaje, y de recorrer esa lista si concluye que no. `fit_score` no puede
+   bajar por presupuesto, plazo ni ausencia de socios en nuestro catálogo.
+2. **Prompt de sistema**: frase de consorcio reparada, más la nota de que
+   Kalfrisa tiene experiencia acreditada en consorcios y de que un
+   `deterministic_tech_tags` vacío significa «la taxonomía térmica no reconoció
+   el vocabulario», no «no hay encaje».
+3. **Perfil**: simulación y gemelos digitales pasan a **línea propia** (CFD/HPC,
+   modelización, validación experimental, EHAT y DT4RAF), declarada capacidad
+   autónoma aplicable aunque el paraguas de la convocatoria no sea térmico. Y la
+   lista «FUERA DE FOCO» aclara que describe el objeto de un proyecto, no la
+   portada de un programa.
+4. **Versiones subidas**: perfil a `kalfrisa-2026-08-v5-simulation-line`,
+   evaluador a `fit-2026-08-v7-topic-and-scope`, prompt a
+   `2026-08-v11-topic-and-scope`.
+
+**Lo que NO se ha cambiado, y por qué.** La propuesta inicial incluía ampliar la
+taxonomía con «captura de carbono», «almacenamiento» e «hidrógeno» suelto, para
+que la convocatoria dejara de llegar con `tech_tags: []`. Al medirlo, no
+funcionaba: los términos contextuales exigen contexto industrial cerca y **el
+texto de PowerUp no tiene ninguno** —una sola aparición de «industrial», dentro
+de la fórmula «industrially relevant environment» del TRL—. Forzar la etiqueta
+habría sido la regla ad-hoc para una convocatoria concreta que prohíbe la
+sección 1. `tech_tags: []` es honesto ahí; lo que estaba mal era usarlo como
+prueba de desalineación, y eso se corrige en el prompt.
+
+### 47.4. ¿Hay más casos así?
+
+Se revisaron las 46 descartadas buscando solape real entre sus temas o
+actuaciones y el vocabulario de capacidades del perfil, con límites de palabra.
+Salen 8, y examinadas una a una **PowerUp NetZero es el único falso negativo
+claro**:
+
+| Convocatoria | fit | Veredicto |
+|---|---|---|
+| PowerUp NetZero | 35 | **falso negativo** |
+| De-risking renewable fuel technologies | 15 | correcto: es compra pública precomercial, solo autoridades contratantes |
+| PYME Sostenible / PYME Digital (Granada) | 35 / 15 | correcto: territorial |
+| Cabildo de Lanzarote | 15 | correcto: territorial |
+
+No hay sesgo sistemático. Hay un modo de fallo concreto, que se dispara cuando
+el paraguas temático es amplio y el encaje está en un subtema.
+
+**Nota metodológica:** el primer barrido usó una expresión sin límites de
+palabra y «voc» casaba dentro de «conVOCatoria», devolviendo 38 falsos
+positivos de 46. Es exactamente el error que `_term_present()` existe para
+evitar (sección 31) y conviene recordarlo antes del próximo barrido manual.
+
+### 47.5. El informe de desfase
+
+Idea del usuario, con su encuadre: *las subvenciones se mueven despacio, así que
+la frecuencia útil no baja de 3 días o una semana*. Decisión: **no** se
+periodifica la llamada a Claude; se programa una recopilación `--no-claude`
+diaria y se mira cuántas convocatorias esperan análisis, para decidir a mano
+cuándo pagar.
+
+No hizo falta recopilar nada nuevo: el dato ya estaba. Cada `--no-claude` guarda
+su `claude_forecast` en la auditoría, y cada ejecución completa queda marcada
+como publicación. `grant_radar/staleness.py` solo lee ese histórico, así que es
+instantáneo, gratuito y no toca la red.
+
+- `--staleness-report`: modo aislado que imprime la última publicación, cuántas
+  convocatorias esperan análisis, lo que costaría ponerse al día y las catorce
+  últimas mediciones.
+- Cada `--no-claude` cierra ya con una línea de desfase.
+
+**Un error propio, corregido antes de commitear:** la primera versión contaba
+como pendientes una previsión **anterior** a la última publicación, de modo que
+declaraba ocho convocatorias esperando análisis justo después de haberlas
+analizado y publicado. Ahora solo cuenta lo medido después de publicar, y si no
+hay medición posterior lo dice en vez de inventar un número. Hay prueba propia.
+
+### 47.6. Cómo programar la recopilación diaria
+
+En Windows, con el Programador de tareas. El pipeline no necesita cambios: basta
+llamarlo con `--no-claude`, que ya no toca la caché de análisis ni publica.
+
+```powershell
+$accion = New-ScheduledTaskAction -Execute "poetry" `
+  -Argument 'run python "Grant-Radar-prueba.py" --no-claude' `
+  -WorkingDirectory "C:\Users\guillermo.ortega\Desktop\Guillermo\Grant-Radar - Claude Code"
+$disparador = New-ScheduledTaskTrigger -Daily -At 7:00am
+Register-ScheduledTask -TaskName "Grant-Radar diario" -Action $accion -Trigger $disparador
+```
+
+Dos avisos antes de activarlo:
+
+1. Cada recopilación tarda unos 13 minutos y consulta ocho fuentes públicas. Una
+   al día está muy por debajo de lo que provocó el `HTTP 429` de `boe.es` el
+   19/08 (ocho en un día), pero conviene no encadenar ejecuciones manuales el
+   mismo día que corra la programada.
+2. Con `VIRTUAL_ENV` heredada en este equipo, la tarea debe limpiarla antes de
+   llamar a `poetry` (ver `CLAUDE.md`), o ejecutará contra el entorno de la
+   carpeta original.
+
+Consultar el desfase acumulado no requiere esperar a nada:
+`poetry run python "Grant-Radar-prueba.py" --staleness-report`.
+
+### 47.7. Verificación y estado
+
+**471 pruebas** en verde (448 + 23: 11 del prompt y el perfil, 12 del informe de
+desfase). Ejecución `--no-claude` completa, código 0, sin desviaciones:
+
+> 956 detectadas · 35 duplicadas fusionadas · 39 tras el prefiltro inicial ·
+> **77 vigentes** (BDNS 47, Horizon 19, CDTI 5, ECCP 4, EEN 2, IDAE 1, BOE 1,
+> BOA 0) · prefiltro común `retain=32, ambiguous=7, hold_manual=75, reject=842`
+> · resolución automática de holds `ambiguous=38, reject=37, revisión manual=0`.
+
+Las cuatro fuentes con control de salud siguen `healthy` y no hay regresiones de
+embudo. Era lo esperable: esta ronda toca prompt y perfil, no recopilación.
+
+**La previsión pasa de 0,2048 a 1,9712 USD**, y esa es la prueba de que los
+cambios están activos: subir perfil, evaluador y prompt invalidó las 77 entradas
+de caché. La línea de desfase lo dice con todas las letras:
+
+```
+Desfase: 77 convocatorias pendientes de analizar · 1.9712 USD ·
+0 días desde la última publicación.
+```
+
+Cero días desde la publicación y aun así 77 pendientes: no es una contradicción,
+es exactamente lo que significa invalidar la caché. El informe lo describe bien.
+
+**Decisión del usuario, vigente:** aplicar los cambios y **no reanalizar
+todavía**. Lo publicado el 21/08 sigue siendo válido y visible; incorpora los
+arreglos de las secciones 44 a 46, pero **no** los de esta. PowerUp NetZero
+seguirá mostrando su 35 % hasta que se autorice una ejecución completa.
+
+Antes de esa ejecución conviene agrupar también el punto 24 del backlog
+—endurecer la instrucción contra presunciones en `objeto_y_actuaciones`—, que
+lleva abierto desde el 20/08 esperando exactamente esta oportunidad: es otro
+cambio de prompt, y pagar dos veces la misma invalidación no tiene sentido.

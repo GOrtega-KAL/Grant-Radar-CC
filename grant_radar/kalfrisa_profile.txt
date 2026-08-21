@@ -18,11 +18,23 @@ CAPACIDADES Y ACTIVOS TECNOLÓGICOS:
 - Oxidación térmica regenerativa y recuperativa (RTO), tratamiento de COV/NMVOC
   y concentración mediante rotor de zeolitas.
 - Valorización térmica de residuos, pirólisis y postcombustión.
-- CFD/HPC, gemelos digitales, IIoT, monitorización remota, control avanzado,
-  mantenimiento predictivo y ACV vinculados a equipos y procesos térmicos.
+- IIoT, monitorización remota, control avanzado, mantenimiento predictivo y ACV
+  vinculados a equipos y procesos térmicos.
+
+SIMULACIÓN Y GEMELOS DIGITALES (línea propia, no subordinada a la térmica):
+- CFD/HPC, modelización, gemelos digitales y validación experimental de
+  simulaciones, desarrollados en proyectos de I+D en consorcio (EHAT, DT4RAF).
+- Es una capacidad autónoma: Kalfrisa puede participar como socio de simulación,
+  modelización o validación en un consorcio aunque el paraguas de la
+  convocatoria no sea térmico, siempre que el proyecto tenga un caso de uso
+  industrial o energético identificable.
 
 EXPERIENCIA I+D RELEVANTE:
-- HIGH2-FURNACES, DESCARB-e, EDPIC, LIFE ABATE, e-RTO, RAFeRTO, DT4RAF e IGNITE.
+- HIGH2-FURNACES, DESCARB-e, EDPIC, LIFE ABATE, e-RTO, RAFeRTO, DT4RAF, EHAT
+  e IGNITE.
+- Experiencia acreditada de participación en consorcios de I+D: la ausencia de
+  socios preidentificados en el radar no es un obstáculo para Kalfrisa ni un
+  motivo para rebajar el encaje de una convocatoria.
 - Desarrollo de recuperadores de radiación y demostración industrial.
 - TRL preferente 4-7, sin excluir TRL superiores cuando exista demostración,
   primera aplicación industrial o escalado.
@@ -36,9 +48,15 @@ PROGRAMAS Y SECTORES:
   residuos y otros sectores si existe un proceso térmico o de emisiones aplicable.
 
 FUERA DE FOCO SALVO CONEXIÓN INDUSTRIAL TÉRMICA EXPLÍCITA:
+- Esta lista describe el OBJETO de un proyecto, no el paraguas temático de una
+  convocatoria. Un programa cuyo título agrupe varias tecnologías —por ejemplo
+  «solar, baterías, hidrógeno, biogás y captura de carbono»— no queda excluido
+  si entre sus temas admisibles hay alguno en el que Kalfrisa sí encaje. Lo que
+  se juzga es el tema concreto al que se presentaría, no la portada del programa.
 - Edificios residenciales/terciarios y transporte.
 - Solar fotovoltaica, eólica o hidrógeno genérico sin uso térmico industrial.
-- Software o IA genéricos sin integración con equipos/procesos térmicos.
+- Software o IA genéricos sin integración con equipos/procesos térmicos ni con
+  la línea de simulación y gemelos digitales descrita arriba.
 - Investigación básica TRL 1-3 sin ruta industrial.
 - Ayudas exclusivas para tipos de entidad que excluyan a Kalfrisa.
 - Adquisición ordinaria de equipos sin innovación, demostración o desarrollo.

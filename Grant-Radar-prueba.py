@@ -192,6 +192,11 @@ from grant_radar.http_client import (
     _is_safe_public_https_url,
 )
 from grant_radar.browser import PlaywrightBrowser
+from grant_radar.staleness import (
+    build_staleness_report,
+    format_staleness_report,
+    summarize_staleness,
+)
 from grant_radar.source_health import (
     assess_web_inventory_health,
     compare_funnels,
@@ -2852,6 +2857,49 @@ def _build_compatible_analysis(
     return result
 
 
+# Prompt de sistema del evaluador, a nivel de modulo y no dentro de la funcion
+# para que se pueda leer entero de una vez y probarlo. El 20/08/2026 se inserto
+# aqui la instruccion de objeto_y_actuaciones y partio por la mitad la frase de
+# consortium_required, que quedo asi cuatro dias sin que nada lo detectara: era
+# una variable local dentro de analyze_with_claude() y ninguna prueba podia
+# mirarla (AGENTS.md, seccion 47).
+CLAUDE_EVALUATION_SYSTEM_PROMPT = (
+    "Evalúa oportunidades de I+D industrial con criterio conservador y "
+    "trazable. Usa solo los hechos extraídos y el perfil proporcionado. "
+    "No conviertas ausencia de información en un hecho negativo: reduce "
+    "confidence y declara el riesgo. Solo puedes recomendar partner_ids de "
+    "la lista de candidatos. CDTI e IDAE son financiadores, nunca socios. "
+    "Kalfrisa es una empresa de tamaño mediano. No deduzcas de ello que "
+    "cumple automáticamente la definición jurídica de PYME aplicable: "
+    "evalúa el tamaño solo si los hechos indican una restricción expresa. "
+    "Si se admiten empresas de todos los tamaños o la línea aplicable no "
+    "restringe por tamaño, no pidas verificar la condición de PYME. No cites "
+    "umbrales legales que no estén en los hechos extraídos. Cuando existan "
+    "líneas alternativas, evalúa solo la línea o líneas compatibles con el "
+    "perfil y no penalices por las líneas ajenas. consortium_required=false "
+    "significa que la evidencia admite solicitantes individuales además de "
+    "consorcios; no lo presentes como requisito pendiente. Kalfrisa tiene "
+    "experiencia acreditada en consorcios de I+D: que una convocatoria exija "
+    "consorcio no es por sí mismo un obstáculo ni un motivo para rebajar el "
+    "encaje. "
+    "objeto_y_actuaciones debe abrir el análisis: una sola frase densa, "
+    "en castellano, con qué financia la convocatoria, sobre qué tipo de "
+    "actuación o inversión, qué gastos declara elegibles y qué excluye "
+    "expresamente. Redáctala desde la convocatoria, no desde Kalfrisa, y "
+    "sin puntuaciones ni valoración de encaje. Si la fuente no detalla "
+    "los gastos, descríbelo con lo que sí conste y no lo inventes. "
+    "resumen no debe repetirla: empieza por el encaje concreto con "
+    "Kalfrisa, la línea aplicable y lo que queda por verificar. "
+    "deterministic_tech_tags procede de una taxonomía térmica propia: que "
+    "llegue vacía significa que esa taxonomía no reconoció el vocabulario "
+    "de la convocatoria, no que no haya encaje. No la uses como prueba de "
+    "desalineación; para eso están los hechos y el perfil. "
+    "Usa la fecha de referencia "
+    "y el estado determinista: no recomiendes esperar una apertura o "
+    "publicación que ya haya ocurrido."
+)
+
+
 def analyze_with_claude(conv: dict, max_retries: int = 3) -> dict:
     """
     Etapa A: extrae hechos sin valorar el encaje.
@@ -2966,33 +3014,7 @@ def analyze_with_claude(conv: dict, max_retries: int = 3) -> dict:
         }
         for item in candidates
     ]
-    evaluation_system = (
-        "Evalúa oportunidades de I+D industrial con criterio conservador y "
-        "trazable. Usa solo los hechos extraídos y el perfil proporcionado. "
-        "No conviertas ausencia de información en un hecho negativo: reduce "
-        "confidence y declara el riesgo. Solo puedes recomendar partner_ids de "
-        "la lista de candidatos. CDTI e IDAE son financiadores, nunca socios. "
-        "Kalfrisa es una empresa de tamaño mediano. No deduzcas de ello que "
-        "cumple automáticamente la definición jurídica de PYME aplicable: "
-        "evalúa el tamaño solo si los hechos indican una restricción expresa. "
-        "Si se admiten empresas de todos los tamaños o la línea aplicable no "
-        "restringe por tamaño, no pidas verificar la condición de PYME. No cites "
-        "umbrales legales que no estén en los hechos extraídos. Cuando existan "
-        "líneas alternativas, evalúa solo la línea o líneas compatibles con el "
-        "perfil y no penalices por las líneas ajenas. consortium_required=false "
-        "significa que la evidencia admite solicitantes individuales además de "
-        "objeto_y_actuaciones debe abrir el análisis: una sola frase densa, "
-        "en castellano, con qué financia la convocatoria, sobre qué tipo de "
-        "actuación o inversión, qué gastos declara elegibles y qué excluye "
-        "expresamente. Redáctala desde la convocatoria, no desde Kalfrisa, y "
-        "sin puntuaciones ni valoración de encaje. Si la fuente no detalla "
-        "los gastos, descríbelo con lo que sí conste y no lo inventes. "
-        "resumen no debe repetirla: empieza por el encaje concreto con "
-        "Kalfrisa, la línea aplicable y lo que queda por verificar. "
-        "consorcios; no lo presentes como requisito pendiente. Usa la fecha de referencia "
-        "y el estado determinista: no recomiendes esperar una apertura o "
-        "publicación que ya haya ocurrido."
-    )
+    evaluation_system = CLAUDE_EVALUATION_SYSTEM_PROMPT
     evaluation_facts = normalize_call_facts(facts_model)
     _resolve_consortium_requirement(evaluation_facts)
     evaluation_payload = {
@@ -3020,7 +3042,24 @@ def analyze_with_claude(conv: dict, max_retries: int = 3) -> dict:
         "requisitos de consorcio. Si no constan, usa unknown y explica el dato "
         "que debe verificarse. Si hay varias funding_lines, identifica la mejor "
         "línea aplicable a Kalfrisa y basa en ella elegibilidad, encaje, riesgos "
-        "y acción; no exijas encajar en todas. Distingue, de forma general, entre "
+        "y acción; no exijas encajar en todas. "
+        # Mismo criterio para los temas, que antes no lo tenía: PowerUp NetZero
+        # se descartó al 35 % porque el evaluador juzgó los cinco titulares del
+        # programa e ignoró los ocho `required_topics` que la extracción había
+        # recuperado del documento oficial, entre ellos uno de soluciones
+        # digitales donde Kalfrisa sí encaja (AGENTS.md, sección 47).
+        "Trata `facts.required_topics` igual que las líneas: basta encajar en "
+        "UNO de los temas admisibles, no en todos ni en el titular del programa. "
+        "Léelos siempre antes de concluir desalineación temática y, si concluyes "
+        "que hay encaje, di en el resumen a qué tema concreto se presentaría; si "
+        "concluyes que no lo hay, justifícalo recorriendo esa lista, no la "
+        "descripción de portada. "
+        "El encaje (fit_score) mide alineación tecnológica y estratégica: no lo "
+        "rebajes por el tamaño del presupuesto, por la proximidad del plazo ni "
+        "porque el radar no aporte candidatos a socio —eso es actionability_score, "
+        "y la falta de socios preidentificados es una limitación nuestra, no de la "
+        "convocatoria—. "
+        "Distingue, de forma general, entre "
         "participar como beneficiaria sobre una instalación propia y actuar como "
         "proveedor tecnológico para la instalación de otro beneficiario. El "
         "campo tags solo puede contener claves de la "
@@ -3557,6 +3596,13 @@ def run_pipeline(
             {name: len(items) for name, items in raw_by_source.items()},
         )
         print(f"  Auditoría de descartes actualizada: {AUDIT_FILE}")
+        # Con la auditoría ya guardada, esta recopilación cuenta para el
+        # desfase. Es el dato que justifica —o no— pagar una ejecución con
+        # Claude, y el motivo de programar esta recopilación a diario.
+        print("  " + summarize_staleness(
+            build_staleness_report(_load_audit_runs())
+        ))
+        print("  Detalle: --staleness-report")
         print("=" * 60)
         return all_raw
 
@@ -3938,6 +3984,14 @@ def parse_args():
         ),
     )
     parser.add_argument(
+        "--staleness-report",
+        action="store_true",
+        help=(
+            "Informa de cuantas convocatorias esperan analisis y desde cuando, "
+            "leyendo solo la auditoria. Sin red, sin coste y sin recopilar."
+        ),
+    )
+    parser.add_argument(
         "--replay-hold-report",
         action="store_true",
         help=(
@@ -3969,6 +4023,13 @@ def parse_args():
         parser.error(
             "--replay-hold-report no puede combinarse con otros modos de ejecución"
         )
+    if args.staleness_report and (
+        args.no_claude or args.max_claude is not None or args.hold_pilot is not None
+        or args.replay_hold_report or args.claude_match or args.force_reanalysis
+    ):
+        parser.error(
+            "--staleness-report no puede combinarse con otros modos de ejecución"
+        )
     if args.claude_match and args.max_claude is None:
         parser.error("--claude-match requiere utilizar también --max-claude")
     if any(not value.strip() for value in args.claude_match):
@@ -3982,8 +4043,23 @@ def parse_args():
     return args
 
 
+def _load_audit_runs() -> list:
+    """Lee solo las ejecuciones del histórico, tolerando cualquier problema."""
+    try:
+        with open(AUDIT_FILE, "r", encoding="utf-8") as handle:
+            history = json.load(handle)
+        runs = history.get("runs")
+        return runs if isinstance(runs, list) else []
+    except Exception as exc:
+        log.debug(f"No se pudo leer el histórico de auditoría: {exc}")
+        return []
+
+
 if __name__ == "__main__":
     args = parse_args()
+    if args.staleness_report:
+        print(format_staleness_report(build_staleness_report(_load_audit_runs())))
+        sys.exit(0)
     if args.replay_hold_report:
         print("Grant-Radar — repetición determinista del piloto BDNS")
         replay_report = replay_bdns_hold_report()

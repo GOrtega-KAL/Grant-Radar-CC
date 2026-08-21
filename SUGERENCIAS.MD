@@ -20,7 +20,8 @@ se modificó ningún archivo de `Grant-Radar-prueba.py`, `index.html` ni
 **Seguimiento:** las secciones 4 y 5 recogen el estado a 19/08/2026 (sesión de
 modularización), la 6 el de 20/08/2026 (ronda de calidad del dato y primera
 ejecución completa publicada) y la 7 el de 21/08/2026 (URLs muertas en CDTI y
-el embudo del IDAE), la 8 el indicador de embudo y la 9 el cierre de esa sesión.
+el embudo del IDAE), la 8 el indicador de embudo, la 9 la publicación y la 10 el falso negativo
+del evaluador.
 Para arrancar en frío, los documentos vigentes son `AGENTS.md` secciones 43 a
 46; este de aquí es la evaluación externa y su seguimiento, no el estado vivo
 del proyecto.
@@ -881,6 +882,45 @@ regresiones, y `active_not_captured` —abierta en su landing y no encontrada—
 Estado tras la sesión: **448 pruebas** en verde, producto publicado al día, y un
 backlog que crece más rápido de lo que se cierra (32 puntos; esa sesión cerró 2
 y abrió 6). No es alarmante todavía, pero la tendencia sí conviene mirarla.
+
+---
+
+## 10. Estado a 21/08/2026: un falso negativo, y un prompt que nadie podía leer
+
+El usuario detectó que **PowerUp NetZero** recibía un 35 % de encaje y salía
+descartada, siendo una convocatoria a la que su empresa se presenta. La causa
+principal no estaba en ninguno de los diez puntos de esta evaluación, y merece
+añadirse porque es un modo de fallo propio de los sistemas con LLM: **el
+evaluador contradijo un dato que su propia etapa de extracción había
+recuperado**. Los ocho temas admisibles de la convocatoria —uno de ellos de
+soluciones digitales, donde la empresa sí encaja— viajaban en su payload, y
+razonó solo sobre los cinco titulares de la portada del programa.
+
+**Frente a 2.3 (reglas como código y no como datos), un matiz nuevo.** Aquí las
+«reglas» son un prompt y un perfil en texto, que es la forma más blanda posible
+de regla. Y precisamente por blanda se degradó sin que nadie lo notara: al
+insertar una instrucción el 20/08 se partió por la mitad la frase que explicaba
+`consortium_required`, y el evaluador leyó cuatro días una instrucción rota
+sobre consorcios. Ninguna de las tres redes de seguridad podía verlo, porque el
+prompt de sistema era una **variable local** dentro de la función de análisis.
+Ahora es una constante de módulo con pruebas que comprueban que las frases
+siguen enteras.
+
+La lección generaliza más allá de este proyecto: **un prompt es código, y si no
+se puede leer entero ni probar, se pudre igual que el código**.
+
+**Frente a 2.4 y al punto 3.4, la idea del usuario.** En lugar de automatizar la
+llamada de pago, se programa una recopilación `--no-claude` diaria y se mide
+cuántas convocatorias esperan análisis, para decidir a mano cuándo pagar. Su
+encuadre —«las subvenciones se mueven despacio, la frecuencia útil no baja de 3
+días o una semana»— es correcto y evita el error de automatizar el gasto antes
+de entender su ritmo. El módulo `staleness.py` no recopila nada: el dato ya
+estaba en la auditoría, así que el informe es instantáneo y gratuito.
+
+Estado tras la ronda: **471 pruebas** en verde. La caché queda **invalidada a
+propósito** —se subieron perfil, evaluador y prompt—, así que lo publicado sigue
+mostrando las puntuaciones antiguas hasta que se autorice una reanálisis
+(~1,8 USD). Decisión explícita del usuario: dejarlo listo y no pagar todavía.
 
 ---
 
