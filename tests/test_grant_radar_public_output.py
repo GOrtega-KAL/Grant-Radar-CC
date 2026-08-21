@@ -6,12 +6,16 @@
 # son literales tomados del `convocatorias.json` publicado el 14/08/2026.
 
 import unittest
+from unittest import mock
 
 from grant_radar.public_output import (
     ENTIDADES_CANONICAS,
+    URL_CONTROL_INEXISTENTE,
     derive_eligible_actions,
     post_procesar_texto,
+    verificar_urls,
 )
+from grant_radar.runtime_state import RUN_DIAGNOSTICS
 
 
 class EntityNormalisationTests(unittest.TestCase):
@@ -110,6 +114,98 @@ class EligibleActionsPrecedenceTests(unittest.TestCase):
 
     def test_nothing_usable_is_reported_as_unavailable(self):
         self.assertEqual(derive_eligible_actions({}, {}), ([], "unavailable"))
+
+
+class RespuestaFalsa:
+    def __init__(self, status_code):
+        self.status_code = status_code
+
+
+class UrlVerificationTests(unittest.TestCase):
+    """
+    `verificar_urls()` daba por buenas seis URLs de CDTI que llevaban a una
+    página inexistente (AGENTS.md, sección 44): el WAF de cdti.es responde 200
+    a cualquier ruta pedida por un cliente que no parece un navegador. La
+    sonda de control detecta ese tipo de host preguntando por una ruta
+    imposible antes de creerse ningún resultado.
+    """
+
+    def _verificar(self, convocatorias, respuestas):
+        """`respuestas` mapea URL -> código; lo no listado responde 404."""
+        def falso(url, **kwargs):
+            return RespuestaFalsa(respuestas.get(url, 404))
+
+        with mock.patch.object(
+            __import__("grant_radar.public_output", fromlist=["requests"]),
+            "requests",
+            mock.Mock(head=falso, get=falso),
+        ):
+            verificar_urls(convocatorias, timeout=1)
+
+    def test_a_host_that_answers_anything_is_reported_as_unverifiable(self):
+        convocatorias = [{"url": "https://waf.example/ayudas/inventada"}]
+        self._verificar(convocatorias, {
+            f"https://waf.example{URL_CONTROL_INEXISTENTE}": 200,
+            "https://waf.example/ayudas/inventada": 200,
+        })
+        self.assertFalse(convocatorias[0]["url_rota"])
+        diagnostico = RUN_DIAGNOSTICS["url_verification"]
+        self.assertEqual(diagnostico["unverifiable"], 1)
+        self.assertEqual(diagnostico["opaque_hosts"], ["waf.example"])
+
+    def test_a_well_behaved_host_needs_no_warning(self):
+        convocatorias = [{"url": "https://sana.example/ayudas/real"}]
+        self._verificar(convocatorias, {
+            "https://sana.example/ayudas/real": 200,
+        })
+        self.assertFalse(convocatorias[0]["url_rota"])
+        diagnostico = RUN_DIAGNOSTICS["url_verification"]
+        self.assertEqual(diagnostico["unverifiable"], 0)
+        self.assertEqual(diagnostico["opaque_hosts"], [])
+
+    def test_a_real_failure_counts_even_on_an_opaque_host(self):
+        """Un host permisivo puede tapar una URL rota, pero nunca inventa un error."""
+        convocatorias = [{"url": "https://waf.example/caida"}]
+        self._verificar(convocatorias, {
+            f"https://waf.example{URL_CONTROL_INEXISTENTE}": 200,
+            "https://waf.example/caida": 500,
+        })
+        self.assertTrue(convocatorias[0]["url_rota"])
+        self.assertEqual(RUN_DIAGNOSTICS["url_verification"]["broken"], 1)
+        self.assertEqual(RUN_DIAGNOSTICS["url_verification"]["unverifiable"], 0)
+
+    def test_a_record_without_url_is_not_broken(self):
+        convocatorias = [{"url": ""}]
+        self._verificar(convocatorias, {})
+        self.assertFalse(convocatorias[0]["url_rota"])
+        self.assertEqual(RUN_DIAGNOSTICS["url_verification"]["checked"], 0)
+
+    def test_the_public_record_never_grows_a_verifiability_field(self):
+        """El esquema público solo crece con lo que el dashboard consume."""
+        convocatorias = [{"url": "https://sana.example/ayudas/real"}]
+        self._verificar(convocatorias, {"https://sana.example/ayudas/real": 200})
+        self.assertNotIn("url_verificada", convocatorias[0])
+
+    def test_the_control_probe_runs_once_per_host(self):
+        convocatorias = [
+            {"url": "https://sana.example/a"},
+            {"url": "https://sana.example/b"},
+        ]
+        pedidas = []
+
+        def falso(url, **kwargs):
+            pedidas.append(url)
+            return RespuestaFalsa(200 if not url.endswith(URL_CONTROL_INEXISTENTE) else 404)
+
+        with mock.patch.object(
+            __import__("grant_radar.public_output", fromlist=["requests"]),
+            "requests",
+            mock.Mock(head=falso, get=falso),
+        ):
+            verificar_urls(convocatorias, timeout=1)
+
+        controles = [u for u in pedidas if u.endswith(URL_CONTROL_INEXISTENTE)]
+        self.assertEqual(len(controles), 1, pedidas)
 
 
 if __name__ == "__main__":

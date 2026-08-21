@@ -48,6 +48,36 @@ class MatchingTests(unittest.TestCase):
         self.assertFalse(is_relevant("Eficiencia energética en viviendas residenciales"))
         self.assertTrue(is_relevant("Eficiencia energética en procesos industriales de fabricación"))
 
+    def test_is_relevant_accepts_industry_named_as_a_sector(self):
+        """
+        Casos reales del inventario del IDAE (AGENTS.md, sección 44).
+
+        El vocabulario de contexto industrial nombraba el proceso ("procesos
+        industriales", "horno", "fabricación") pero no el sector como tal, así
+        que convocatorias dirigidas literalmente a la industria caían del
+        prefiltro. Estas tres son títulos textuales del IDAE.
+        """
+        self.assertTrue(is_relevant("Para eficiencia energética en la industria"))
+        self.assertTrue(is_relevant(
+            "Ayudas para actuaciones de eficiencia energética en PYME y gran "
+            "empresa del sector industrial (2026)"
+        ))
+        self.assertTrue(is_relevant(
+            "Eficiencia energética en PYME y gran empresa del sector "
+            "industrial. Convocatorias en las Comunidades Autónomas"
+        ))
+
+    def test_is_relevant_still_rejects_efficiency_outside_industry(self):
+        """El contexto industrial sigue siendo obligatorio, no decorativo."""
+        self.assertFalse(is_relevant("Eficiencia energética en viviendas residenciales"))
+        self.assertFalse(is_relevant(
+            "Ayudas de eficiencia energética para la rehabilitación de "
+            "edificios del sector terciario"
+        ))
+        self.assertFalse(is_relevant(
+            "Programa de eficiencia energética en explotaciones agropecuarias"
+        ))
+
     def test_is_relevant_accepts_specific_technical_families_alone(self):
         self.assertTrue(is_relevant("Recuperación de calor residual en horno industrial"))
 

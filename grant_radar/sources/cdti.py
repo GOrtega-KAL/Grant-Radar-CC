@@ -54,8 +54,16 @@ def _fetch_cdti_static() -> list:
     # ── Catálogo estático de convocatorias CDTI relevantes para Kalfrisa ──
     # ESTADO: ★ = abierta confirmada | ◷ = fecha prevista (sujeta a PGE y disponibilidad)
     # Fuente: https://www.cdti.es/calendario-de-convocatorias (versión 7 abril 2026)
-    #         URLs facilitadas directamente desde la web del CDTI
-    # Última revisión: 2026-04-10
+    # Última revisión: 2026-08-20
+    #
+    # MANTENIMIENTO: las URLs de aquí se teclean a mano y caducan sin avisar.
+    # El 20/08/2026 seis de las diez apuntaban a rutas inexistentes (ver
+    # AGENTS.md, sección 44). Al revisarlas, tomarlas del calendario oficial o
+    # de https://www.cdti.es/ayudas en vez de construirlas, y comprobarlas con
+    # el navegador: cdti.es responde 200 a cualquier ruta pedida por un cliente
+    # HTTP corriente, así que `verificar_urls()` no puede detectar el fallo.
+    # `_drop_catalog_entries_with_dead_urls()` aparta en cada ejecución las que
+    # den 404, pero es una red de seguridad, no un sustituto de la revisión.
     _STATIC = [
         # ── VENTANILLA PERMANENTE ─────────────────────────────────────────────
         {
@@ -87,7 +95,7 @@ def _fetch_cdti_static() -> list:
             "deadline_date": "",
             "deadline_note": "ventanilla_permanente",
             "budget":        "Hasta 85% · 33% no reembolsable (mín. 175.000 €)",
-            "url":           "https://www.cdti.es/ayudas/proyectos-cervera",
+            "url":           "https://www.cdti.es/ayudas/proyectos-de-id-de-transferencia-tecnologica-cervera-0",
             "url_generica":  True,
             "keywords":      ["eficiencia energética", "calor residual", "descarbonización",
                               "hidrógeno", "eficiencia térmica"],
@@ -103,7 +111,7 @@ def _fetch_cdti_static() -> list:
             "deadline_date": "",
             "deadline_note": "ventanilla_permanente",
             "budget":        "Ver convocatoria",
-            "url":           "https://www.cdti.es/ayudas/infraestructuras-ensayo-experimentacion",
+            "url":           "https://www.cdti.es/ayudas/linea-de-ayudas-infraestructuras-de-ensayo-y-experimentacion",
             "url_generica":  True,
             "keywords":      ["eficiencia energética", "eficiencia térmica", "hidrógeno",
                               "emisiones industriales"],
@@ -137,7 +145,7 @@ def _fetch_cdti_static() -> list:
             "deadline_date": "2026-05-14",
             "deadline_note": "★ abierta",
             "budget":        "Hasta 325.000 € por empresa · subvención a fondo perdido",
-            "url":           "https://www.cdti.es/ayudas/neotec-2026",
+            "url":           "https://www.cdti.es/ayudas/ayudas-neotec-2026",
             "url_generica":  False,
             "keywords":      ["eficiencia energética", "hidrógeno", "descarbonización",
                               "eficiencia térmica"],
@@ -153,7 +161,7 @@ def _fetch_cdti_static() -> list:
             "deadline_date": "2026-12-31",
             "deadline_note": "★ abierta (dos fechas de corte)",
             "budget":        "Ver convocatoria · ayuda parcialmente reembolsable",
-            "url":           "https://www.cdti.es/ayudas/proyectos-bilaterales",
+            "url":           "https://www.cdti.es/programas-de-cooperacion-tecnologica-internacional-pcti",
             "url_generica":  True,
             "keywords":      ["eficiencia energética", "eficiencia térmica", "calor residual",
                               "descarbonización"],
@@ -169,7 +177,7 @@ def _fetch_cdti_static() -> list:
             "deadline_date": "2026-05-31",
             "deadline_note": "◷ fecha prevista",
             "budget":        "Ver convocatoria · subvención FEDER",
-            "url":           "https://www.cdti.es/ayudas/sello-de-excelencia",
+            "url":           "https://www.cdti.es/ayudas/ayudas-pymes-sello-de-excelencia-2026",
             "url_generica":  True,
             "keywords":      ["eficiencia energética", "descarbonización", "hidrógeno",
                               "eficiencia térmica"],
@@ -202,7 +210,7 @@ def _fetch_cdti_static() -> list:
             "deadline_date": "2026-06-30",
             "deadline_note": "◷ fecha prevista",
             "budget":        "Ver convocatoria · 33% no reembolsable",
-            "url":           "https://www.cdti.es/ayudas/proyectos-cervera",
+            "url":           "https://www.cdti.es/ayudas/ayudas-cervera-para-centros-tecnologicos-2026",
             "url_generica":  True,
             "keywords":      ["eficiencia energética", "calor residual", "descarbonización",
                               "hidrógeno", "eficiencia térmica"],
@@ -217,7 +225,7 @@ def _fetch_cdti_static() -> list:
             "deadline_date": "2026-07-31",
             "deadline_note": "◷ fecha prevista",
             "budget":        "Ver convocatoria · subvención",
-            "url":           "https://www.cdti.es/ayudas/eurostars",
+            "url":           "https://www.cdti.es/ayudas/eurostars-3-2026-cod10",
             "url_generica":  True,
             "keywords":      ["eficiencia energética", "descarbonización", "eficiencia térmica",
                               "calor residual"],
@@ -795,6 +803,69 @@ def _merge_cdti_results(*result_groups: list) -> list:
     return results
 
 
+# Códigos que prueban que la ficha ya no existe. Cualquier otro resultado
+# —incluido un bloqueo de WAF, un 5xx o un fallo de red— deja la entrada en su
+# sitio: un catálogo curado no debe vaciarse porque el servidor tenga un mal día.
+CDTI_DEAD_URL_STATUSES = frozenset({404, 410})
+
+
+def _drop_catalog_entries_with_dead_urls(
+    browser: PlaywrightBrowser, curated: list
+) -> tuple[list, list]:
+    """
+    Comprueba con el navegador las URLs del catálogo curado y aparta las que
+    ya no existen.
+
+    Hace falta el navegador y no `requests`: cdti.es está tras un WAF que
+    responde 200 a un cliente sin apariencia de navegador sea cual sea la ruta,
+    incluida una inventada, de modo que verificar por código HTTP desde el
+    cliente HTTP normal da siempre «correcta» (ver AGENTS.md, sección 44).
+
+    Devuelve las entradas vivas y el detalle de las apartadas, para que la
+    ejecución pueda dejar constancia en su diagnóstico.
+    """
+    if not curated:
+        return curated, []
+    vivas = []
+    caidas = []
+    comprobadas = {}
+    for entry in curated:
+        url = entry.get("url", "")
+        if not url:
+            vivas.append(entry)
+            continue
+        if url not in comprobadas:
+            comprobadas[url] = browser.status(url)
+        status = comprobadas[url]
+        if status in CDTI_DEAD_URL_STATUSES:
+            caidas.append({
+                "title": entry.get("title", ""),
+                "url": url,
+                "status": status,
+            })
+            audit_exclusion(
+                {
+                    "source": "CDTI",
+                    "title": entry.get("title", ""),
+                    "url": url,
+                },
+                "catalog_url_not_found",
+                "cdti_catalog_url_check",
+            )
+            log.warning(
+                f"  CDTI: la ficha del catálogo curado ya no existe "
+                f"(HTTP {status}): {entry.get('title', '')[:60]}"
+            )
+            continue
+        vivas.append(entry)
+    if caidas:
+        log.warning(
+            f"  CDTI: {len(caidas)} entrada(s) del catálogo curado apartadas "
+            f"por URL inexistente; revisar el catálogo"
+        )
+    return vivas, caidas
+
+
 def fetch_cdti(browser: PlaywrightBrowser) -> list:
     """
     Combina el calendario oficial renderizado y el catálogo curado. La BDNS se
@@ -804,6 +875,12 @@ def fetch_cdti(browser: PlaywrightBrowser) -> list:
     log.info("Consultando CDTI (calendario Playwright + catálogo curado)...")
     browser_results = _fetch_cdti_playwright(browser)
     curated_results = _fetch_cdti_static()
+    curated_results, dead_catalog_urls = _drop_catalog_entries_with_dead_urls(
+        browser, curated_results
+    )
+    RUN_DIAGNOSTICS.setdefault("cdti_scrape_audit", {})[
+        "catalog_dead_urls"
+    ] = dead_catalog_urls
     if not browser_results:
         log.warning("CDTI: fuentes en vivo sin resultados; cobertura solo mediante catálogo curado")
     # Prioridad creciente: catálogo < calendario oficial.

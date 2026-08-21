@@ -20,13 +20,14 @@ import re
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
+from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
 
 from grant_radar.http_client import HTTP_USER_AGENT
 from grant_radar.parsing_helpers import _fold_text, _levenshtein
-from grant_radar.runtime_state import SOURCE_RUNTIME_METADATA
+from grant_radar.runtime_state import RUN_DIAGNOSTICS, SOURCE_RUNTIME_METADATA
 from grant_radar.tech_taxonomy import TECH_TAGS, _compat_tags_for
 
 log = logging.getLogger("grant_radar")
@@ -366,6 +367,45 @@ def _normalize_public_url(url: str) -> str:
     return value
 
 
+# Ruta que no puede existir en ningún portal real. Sirve como control: si un
+# host responde "correctamente" a esto, sus códigos HTTP no distinguen una URL
+# válida de una inventada, y verificar por código es engañarse.
+URL_CONTROL_INEXISTENTE = "/grant-radar-control-de-url-inexistente-9f3c2a7b"
+
+
+def _host_distingue_urls(host: str, timeout: int, cache: dict) -> bool:
+    """
+    Comprueba una sola vez por host si sus códigos HTTP son informativos.
+
+    Nace de un caso real (AGENTS.md, sección 44): `cdti.es` está tras un WAF
+    que devuelve 200 a cualquier ruta pedida por un cliente sin apariencia de
+    navegador, incluidas las inexistentes. Sin este control, `verificar_urls()`
+    daba por buenas seis URLs de catálogo que llevaban a una página vacía.
+    """
+    if host in cache:
+        return cache[host]
+    informativo = True
+    try:
+        respuesta = requests.get(
+            f"https://{host}{URL_CONTROL_INEXISTENTE}",
+            timeout=timeout,
+            allow_redirects=True,
+            headers={"User-Agent": HTTP_USER_AGENT},
+        )
+        informativo = respuesta.status_code >= 400
+    except Exception:
+        # Si la sonda no llega, no hay motivo para desconfiar del host: se
+        # mantiene el comportamiento anterior y cada URL responde por sí misma.
+        informativo = True
+    if not informativo:
+        log.warning(
+            f"  El host {host} responde {respuesta.status_code} incluso a una ruta "
+            f"inexistente: sus URLs no se pueden verificar por código HTTP"
+        )
+    cache[host] = informativo
+    return informativo
+
+
 def verificar_urls(convocatorias: list, timeout: int = 8) -> None:
     """
     Comprueba que cada URL responde correctamente antes de publicar el JSON.
@@ -374,9 +414,27 @@ def verificar_urls(convocatorias: list, timeout: int = 8) -> None:
     Esta comprobación es deliberadamente determinista (peticiones HTTP reales),
     no delegada en un LLM: un LLM no puede confirmar si una URL es correcta,
     solo si el servidor responde.
+
+    Antes de creerse el resultado de un host, `_host_distingue_urls()` le pide
+    una ruta imposible. Si la da por buena, sus códigos no distinguen una URL
+    válida de una inventada y esta función lo dice en el diagnóstico
+    (`url_verification.opaque_hosts`) en vez de informar de que todo está bien.
+    Sin ese control daba por correctas seis fichas de CDTI que llevaban a una
+    página inexistente (AGENTS.md, sección 44).
+
+    Usa el mismo `HTTP_USER_AGENT` que el resto del pipeline: antes se
+    identificaba aparte como "GrantRadar-Bot/1.0", sin motivo, y una sola
+    identidad frente a las webs públicas es más fácil de explicar si alguna
+    pregunta quién la está consultando.
     """
     log.info("Verificando accesibilidad HTTP de URLs antes de publicar...")
     vistas = {}
+    hosts_informativos = {}
+    hosts_opacos = set()
+    # La verificabilidad no se publica: es metadato de la comprobación, no del
+    # registro, y el esquema público solo debe crecer con lo que el dashboard
+    # consume. Va al diagnóstico de la ejecución.
+    n_sin_verificar = 0
     for c in convocatorias:
         url = c.get("url", "")
         if not url:
@@ -385,24 +443,43 @@ def verificar_urls(convocatorias: list, timeout: int = 8) -> None:
         if url in vistas:
             c["url_rota"] = vistas[url]
             continue
+        host = urlparse(url).netloc.casefold()
+        verificable = bool(host) and _host_distingue_urls(host, timeout, hosts_informativos)
         ok = False
         try:
             r = requests.head(url, timeout=timeout, allow_redirects=True,
-                               headers={"User-Agent": "GrantRadar-Bot/1.0"})
+                               headers={"User-Agent": HTTP_USER_AGENT})
             if r.status_code >= 400:
                 r = requests.get(url, timeout=timeout, allow_redirects=True,
-                                  headers={"User-Agent": "GrantRadar-Bot/1.0"})
+                                  headers={"User-Agent": HTTP_USER_AGENT})
             ok = r.status_code < 400
         except Exception as e:
             log.warning(f"  URL no verificable ({url}): {e}")
             ok = False
+        # Un host que no distingue rutas puede decir "correcta" de una URL rota,
+        # pero nunca inventa un error: un fallo suyo sigue siendo un fallo real.
+        if ok and not verificable:
+            hosts_opacos.add(host)
+            n_sin_verificar += 1
         c["url_rota"] = not ok
         vistas[url] = c["url_rota"]
 
     n_rotas = sum(1 for c in convocatorias if c.get("url_rota"))
+    RUN_DIAGNOSTICS["url_verification"] = {
+        "checked": sum(1 for c in convocatorias if c.get("url")),
+        "broken": n_rotas,
+        "unverifiable": n_sin_verificar,
+        "opaque_hosts": sorted(hosts_opacos),
+    }
     if n_rotas:
         log.warning(f"  ⚠ {n_rotas} URL(s) no respondieron correctamente (marcadas url_rota=True)")
-    else:
+    if n_sin_verificar:
+        log.warning(
+            f"  ⚠ {n_sin_verificar} URL(s) en hosts que responden igual a "
+            f"cualquier ruta ({', '.join(sorted(hosts_opacos))}): "
+            f"«no rota» ahí no prueba que la ficha exista"
+        )
+    if not n_rotas and not n_sin_verificar:
         log.info("  ✓ Todas las URLs respondieron correctamente")
 
 

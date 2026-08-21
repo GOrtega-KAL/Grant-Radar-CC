@@ -98,7 +98,9 @@
     "combustion", "combustión", "flue gas", "gases de escape",
     "chemical industry", "industria química", "steel", "siderurgia",
     "ceramic", "cerámica", "glass industry", "industria del vidrio",
-    "cement", "calcinación", "calcination"
+    "cement", "calcinación", "calcination",
+    "sector industrial", "la industria", "empresa industrial",
+    "empresas industriales", "industrial sector"
   ],
   "tech_context_extra_terms": [
     "thermal process", "proceso termico", "process heat", "calor de proceso",

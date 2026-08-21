@@ -1,9 +1,10 @@
 # Grant-Radar — contexto e instrucciones del repositorio
 
-> **Arranque en frío: empezar por la sección 43** (cierre del 20/08/2026), que
-> reúne el estado vigente, las cifras con las que se verifica y el siguiente
-> paso. El backlog abierto está en la sección 36. Las secciones 13-42 son
-> historial narrativo fechado: se consultan, no se leen enteras.
+> **Arranque en frío: secciones 43 y 44.** La 43 (cierre del 20/08/2026) reúne el
+> estado del producto y el siguiente paso; la **44 (21/08/2026) tiene las cifras
+> de referencia vigentes** con las que se verifica cualquier cambio, en 44.7. El
+> backlog abierto está en la sección 36. Las secciones 13-42 son historial
+> narrativo fechado: se consultan, no se leen enteras.
 
 ## 1. Objetivo
 
@@ -2446,6 +2447,8 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 6 | Instantánea de la estructura esperada de cada fuente, comparada en cada ejecución, con historial | `SUGERENCIAS.MD` 3.4 punto 2 |
 | 7 | Ejecución periódica automatizada en `--no-claude` solo para vigilar salud de fuentes | `SUGERENCIAS.MD` 3.4 punto 3 |
 | 17 | Prueba de humo por conector: llamar a cada `fetch_*()` con el HTTP simulado y comprobar que recorre su camino sin `NameError` | 35. Habría cazado el `statistics` ausente en segundos en vez de en una recopilación de diez minutos |
+| 27 | Los catálogos curados se teclean a mano y caducan en silencio: el 21/08, seis de las diez URLs del de CDTI eran 404 (sección 44.1). Las rutas correctas estaban en el calendario oficial que el conector ya recorre | Vale la pena estudiar si las entradas de ventanilla permanente pueden **derivarse** del listado oficial en vez de mantenerse a mano. `_drop_catalog_entries_with_dead_urls()` ya evita publicarlas rotas, pero no las repara |
+| 28 | El catálogo estático de `sources/boa_aragon.py` sigue con «última revisión 2026-04-09» y una de sus dos entradas está cerrada desde enero | Mismo problema que el 27, en la fuente que además ya no es el mecanismo principal para Aragón (sección 26). Conviene decidir si se mantiene o se retira |
 
 El 429 del 19/08/2026 tuvo cooldown de minutos: una sonda de una sola petición,
 7 minutos después, devolvió la página completa. No impone restricción horaria,
@@ -2472,7 +2475,7 @@ Recuento sobre los 34 módulos del paquete a 20/08/2026:
 | # | Qué | Detalle |
 |---|---|---|
 | 18 | `grant_radar/coverage_watch.py` no tiene **ninguna** prueba | Ni un solo test menciona `build_recurrent_coverage_watch()` ni `probe_missing_recurrent_coverage()`. Es el mecanismo que avisa cuando un programa conocido deja de aparecer: una red de seguridad que no tiene red |
-| 19 | `build_keywords()` y `verificar_urls()` tampoco aparecen en ninguna prueba | Ambas afectan a lo que se publica: la primera al panel de palabras clave, la segunda a marcar URLs rotas |
+| 19 | `build_keywords()` sigue sin aparecer en ninguna prueba | Afecta al panel de palabras clave. `verificar_urls()` sí tiene pruebas desde el 21/08 (sección 44.3), incluida la sonda de control por host |
 | 20 | Sin archivo de test dedicado, aunque sí cubiertos de forma indirecta vía `runpy`: `sources/bdns.py`, `sources/cdti.py`, `sources/een.py`, `sources/horizon_europe.py`, `versions.py`, `publishing.py`, `claude_usage.py`, `hold_quotes.py`, `hold_evidence.py` (`public_output.py` ya tiene el suyo desde el 20/08) | No es urgente —el camino principal de cada uno se ejercita en `tests/test_grant_radar.py`—, pero un archivo propio con import estándar hace la regresión más legible y sobreviviría a retirar el patrón `runpy` (punto 10) |
 
 ### 36.5. Mapa de las tres redes de seguridad, y qué se escapa de cada una
@@ -3032,7 +3035,8 @@ El script creció por primera vez en dos sesiones: la capa de análisis con Haik
 
 ### 43.3. Cómo verificar cualquier cambio, en orden
 
-Sustituye a 39.5, con las cifras al día:
+Sustituye a 39.5. **El orden sigue vigente; las cifras las actualiza 44.7**
+(21/08/2026: 420 pruebas, 956 detectadas, 77 vigentes):
 
 1. `poetry run python -m unittest tests.test_grant_radar_script_names` —un
    segundo, señala módulo y nombre exactos si falta un import. **Siempre el
@@ -3102,3 +3106,216 @@ decisión del usuario, no una corrección pendiente.
   para la ejecución completa salió de tres convocatorias elegidas por ser las
   más duras. El coste real fue 1,83. Para calibrar hace falta una muestra
   representativa (sección 42.3).
+
+## 44. URLs muertas en CDTI y el embudo del IDAE, a 21/08/2026
+
+Dos avisos del usuario sobre el producto publicado, no sobre el código: fichas
+de CDTI que llevan a una página vacía, y un IDAE que apenas aporta una
+convocatoria. Los dos resultaron ser fallos reales, y ninguno de los tres
+mecanismos de verificación existentes podía haberlos visto.
+
+### 44.1. CDTI: seis de diez URLs del catálogo curado eran 404
+
+El usuario señaló tres. Al comprobar las diez del catálogo con el navegador
+aparecieron **seis**:
+
+| Ficha del catálogo | Ruta que tenía | Estado |
+|---|---|---|
+| Cervera (ventanilla abierta) | `/ayudas/proyectos-cervera` | 404 |
+| Infraestructuras de Ensayo (LIEE) | `/ayudas/infraestructuras-ensayo-experimentacion` | 404 |
+| Neotec 2026 | `/ayudas/neotec-2026` | 404 |
+| Proyectos Bilaterales 13ª | `/ayudas/proyectos-bilaterales` | 404 |
+| Sello de Excelencia + FEDER | `/ayudas/sello-de-excelencia` | 404 |
+| CIIP Eurostars CoD10 | `/ayudas/eurostars` | 404 |
+| Cervera Centros 2026 | `/ayudas/proyectos-cervera` | 404 (compartía ruta con la anterior) |
+
+Las rutas correctas estaban **en el propio calendario oficial que el conector
+ya recorre en cada ejecución**: `linea-de-ayudas-infraestructuras-de-ensayo-y-experimentacion`,
+`proyectos-de-id-de-transferencia-tecnologica-cervera-0`, `ayudas-neotec-2026`,
+`ayudas-pymes-sello-de-excelencia-2026`, `eurostars-3-2026-cod10` y
+`ayudas-cervera-para-centros-tecnologicos-2026`. Las de Bilaterales no tienen
+ficha propia bajo `/ayudas/`: su destino oficial es
+`/programas-de-cooperacion-tecnologica-internacional-pcti`.
+
+El catálogo declaraba «URLs facilitadas directamente desde la web del CDTI» y
+«última revisión 2026-04-10». Se teclearon a mano hace cuatro meses y caducaron
+en silencio.
+
+### 44.2. Por qué `verificar_urls()` no podía detectarlo
+
+`cdti.es` está tras un WAF (Incapsula) que **responde 200 a cualquier ruta**
+cuando quien pregunta no parece un navegador. Comprobado con el cliente HTTP
+del propio pipeline:
+
+```
+HEAD 200  https://www.cdti.es/ayudas/proyectos-bilaterales        (404 real)
+HEAD 200  https://www.cdti.es/ayudas/eurostars                    (404 real)
+HEAD 200  https://www.cdti.es/ayudas/proyectos-de-i-d             (válida)
+HEAD 200  https://www.cdti.es/ayudas/esto-no-existe-jamas-12345   (inventada)
+```
+
+Una ruta inventada sobre la marcha respondía «correcta». `verificar_urls()`
+comprueba `status_code < 400`, así que marcaba `url_rota=False` para las seis.
+No era un fallo de la función: era que **el código HTTP no es informativo en
+ese host**, y la función no tenía forma de saberlo.
+
+Con Chromium sí se distingue: el WAF deja pasar al navegador y el origen
+responde 404 de verdad. Esa es la asimetría que explica todo el episodio.
+
+### 44.3. Qué se ha cambiado
+
+1. **Las siete URLs, corregidas** contra el calendario y el listado oficiales,
+   y las once del catálogo verificadas una a una con el navegador.
+2. **`PlaywrightBrowser.status(url)`**: devuelve el código HTTP o `None`.
+   Existe porque `html()` devuelve `""` tanto ante un 404 como ante un bloqueo
+   o un fallo de red, y quien verifica un catálogo necesita distinguirlos.
+3. **`_drop_catalog_entries_with_dead_urls()`** en el conector CDTI: en cada
+   ejecución aparta las fichas del catálogo curado cuya URL dé **404 o 410**,
+   con registro de exclusión. Cualquier otro resultado —bloqueo, 5xx, red
+   caída— deja la entrada en su sitio: un catálogo curado no debe vaciarse
+   porque el servidor tenga un mal día.
+4. **Sonda de control por host en `verificar_urls()`**: antes de creerse ningún
+   resultado, pide una ruta imposible
+   (`/grant-radar-control-de-url-inexistente-9f3c2a7b`). Si el host la da por
+   buena, sus códigos no distinguen rutas y la ejecución lo dice en el
+   diagnóstico (`url_verification.opaque_hosts`) en vez de informar de que todo
+   está correcto. Un fallo real sigue contando: un host permisivo puede tapar
+   una URL rota, pero nunca inventa un error.
+
+La verificabilidad **no se publica** en `convocatorias.json`: es metadato de la
+comprobación, no del registro, y el esquema público solo debe crecer con lo que
+el dashboard consume (sección 5).
+
+De paso, `verificar_urls()` pasa a usar el mismo `HTTP_USER_AGENT` que el resto
+del pipeline. Se identificaba aparte como «GrantRadar-Bot/1.0» sin motivo, y una
+sola identidad frente a las webs públicas es más fácil de explicar si alguna
+pregunta quién la está consultando.
+
+### 44.4. IDAE: el inventario estaba sano; el prefiltro no
+
+El IDAE publicaba una sola convocatoria. El embudo real, medido ejecutando el
+conector:
+
+| Etapa | Cuántas |
+|---|---|
+| Fichas en el inventario | 97 |
+| En sección «convocatorias cerradas» | 26 |
+| Fichas de detalle cargadas | 71 de 71 (**100 %**) |
+| **Rechazadas por `is_relevant()`** | **68** |
+| Con plazo ya vencido | 2 |
+| **Publicadas** | **1** (Programa INNOVAE) |
+
+No fallaba la navegación ni la extracción de fechas: fallaba el prefiltro
+temático. Entre las 68 rechazadas estaban «**Para eficiencia energética en la
+industria**», «**Ayudas para actuaciones de eficiencia energética en PYME y
+gran empresa del sector industrial (2026)**» y su convocatoria autonómica
+equivalente — es decir, exactamente el perfil de Kalfrisa.
+
+**La causa.** `is_relevant()` acepta una mención genérica a eficiencia
+energética solo si hay contexto industrial cerca, que es correcto. Pero el
+vocabulario de contexto (`industrial_context_terms`) nombraba el **proceso**
+—«procesos industriales», «horno», «fabricación», «siderurgia»— y no el
+**sector**: no contenía «industria» ni «industrial» en ninguna forma suelta.
+Una convocatoria dirigida literalmente a la industria no tenía cómo pasar.
+
+### 44.5. La corrección, y por qué la conservadora
+
+Se midieron dos vocabularios sobre las 68 fichas reales rechazadas:
+
+| Variante | Términos añadidos | Recupera |
+|---|---|---|
+| Amplia | `industria`, `industrial`, `industriales`, `industry`… | 12 de 68 |
+| **Conservadora (elegida)** | `sector industrial`, `la industria`, `empresa industrial`, `empresas industriales`, `industrial sector` | **9 de 68** |
+
+La amplia solo añadía tres casos marginales (RENOVAL 2, Hy2Move, una línea
+FEDER de renovables) y a cambio metía la palabra suelta «industrial» en
+`INDUSTRIAL_CONTEXT_TERMS`, que **también alimenta la matriz de reglas previa a
+Claude** (`Grant-Radar-prueba.py`, señal `industrial`) y por tanto el coste. La
+conservadora recupera las tres convocatorias de eficiencia energética
+industrial, más H2 Pioneros e IPCEI Hy2/Hy2Use, tocando mucho menos.
+
+Medido aparte, sobre Horizon Europe en vivo: de sus 30 convocatorias vigentes
+de hoy, **ninguna depende de los términos nuevos**. El cambio es tan estrecho
+como se pretendía.
+
+Disciplina seguida (`SUGERENCIAS.MD` 3.3): primero los casos de prueba con los
+títulos textuales del IDAE —que fallaron—, después el vocabulario. Se añadió
+también la prueba en negativo: eficiencia energética en viviendas, en
+rehabilitación de edificios del sector terciario y en explotaciones
+agropecuarias sigue rechazándose.
+
+### 44.6. Lo que la corrección del IDAE consigue, y lo que no
+
+Medido en una ejecución `--no-claude` completa del 21/08/2026:
+
+| Desenlace de las 97 fichas | Antes | Después |
+|---|---|---|
+| Rechazadas por `is_relevant()` | 68 | **59** |
+| Landings de programa sin plazo | 0 | 6 |
+| Con plazo ya vencido | 2 | 4 |
+| Página informativa | 0 | 1 |
+| **Publicadas como convocatoria** | **1** | **1** |
+
+**El recuento publicado no sube, y es correcto que no suba.** Las nueve
+recuperadas no son convocatorias abiertas:
+
+- «Para eficiencia energética en la industria» es una **página de sección**.
+- «Ayudas para actuaciones de eficiencia energética en PYME y gran empresa del
+  sector industrial» es un programa de **concesión directa a las CCAA**: el
+  IDAE reparte el dinero entre comunidades autónomas y son ellas las que
+  convocan. La página no tiene plazo de solicitud porque no se solicita ahí.
+- «…Convocatorias en las Comunidades Autónomas» es el **registro histórico** de
+  esas convocatorias. Comprobado: las de Aragón son la Orden ICD/119/2021 y sus
+  modificaciones de 2022 y 2024. Ninguna abierta hoy, así que **no se está
+  escapando dinero por ahí**.
+- Cuatro más (MOVES Corredores, IPCEI Hy2Use, renovables térmicas, concesión
+  directa CCAA) tienen plazos vencidos en 2020, 2024 y febrero de 2026.
+
+El conector se niega deliberadamente a inventar un plazo para una landing de
+programa y la conserva como identidad para consolidar con BDNS/BOE. Esa
+decisión estaba bien tomada; lo que estaba mal era no llegar siquiera a
+plantearla, porque el prefiltro temático descartaba la ficha antes.
+
+**Lo que sí se gana**, aunque no se vea en el recuento:
+
+1. Las landings de identidad pasan de 29 a **30**, y son las que permiten
+   fusionar un registro del IDAE con su convocatoria real en BDNS.
+2. Cualquier convocatoria futura del IDAE que **sí** tenga plazo y hable de
+   «sector industrial» ya no caerá en silencio.
+
+**Por qué el IDAE aporta poco, en una frase:** porque en eficiencia energética
+industrial el IDAE casi no convoca, reparte. Las convocatorias reales las
+publican las comunidades autónomas y llegan por BDNS, que es donde el pipeline
+sí las ve —de las 77 candidatas de hoy, la de Aragón es la BDNS 918271—.
+
+### 44.7. Estado y cifras de referencia a 21/08/2026
+
+Ejecución `--no-claude` completa, 774 s, código 0:
+
+> 956 detectadas · 34 duplicadas fusionadas · 39 tras el prefiltro inicial ·
+> **77 vigentes** (BDNS 47, Horizon 19, CDTI 5, ECCP 4, EEN 2, IDAE 1, BOE 1,
+> BOA 0) · prefiltro común `retain=32, ambiguous=7, hold_manual=75, reject=842`
+> · resolución automática de holds `ambiguous=38, reject=37, revisión manual=0`
+> · previsión 8 análisis nuevos, 0,2048 USD.
+
+La previsión es baja porque la caché conserva las 76 entradas de la ejecución
+del 20/08 en las versiones vigentes: solo 8 convocatorias son nuevas o han
+cambiado.
+
+Las cuatro fuentes con control de salud siguen `healthy`. Dos avisos externos,
+ninguno regresión: `boletin.dpz.es` presenta un certificado TLS que no valida
+(dos documentos no descargados) y el catálogo agregado del IDAE no aporta nada
+(6 cerradas, 3 antiguas sin plazo).
+
+Pruebas: **420**, todas en verde (405 + 15 nuevas: 7 del control de URLs del
+catálogo CDTI, 6 de la sonda por host y 2 de la taxonomía).
+
+**Una prueba intermitente, no introducida por esta ronda.**
+`FrontendLayoutTests::test_consortium_role_is_visible_on_the_card_without_opening_it`
+falló una vez de tres pasadas y pasó sola y en las otras dos. Conduce un Chromium
+real contra `index.html` servido en local y espera con `networkidle`, así que es
+sensible a la carga de la máquina; falló justo con una recopilación recién
+terminada y varios Chromium en marcha. Nada de esta ronda toca `index.html` ni esa
+ruta. **Si vuelve a fallar, repetir la suite antes de investigar**; si falla dos
+veces seguidas con la máquina en reposo, entonces sí es real y conviene sustituir
+`is_visible()` por una espera explícita.

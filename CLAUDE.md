@@ -7,9 +7,16 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
-> **Arranque en frío: leer AGENTS.md sección 43.** Reúne el estado vigente, las
-> cifras con las que se verifica cualquier cambio y el siguiente paso. El
-> backlog abierto está en la sección 36.
+> **Arranque en frío: AGENTS.md secciones 43 y 44.** La 43 tiene el estado del
+> producto y el siguiente paso; la **44 (21/08/2026) tiene las cifras de
+> referencia vigentes**, en 44.7. El backlog abierto está en la sección 36.
+>
+> **Último trabajo (21/08/2026, sección 44):** dos avisos del usuario sobre el
+> producto, los dos ciertos. Seis de las diez URLs del catálogo curado de CDTI
+> eran 404 y `verificar_urls()` no podía verlo porque el WAF de cdti.es responde
+> 200 a cualquier ruta; y el prefiltro temático rechazaba 68 de las 71 fichas del
+> IDAE porque el vocabulario de contexto industrial no contenía «industria» ni
+> «sector industrial» en ninguna forma.
 >
 > **Estado a 20/08/2026:** ronda de calidad del dato completa y **ejecución
 > completa hecha y publicada** (AGENTS.md secciones 40-43). 76 convocatorias
@@ -52,14 +59,17 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   JSON ni publicar. Es el modo de validación por defecto tras un cambio de
   código: `poetry run python "Grant-Radar-prueba.py" --no-claude`.
 - Después de cualquier cambio en `Grant-Radar-prueba.py` o `grant_radar/`,
-  en este orden (el detalle y los números de referencia, en AGENTS.md 43.3):
+  en este orden (el detalle en AGENTS.md 43.3; las cifras, en **44.7**):
   1. `poetry run python -m unittest tests.test_grant_radar_script_names`
      —un segundo, señala módulo y nombre exactos si falta un import;
   2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`;
-  3. `poetry run python -m unittest discover -s tests` —**405 pruebas**;
+  3. `poetry run python -m unittest discover -s tests` —**420 pruebas**. Una,
+     `FrontendLayoutTests::test_consortium_role_is_visible...`, es intermitente
+     bajo carga porque conduce Chromium de verdad: repetir antes de investigar
+     (AGENTS.md 44.7);
   4. `poetry run python "Grant-Radar-prueba.py" --no-claude` al cerrar la
-     ronda, comparando contra los números de referencia: 955 detectadas,
-     **76 vigentes**. Ojo: ese recuento **ya no es un invariante fijo**, la
+     ronda, comparando contra los números de referencia: 956 detectadas,
+     **77 vigentes** (21/08/2026). Ojo: ese recuento **ya no es un invariante fijo**, la
      ventana deslizante de BDNS lo mueve por causas externas; ante un desvío,
      mirar salud de fuentes y registros de exclusión antes que el código.
 - Al extraer código a `grant_radar/`, comprobar que el script principal
@@ -118,14 +128,14 @@ Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 | `call_text.py` | Texto de convocatoria compartido: mecanismo, identificador oficial, deadline, presupuesto, enlaces externos |
 | `sources/horizon_europe.py` | Conector Horizon Europe (SEDIA Search API) |
 | `sources/een.py` | Conector EEN: noticias de financiación y perfiles I+D con call verificable |
-| `browser.py` | `PlaywrightBrowser`: sesión Chromium única de las fuentes sin API |
+| `browser.py` | `PlaywrightBrowser`: sesión Chromium única de las fuentes sin API. `status()` devuelve el código HTTP, que `html()` no puede distinguir de un bloqueo |
 | `dedup.py` | Identidad de programa, rol documental y consolidación de duplicados |
 | `sources/idae.py` | Conector IDAE: fichas de ayudas y catálogo por ámbito |
 | `sources/boe_miteco.py` | Conector BOE/MITECO: extractos de convocatoria en ayudas.php |
 | `bdns_fields.py` | Lectura de campos de la API BDNS, compartida con la matriz de reglas |
 | `sources/bdns.py` | Conector BDNS/SNPSAP: inventario transversal y detalle de convocatorias |
 | `documents.py` | Documentos oficiales: descarga, extracción de texto y su caché |
-| `sources/cdti.py` | Conector CDTI: calendario oficial con Chromium + catálogo curado |
+| `sources/cdti.py` | Conector CDTI: calendario oficial con Chromium + catálogo curado, cuyas URLs se comprueban en cada ejecución (404/410 se apartan) |
 | `sources/eccp.py` | Conector ECCP: calls y rastreo acotado de webs de proyectos |
 | `public_output.py` | Registro público del dashboard, estadísticas, estado por fuente y URLs. Publica `objeto_y_actuaciones`; `post_procesar_texto()` ya solo corrige acrónimos (antes corrompía palabras comunes: «cierre» → «CIRCE») |
 | `publishing.py` | Subida a GitHub Pages (credenciales como parámetros, nunca leídas aquí) |

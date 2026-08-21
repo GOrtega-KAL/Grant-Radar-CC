@@ -18,10 +18,11 @@ se modificó ningún archivo de `Grant-Radar-prueba.py`, `index.html` ni
 `tests/` durante esta verificación.
 
 **Seguimiento:** las secciones 4 y 5 recogen el estado a 19/08/2026 (sesión de
-modularización) y la 6 el de 20/08/2026 (ronda de calidad del dato y primera
-ejecución completa publicada). Para arrancar en frío, el documento vigente es
-`AGENTS.md` sección 43; este de aquí es la evaluación externa y su seguimiento,
-no el estado vivo del proyecto.
+modularización), la 6 el de 20/08/2026 (ronda de calidad del dato y primera
+ejecución completa publicada) y la 7 el de 21/08/2026 (URLs muertas en CDTI y
+el embudo del IDAE). Para arrancar en frío, los documentos vigentes son
+`AGENTS.md` secciones 43 y 44; este de aquí es la evaluación externa y su
+seguimiento, no el estado vivo del proyecto.
 
 ---
 
@@ -759,6 +760,51 @@ convocatorias vigentes, 1,83 USD reales), y la barrera de coste se recalibró
 con esos 76 análisis en vez de con la muestra de dos de agosto. Balance
 completo en `AGENTS.md` secciones 40 a 43; **la 43 es el punto de arranque en
 frío vigente**.
+
+---
+
+## 7. Estado a 21/08/2026: dos fallos que ningúna red de seguridad veía
+
+Los detectó el usuario mirando el producto publicado, no una prueba. Merece la
+pena anotarlo aquí porque toca dos puntos de esta evaluación.
+
+**Frente a 2.4 (fragilidad ante cambios en fuentes externas).** El catálogo
+curado de CDTI tenía **seis de diez URLs en 404**: se teclearon a mano en abril
+y caducaron en silencio. Lo grave no es que caducaran —esta evaluación ya
+advertía de que los catálogos estáticos envejecen— sino que la comprobación
+automática de URLs **daba las seis por buenas**: `cdti.es` está tras un WAF que
+responde 200 a cualquier ruta, incluida una inventada, cuando quien pregunta no
+parece un navegador. Una verificación que no puede fallar no verifica nada.
+Corregido con una sonda de control por host y con una comprobación del catálogo
+hecha con el navegador, que sí obtiene el 404 real. Detalle en `AGENTS.md` 44.1
+a 44.3.
+
+**Frente a 2.3 (reglas de negocio como código, no como datos).** El prefiltro
+temático rechazaba 68 de las 71 fichas del IDAE, incluidas tres cuyo título es
+literalmente eficiencia energética en el sector industrial. La causa estaba en
+el vocabulario: `industrial_context_terms` nombraba el proceso («procesos
+industriales», «horno», «siderurgia») pero no el sector, así que no contenía
+«industria» ni «industrial» en ninguna forma. Es exactamente el tipo de fallo
+que este documento anticipaba al pedir que las reglas fueran datos revisables:
+el vocabulario **sí** está en un JSON, y por eso arreglarlo fueron cuatro líneas
+—pero nadie lo había revisado contra casos reales.
+
+Se siguió la disciplina del punto 3.3: primero los casos de prueba con los
+títulos textuales del IDAE, que fallaron, y después el vocabulario. Se eligió
+la variante conservadora (cinco expresiones concretas) sobre la amplia (la
+palabra «industrial» suelta) porque `INDUSTRIAL_CONTEXT_TERMS` alimenta también
+la matriz de reglas previa a Claude, y por tanto el coste: medido, la amplia
+solo añadía tres casos marginales.
+
+**Una lección sobre las tres redes de seguridad** (`AGENTS.md` 36.5): ninguna de
+las tres podía ver estos dos fallos. `py_compile` y la suite no miran hacia
+fuera; la ejecución `--no-claude` sí, pero informaba de «1 convocatoria IDAE» y
+de «todas las URLs correctas» sin que ninguna de las dos cosas fuera falsa a sus
+ojos. Hace falta una cuarta comprobación, más barata que elegante: **mirar de vez
+en cuando el producto publicado**.
+
+Estado tras la ronda: **420 pruebas** en verde y una ejecución `--no-claude`
+completa con 956 detectadas y 77 vigentes (`AGENTS.md` 44.7).
 
 ---
 

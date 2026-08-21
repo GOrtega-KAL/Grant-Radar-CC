@@ -10,6 +10,10 @@
 # `html()` recuerda además qué ámbitos han respondido con un bloqueo de WAF
 # para no insistir contra ellos durante el resto de la recopilación.
 #
+# `status()` existe para lo que `html()` no puede decir: esta devuelve "" tanto
+# ante un 404 definitivo como ante un bloqueo o un fallo de red, y quien
+# verifica un catálogo curado necesita distinguirlos (ver AGENTS.md, sección 44).
+#
 # Sin caché, sin reglas de negocio, sin Claude.
 
 import logging
@@ -68,6 +72,31 @@ class PlaywrightBrowser:
         if self._playwright:
             self._playwright.stop()
         self.context = None
+
+    def status(self, url: str) -> int | None:
+        """
+        Devuelve el código HTTP de `url`, o `None` si no se pudo determinar.
+
+        Existe para distinguir lo que `html()` no puede: esa función devuelve
+        "" tanto ante un 404 definitivo como ante un bloqueo de WAF o un fallo
+        de red, y quien verifica un catálogo curado necesita saber cuál de las
+        dos cosas ha pasado. Un `None` nunca debe interpretarse como error de
+        la URL: significa que la comprobación no es concluyente.
+
+        No participa en el registro de ámbitos bloqueados: comprobar una URL
+        rota no debe cerrar el resto del dominio para la recopilación.
+        """
+        if not self.context:
+            return None
+        page = self.context.new_page()
+        try:
+            response = page.goto(url, wait_until="domcontentloaded")
+            return response.status if response else None
+        except Exception as exc:
+            log.debug(f"No se pudo comprobar el estado de {url}: {exc}")
+            return None
+        finally:
+            page.close()
 
     def html(self, url: str, wait_selector: str = "body") -> str:
         """Navega, espera al DOM renderizado y devuelve su HTML."""
