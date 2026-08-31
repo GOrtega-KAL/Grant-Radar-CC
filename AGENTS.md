@@ -2464,7 +2464,7 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
 | 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
 | 34 | Programar la recopilación `--no-claude` diaria en el Programador de tareas de Windows | Sección 47.6 tiene el comando. **Es una acción del usuario en su equipo**, no del agente: queda anotada para no darla por hecha |
-| 35 | La elegibilidad de Horizon Europe y CDTI no está en la fuente que leemos: 14 de las 17 convocatorias que siguen «por confirmar» lo están por eso | Sección 49.3. Un topic de Horizon no dice quién puede solicitar —eso vive en los Anexos Generales del programa— y el prompt prohíbe completar huecos, así que el modelo declara el dato ausente y acierta. La vía sería inyectar hechos de programa versionados, como ya se hace con el bloque oficial de BDNS. **Requiere decisión**: cuesta una reanalisis y crea otro catálogo escrito a mano, que en este proyecto ha caducado en silencio dos veces (puntos 27 y 28) |
+| 35 | La elegibilidad de Horizon Europe no está en el topic que leemos: 14 de las 17 convocatorias que siguen «por confirmar» lo están por eso | Secciones 49.3 y **49.7, que ya midió la viabilidad**: la SEDIA API entrega `topicConditions` y `typesOfAction`, que el conector no lee, y ahí viene el enlace a los Anexos Generales **de la edición del propio topic**. El documento se descarga en 0,7 s y sus tres secciones de elegibilidad se localizan por su título. No hace falta catálogo escrito a mano. Pendiente de implementar; requiere subir versiones y entra en la próxima reanalisis |
 
 El 429 del 19/08/2026 tuvo cooldown de minutos: una sonda de una sola petición,
 7 minutos después, devolvió la página completa. No impone restricción horaria,
@@ -4158,3 +4158,60 @@ historial se distinga una publicación completa de un estado diario.
 Aragón aparece junto a otra comunidad—, 4 del estado de recopilación, 1 del
 aviso en el panel conducido con Chromium de verdad y 1 de que el motivo de
 elegibilidad ya no se imprime dos veces.
+
+### 49.7. Viabilidad de leer los Anexos Generales de Horizon, medida
+
+El usuario descartó la propuesta inicial —escribir a mano las reglas del
+programa— y planteó otra mejor: **que el código busque y acceda al anexo
+general**, de forma que cuando el programa cambie no haya que tocar nada
+porque leerá el documento nuevo. Se estudió con sondas públicas, sin coste, y
+sale viable en las tres etapas.
+
+**1. Descubrir el documento.** No hace falta buscarlo: viene en la respuesta
+que el conector ya recibe. La SEDIA API entrega por cada topic dos campos de
+metadatos que hoy **no se leen**:
+
+| Campo | Qué trae |
+|---|---|
+| `topicConditions` | 10.349 caracteres de HTML con el bloque «General conditions» y 32 enlaces, entre ellos el de los Anexos Generales |
+| `typesOfAction` | «HORIZON Innovation Actions», que es lo que determina qué regla de consorcio aplica |
+
+Y el enlace apunta a la edición correcta por sí solo:
+`…/horizon/wp-call/2026-2027/wp-15-general-annexes_horizon-2026-2027_en.pdf`.
+Un topic de 2028 traerá el suyo. Es exactamente lo que el usuario pedía: sin
+catálogo que mantener y sin caducidad silenciosa.
+
+**2. Acceder y leer.** Medido: **557 KB, 46 páginas, 0,7 s de descarga y 1,4 s
+de extracción** con el `pypdf` que ya es dependencia; 130.633 caracteres de
+texto. `grant_radar/documents.py` ya tiene descarga, extracción y caché
+documental, así que sería **una descarga por edición**, compartida por los 19
+topics de Horizon de una ejecución, no una por convocatoria.
+
+**3. Encontrar las condiciones.** Las tres secciones que importan existen con
+título propio y texto literal:
+
+- *Entities eligible to participate* — «Any legal entity, regardless of its
+  place of establishment […] is eligible to participate».
+- *Entities eligible for funding* — la lista de países (Estados miembros,
+  regiones ultraperiféricas, países asociados…).
+- *Consortium composition* — «only legal entities forming a consortium are
+  eligible to participate […] three legal entities independent from each other
+  and each established in a different country», con el matiz de que las
+  entidades afiliadas no cuentan para el mínimo.
+
+Es decir: la respuesta a «¿puede Kalfrisa presentarse?» está en el documento,
+en prosa localizable por encabezado, no dispersa.
+
+**Coste de inyectarlo.** Pasar el anexo entero sería absurdo: 130.000
+caracteres son unos 33.000 tokens por llamada. Pasar **solo las tres secciones
+localizadas** son unos 4.000-6.000 caracteres, ~1.500 tokens por convocatoria
+de Horizon: con 19 topics, unos 0,03 USD por ejecución completa. Despreciable
+frente a los 2 USD que ya cuesta.
+
+**Lo que falta antes de implementarlo**, y por eso queda como punto 35 y no
+como hecho: decidir si el evaluador debe tratar esas condiciones como hechos de
+la convocatoria —hoy el prompt le prohíbe completar huecos, y con razón— y
+subir las versiones correspondientes, lo que obliga a que entre en la misma
+reanalisis que el resto. También conviene decidir qué se hace cuando el enlace
+falle: lo coherente con el resto del proyecto es dejar el dato ausente y
+declararlo, nunca suponerlo.
