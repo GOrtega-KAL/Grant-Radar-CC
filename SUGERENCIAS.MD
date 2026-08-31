@@ -926,6 +926,82 @@ mostrando las puntuaciones antiguas hasta que se autorice una reanálisis
 
 ---
 
+---
+
+## 11. Estado a 31/08/2026: el punto 3.2 llega al final que tenía sentido
+
+La sesión del 31/08 fue de estructura, por decisión expresa del usuario: **no
+reanalizar dos veces**, así que primero se termina la modularización y se revisa
+la capa de análisis, y solo después se paga una ejecución que publique todo
+junto. Toca cuatro puntos de esta evaluación.
+
+**Frente a 2.2 (arquitectura monolítica), el punto 3.2 se puede dar por
+cerrado.** `Grant-Radar-prueba.py` pasa de 4.086 a **2.140 líneas** y el paquete
+de 35 a **38 módulos** (11.660 líneas). Lo que queda en el script no es residuo:
+son la matriz de reglas previa a Claude —526 líneas que el usuario decidió no
+tocar fuera de una sesión dedicada— y `run_pipeline()`, el orquestador, que por
+definición va el último. Del monolito de 9.199 líneas de agosto queda menos de
+una cuarta parte, y ya no hay ninguna pieza que esté ahí por no haberla mirado.
+
+Lo interesante de esta ronda no fue el tamaño, sino que **las dos extracciones
+grandes no arrastraban nada**: medido con AST antes de tocar, ni la auditoría ni
+la capa de análisis con Haiku llamaban a una sola función del script. Todo lo que
+usaban ya estaba en el paquete desde rondas anteriores. Es el retorno diferido de
+haber respetado el orden de dependencias en vez de empezar por lo más vistoso.
+
+La única que sí estaba acoplada —la resolución de holds, que llamaba tres veces a
+la matriz de reglas— salió con el patrón que este documento pedía en 3.3 y que el
+proyecto ya usaba en dos sitios: **inyectar la regla como parámetro** en vez de
+importarla. `holds.py` recibe `intrinsic_exclusion` y `prefilter`, así que el día
+que la matriz se extraiga no habrá que tocarlo.
+
+**Frente a 2.3 (reglas de negocio como código y no como datos), el matiz de la
+sección 10 se lleva a la práctica.** Allí se anotó que un prompt es la forma más
+blanda posible de regla y que por blanda se degrada sin que nadie lo note. Hoy
+los **dos** prompts de sistema son constantes de módulo con pruebas de
+integridad: el del evaluador lo era desde el 21/08, y el de la extracción factual
+—que seguía siendo una variable local dentro de la función, el mismo riesgo
+exacto— pasa a serlo ahora, con siete pruebas que fijan las instrucciones cuyo
+descubrimiento costó dinero.
+
+Con los dos ya legibles de una vez se leyeron enteros, frase por frase. No había
+ningún empalme. Sí seguía abierta la instrucción del punto 24 del backlog: decía
+«no lo inventes» y el modelo respondía «se presume inversión en equipos…», que no
+es una invención sino una presunción declarada. La frase ahora prohíbe la
+fórmula, no solo la mentira. Como la caché ya estaba invalidada desde el 21/08,
+agrupar ese cambio aquí no ha costado nada — que era justo el motivo de
+esperarlo.
+
+**Frente a 2.4 (fragilidad ante las fuentes), dos casos con la misma moraleja.**
+Una convocatoria publicaba como URL una frase entera con el esquema mal escrito,
+porque el campo `sedeElectronica` de la API de BDNS es texto libre y nadie lo
+estaba tratando como tal. Y la prueba que vigila la ventana deslizante de BDNS
+fijaba una densidad medida una sola vez, en agosto, que ya no era cierta: con
+ella declaraba 79 días de cobertura cuando la medición real de hoy da 67. En los
+dos casos el dato de la fuente había cambiado y la comprobación seguía anclada al
+día en que se escribió. La corrección, en los dos, es la misma: **medir otra vez
+y dejar escrito cuándo se midió** — el comentario del conector lleva ahora las
+tres mediciones con su fecha, no una.
+
+**Frente a 2.8 (cobertura), la suite pasa de 471 a 493 pruebas**, todas en verde.
+Las 22 nuevas no son relleno: ocho cubren el histórico de auditoría que hasta hoy
+solo se ejercitaba de refilón (rotación, migración de esquema v1, exclusiones
+huérfanas, archivo ilegible), siete el prompt de extracción, cinco la URL que era
+una frase y dos el punto 24.
+
+**Balance del backlog:** se cierran cuatro puntos (22, 24, 31 y 33) y no se abre
+ninguno. Es la primera sesión desde el 19/08 en que el backlog baja: quedan
+**28 puntos abiertos** de los 34 numerados, frente a los 32 del 21/08.
+
+**Lo que sigue sin hacerse, y conviene no perder de vista:** el producto que ve
+el usuario sigue siendo el del 21/08. Todo lo de esta sesión —y el falso negativo
+de PowerUp NetZero, corregido hace diez días— está en el repositorio y no en el
+dashboard. La sección 9 de este documento ya avisaba del patrón: *mientras la
+publicación dependa de una autorización manual, el producto envejece por
+defecto*. Diez días después, sigue siendo cierto.
+
+---
+
 ## Nota de alcance
 
 Este documento es una evaluación externa de solo lectura, ampliada con una

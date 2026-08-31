@@ -20,6 +20,7 @@ from grant_radar.parsing_helpers import (
     _levenshtein,
     _parse_cdti_calendar_date,
     _parse_flexible_date,
+    _web_url_or_empty,
     _signed_days_until,
     select_evidence_excerpt,
 )
@@ -120,6 +121,47 @@ class TituloValidoTests(unittest.TestCase):
         self.assertTrue(
             _es_titulo_valido("Ayudas a la eficiencia energética en la industria de Aragón")
         )
+
+
+class WebUrlOrEmptyTests(unittest.TestCase):
+    """El campo `url` publicaba prosa: punto 31 del backlog (AGENTS.md 46.3)."""
+
+    # El valor exacto que salió publicado el 21/08/2026 en el registro de la
+    # BDNS 922117, copiado literal para que la prueba falle si alguien
+    # "arregla" el esquema adivinando en vez de caer al enlace de respaldo.
+    FRASE_PUBLICADA = (
+        "hhtp://www.aragon.es/tramites), incluyendo en el buscador de trámites "
+        "el procedimiento número 11810 “Ayudas para actuaciones en materia de "
+        "certámenes feriales en Aragón”"
+    )
+
+    def test_a_whole_sentence_with_a_broken_scheme_is_not_a_url(self):
+        self.assertEqual(_web_url_or_empty(self.FRASE_PUBLICADA), "")
+
+    def test_a_real_url_survives_untouched(self):
+        for url in (
+            "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/922117",
+            "http://example.test/convocatoria?id=7#plazo",
+            "HTTPS://EXAMPLE.TEST/Mayusculas",
+        ):
+            with self.subTest(url=url):
+                self.assertEqual(_web_url_or_empty(url), url)
+
+    def test_a_url_followed_by_prose_keeps_only_the_url(self):
+        self.assertEqual(
+            _web_url_or_empty("https://example.test/bases y también en la sede"),
+            "https://example.test/bases",
+        )
+
+    def test_other_schemes_are_not_navigable_destinations(self):
+        for valor in ("mailto:info@example.test", "ftp://example.test/f.pdf", "www.example.test"):
+            with self.subTest(valor=valor):
+                self.assertEqual(_web_url_or_empty(valor), "")
+
+    def test_empty_values_do_not_raise(self):
+        for valor in ("", "   ", None):
+            with self.subTest(valor=valor):
+                self.assertEqual(_web_url_or_empty(valor), "")
 
 
 if __name__ == "__main__":

@@ -2462,9 +2462,7 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 28 | El catálogo estático de `sources/boa_aragon.py` sigue con «última revisión 2026-04-09» y una de sus dos entradas está cerrada desde enero | Mismo problema que el 27, en la fuente que además ya no es el mecanismo principal para Aragón (sección 26). Conviene decidir si se mantiene o se retira |
 | 29 | El prefiltro de listado del BOE descarta 153 de 168 entradas **sin registrar exclusión**: solo deja rastro el filtro posterior, sobre el documento ya abierto | Sección 45.2. Auditar las 153 inflaría el catálogo (365 ejecuciones guardadas); lo razonable es un recuento por organismo, no una entrada por ficha |
 | 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
-| 31 | Una convocatoria publica como URL una frase entera con el esquema mal escrito (`hhtp://www.aragon.es/tramites), incluyendo en el buscador…`) | Sección 46.3. La extracción de URL toma texto corrido de las bases; conviene validar el esquema y cortar en el primer espacio antes de publicar |
 | 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
-| 33 | `extraction_system` sigue siendo una variable local dentro de `analyze_with_claude()`, igual que lo era `evaluation_system` cuando se partió su frase de consorcio y nadie pudo verlo durante cuatro días | Sección 47.2. Sacarlo a constante de módulo y darle las mismas pruebas de integridad es trabajo de minutos; el riesgo es idéntico y ya se materializó una vez |
 | 34 | Programar la recopilación `--no-claude` diaria en el Programador de tareas de Windows | Sección 47.6 tiene el comando. **Es una acción del usuario en su equipo**, no del agente: queda anotada para no darla por hecha |
 
 El 429 del 19/08/2026 tuvo cooldown de minutos: una sonda de una sola petición,
@@ -2476,23 +2474,21 @@ rondas el mismo día.
 
 | # | Qué falta | Notas |
 |---|---|---|
-| 8 | La matriz de reglas (`_bdns_pre_claude_gate()`, `deterministic_prefilter()`) | Sesión dedicada; es la lógica más ajustada del proyecto (siete niveles de precedencia, sección 4.1) |
+| 8 | La matriz de reglas (`_bdns_pre_claude_gate()`, `deterministic_prefilter()`, `_bdns_intrinsic_exclusion()`, `_bdns_structured_scope_exclusion()`, `_bdns_gate_result()`, `_bdns_applicant_section()`) | Sesión dedicada; es la lógica más ajustada del proyecto (siete niveles de precedencia, sección 4.1). Desde el 31/08/2026 es, junto a `run_pipeline()`, lo único que queda en el script: 526 de sus 2.140 líneas. `holds.py` ya la recibe inyectada, así que extraerla no obliga a tocar el dominio de holds |
 | 9 | Motor de reglas genérico, declarativo | `SUGERENCIAS.MD` 3.3 punto 2. Requiere formalizar antes todas las variantes de condición existentes |
 | 10 | Retirar el patrón `runpy` + fusión de `APP` en `tests/test_grant_radar.py` | Tiene sentido revisarlo cuando el script principal quede reducido a configuración y punto de entrada |
-| 15 | Orden de extracción medido (secciones 37 y 38): `save_discovery_audit` → capa Haiku → segunda mitad de holds → reglas → `run_pipeline()` | La primera mitad de holds ya salió (sección 38). `run_pipeline()` arrastra el resto: va el último, no el siguiente |
+| 15 | Orden de extracción medido (secciones 37 y 38): `save_discovery_audit` → capa Haiku → segunda mitad de holds → reglas → `run_pipeline()`. **Los tres primeros se cerraron el 31/08/2026** (sección 48) | Quedan los dos últimos, y en ese orden: la matriz de reglas es el punto 8 y necesita sesión propia; `run_pipeline()` va después, cuando ya no arrastre nada |
 | 21 | Ejecutar `tests/test_grant_radar_script_names.py` **antes** que la suite completa tras cada extracción | Señala el módulo y el nombre exactos en un segundo; la suite completa los presenta como errores en pruebas de otra cosa (pasó tres veces) |
-| 24 | Endurecer la instrucción contra presunciones en `objeto_y_actuaciones` | INNOVAE devolvió «se presume inversión en equipos…» cuando la fuente no detalla gastos. Es una presunción declarada, no una invención, pero mejor evitarla (sección 41.2). **Sigue abierto**, y desde el 21/08 es el candidato natural a agruparse con la reanalisis pendiente de la seccion 47: ambos son cambios de prompt y comparten la misma invalidacion de cache |
-| 22 | La ventana de BDNS bajó de 79 a 65 días (densidad real 54 filas/día, no 44). Cumple el mínimo de 60 con 5 días de margen | Revisar `BDNS_LATEST_MAX_PAGES` y actualizar la densidad del test de regresión, que hoy es optimista y no detectaría una caída por debajo de 60 (sección 40.4) |
 | 16 | Usar `node.end_lineno`, nunca `max(lineno)`, al cortar bloques por AST | Un `return (` multilínea pierde el paréntesis de cierre; ocurrió en la sección 37 |
 
 ### 36.4. Huecos de cobertura de pruebas, medidos
 
-Recuento sobre los 34 módulos del paquete a 20/08/2026:
+Recuento sobre los 38 módulos del paquete a 31/08/2026:
 
 | # | Qué | Detalle |
 |---|---|---|
 | 19 | `build_keywords()` sigue sin aparecer en ninguna prueba | Afecta al panel de palabras clave. `verificar_urls()` sí tiene pruebas desde el 21/08 (sección 44.3), incluida la sonda de control por host |
-| 20 | Sin archivo de test dedicado, aunque sí cubiertos de forma indirecta vía `runpy`: `sources/bdns.py`, `sources/cdti.py`, `sources/een.py`, `sources/horizon_europe.py`, `versions.py`, `publishing.py`, `claude_usage.py`, `hold_quotes.py`, `hold_evidence.py` (`public_output.py` ya tiene el suyo desde el 20/08) | No es urgente —el camino principal de cada uno se ejercita en `tests/test_grant_radar.py`—, pero un archivo propio con import estándar hace la regresión más legible y sobreviviría a retirar el patrón `runpy` (punto 10) |
+| 20 | Sin archivo de test dedicado, aunque sí cubiertos de forma indirecta vía `runpy`: `sources/bdns.py`, `sources/cdti.py`, `sources/een.py`, `sources/horizon_europe.py`, `versions.py`, `publishing.py`, `claude_usage.py`, `hold_quotes.py`, `hold_evidence.py`, y desde el 31/08 también `holds.py` y `profile_scope.py`, que salieron del script con sus pruebas donde estaban (`tests/test_grant_radar.py`, vía `APP`) | No es urgente —el camino principal de cada uno se ejercita ahí—, pero un archivo propio con import estándar hace la regresión más legible y sobreviviría a retirar el patrón `runpy` (punto 10). `analysis.py` sí tiene ya uno para lo que más duele: `tests/test_grant_radar_prompts.py` |
 
 ### 36.5. Mapa de las tres redes de seguridad, y qué se escapa de cada una
 
@@ -2528,6 +2524,10 @@ frío. No hay que buscarlos en las tablas de arriba: ya no están.
 |---|---|---|
 | 23 | Recalibrar `CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS` con datos de una ejecución completa, en vez de con la muestra de agosto | Sección 42.3: 76 análisis reales, barrera 0,035 → 0,047 USD |
 | 18 | `coverage_watch.py` sin ninguna prueba: la alarma que avisa cuando un programa recurrente deja de aparecer era una red de seguridad sin red | Sección 46: 18 pruebas, incluidos los cinco estados de la sonda y la forma del catálogo real |
+| 22 | La densidad del test de la ventana de BDNS (44 filas/día) era optimista y no habría detectado una caída por debajo del mínimo de 60 días | Sección 48.6: medición real de hoy (67 días, 52,2 filas/día) y el test fijado en la densidad más alta observada, 54 |
+| 24 | Endurecer la instrucción contra presunciones en `objeto_y_actuaciones` | Sección 48.5: la frase prohíbe ahora la fórmula («se presume», «previsiblemente»…), no solo la invención. Agrupado con la caché ya invalidada, así que no costó nada |
+| 31 | Una convocatoria publicaba como URL una frase entera con el esquema mal escrito | Sección 48.6: `_web_url_or_empty()` en el conector y en la publicación |
+| 33 | `extraction_system` era una variable local que ninguna prueba podía mirar | Sección 48.3: constante de módulo `CLAUDE_EXTRACTION_SYSTEM_PROMPT` con siete pruebas de integridad |
 
 ## 37. Decimotercera ronda a 19/08/2026: salida pública, publicación, selección y cobertura
 
@@ -3767,3 +3767,274 @@ Antes de esa ejecución conviene agrupar también el punto 24 del backlog
 —endurecer la instrucción contra presunciones en `objeto_y_actuaciones`—, que
 lleva abierto desde el 20/08 esperando exactamente esta oportunidad: es otro
 cambio de prompt, y pagar dos veces la misma invalidación no tiene sentido.
+
+## 48. Terminar la modularización y agrupar los cambios de prompt, a 31/08/2026
+
+Diez días sin tocar el proyecto. La sesión arranca con una decisión del usuario
+que ordena todo lo demás: **no reanalizar dos veces**. Primero se termina la
+estructura y se revisa la capa de análisis; todo lo que invalide caché se
+agrupa ahí; y la ejecución de pago va al final, una sola vez.
+
+### 48.1. De qué se partía
+
+Línea base medida hoy antes de tocar nada (`--no-claude` completa, 684 s,
+código 0):
+
+> 915 detectadas · 34 duplicadas fusionadas · 40 tras el prefiltro inicial ·
+> **80 vigentes** (BDNS 49, Horizon 19, CDTI 5, ECCP 4, EEN 3, IDAE 1, BOE 1,
+> BOA 0) · prefiltro común `retain=33, ambiguous=7, hold_manual=75, reject=800`
+> · previsión 80 análisis, **2,0480 USD**.
+
+Comparado con el 21/08: 956 → 915 detectadas y 77 → 80 vigentes. Es movimiento
+externo, no regresión: la ventana deslizante de BDNS entra y saca convocatorias
+por su cuenta (43.3). Las cuatro fuentes con control de salud siguen `healthy` y
+`compare_funnels()` no señala ninguna caída de etapa.
+
+Y lo que el usuario ve, que es lo que importa: `convocatorias.json` seguía
+siendo el del 21/08 a las 12:12 UTC, con las versiones **anteriores**
+(`fit-…v6`, prompt `v10`, perfil `v4`). Es decir, el arreglo de PowerUp NetZero
+de la sección 47 no está publicado, y tres de sus 77 convocatorias ya tenían el
+plazo vencido.
+
+### 48.2. Ronda 1: el histórico de auditoría se va con la auditoría
+
+`save_discovery_audit()` (117 líneas) y `_load_audit_runs()` se mueven a
+`grant_radar/audit.py`, que ya tenía la otra mitad del concepto: `DISCOVERY_AUDIT`
+y `audit_exclusion()` son la memoria de la ejecución en curso; estas dos la
+persisten. Con ellas viajan `AUDIT_SCHEMA_VERSION` y `AUDIT_MAX_RUNS`.
+
+Medido antes de moverlo: **no arrastraba ni una función del script**. Solo tres
+constantes y `log`.
+
+La ruta se pasa como parámetro —`save_discovery_audit(..., audit_file=AUDIT_FILE)`,
+`load_audit_runs(AUDIT_FILE)`— siguiendo lo que ya hacían `cache_load(CACHE_FILE)`
+y `previous_source_health(AUDIT_FILE)`. Ocho llamadas actualizadas, todas dentro
+de `run_pipeline()`.
+
+Efecto lateral que conviene anotar: la prueba de persistencia del inventario de
+candidatas inyectaba `AUDIT_FILE` en `__globals__` para redirigir la escritura.
+Con la ruta como parámetro eso sobra, así que la prueba se mudó a
+`tests/test_grant_radar_audit.py` con import estándar y allí se le añadieron
+siete más: rotación a `AUDIT_MAX_RUNS`, migración del esquema v1, exclusiones
+huérfanas que se podan, y un histórico ilegible que se recrea sin detener la
+ejecución.
+
+### 48.3. Ronda 2: la capa de análisis con Haiku sale del script
+
+Unas 740 líneas a `grant_radar/analysis.py`: `analyze_with_claude()`,
+`_structured_claude_call()`, `_build_compatible_analysis()`, el presupuesto de
+evidencia, el techo de salida y los dos prompts de sistema.
+
+Otra vez la medición previa dio una sorpresa buena: **tampoco arrastraba ninguna
+función del script**. Todo lo que invoca —`deterministic_rules`,
+`claude_schemas`, `tech_taxonomy`, `partner_catalog`, `claude_usage`— ya estaba
+en el paquete desde rondas anteriores.
+
+Tres decisiones dentro de esta ronda:
+
+1. **La clave de API se recibe, no se lee.** `analyze_with_claude(conv, api_key)`
+   y `claude_key_format_is_valid(api_key)`, igual que `github_upload(token=…)` en
+   `publishing.py`. Ningún módulo del paquete toca el entorno.
+2. **Nace `grant_radar/profile_scope.py`** (205 líneas) con `_hard_out_of_scope()`
+   y `_explicit_profile_incompatibility()`. No podían ir en `analysis.py`: las
+   llama también la matriz de reglas, que se queda en el script, y eso habría
+   obligado a las reglas a importar de la capa de Claude para *no* llamarla.
+   Tampoco en `deterministic_rules.py`, cuyo contrato declara actuar solo sobre
+   hechos ya extraídos. Son exclusiones de ámbito del perfil, con dos
+   consumidores —antes y después del modelo—, y ahora eso está escrito.
+3. **Punto 33 del backlog, cerrado.** `extraction_system` deja de ser variable
+   local y pasa a `CLAUDE_EXTRACTION_SYSTEM_PROMPT`, con siete pruebas de
+   integridad en el archivo que antes solo cubría el del evaluador (renombrado a
+   `tests/test_grant_radar_prompts.py`, que es lo que de verdad prueba). Fijan
+   las instrucciones que costó dinero descubrir: los centinelas de dato ausente,
+   la defensa contra instrucciones incrustadas en un documento público, la
+   prioridad del bloque oficial sobre el texto libre y el `eligible_actions` que
+   no confunde objetivos con gastos.
+
+La guarda genérica de empalmes —ningún nombre de campo detrás de una
+preposición— se parametrizó para usarla en los dos prompts, y saltó a la primera
+con un falso positivo instructivo: «0 para TRL y `'unknown'` **para
+consortium_required**» es una frase legítima. Ese campo queda fuera de la guarda
+en el prompt de extracción, con la razón escrita al lado, porque su instrucción
+ya la fija otra prueba literal.
+
+De paso desaparece una indirección que quedó del arreglo del 21/08:
+`evaluation_system = CLAUDE_EVALUATION_SYSTEM_PROMPT`, una variable local que
+solo copiaba la constante.
+
+### 48.4. Ronda 3: la segunda mitad del dominio de holds
+
+872 líneas a `grant_radar/holds.py`: resolución determinista, validación de
+citas, piloto, replay y la reincorporación al pipeline. La primera mitad —qué
+documentos tiene un hold— ya había salido a `hold_evidence.py` (sección 38).
+
+Esta sí tenía acoplamiento, y era el previsto: tres llamadas directas a la
+matriz de reglas, que **no se toca** (AGENTS.md 4.1). Se resuelve con el patrón
+que ya usaba el propio dominio —`retrieve_bdns_hold_evidence()` recibía
+`intrinsic_exclusion` desde antes— y que estrenó el conector ECCP con
+`is_relevant_enough`: se inyectan como parámetro.
+
+| Función | Recibe ahora |
+|---|---|
+| `resolve_hold_deterministically()` | `intrinsic_exclusion` |
+| `apply_verified_bdns_hold_resolution()` | `prefilter` |
+| `replay_bdns_hold_item()` | `prefilter`, `intrinsic_exclusion` |
+| `replay_bdns_hold_report()` | `prefilter`, `intrinsic_exclusion` |
+| `run_bdns_hold_pilot()` | `api_key`, `intrinsic_exclusion` |
+| `resolve_bdns_holds_for_pipeline()` | `intrinsic_exclusion`, `prefilter` |
+
+El script solo llama a tres de ellas y les pasa las funciones reales. Las otras
+trece son internas del módulo.
+
+Dos constantes se quedaban a medio camino, usadas por la matriz de reglas *y*
+por los holds: `BDNS_NEW_ESTABLISHMENT_MIN_DAYS` y `BDNS_TECHNOLOGY_TERMS`. Van
+a `grant_radar/bdns_fields.py`, que existe exactamente para eso y cuya cabecera
+ya nombraba a la resolución de holds como su segundo consumidor.
+
+Las rutas de los artefactos (`bdns_hold_ai_cache.json`, el informe del piloto y
+el del replay) sí se calculan dentro del módulo, al contrario que en la ronda 1.
+No es incoherencia: `hold_evidence.py` y `documents.py` hacen lo mismo porque
+son los dueños de su archivo, mientras que la auditoría y la caché comparten el
+suyo con el script. Como efecto práctico, las pruebas que redirigen esas rutas
+por `__globals__` siguen funcionando sin cambios.
+
+### 48.5. El punto 24, que llevaba once días esperando esta ocasión
+
+Con los dos prompts ya legibles de una vez, se leyeron enteros, frase por frase,
+buscando el empalme de la sección 47.2. No hay ninguno: las 12 frases del
+extractor y las 19 del evaluador cierran donde deben.
+
+Lo que sí seguía abierto era el **punto 24**. La instrucción decía «si la fuente
+no detalla los gastos, descríbelo con lo que sí conste y no lo inventes», y el
+Programa INNOVAE devolvió «se presume inversión en equipos…» (sección 41.2). No
+la incumplía: una presunción declarada no es una invención. Ahora la frase
+prohíbe la fórmula, no solo la mentira:
+
+> «Si la fuente no detalla los gastos, dilo y describe solo lo que conste. No
+> los completes por deducción ni con fórmulas del tipo «se presume»,
+> «previsiblemente», «cabe esperar» o «se entiende que»: declarar una suposición
+> no la convierte en un hecho, y este campo describe lo que dice la
+> convocatoria, no lo que parece razonable suponer.»
+
+Versiones subidas: evaluador a `fit-2026-08-v8-no-presumption` y prompt a
+`2026-08-v12-no-presumption`. **El perfil y el extractor no cambian, así que sus
+versiones tampoco**: subir una versión sin motivo cuesta dinero real. Y como la
+caché ya estaba invalidada desde el 21/08, agrupar aquí este cambio no ha
+costado nada.
+
+### 48.6. Dos arreglos que sí se verán en el producto
+
+**Punto 31 — la URL que era una frase.** Confirmado sobre el JSON publicado: el
+registro `id=20` (BDNS 922117, certámenes feriales de Aragón) publicaba como
+`url` el texto `hhtp://www.aragon.es/tramites), incluyendo en el buscador de
+trámites el procedimiento número 11810…`. Viene del campo `sedeElectronica` de
+la API, que es texto libre, y `_normalize_public_url()` lo dejaba pasar porque
+`hhtp://` parece un esquema.
+
+Arreglado en dos capas, con un solo helper —`_web_url_or_empty()` en
+`parsing_helpers.py`— que corta en el primer espacio y solo acepta `http`/`https`:
+
+1. En el conector, la sede electrónica solo se usa si es navegable; si no, se
+   publica la ficha oficial de BDNS, que siempre lo es.
+2. En la publicación, para que ninguna otra fuente pueda colar prosa en un campo
+   que el dashboard trata como destino.
+
+No repara el esquema a propósito: `hhtp` podría ser un `http` mal tecleado, pero
+adivinarlo es inventarse un destino. La prueba usa la cadena literal publicada.
+
+Comprobado de paso sobre las 77 publicadas: 74 `https`, 2 `http` y esa. No hay
+`mailto:` ni ningún otro esquema que la regla nueva fuera a descartar.
+
+**Punto 22 — el test que no habría avisado.** La prueba de regresión de la
+ventana de BDNS fijaba 44 filas/día, medidos el 17-18/08. Con esa cifra
+declaraba 79 días de cobertura y no habría detectado una caída por debajo del
+mínimo de negocio de 60. Medición real de hoy contra la API, dos peticiones:
+**3.500 filas cubriendo 67 días, 52,2 filas/día**.
+
+La prueba pasa a fijar **54 filas/día**, que es la densidad más alta observada
+(20/08), no la última ni la media: lo que estrecha la ventana es que se publique
+más, así que el caso a resistir es el de más volumen. Con 54, las 35 páginas
+cubren 64,8 días y el margen real queda a la vista. El comentario del conector
+recoge las tres mediciones, para que la próxima no vuelva a partir de una sola.
+
+`BDNS_LATEST_MAX_PAGES` no se mueve: sigue cumpliendo el mínimo.
+
+### 48.7. Un efecto lateral que merecía limpiarse
+
+Sacar casi 2.000 líneas dejó al script importando **61 nombres que ya no usaba**:
+`anthropic`, los cuatro precios por millón de tokens, las quince salvaguardas
+deterministas, los diez vocabularios de exclusión, los siete validadores de
+cita… Un bloque de imports que describe dependencias inexistentes es
+exactamente lo que hace difícil leer un archivo, y este archivo ahora se lee
+para saber qué queda.
+
+Se retiran los 61 —y solo esos: había otros 68 sin usar de rondas anteriores,
+que no son de esta sesión y pueden estar sosteniendo el arnés de pruebas—. Dos
+de los 61 resultaron estar sosteniéndolo justamente: `TECH_TAGS` y
+`retrieve_bdns_hold_evidence` llegaban a `APP` de rebote por el `runpy`. La
+corrección no es devolverlos al script, que no los usa, sino registrarlos en el
+bloque de fusión desde su módulo real. Los imports del script vuelven a
+describir el script.
+
+### 48.8. Verificación
+
+Las tres redes, en el orden de 43.3, después de cada una de las cinco rondas:
+
+1. `tests.test_grant_radar_script_names` — la que más trabajó hoy. Señaló en un
+   segundo el único acoplamiento que la medición previa no había anticipado
+   (`analyze_bdns_hold_with_claude` llamando a `_structured_claude_call`
+   después de que este se fuera a `analysis.py`) y confirmó cada módulo nuevo.
+2. `py_compile`.
+3. La suite completa: **471 → 493 pruebas**, todas en verde. Las 22 nuevas: 8
+   del histórico de auditoría, 7 del prompt de extracción, 5 de la URL que era
+   una frase y 2 del punto 24.
+4. Cuatro ejecuciones `--no-claude` completas: la línea base, una tras la ronda
+   2, otra al terminar las cinco rondas y la de cierre contra el código
+   definitivo, ya con los imports limpios. Las cuatro con código 0 y las mismas
+   cifras.
+
+Cifras finales, `--no-claude` completa del 31/08/2026, código 0:
+
+> 915 detectadas · 34 duplicadas fusionadas · 40 tras el prefiltro inicial ·
+> **80 vigentes** (BDNS 49, Horizon 19, CDTI 5, ECCP 4, EEN 3, IDAE 1, BOE 1,
+> BOA 0) · prefiltro común `retain=33, ambiguous=7, hold_manual=75, reject=800`
+> · resolución automática de holds `ambiguous=40, reject=35, revisión manual=0`
+> · previsión 80 análisis, **2,0480 USD** · 633 s.
+
+Idénticas a la línea base de 48.1 en todo lo que debe serlo. Era lo esperable:
+**esta sesión no toca la recopilación**. Mueve código de sitio, cambia una
+instrucción del evaluador —que `--no-claude` no ejecuta— y arregla una URL de
+BDNS que no altera el recuento. Que las cifras se muevan habría sido la señal de
+alarma, no al revés.
+
+Recuentos verificados con `wc -l`:
+
+| | Al empezar el 31/08 | Al cerrar |
+|---|---|---|
+| `Grant-Radar-prueba.py` | 4.086 líneas | **2.140** |
+| Paquete `grant_radar/` | 35 módulos | **38 módulos**, 11.660 líneas |
+| Funciones de nivel superior en el script | 36 | **8** |
+| Pruebas | 471 | **493** |
+| Puntos abiertos del backlog | 32 | **28** |
+
+### 48.9. Qué queda, y por qué queda
+
+**En el script, dos cosas y las dos por decisión:**
+
+1. La **matriz de reglas** (punto 8 del backlog): 526 líneas, siete niveles de
+   precedencia, y la que decide qué llega a Claude y por tanto el coste. Sesión
+   propia, y no encadenada detrás de nada sin que el usuario lo pida. `holds.py`
+   y ECCP ya la reciben inyectada, así que moverla no obliga a tocarlos.
+2. **`run_pipeline()`** con su `parse_args()`: el orquestador va el último por
+   definición.
+
+**En el producto, una decisión pendiente que es del usuario:** lo publicado
+sigue siendo del 21/08. La ejecución completa que lo pondría al día cuesta
+**~2,05 USD** (80 convocatorias, caché invalidada a propósito desde el 21/08 y
+otra vez hoy al subir el evaluador) y publicaría de golpe el arreglo de PowerUp
+NetZero, el punto 24, la URL rota y las convocatorias de estos diez días.
+Requiere autorización expresa, como siempre.
+
+Y sigue anotado el **punto 34**: programar la recopilación diaria `--no-claude`
+en el Programador de tareas es una acción del usuario en su equipo, no del
+agente. El comando está en 47.6.

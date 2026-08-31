@@ -29,6 +29,21 @@ BDNS_NAMED_ACCESS_TERMS = (
 )
 
 
+# Umbral de "empresa de nueva creacion" y vocabulario tecnologico. Los usan la
+# matriz de reglas previa a Claude (Grant-Radar-prueba.py) y la resolucion de
+# holds (grant_radar/holds.py), que ya no pueden verse entre si: por eso viven
+# aqui, igual que BDNS_NAMED_ACCESS_TERMS.
+BDNS_NEW_ESTABLISHMENT_MIN_DAYS = 730
+BDNS_TECHNOLOGY_TERMS = (
+    "ahorro energetico", "eficiencia energetica", "eficiencia termica",
+    "energia industrial", "calor residual", "recuperacion de calor",
+    "descarbonizacion", "hidrogeno", "combustion", "hornos industriales",
+    "emisiones industriales", "depuracion de gases", "tratamiento de gases",
+    "valorizacion de residuos", "waste heat", "energy efficiency",
+    "industrial heat", "flue gas", "hydrogen", "decarbonisation",
+)
+
+
 def _bdns_descriptions(value) -> list[str]:
     """Conserva las descripciones de los catalogos estructurados de SNPSAP."""
     if value is None:

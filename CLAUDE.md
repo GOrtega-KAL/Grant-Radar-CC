@@ -7,46 +7,41 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
-> **Arranque en frío: AGENTS.md secciones 43 a 47.** La sesión del 21/08/2026 son
-> la 44, 45, 46 y **47, que es el cierre**. Cifras de referencia: 45.4
-> (recopilación) y 46.2 (última publicación). Backlog abierto en la sección 36.
+> **Arranque en frío: AGENTS.md sección 48**, que es el cierre de la sesión del
+> 31/08/2026. Cifras de referencia en 48.8; backlog abierto en la sección 36.
+> Las secciones 44 a 47 son la sesión del 21/08 y siguen vigentes como
+> antecedente.
 >
-> **OJO CON EL COSTE:** la sección 47 subió perfil, evaluador y prompt, así que
-> **la caché está invalidada a propósito**. La próxima ejecución completa
-> reanaliza las 77 convocatorias y cuesta ~1,8 USD, no ~0,2. El usuario decidió
-> el 21/08 dejar los cambios listos y **no reanalizar todavía**: no lances una
-> ejecución completa sin autorización expresa y sin recordarle ese importe.
+> **OJO CON EL COSTE:** la caché de análisis **está invalidada a propósito**
+> desde el 21/08 (perfil, evaluador y prompt) y el 31/08 se subieron otra vez
+> evaluador y prompt. La próxima ejecución completa reanaliza **las 80
+> convocatorias: ~2,05 USD**, no ~0,2. Decisión del usuario, vigente: dejar los
+> cambios listos y **no reanalizar hasta autorizarlo expresamente**. No lances
+> una ejecución completa sin recordarle ese importe.
 >
-> **Producto al día:** `convocatorias.json` publicado el **21/08/2026 12:12 UTC**
-> —956 detectadas, 77 vigentes, 31 relevantes, 7 con cierre urgente, 0,20 USD—
-> con las URLs de CDTI ya corregidas. La caché queda al día: otra ejecución hoy
-> costaría casi nada, salvo que se suba una versión de `versions.py`.
+> **El producto está desfasado y conviene decirlo primero:**
+> `convocatorias.json` sigue siendo el del **21/08/2026 12:12 UTC** —77
+> convocatorias, versiones `fit-…v6` / prompt `v10` / perfil `v4`—. No incluye
+> el arreglo de PowerUp NetZero (sección 47) ni nada de la sección 48, y tres de
+> sus 77 fichas ya tienen el plazo vencido. Ponerlo al día es exactamente la
+> ejecución de pago del párrafo anterior.
 >
-> **Último trabajo (21/08/2026, secciones 44 y 45):** dos avisos del usuario sobre el
-> producto, los dos ciertos. Seis de las diez URLs del catálogo curado de CDTI
-> eran 404 y `verificar_urls()` no podía verlo porque el WAF de cdti.es responde
-> 200 a cualquier ruta; y el prefiltro temático rechazaba 68 de las 71 fichas del
-> IDAE porque el vocabulario de contexto industrial no contenía «industria» ni
-> «sector industrial» en ninguna forma.
+> **Último trabajo (31/08/2026, sección 48):** se terminó la modularización que
+> quedaba en el orden ya medido —auditoría, capa de análisis con Haiku y segunda
+> mitad del dominio de holds—, con lo que el script baja de 4.086 a **2.140
+> líneas** y el paquete pasa a **38 módulos**. En el script solo quedan la matriz
+> de reglas y `run_pipeline()`. De paso se cerraron cuatro puntos del backlog: el
+> 33 (el prompt de extracción ya es constante de módulo y tiene pruebas), el 24
+> (la instrucción de `objeto_y_actuaciones` prohíbe ahora las presunciones
+> declaradas), el 31 (una convocatoria publicaba una frase entera como URL) y el
+> 22 (el test de la ventana de BDNS fijaba una densidad optimista).
 >
-> Después (45) se atacó **por qué ninguno se detectó solo**: el control de salud
-> medía la cobertura de fecha contra el inventario completo, daba cifras absurdas
-> y había que apagarlo. Ahora cada tasa va contra su denominador, hay umbrales en
-> las cuatro fuentes y `compare_funnels()` compara cada etapa con la ejecución
-> anterior —lo único que caza una avería cuyo síntoma es su estado normal—.
->
-> **Antecedente (20/08/2026):** ronda de calidad del dato y primera ejecución
-> completa publicada (AGENTS.md secciones 40-43). 76 convocatorias
-> vigentes, 31 relevantes, 1,83 USD reales. Los «datos pendientes» bajan del
-> 57 % al 38 %, y `objeto_y_actuaciones` y `eligible_actions` —que nunca se
-> habían producido— se rellenan en 76/76 y 71/76. El coste está recalibrado con
-> esos 76 análisis: la barrera pasa de 0,035 a 0,047 USD por análisis y su
-> máximo efectivo de 142 a 106 (sección 11).
->
-> La caché de análisis tiene hoy **76 entradas en las versiones actuales**: una
-> ejecución completa ahora reutilizaría casi todo y apenas costaría. Lo que
-> vuelve a hacerla cara es **subir cualquier versión de `grant_radar/versions.py`**,
-> que invalida las 76.
+> **Antecedente (21/08/2026, secciones 44 a 47):** dos avisos del usuario sobre
+> el producto, los dos ciertos —seis URLs muertas en el catálogo de CDTI y un
+> prefiltro que rechazaba 68 de las 71 fichas del IDAE—, el indicador de embudo
+> que había que apagar para que no molestara, la publicación del día y el falso
+> negativo de PowerUp NetZero, que costó un 35 % de encaje a una convocatoria a
+> la que la empresa se presenta.
 
 ## Qué es esto
 
@@ -76,17 +71,18 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   JSON ni publicar. Es el modo de validación por defecto tras un cambio de
   código: `poetry run python "Grant-Radar-prueba.py" --no-claude`.
 - Después de cualquier cambio en `Grant-Radar-prueba.py` o `grant_radar/`,
-  en este orden (el detalle en AGENTS.md 43.3; las cifras, en **45.4**):
+  en este orden (el detalle en AGENTS.md 43.3; las cifras, en **48.8**):
   1. `poetry run python -m unittest tests.test_grant_radar_script_names`
-     —un segundo, señala módulo y nombre exactos si falta un import;
+     —un segundo, señala módulo y nombre exactos si falta un import. Desde el
+     31/08 comprueba también cada módulo del paquete, no solo el script;
   2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`;
-  3. `poetry run python -m unittest discover -s tests` —**471 pruebas**. Una,
+  3. `poetry run python -m unittest discover -s tests` —**493 pruebas**. Una,
      `FrontendLayoutTests::test_consortium_role_is_visible...`, es intermitente
      bajo carga porque conduce Chromium de verdad: repetir antes de investigar
      (AGENTS.md 44.7, nota sobre pruebas intermitentes);
   4. `poetry run python "Grant-Radar-prueba.py" --no-claude` al cerrar la
-     ronda, comparando contra los números de referencia de AGENTS.md 45.4:
-     956 detectadas, **77 vigentes** (21/08/2026). Ojo: ese recuento **ya no es un invariante fijo**, la
+     ronda, comparando contra los números de referencia de AGENTS.md 48.8:
+     915 detectadas, **80 vigentes** (31/08/2026). Ojo: ese recuento **ya no es un invariante fijo**, la
      ventana deslizante de BDNS lo mueve por causas externas; ante un desvío,
      mirar salud de fuentes y registros de exclusión antes que el código.
 - Al extraer código a `grant_radar/`, comprobar que el script principal
@@ -120,17 +116,17 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   PowerShell: `$env:VIRTUAL_ENV = $null` primero, o `poetry` puede ejecutar
   silenciosamente contra el entorno equivocado.
 
-## Estructura actual (21/08/2026)
+## Estructura actual (31/08/2026)
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l` el 21/08/2026: **4.086 líneas en el
-script y 9.409 en los 35 módulos del paquete** —más del doble de código en el
-paquete que en el script—. El script tenía 9.199 líneas antes de las nueve
-rondas del 19/08/2026 y bajó a 3.842; desde entonces vuelve a crecer despacio,
-porque las rondas de calidad del dato y de prompt enriquecen la capa de
-análisis con Haiku, que sigue dentro del script. (La cifra "8.835" de una nota anterior de este archivo
-estaba mal calculada — ver AGENTS.md sección 24, nota de discrepancia.)
+`import`). Recuento verificado con `wc -l` el 31/08/2026: **2.140 líneas en el
+script y 11.660 en los 38 módulos del paquete**. El script tenía 9.199 líneas
+antes de las nueve rondas del 19/08/2026, 4.086 al empezar el 31/08, y hoy
+conserva **solo ocho funciones**: las seis de la matriz de reglas previa a
+Claude (526 líneas) y `run_pipeline()` con su `parse_args()` (912). (La cifra "8.835" de una nota anterior de
+este archivo estaba mal calculada — ver AGENTS.md sección 24, nota de
+discrepancia.)
 Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 
 | Módulo | Contiene |
@@ -144,7 +140,10 @@ Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 | `cache.py` | Caché de análisis de Claude (`grant_radar_cache.json`) |
 | `deterministic_rules.py` | Salvaguardas deterministas post-modelo |
 | `claude_schemas.py` | Esquemas Pydantic de Claude y su validación |
-| `audit.py` | `DISCOVERY_AUDIT` y `audit_exclusion()` (usado por las 8 fuentes) |
+| `audit.py` | `DISCOVERY_AUDIT` y `audit_exclusion()` (usado por las 8 fuentes) **y el histórico en disco**: `save_discovery_audit()` / `load_audit_runs()`, que reciben la ruta como parámetro |
+| `analysis.py` | **La capa de análisis con Haiku**: las dos etapas (extracción factual y evaluación de encaje), sus dos prompts de sistema como constantes de módulo, el presupuesto de evidencia y la llamada estructurada con reintentos. Recibe la clave de API como parámetro; no lee el entorno |
+| `profile_scope.py` | Exclusiones de ámbito del perfil (`_hard_out_of_scope()`, `_explicit_profile_incompatibility()`). Viven aparte porque las usan **los dos lados**: la matriz de reglas antes de Claude y `_build_compatible_analysis()` después |
+| `holds.py` | Segunda mitad del dominio de holds: resolución determinista, validación de citas, piloto, replay y reincorporación al pipeline. **Recibe la matriz de reglas inyectada** (`intrinsic_exclusion`, `prefilter`), que es lo que permitió extraerlo sin tocarla |
 | `sources/boa_aragon.py` | Conector BOA Aragón (señal secundaria/backup, ver sección 26) |
 | `bdns_scope.py` | Filtro de candidatas BDNS: palabras clave + administración autonómica de Aragón |
 | `runtime_state.py` | Estado compartido de la ejecución (metadatos por fuente, diagnósticos, landings, coverage watch) |
@@ -193,32 +192,24 @@ negocio de 60 días con 5 de margen, y explica por sí sola que el recuento de
 vigentes se mueva entre ejecuciones. Detalle en AGENTS.md secciones 26 y 40.4;
 queda como punto 22 del backlog.
 
-Pendiente de modularizar, en el orden que tiene sentido moverlo (detalle en
-AGENTS.md secciones 37, 38 y 43.5): `save_discovery_audit()` (encaja en
-`audit.py`), la capa de análisis con Haiku (atada a `_hard_out_of_scope()`), la
-segunda mitad del dominio de holds (resolución determinista, piloto y replay,
-que necesitan reglas y Claude), la matriz de reglas (sesión dedicada) y, por
-último, `run_pipeline()`.
+**Del orden de extracción ya solo quedan dos piezas**, y las dos por decisión,
+no por descuido (detalle en AGENTS.md 48.8):
 
-**Antes que seguir modulando**, AGENTS.md 43.5 propone dos cosas más baratas y
-con más valor: el punto 24 del backlog (endurecer el prompt contra presunciones
-en `objeto_y_actuaciones`, agrupado con cualquier otro cambio de prompt para
-pagar una sola invalidación de caché) y el punto 22 (la densidad optimista del
-test de la ventana BDNS, sin coste).
-**Los ocho conectores ya están en `grant_radar/sources/`.** ECCP recibe el
-prefiltro como parámetro (`is_relevant_enough`) para no depender de las reglas:
-quien lo llame debe pasárselo.
+1. **La matriz de reglas** (`_bdns_pre_claude_gate()`,
+   `deterministic_prefilter()`, `_bdns_intrinsic_exclusion()`,
+   `_bdns_structured_scope_exclusion()` y dos ayudantes): 526 líneas y siete
+   niveles de precedencia. Sigue deliberadamente sin extraer porque es la lógica
+   más ajustada del proyecto —decide qué llega a Claude y, con ello, el coste—.
+   **No encadenarla detrás de otra tarea sin que el usuario lo pida
+   explícitamente**; merece sesión propia (sección 4.1 de `AGENTS.md`).
+2. **`run_pipeline()`**, que va el último por definición: es el orquestador y
+   arrastra lo que quede.
 
-Medido antes de intentarlo: cuando el script tenía 68 funciones, extraer
-`run_pipeline()` arrastraba 64 de ellas. Hoy quedan **35 funciones de nivel
-superior** y la proporción no ha cambiado de naturaleza. El orquestador va el último, no el siguiente. El plan por etapas y el orden de dependencias están en
-AGENTS.md sección 28. El filtro previo a Claude
-(`_bdns_pre_claude_gate()`, `deterministic_prefilter()`, sección 4.1 de
-`AGENTS.md`) sigue deliberadamente sin extraer: es la lógica más compleja y
-ajustada del proyecto; no encadenarla detrás de otra tarea sin que el usuario
-lo pida explícitamente. Es también lo único que le falta a ECCP, por eso ese
-conector va el último. Detalle completo de cada ronda en `AGENTS.md`,
-secciones 21-43, y en `SUGERENCIAS.MD` (3.2/3.3 y sección 6).
+`holds.py` y el conector ECCP reciben ya lo que necesitan de la matriz como
+parámetro (`intrinsic_exclusion`, `prefilter`, `is_relevant_enough`), así que
+extraerla no obliga a tocarlos. **Los ocho conectores están en
+`grant_radar/sources/`.** Detalle completo de cada ronda en `AGENTS.md`,
+secciones 21-48, y en `SUGERENCIAS.MD` (3.2/3.3 y secciones 6 y 11).
 
 **Auditoría del embudo determinista (18/08/2026, sin cambios de código):**
 tras ampliar la ventana de BDNS, se comprobó con datos reales si

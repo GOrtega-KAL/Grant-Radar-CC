@@ -36,6 +36,9 @@ from grant_radar import claude_usage as _usage_module
 from grant_radar import hold_quotes as _quotes_module
 from grant_radar import coverage_watch as _coverage_module
 from grant_radar import public_output as _public_output_module
+from grant_radar import analysis as _analysis_module
+from grant_radar import holds as _holds_module
+from grant_radar import profile_scope as _profile_scope_module
 from grant_radar.sources import bdns as _bdns_module
 from grant_radar.sources import cdti as _cdti_module
 from grant_radar.sources import eccp as _eccp_module
@@ -45,6 +48,7 @@ from grant_radar.sources import idae as _idae_module
 for _module in (
     _cache_module, _rules_module, _public_output_module,
     _selection_module, _coverage_module, _usage_module, _quotes_module,
+    _analysis_module, _profile_scope_module, _holds_module,
     _bdns_module, _cdti_module, _eccp_module, _een_module, _idae_module,
 ):
     for _name in dir(_module):
@@ -62,6 +66,35 @@ APP.setdefault("source_hash", _cache_module.source_hash)
 # privados, y el script principal no las reimporta porque no las usa él.
 APP.setdefault("BDNS_LATEST_MAX_PAGES", _bdns_module.BDNS_LATEST_MAX_PAGES)
 APP.setdefault("BDNS_PAGE_SIZE", _bdns_module.BDNS_PAGE_SIZE)
+# Igual con las de la capa de análisis: el presupuesto de evidencia y el techo
+# de salida son públicos y el script ya no los usa desde que la capa se extrajo
+# (AGENTS.md, sección 48).
+for _name in (
+    "EVIDENCE_SOURCE_DESCRIPTION_BUDGET", "EVIDENCE_MAX_RELATED_DOCUMENTS",
+    "EVIDENCE_PER_DOCUMENT_BUDGET", "EVIDENCE_TOTAL_DOCUMENT_BUDGET",
+    "STRUCTURED_OUTPUT_TOKEN_CEILING", "STABLE_CACHED_DOCUMENT_ROLES",
+    "BDNS_STRUCTURED_PROMPT_FIELDS",
+):
+    APP.setdefault(_name, getattr(_analysis_module, _name))
+# Dos nombres que el script reimportaba sin usarlos y que solo necesita este
+# arnés: se toman de su módulo, que es de donde vienen. Llegaban de rebote por
+# el runpy, y eso ataba los imports del script a las pruebas.
+from grant_radar.hold_evidence import retrieve_bdns_hold_evidence as _retrieve_evidence  # noqa: E402
+from grant_radar.tech_taxonomy import TECH_TAGS as _TECH_TAGS  # noqa: E402
+
+APP.setdefault("retrieve_bdns_hold_evidence", _retrieve_evidence)
+APP.setdefault("TECH_TAGS", _TECH_TAGS)
+# Y con las públicas del dominio de holds, extraído el 31/08/2026: el script
+# solo reimporta las tres entradas que llama run_pipeline().
+for _name in (
+    "BDNS_HOLD_AI_VERSION", "BDNS_HOLD_CACHE_FILE", "BDNS_HOLD_REPORT_FILE",
+    "BDNS_HOLD_REPLAY_FILE", "apply_verified_bdns_hold_resolution",
+    "replay_bdns_hold_item", "replay_bdns_hold_report",
+    "resolve_bdns_holds_for_pipeline", "resolve_hold_deterministically",
+    "run_bdns_hold_pilot", "select_bdns_hold_pilot",
+    "select_bdns_hold_qa_sample", "analyze_bdns_hold_with_claude",
+):
+    APP.setdefault(_name, getattr(_holds_module, _name))
 
 
 class SourceParserTests(unittest.TestCase):
@@ -109,6 +142,42 @@ class SourceParserTests(unittest.TestCase):
         )
         self.assertEqual(normalize("contacto@example.test"), "contacto@example.test")
         self.assertEqual(normalize("Ver convocatoria"), "Ver convocatoria")
+
+    def test_a_sentence_with_a_scheme_is_not_published_as_a_link(self):
+        # Punto 31 del backlog: la BDNS 922117 publicó como `url` una frase
+        # entera con el esquema mal escrito, y viajó así al JSON y al export.
+        normalize = APP["_normalize_public_url"]
+        self.assertEqual(
+            normalize(
+                "hhtp://www.aragon.es/tramites), incluyendo en el buscador de "
+                "trámites el procedimiento número 11810"
+            ),
+            "",
+        )
+        self.assertEqual(
+            normalize("https://example.test/bases y también en la sede"),
+            "https://example.test/bases",
+        )
+
+    def test_bdns_falls_back_to_the_official_page_when_the_sede_is_prose(self):
+        raw = APP["_bdns_detail_to_raw"](
+            {
+                "codigoBDNS": 922117,
+                "descripcion": "Ayudas para certámenes feriales",
+                "fechaFinSolicitud": "2026-09-17",
+                "sedeElectronica": (
+                    "hhtp://www.aragon.es/tramites), incluyendo en el buscador "
+                    "de trámites el procedimiento número 11810"
+                ),
+                "tiposBeneficiarios": [{"descripcion": "Empresas"}],
+            },
+            {"numeroConvocatoria": 922117},
+        )
+        self.assertEqual(
+            raw["url"],
+            f"{APP['BDNS_PUBLIC_BASE']}/922117",
+            "una sede electrónica ilegible debe caer al enlace oficial de BDNS",
+        )
 
     def test_bdns_detail_keeps_strong_identity_and_documents(self):
         raw = APP["_bdns_detail_to_raw"](
@@ -726,9 +795,16 @@ class SourceParserTests(unittest.TestCase):
         self.assertEqual(metadata["aragon_admin_candidates"], 1)
 
     def test_bdns_latest_window_covers_at_least_sixty_days(self):
-        # Densidad medida el 17-18/08/2026 (ver AGENTS.md sección 26): ~44
-        # filas/día a nivel nacional en convocatorias/ultimas.
-        observed_daily_volume = 44
+        # Punto 22 del backlog. La densidad de 44 filas/día que fijaba esta
+        # prueba se midió el 17-18/08/2026 y quedó vieja enseguida: el 20/08
+        # eran 54 y el 31/08, 52,2 (3.500 filas cubriendo 67 días, medido
+        # contra la API). Con 44 la prueba daba 79 días de cobertura y no
+        # habría detectado una caída por debajo del mínimo de negocio.
+        #
+        # Se fija la densidad MÁS ALTA observada, no la media ni la última:
+        # lo que estrecha la ventana es que se publique más, así que el caso
+        # que hay que resistir es el de más volumen (AGENTS.md 40.4).
+        observed_daily_volume = 54
         minimum_required_days = 60
         covered_days = (
             APP["BDNS_LATEST_MAX_PAGES"] * APP["BDNS_PAGE_SIZE"] / observed_daily_volume
@@ -1004,22 +1080,10 @@ class IdentityAndFilterTests(unittest.TestCase):
             "2026-08-14T12:00:00",
         )
 
-    def test_candidate_inventory_is_persisted_inside_no_claude_audit_diagnostics(self):
-        inventory = {"schema_version": 1, "count": 1, "items": [{"title": "Call"}]}
-        globals_dict = APP["save_discovery_audit"].__globals__
-        with tempfile.TemporaryDirectory() as temporary:
-            audit_path = Path(temporary) / "audit.json"
-            replacements = {
-                "AUDIT_FILE": str(audit_path),
-                "RUN_DIAGNOSTICS": {"candidate_inventory": inventory},
-                "DISCOVERY_AUDIT": [],
-                "COVERAGE_WATCH_RESULTS": [],
-            }
-            with mock.patch.dict(globals_dict, replacements):
-                APP["save_discovery_audit"]("2026-08-11T00:00:00+00:00", "completed_no_claude")
-            payload = json.loads(audit_path.read_text(encoding="utf-8"))
-        stored = payload["runs"][-1]["diagnostics"]["candidate_inventory"]
-        self.assertEqual(stored, inventory)
+    # La persistencia del inventario de candidatas se prueba ahora en
+    # tests/test_grant_radar_audit.py, con import estándar: save_discovery_audit()
+    # vive en grant_radar/audit.py desde el 31/08/2026 y recibe la ruta como
+    # parámetro, así que ya no hace falta inyectar AUDIT_FILE en __globals__.
 
     def test_claude_safety_preflight_enforces_candidate_and_cost_limits(self):
         # 106/107 desde la recalibración del 20/08/2026 (antes 142/143, con un
@@ -1375,7 +1439,8 @@ class BdnsHoldPilotTests(unittest.TestCase):
             }]
         }
         result = APP["resolve_hold_deterministically"](
-            {}, "active_status_unverified", evidence
+            {}, "active_status_unverified", evidence,
+            APP["_bdns_intrinsic_exclusion"],
         )
         self.assertEqual(result["decision"], "retain")
         self.assertEqual(result["facts"]["deadline_date"], "2026-09-30")
@@ -1388,7 +1453,8 @@ class BdnsHoldPilotTests(unittest.TestCase):
             }]
         }
         result = APP["resolve_hold_deterministically"](
-            {}, "active_status_unverified", evidence
+            {}, "active_status_unverified", evidence,
+            APP["_bdns_intrinsic_exclusion"],
         )
         self.assertEqual(result["decision"], "unresolved")
 
@@ -1403,6 +1469,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
             {"title": "Programa de ahorro energético"},
             "territorial_eligibility_unverified",
             evidence,
+            APP["_bdns_intrinsic_exclusion"],
         )
         self.assertEqual(result["decision"], "reject")
         self.assertEqual(result["reason_code"], "explicit_non_industrial_scope")
@@ -1425,6 +1492,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
             {"title": "Ayuda para iniciativas de investigación"},
             "territorial_eligibility_unverified",
             evidence,
+            APP["_bdns_intrinsic_exclusion"],
         )
         self.assertEqual((result["decision"], result["reason_code"]), (
             "reject", "explicit_non_industrial_scope"
@@ -1441,6 +1509,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
             {"title": "Eficiencia energética para empresas"},
             "territorial_eligibility_unverified",
             evidence,
+            APP["_bdns_intrinsic_exclusion"],
         )
         self.assertEqual(result["decision"], "unresolved")
 
@@ -1455,6 +1524,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
             {"title": "Programa de innovación"},
             "active_status_unverified",
             evidence,
+            APP["_bdns_intrinsic_exclusion"],
         )
         self.assertEqual((result["decision"], result["reason_code"]), (
             "reject", "not_open_call"
@@ -1614,7 +1684,8 @@ class BdnsHoldPilotTests(unittest.TestCase):
             "facts": {"consortium_participation": "yes"},
         }
         updated, outcome = APP["apply_verified_bdns_hold_resolution"](
-            conv, "consortium_role_unverified", resolution
+            conv, "consortium_role_unverified", resolution,
+            APP["deterministic_prefilter"],
         )
         self.assertTrue(updated["bdns_verified_consortium_participation"])
         self.assertEqual(outcome["decision"], "retain")
@@ -1673,7 +1744,8 @@ class BdnsHoldPilotTests(unittest.TestCase):
             "facts": {"call_status": "open", "deadline_date": "2099-09-30"},
         }
         updated, outcome = APP["apply_verified_bdns_hold_resolution"](
-            conv, "active_status_unverified", resolution
+            conv, "active_status_unverified", resolution,
+            APP["deterministic_prefilter"],
         )
         self.assertEqual(updated["deadline_date"], "2099-09-30")
         self.assertEqual(updated["bdns_active_status"], "confirmed_deadline")
@@ -1703,7 +1775,8 @@ class BdnsHoldPilotTests(unittest.TestCase):
             },
         }
         updated, outcome = APP["apply_verified_bdns_hold_resolution"](
-            conv, "territorial_eligibility_unverified", resolution
+            conv, "territorial_eligibility_unverified", resolution,
+            APP["deterministic_prefilter"],
         )
         self.assertEqual(
             updated["bdns_territorial_requirement"], "project_location_only"
@@ -1718,6 +1791,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
             {"source": "BDNS", "bdns_id": "900100"},
             "consortium_role_unverified",
             {"decision": "unresolved", "reason_code": "insufficient_evidence"},
+            APP["deterministic_prefilter"],
         )
         self.assertEqual(updated["bdns_id"], "900100")
         self.assertEqual(outcome["decision"], "ambiguous")
@@ -1739,7 +1813,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
         evidence = {"documents": [{
             "text": "La actuación consiste en un programa de empleo y acciones formativas."
         }]}
-        _, outcome, resolved_by = APP["replay_bdns_hold_item"](conv, old, evidence)
+        _, outcome, resolved_by = APP["replay_bdns_hold_item"](conv, old, evidence, APP["deterministic_prefilter"], APP["_bdns_intrinsic_exclusion"])
         self.assertEqual(outcome["decision"], "reject")
         self.assertEqual(outcome["reason_code"], "explicit_non_industrial_scope")
         self.assertEqual(resolved_by, "current_document_rules")
@@ -1754,6 +1828,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
             {"source": "BDNS", "bdns_id": "900101"},
             "territorial_eligibility_unverified",
             resolution,
+            APP["deterministic_prefilter"],
         )
         self.assertEqual(outcome["decision"], "reject")
         self.assertEqual(outcome["reason_code"], "verified_existing_establishment")
@@ -1805,7 +1880,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
         with mock.patch.dict(globals_dict, {
             "retrieve_bdns_hold_evidence": mock.Mock(return_value=evidence),
         }):
-            result = APP["resolve_bdns_holds_for_pipeline"]([hold])
+            result = APP["resolve_bdns_holds_for_pipeline"]([hold], APP["_bdns_intrinsic_exclusion"], APP["deterministic_prefilter"])
         self.assertEqual(result["counts"], {"ambiguous": 1})
         self.assertEqual(result["rejected"], [])
         self.assertEqual(len(result["retained"]), 1)
@@ -1833,7 +1908,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
         with mock.patch.dict(globals_dict, {
             "retrieve_bdns_hold_evidence": mock.Mock(return_value=evidence),
         }):
-            result = APP["resolve_bdns_holds_for_pipeline"]([hold])
+            result = APP["resolve_bdns_holds_for_pipeline"]([hold], APP["_bdns_intrinsic_exclusion"], APP["deterministic_prefilter"])
         self.assertEqual(result["counts"], {"reject": 1})
         self.assertEqual(result["retained"], [])
         self.assertEqual(
@@ -1888,7 +1963,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
                 "analyze_bdns_hold_with_claude": forbidden_ai,
             }
             with mock.patch.dict(globals_dict, replacements):
-                report = APP["run_bdns_hold_pilot"]([hold], 1)
+                report = APP["run_bdns_hold_pilot"]([hold], 1, "clave-no-usada-el-piloto-no-llama", APP["_bdns_intrinsic_exclusion"])
             self.assertEqual(report["counts"], {"retain": 1})
             self.assertEqual(report["usage"]["completed_api_calls"], 0)
             self.assertTrue(Path(report_path).exists())
@@ -2945,7 +3020,9 @@ class StructuredCallRetryTests(unittest.TestCase):
     def test_extraction_has_more_room_than_evaluation(self):
         # La extracción es la etapa que recibió la evidencia enriquecida y la
         # que se truncó en producción: necesita más techo, no menos.
-        fuente = (ROOT / "Grant-Radar-prueba.py").read_text(encoding="utf-8")
+        # Se lee grant_radar/analysis.py, donde vive la capa desde el
+        # 31/08/2026 (AGENTS.md, sección 48).
+        fuente = (ROOT / "grant_radar" / "analysis.py").read_text(encoding="utf-8")
         self.assertIn("extraction_prompt, 5000,", fuente)
         self.assertIn("evaluation_prompt, 3000,", fuente)
 

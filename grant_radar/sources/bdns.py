@@ -48,6 +48,7 @@ from grant_radar.parsing_helpers import (
     _fold_text,
     _parse_flexible_date,
     _signed_days_until,
+    _web_url_or_empty,
     select_evidence_excerpt,
 )
 from grant_radar.runtime_state import SOURCE_RUNTIME_METADATA
@@ -62,10 +63,17 @@ BDNS_PUBLIC_BASE = "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatoria
 BDNS_PAGE_SIZE = 100
 # Ventana cubierta por `convocatorias/ultimas` (BDNS), TODAS las
 # administraciones (la API no filtra por región en servidor — ver AGENTS.md
-# sección 26). Medición real 17-18/08/2026: ~44 filas/día nacional.
-# 35 páginas × 100 ≈ 79 días, colchón sobre el mínimo de negocio de 60 días.
-# Si una medición posterior muestra una densidad muy distinta, recalibrar con
-# una nueva medición real, no mover la cifra a ciegas.
+# sección 26). La ventana es deslizante: la estrecha el volumen publicado, no
+# el tiempo. Mediciones reales de 35 páginas × 100 filas:
+#
+#   17-18/08/2026   ~44 filas/día   ≈ 79 días
+#   20/08/2026      ~54 filas/día   ≈ 65 días   (AGENTS.md 40.4)
+#   31/08/2026      ~52 filas/día      67 días  (medido contra la API)
+#
+# Es decir, entre 5 y 7 días de colchón sobre el mínimo de negocio de 60, no
+# los 19 que sugería la primera medición. Si una medición posterior muestra
+# una densidad mayor, subir páginas —y actualizar la prueba de regresión, que
+# fija la densidad más alta observada—, nunca mover la cifra a ciegas.
 BDNS_LATEST_MAX_PAGES = 35
 BDNS_SEARCH_GROUPS = (
     "industria eficiencia energia descarbonizacion",
@@ -408,7 +416,13 @@ def _bdns_detail_to_raw(
         "open_date": open_date,
         "fecha_sin_confirmar": not bool(deadline_date) or deadline_estimated,
         "budget": budget,
-        "url": str(detail.get("sedeElectronica") or f"{BDNS_PUBLIC_BASE}/{bdns_id}"),
+        # La sede electronica es texto libre en la API y a veces trae una
+        # frase entera, no una URL (AGENTS.md, punto 31): si no es
+        # navegable se publica la ficha oficial de BDNS, que siempre lo es.
+        "url": (
+            _web_url_or_empty(detail.get("sedeElectronica"))
+            or f"{BDNS_PUBLIC_BASE}/{bdns_id}"
+        ),
         "keywords_found": keyword_match(f"{title} {description}"),
         "org": org,
         "source_type": "API REST SNPSAP",

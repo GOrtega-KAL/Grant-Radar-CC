@@ -26,7 +26,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from grant_radar.http_client import HTTP_USER_AGENT
-from grant_radar.parsing_helpers import _fold_text, _levenshtein
+from grant_radar.parsing_helpers import _fold_text, _levenshtein, _web_url_or_empty
 from grant_radar.runtime_state import RUN_DIAGNOSTICS, SOURCE_RUNTIME_METADATA
 from grant_radar.tech_taxonomy import TECH_TAGS, _compat_tags_for
 
@@ -352,10 +352,19 @@ def _normalize_public_url(url: str) -> str:
 
     No intenta reparar rutas, buscar destinos alternativos ni convertir correos
     electronicos: conserva el valor original cuando no es un host web claro.
+
+    Lo que si hace, desde el 31/08/2026, es no publicar prosa como si fuera un
+    enlace: si el valor ya trae esquema, solo sale del pipeline cuando es una
+    URL http(s) de verdad (AGENTS.md, punto 31 del backlog). Una convocatoria
+    publicaba como `url` una frase entera con el esquema mal escrito, y el
+    campo viajaba asi al JSON y al export. El arreglo de fondo esta en el
+    conector; esta es la red por si otra fuente hace lo mismo.
     """
     value = str(url or "").strip()
-    if not value or re.match(r"^[a-z][a-z0-9+.-]*://", value, re.I):
+    if not value:
         return value
+    if re.match(r"^[a-z][a-z0-9+.-]*://", value, re.I):
+        return _web_url_or_empty(value)
     if "@" in value or re.search(r"\s", value):
         return value
     if re.match(

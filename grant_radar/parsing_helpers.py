@@ -503,3 +503,27 @@ def _es_titulo_valido(title: str) -> bool:
         if re.match(patron, title_lower):
             return False
     return True
+
+
+def _web_url_or_empty(value: str) -> str:
+    """La URL http(s) con la que empieza `value`, o cadena vacía.
+
+    Nace de una convocatoria real (BDNS 922117, certámenes feriales de Aragón):
+    su campo `sedeElectronica` no traía una URL sino una frase entera, y con el
+    esquema mal escrito —«hhtp://www.aragon.es/tramites), incluyendo en el
+    buscador de trámites el procedimiento número 11810…»—, que se publicó tal
+    cual en el JSON del dashboard (AGENTS.md, punto 31 del backlog).
+
+    Dos reglas, las dos conservadoras: una URL no lleva espacios, así que se
+    corta en el primero; y un esquema que no es http ni https no es un destino
+    navegable, por muy parecido que sea al bueno. No repara el esquema: `hhtp`
+    podría ser un `http` mal tecleado, pero adivinarlo es inventarse un
+    destino, y para eso ya existe el enlace oficial de respaldo de cada fuente.
+    """
+    texto = str(value or "").strip()
+    if not texto:
+        return ""
+    primera = texto.split()[0]
+    if not re.match(r"^https?://[^\s/?#]+", primera, re.IGNORECASE):
+        return ""
+    return primera
