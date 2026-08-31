@@ -1166,8 +1166,19 @@ refactorización de hoy.
 
 Estado final de la sesión: **575 pruebas** en verde (471 al empezar el día) y
 una lista de pendientes que por primera vez cabe en una línea: una prueba
-dirigida de pago —tres convocatorias, unos 0,09 USD— y después la ejecución
-completa.
+dirigida de pago —tres convocatorias, unos 0,09 USD—, revisar en ella que el
+presupuesto se extrae bien, y después la ejecución completa. El comando y qué
+mirar en cada convocatoria están en `AGENTS.md` 53.2.
+
+**Una decisión del usuario que cierra un frente de este documento.** Sobre el
+TRL ausente en 42 de los 50 análisis de BDNS: no se persigue. En Horizon, donde
+se anuncia de forma visible, se recoge; en BDNS, donde no se anuncia, no se
+recoge. Es una ausencia real de la fuente y no tiene importancia para el uso de
+la herramienta. Conviene que conste en esta evaluación porque el punto 2.4
+invita a leer cualquier campo ausente como fragilidad, y no todos lo son:
+**distinguir el dato que la fuente no da del dato que no sabemos leer es parte
+del trabajo**, y hoy se ha hecho en los dos sentidos —el presupuesto de Horizon
+sí estaba y se rescató; el TRL de BDNS no está y se deja—.
 
 ---
 

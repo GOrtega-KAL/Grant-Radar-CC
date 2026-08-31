@@ -7,18 +7,61 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
-> **Arranque en frío: AGENTS.md secciones 48 a 52**, todas del 31/08/2026.
+> ## PRÓXIMO PASO, decidido con el usuario al cerrar el 31/08/2026
+>
+> **1. Una prueba dirigida de pago, ANTES de la ejecución completa.** Requiere
+> autorización expresa, como cualquier llamada a la API:
+>
+> ```
+> poetry run python "Grant-Radar-prueba.py" --max-claude 3 --claude-match HORIZON-CL5-2026-09-D4-08 --claude-match "Proyectos de I+D" --claude-match 919481
+> ```
+>
+> Una convocatoria de cada tipo, elegidas porque cada una comprueba una cosa
+> distinta de lo que se hizo el 31/08:
+>
+> | Coincidencia | Qué se comprueba |
+> |---|---|
+> | `HORIZON-CL5-2026-09-D4-08` | Cifras económicas (9 M€/proyecto, 18 M€ totales) y condiciones del programa leídas de los Anexos Generales |
+> | `Proyectos de I+D` (CDTI, ventanilla abierta) | Que su ficha oficial adjunta —20.015 caracteres con «Entidades beneficiarias»— llega al análisis |
+> | `919481` (BDNS, Navarra) | Que sale **no elegible** por territorio, sin pedir confirmación |
+>
+> `--max-claude` **no genera `convocatorias.json` ni publica**: guarda los
+> análisis en caché y termina, así que la prueba no toca el producto. No hace
+> falta `--force-reanalysis`: las versiones subieron, así que las tres cuentan
+> como nuevas. Coste de una prueba equivalente el 20/08: **0,09 USD**
+> (AGENTS.md 41). Es la única comprobación que falta, porque la ruta de análisis
+> solo se recorre pagando.
+>
+> **2. Revisar en esa prueba que el presupuesto se extrae bien.** Es lo más
+> reciente y lo menos rodado: comprobar que `budget_total_eur`,
+> `grant_max_eur`, `project_budget_eur` y `funding_rate_percent` dejan de estar
+> en `missing_fields` para Horizon, y que las cifras del JSON coinciden con las
+> del `budgetOverview` oficial. Detalle en AGENTS.md 52.
+>
+> **3. Solo después, la ejecución completa** (~2,07 USD), que publica todo lo
+> acumulado el 31/08.
+>
+> **Decisión cerrada sobre el TRL, para no volver a abrirla:** no hay que
+> perseguirlo. En Horizon, donde se anuncia de forma visible, se recoge; en
+> BDNS, donde no se anuncia, no se recoge. Es una ausencia real de la fuente, no
+> un fallo de extracción, y **no tiene importancia para el uso de la
+> herramienta**. Los 42/50 de BDNS sin `trl_source` no son un pendiente.
+>
+> ---
+>
+> **Arranque en frío: AGENTS.md sección 53**, que cierra la sesión del
+> 31/08/2026 y resume las cinco anteriores (48 a 52), todas del mismo día.
 > La 48 es la modularización, la 49 el producto, la 50 los Anexos Generales de
-> Horizon y la **51 es el cierre**: reutilización de lo leído y tres medidas
-> (CDTI con sus bases, humo por conector, vigilancia del producto). Cifras de
-> referencia en 48.8; backlog abierto en la sección 36.
+> Horizon, la 51 la reutilización de lo leído y tres medidas (CDTI con sus
+> bases, humo por conector, vigilancia del producto) y la 52 el presupuesto de
+> Horizon. **Cifras de referencia en 53.4**; backlog abierto en la sección 36.
 > Las secciones 44 a 47 son la sesión del 21/08 y siguen vigentes como
 > antecedente.
 >
 > **OJO CON EL COSTE:** la caché de análisis **está invalidada a propósito**
-> desde el 21/08 (perfil, evaluador y prompt) y el 31/08 se subieron otra vez
-> evaluador y prompt. La próxima ejecución completa reanaliza **las 80
-> convocatorias: ~2,05 USD**, no ~0,2. Decisión del usuario, vigente: dejar los
+> desde el 21/08 y el 31/08 se subieron cuatro veces más el evaluador, el prompt
+> y el extractor. La próxima ejecución completa reanaliza **las 81
+> convocatorias: ~2,07 USD**, no ~0,2. Decisión del usuario, vigente: dejar los
 > cambios listos y **no reanalizar hasta autorizarlo expresamente**. No lances
 > una ejecución completa sin recordarle ese importe.
 >
@@ -115,7 +158,7 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   recopilación —cuántas convocatorias esperan análisis y cuánto costaría— para
   que el panel pueda avisar. No toca el producto ni la caché de análisis.
 - Después de cualquier cambio en `Grant-Radar-prueba.py` o `grant_radar/`,
-  en este orden (el detalle en AGENTS.md 43.3; las cifras, en **48.8**):
+  en este orden (el detalle en AGENTS.md 43.3; las cifras, en **53.4**):
   1. `poetry run python -m unittest tests.test_grant_radar_script_names`
      —un segundo, señala módulo y nombre exactos si falta un import. Desde el
      31/08 comprueba también cada módulo del paquete, no solo el script;
@@ -125,7 +168,7 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
      bajo carga porque conduce Chromium de verdad: repetir antes de investigar
      (AGENTS.md 44.7, nota sobre pruebas intermitentes);
   4. `poetry run python "Grant-Radar-prueba.py" --no-claude` al cerrar la
-     ronda, comparando contra los números de referencia de AGENTS.md 48.8:
+     ronda, comparando contra los números de referencia de AGENTS.md 53.4:
      916 detectadas, **81 vigentes** (31/08/2026). Ojo: ese recuento **ya no es un invariante fijo**, la
      ventana deslizante de BDNS lo mueve por causas externas; ante un desvío,
      mirar salud de fuentes y registros de exclusión antes que el código.
@@ -169,8 +212,8 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l` el 31/08/2026: **2.140 líneas en el
-script y 11.660 en los 38 módulos del paquete**. El script tenía 9.199 líneas
+`import`). Recuento verificado con `wc -l` el 31/08/2026: **2.203 líneas en el
+script y 12.408 en los 40 módulos del paquete**. El script tenía 9.199 líneas
 antes de las nueve rondas del 19/08/2026, 4.086 al empezar el 31/08, y hoy
 conserva **solo ocho funciones**: las seis de la matriz de reglas previa a
 Claude (526 líneas) y `run_pipeline()` con su `parse_args()` (912). (La cifra "8.835" de una nota anterior de

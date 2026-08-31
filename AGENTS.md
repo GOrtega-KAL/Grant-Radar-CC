@@ -2463,7 +2463,7 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
 | 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
 | 34 | Programar la recopilación `--no-claude` diaria en el Programador de tareas de Windows | Sección 47.6 tiene el comando. **Es una acción del usuario en su equipo**, no del agente: queda anotada para no darla por hecha |
-| 37 | Prueba dirigida de pago antes de la ejecución completa: `--max-claude 3` con una convocatoria de Horizon, una de CDTI y una territorial | Sección 52.4. Es la única prueba que falta, porque la ruta de análisis solo se recorre pagando. Coste medido de una prueba equivalente el 20/08: 0,09 USD (sección 41). **Requiere autorización expresa**, como cualquier llamada a la API |
+| 37 | **Próximo paso**: prueba dirigida de pago y, en ella, revisión de la extracción de presupuestos | Sección **53.2**, que trae el comando exacto, las tres convocatorias y qué mirar en cada una. Es la única prueba que falta, porque la ruta de análisis solo se recorre pagando; 0,09 USD en la prueba equivalente del 20/08. **Requiere autorización expresa** |
 
 El 429 del 19/08/2026 tuvo cooldown de minutos: una sonda de una sola petición,
 7 minutos después, devolvió la página completa. No impone restricción horaria,
@@ -2514,6 +2514,12 @@ solo detecta la ejecución real.
 | 14 | Rotación de credenciales si `API KEYs.txt` estuvo en copias compartidas fuera de control | `SUGERENCIAS.MD` 3.1 punto 4; solo el usuario puede confirmarlo |
 | 25 | `convocatorias.json` está en `.gitignore` pero **versionado en el remoto**: lo sube el propio pipeline por la API de Contents de GitHub, y `.gitignore` no afecta a lo ya rastreado. Consecuencia práctica: cada regeneración local aparece en `git status` y un `push` puede requerir `git rebase origin/main` primero | Sección 43.4. Es inherente a publicar desde la raíz para GitHub Pages; cambiarlo es decisión del usuario |
 | 26 | Las «77 vigentes» dejaron de ser un invariante fijo: la ventana deslizante de BDNS mueve el recuento por causas externas (77 → 76 el 20/08). Conviene verificar con tolerancia y comprobación de causa, no con igualdad exacta | Secciones 40.3 y 40.4 |
+
+### 36.6bis. Decisiones cerradas que no hay que reabrir
+
+| Qué | Decisión |
+|---|---|
+| El TRL ausente en BDNS (42/50 análisis sin `trl_source`) | **No se persigue.** En Horizon, donde se anuncia de forma visible, se recoge; en BDNS, donde no se anuncia, no se recoge. Es una ausencia real de la fuente, no un fallo de extracción, y no tiene importancia para el uso de la herramienta (usuario, 31/08/2026; sección 53.3) |
 
 ### 36.7. Puntos ya cerrados
 
@@ -3773,6 +3779,10 @@ cambio de prompt, y pagar dos veces la misma invalidación no tiene sentido.
 
 ## 48. Terminar la modularización y agrupar los cambios de prompt, a 31/08/2026
 
+> Nota al arrancar en frío: **la sección de partida vigente es la 53**, que
+> resume las cinco de hoy y deja escrito el próximo paso. Esta cuenta la
+> primera de ellas.
+
 Diez días sin tocar el proyecto. La sesión arranca con una decisión del usuario
 que ordena todo lo demás: **no reanalizar dos veces**. Primero se termina la
 estructura y se revisa la capa de análisis; todo lo que invalide caché se
@@ -4528,3 +4538,94 @@ Lo que **no** conviene seguir persiguiendo antes de pagar: el TRL de BDNS
 bases españolas, y `eligible_actions` en BDNS (30/50) depende de que el hold
 haya descargado las bases, que ya tiene su propio mecanismo. Ahí no hay un dato
 en la mano sin usar, que es lo que sí había en Horizon.
+
+## 53. Cierre de la sesión del 31/08/2026 y punto de partida para la siguiente
+
+**Esta es la sección de arranque en frío vigente.** Sustituye a la 48 como punto
+de partida. El detalle está en las secciones 48 a 52; esto es lo que hace falta
+para retomar sin releerlas.
+
+### 53.1. Qué cambió hoy
+
+| | Al empezar el 31/08 | Al cerrar |
+|---|---|---|
+| `Grant-Radar-prueba.py` | 4.086 líneas | **2.203** |
+| Paquete `grant_radar/` | 35 módulos | **40 módulos** |
+| Pruebas | 471 | **575** |
+| Puntos abiertos del backlog | 32 | **28** |
+| Producto publicado | JSON del 21/08 | el mismo: **no se ha pagado nada** |
+
+Cinco rondas de estructura (48), tres encargos de producto (49), los Anexos
+Generales de Horizon (50), la reutilización de lo leído y tres medidas nuevas
+(51) y el presupuesto de Horizon (52).
+
+### 53.2. El próximo paso, decidido con el usuario
+
+**1. Prueba dirigida de pago, antes de la completa.** Requiere autorización
+expresa:
+
+```
+poetry run python "Grant-Radar-prueba.py" --max-claude 3 --claude-match HORIZON-CL5-2026-09-D4-08 --claude-match "Proyectos de I+D" --claude-match 919481
+```
+
+Tres convocatorias, una por cada cosa que hay que comprobar: el topic de Horizon
+para las cifras y las condiciones del programa, la ficha de CDTI de ventanilla
+abierta para su documento oficial recién adjuntado, y la BDNS 919481 (Navarra)
+para que salga «no elegible» por territorio sin pedir confirmación.
+`--max-claude` no publica ni genera `convocatorias.json`. Coste de una prueba
+equivalente el 20/08: 0,09 USD (sección 41).
+
+**2. En esa misma prueba, revisar la extracción de presupuestos.** Es lo último
+que se tocó y lo menos rodado. Qué mirar, en concreto:
+
+- que `budget_total_eur`, `grant_max_eur`, `project_budget_eur` y
+  `funding_rate_percent` **dejen de aparecer en `missing_fields`** para la
+  convocatoria de Horizon, que es donde faltaban en 19 de 19;
+- que las cifras del análisis **coincidan** con las del `budgetOverview`
+  oficial: para `HORIZON-CL5-2026-09-D4-08`, 9.000.000 € por proyecto,
+  18.000.000 € en total y 2 proyectos previstos;
+- que no se haya colado el presupuesto de un topic hermano, que es el error que
+  `_horizon_budget_facts()` evita a propósito y el único que produciría
+  desinformación en vez de ausencia (sección 52.2).
+
+**3. Solo después, la ejecución completa** (~2,07 USD sobre 81 convocatorias),
+que publica de golpe todo lo acumulado el 31/08.
+
+### 53.3. Decisión cerrada: el TRL no se persigue
+
+Confirmado por el usuario al cerrar la sesión, y se anota para que ninguna
+sesión futura lo reabra como si fuera un pendiente:
+
+> En Horizon, donde el TRL se anuncia de forma visible, se recoge. En BDNS,
+> donde no se anuncia, no se recoge. **Es una ausencia real de la fuente, no un
+> fallo de extracción, y no tiene importancia para el uso de la herramienta.**
+
+Los 42 de 50 análisis de BDNS sin `trl_source` no son un hueco que tapar. Si
+alguna vez vuelve a aparecer en un recuento de campos ausentes, es ruido
+esperable: pasar de largo sin darle más importancia.
+
+### 53.4. Cómo verificar cualquier cambio, en orden
+
+Sigue vigente el orden de 43.3, con las cifras de hoy:
+
+1. `poetry run python -m unittest tests.test_grant_radar_script_names` —siempre
+   el primero; desde el 31/08 comprueba también cada módulo del paquete.
+2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`.
+3. `poetry run python -m unittest discover -s tests` —**575 pruebas**.
+4. `poetry run python "Grant-Radar-prueba.py" --no-claude`, contra la referencia
+   del 31/08/2026:
+
+   > 916 detectadas · 34 duplicadas fusionadas · **81 vigentes** (BDNS 49,
+   > Horizon 20, CDTI 5, ECCP 4, EEN 4, IDAE 1, BOE 1, BOA 0) · prefiltro común
+   > `retain=34, ambiguous=7, hold_manual=75, reject=800` · previsión 81
+   > análisis, 2,0736 USD.
+
+   Ese recuento **no es un invariante fijo**: la ventana deslizante de BDNS lo
+   mueve por causas externas. Ante un desvío, mirar salud de fuentes y registros
+   de exclusión antes que el código (43.3).
+
+### 53.5. Lo que queda en el script, y por qué
+
+Solo dos cosas, las dos por decisión: la **matriz de reglas** previa a Claude
+(526 líneas, punto 8 del backlog, sesión propia y no encadenada a otra tarea sin
+que el usuario lo pida) y **`run_pipeline()`**, que va el último por definición.
