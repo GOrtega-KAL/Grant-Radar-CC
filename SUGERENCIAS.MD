@@ -1057,13 +1057,22 @@ Generales del programa de trabajo. El modelo declara el dato ausente, que es lo
 correcto según su prompt. Resolverlo exige inyectar hechos de programa
 versionados, como ya se hace con el bloque oficial de BDNS, y eso crea otro
 catálogo mantenido a mano —los dos que existen han caducado en silencio—. Queda
-como punto 35 del backlog. **El usuario descartó esa vía y propuso otra mejor**:
+como punto 35 del backlog, **que se cerró el mismo día**. El usuario descartó
+esa vía y propuso otra mejor:
 que el código busque y lea el propio anexo, para que un cambio de programa no
 exija tocar código. Medido el mismo día (AGENTS.md 49.7): la API que ya
 consultamos entrega el enlace al anexo de la edición correcta, el PDF son 46
 páginas que se leen en dos segundos, y las tres secciones de elegibilidad
 existen con título propio. La lección para este documento es del punto 2.4: la
 alternativa a un catálogo que envejece no es mantenerlo mejor, es no tenerlo.
+
+Implementado el mismo día (AGENTS.md 50): el conector lee los Anexos Generales
+que el propio topic enlaza, una vez por edición, y envía tres extractos de 3.400
+caracteres. Verificado en vivo con 30 convocatorias. **Es el primer sitio del
+proyecto donde un dato que la fuente no publica se resuelve leyendo el documento
+que sí lo contiene, en vez de copiándolo a un JSON local**, y conviene que sea
+el criterio por defecto de aquí en adelante: quedan 3 convocatorias de CDTI con
+el mismo problema y la misma solución disponible (punto 36).
 
 Estado tras la ronda: **507 pruebas** en verde (493 antes) y un backlog de **29
 puntos abiertos**, uno más que hace un rato: no se cierra ninguno y se abre el

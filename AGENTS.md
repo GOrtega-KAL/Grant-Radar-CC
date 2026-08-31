@@ -2464,7 +2464,7 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
 | 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
 | 34 | Programar la recopilación `--no-claude` diaria en el Programador de tareas de Windows | Sección 47.6 tiene el comando. **Es una acción del usuario en su equipo**, no del agente: queda anotada para no darla por hecha |
-| 35 | La elegibilidad de Horizon Europe no está en el topic que leemos: 14 de las 17 convocatorias que siguen «por confirmar» lo están por eso | Secciones 49.3 y **49.7, que ya midió la viabilidad**: la SEDIA API entrega `topicConditions` y `typesOfAction`, que el conector no lee, y ahí viene el enlace a los Anexos Generales **de la edición del propio topic**. El documento se descarga en 0,7 s y sus tres secciones de elegibilidad se localizan por su título. No hace falta catálogo escrito a mano. Pendiente de implementar; requiere subir versiones y entra en la próxima reanalisis |
+| 36 | CDTI sigue sin condiciones de elegibilidad: 3 de las convocatorias «por confirmar» son suyas | Sección 50. Le falta el equivalente a lo que Horizon ya tiene: leer las bases reguladoras oficiales que su propio calendario enlaza, con `programme_annexes.py` como precedente. Entra en la misma reanalisis que el resto |
 
 El 429 del 19/08/2026 tuvo cooldown de minutos: una sonda de una sola petición,
 7 minutos después, devolvió la página completa. No impone restricción horaria,
@@ -2529,6 +2529,7 @@ frío. No hay que buscarlos en las tablas de arriba: ya no están.
 | 24 | Endurecer la instrucción contra presunciones en `objeto_y_actuaciones` | Sección 48.5: la frase prohíbe ahora la fórmula («se presume», «previsiblemente»…), no solo la invención. Agrupado con la caché ya invalidada, así que no costó nada |
 | 31 | Una convocatoria publicaba como URL una frase entera con el esquema mal escrito | Sección 48.6: `_web_url_or_empty()` en el conector y en la publicación |
 | 33 | `extraction_system` era una variable local que ninguna prueba podía mirar | Sección 48.3: constante de módulo `CLAUDE_EXTRACTION_SYSTEM_PROMPT` con siete pruebas de integridad |
+| 35 | La elegibilidad de Horizon no estaba en el topic que leemos | Sección 50: el conector lee los Anexos Generales que el propio topic enlaza, una vez por edición, y envía tres extractos de 3.400 caracteres. Sin catálogo que mantener |
 
 ## 37. Decimotercera ronda a 19/08/2026: salida pública, publicación, selección y cobertura
 
@@ -4215,3 +4216,99 @@ subir las versiones correspondientes, lo que obliga a que entre en la misma
 reanalisis que el resto. También conviene decidir qué se hace cuando el enlace
 falle: lo coherente con el resto del proyecto es dejar el dato ausente y
 declararlo, nunca suponerlo.
+
+## 50. Horizon deja de llegar sin elegibilidad: se leen sus Anexos Generales, a 31/08/2026
+
+Implementación de lo que la sección 49.7 midió. La decisión de fondo es del
+usuario y conviene dejarla escrita porque cambia el criterio del proyecto: ante
+un dato que la fuente no publica, **no se teclea el dato, se busca el documento
+que lo contiene**.
+
+### 50.1. Lo que había y lo que hacía falta
+
+De las 17 convocatorias que seguían «por confirmar» tras el arreglo territorial,
+14 eran de Horizon Europe y CDTI. La causa no era nuestra: el texto de un topic
+son 3.000 caracteres de objetivos y alcance, y quién puede solicitar está en los
+Anexos Generales del programa de trabajo, comunes a todos los topics de esa
+edición.
+
+La propuesta inicial —un JSON con las reglas del programa escritas a mano— la
+descartó el usuario con un argumento mejor: que el código busque el anexo, para
+que un cambio de programa no obligue a tocar código. Y el proyecto le da la
+razón dos veces: los dos catálogos tecleados que existen han caducado en
+silencio (seis URLs de CDTI en 404 durante cuatro meses, sección 44.1; el
+catálogo de BOA con «última revisión 2026-04-09», punto 28).
+
+### 50.2. Cómo se resuelve, en tres pasos que ya no envejecen
+
+**1. El enlace lo da la propia convocatoria.** La SEDIA API entrega por cada
+topic dos campos que el conector **no leía**: `topicConditions` (10 KB de HTML
+con el bloque «General conditions» y 32 enlaces) y `typesOfAction`. Entre esos
+enlaces está el de los Anexos Generales de la edición del topic:
+`…/wp-call/2026-2027/wp-15-general-annexes_horizon-2026-2027_en.pdf`. Un topic
+de 2028 traerá el suyo, y esto leerá el documento nuevo sin que nadie lo toque.
+
+**2. El documento se lee una vez por edición.** 557 KB, 46 páginas: 0,7 s de
+descarga y 1,4 s de extracción con el `pypdf` que ya era dependencia. El módulo
+nuevo `grant_radar/programme_annexes.py` recibe el cliente HTTP y el extractor
+documental como parámetros —así se prueba sin red y sin PDF— y guarda un memo
+por ejecución. **Medido en vivo: 30 convocatorias, 30 con condiciones, una sola
+descarga.**
+
+**3. Se envían tres extractos, no el documento.** El anexo entero son 128.000
+caracteres, unos 33.000 tokens por llamada: mandarlo sería tirar el dinero. Se
+localizan por su encabezado literal las tres secciones que deciden y se acotan:
+
+| Sección | Qué aporta | Límite |
+|---|---|---|
+| `Entities eligible to participate` | Cualquier entidad jurídica puede participar | 700 |
+| `Entities eligible for funding` | La lista de países financiables, España incluida | 1.500 |
+| `Consortium composition` | Tres entidades independientes de tres países distintos | 1.200 |
+
+Total: **3.400 caracteres, unos 850 tokens por convocatoria**. Con 30 topics,
+unos 0,03 USD por ejecución completa frente a los ~2 USD que ya cuesta.
+
+Si algo falla —no hay enlace, el PDF no responde, el texto no trae las
+secciones— se devuelve vacío y el dato queda ausente. Nunca se supone: es la
+misma disciplina que el resto del pipeline, y hay prueba de cada caso.
+
+### 50.3. Cómo llega a Haiku
+
+Las condiciones viajan dentro del bloque `<official_structured_data>`, que el
+prompt ya trata como evidencia de primer orden, pero **etiquetadas como lo que
+son**: `condiciones_generales_del_programa`, con el documento del que se
+leyeron, más `tipo_de_accion`. La instrucción nueva dice que aplican salvo que
+el texto de la convocatoria diga otra cosa —que es literalmente lo que el propio
+anexo establece— y que con ellas hay que rellenar `eligible_entity_types`,
+`eligible_geographies` y `consortium_required` en vez de declararlos ausentes.
+
+`tipo_de_accion` no es un adorno: de las 30 convocatorias de hoy, 19 son
+Innovation Actions, 5 RIA, 3 JU RIA, 2 CSA y 1 compra precomercial, y **el
+mínimo de socios depende de esa modalidad**. Una CSA no exige consorcio de tres,
+y hasta hoy el modelo no tenía forma de saber cuál era cuál.
+
+Versiones subidas: extractor a `facts-2026-08-v8-programme-annexes` y prompt a
+`2026-08-v13-programme-annexes`. La caché ya estaba invalidada, así que este
+cambio entra en la misma reanalisis pendiente sin coste adicional.
+
+### 50.4. Un límite conocido, escrito para no descubrirlo dos veces
+
+`source_hash()` no incluye el bloque oficial —ni el de BDNS ni este—, así que si
+la Comisión corrigiera los anexos **dentro de la misma edición**, una
+convocatoria ya analizada no se reanalizaría por sí sola. En la práctica pesa
+poco: una edición nueva trae topics nuevos, con identificador, título y
+descripción distintos, y esos sí cambian la huella. Ampliar `source_hash()`
+invalidaría la caché entera de todas las fuentes, que es un precio mucho mayor
+que el riesgo. Queda anotado, no arreglado.
+
+### 50.5. Verificación
+
+**523 pruebas** en verde (507 antes). Las 16 nuevas: 14 del módulo —incluido
+que el enlace sale del topic, que el mínimo de consorcio sobrevive entero, que
+un documento inalcanzable deja el dato ausente y que no se descarga dos veces— y
+2 de que las condiciones llegan al payload con su documento y no se cuela un
+bloque vacío cuando no las hay.
+
+Ejecución del conector en vivo: 30 de 30 con condiciones, un solo documento
+leído, 94 s. Ejecución `--no-claude` completa: código 0 y las cifras de
+referencia intactas.

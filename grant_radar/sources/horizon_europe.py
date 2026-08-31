@@ -25,7 +25,10 @@ import requests
 from bs4 import BeautifulSoup
 
 from grant_radar.audit import audit_exclusion
+from grant_radar.documents import _hold_document_text
+from grant_radar.http_client import _http_get
 from grant_radar.parsing_helpers import select_evidence_excerpt
+from grant_radar.programme_annexes import fetch_programme_eligibility
 from grant_radar.runtime_state import SOURCE_RUNTIME_METADATA
 from grant_radar.tech_taxonomy import is_relevant, keyword_match
 
@@ -84,6 +87,9 @@ def fetch_horizon_europe() -> list:
     """
     log.info("Consultando Horizon Europe (SEDIA API oficial)...")
     results = []
+    # Una descarga de los Anexos Generales por edición del programa de trabajo,
+    # compartida por todos los topics de esta ejecución.
+    programme_annexes_cache: dict = {}
 
     endpoint = "https://api.tech.ec.europa.eu/search-api/prod/rest/search"
     all_docs = []
@@ -341,6 +347,19 @@ def fetch_horizon_europe() -> list:
             "keywords_found":       keyword_match(combined),
             "org":                  "Comisión Europea / Horizon Europe",
             "source_type":          "SEDIA API",
+            # El tipo de acción decide qué regla de consorcio aplica (RIA/IA
+            # exigen tres socios; una CSA no), y la API lo entrega desde
+            # siempre. Se publicaba sin él.
+            "types_of_action":      _sedia_meta(item, "typesOfAction"),
+            # Quién puede solicitar no está en el topic: está en los Anexos
+            # Generales del programa, que el propio topic enlaza. Se leen una
+            # vez por edición y se comparten (AGENTS.md 49.7).
+            "programme_eligibility": fetch_programme_eligibility(
+                _sedia_meta(item, "topicConditions"),
+                http_get=_http_get,
+                document_text=_hold_document_text,
+                cache=programme_annexes_cache,
+            ),
             "_call_year":           (
                 re.search(r"(?:^|-)(20\d{2})(?:-|$)", str(identifier)).group(1)
                 if re.search(r"(?:^|-)(20\d{2})(?:-|$)", str(identifier))

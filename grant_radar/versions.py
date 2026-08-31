@@ -9,9 +9,9 @@
 
 # Incrementar esta versión cuando cambie el criterio o el prompt de análisis.
 PROFILE_VERSION = "kalfrisa-2026-08-v5-simulation-line"
-EXTRACTOR_VERSION = "facts-2026-08-v7-official-structured-data"
+EXTRACTOR_VERSION = "facts-2026-08-v8-programme-annexes"
 EVALUATOR_VERSION = "fit-2026-08-v8-no-presumption"
 PARTNER_CATALOG_VERSION = "2026-07-v2"
-ANALYSIS_PROMPT_VERSION = "2026-08-v12-no-presumption"
+ANALYSIS_PROMPT_VERSION = "2026-08-v13-programme-annexes"
 CACHE_SCHEMA_VERSION = 3
 CLAUDE_MODEL = "claude-haiku-4-5"  # Haiku 4.5 — $1/$5 por millón de tokens

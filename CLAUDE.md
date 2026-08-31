@@ -7,8 +7,9 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
-> **Arranque en frío: AGENTS.md secciones 48 y 49**, las dos del 31/08/2026.
-> La 48 es la modularización; la **49 es el cierre** y toca producto. Cifras de
+> **Arranque en frío: AGENTS.md secciones 48, 49 y 50**, las tres del
+> 31/08/2026. La 48 es la modularización, la 49 el producto y la **50 es el
+> cierre**: Horizon ya llega con sus condiciones de elegibilidad. Cifras de
 > referencia en 48.8; backlog abierto en la sección 36.
 > Las secciones 44 a 47 son la sesión del 21/08 y siguen vigentes como
 > antecedente.
@@ -27,7 +28,15 @@ desactualizado si no se mantiene junto a ellos.
 > sus 77 fichas ya tienen el plazo vencido. Ponerlo al día es exactamente la
 > ejecución de pago del párrafo anterior.
 >
-> **Último trabajo (31/08/2026, sección 49):** tres encargos mirando el
+> **Último trabajo (31/08/2026, sección 50):** Horizon Europe ya llega con sus
+> condiciones de elegibilidad. No estaban en el topic —viven en los Anexos
+> Generales del programa— y en vez de teclearlas en un catálogo, el conector
+> **lee el documento oficial que el propio topic enlaza**: una descarga por
+> edición, tres extractos de 3.400 caracteres, ~850 tokens por convocatoria.
+> Verificado en vivo: 30 de 30 con condiciones y un solo documento leído. Si el
+> programa cambia, el enlace cambia con él y esto no necesita mantenimiento.
+>
+> **Antes (31/08/2026, sección 49):** tres encargos mirando el
 > producto. La recopilación diaria ya se ve en el panel —publica
 > `estado_recopilacion.json` y el dashboard avisa de cuántas convocatorias
 > esperan análisis—; la elegibilidad dejó de imprimirse dos veces en cada
@@ -35,11 +44,10 @@ desactualizado si no se mantiene junto a ellos.
 > una regla determinista decidía leyendo la prosa del modelo y disparaba en 1
 > de cada 12 casos reales. Corregida sobre el campo oficial de regiones, 8
 > convocatorias territoriales de otras comunidades dejan de pedir confirmación,
-> **sin coste**. Las 14 que siguen «por confirmar» son de Horizon y CDTI, cuya
-> elegibilidad no está en la fuente que leemos: es el punto 35 del backlog y
-> requiere una decisión tuya.
+> **sin coste**. De las 14 restantes, las de Horizon se resolvieron en la
+> sección 50; quedan las 3 de CDTI, que es el punto 36 del backlog.
 >
-> **Antes (31/08/2026, sección 48):** se terminó la modularización que
+> **Y antes (31/08/2026, sección 48):** se terminó la modularización que
 > quedaba en el orden ya medido —auditoría, capa de análisis con Haiku y segunda
 > mitad del dominio de holds—, con lo que el script baja de 4.086 a **2.140
 > líneas** y el paquete pasa a **38 módulos**. En el script solo quedan la matriz
@@ -93,7 +101,7 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
      —un segundo, señala módulo y nombre exactos si falta un import. Desde el
      31/08 comprueba también cada módulo del paquete, no solo el script;
   2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`;
-  3. `poetry run python -m unittest discover -s tests` —**507 pruebas**. Una,
+  3. `poetry run python -m unittest discover -s tests` —**523 pruebas**. Una,
      `FrontendLayoutTests::test_consortium_role_is_visible...`, es intermitente
      bajo carga porque conduce Chromium de verdad: repetir antes de investigar
      (AGENTS.md 44.7, nota sobre pruebas intermitentes);
@@ -164,6 +172,7 @@ Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 | `claude_schemas.py` | Esquemas Pydantic de Claude y su validación |
 | `audit.py` | `DISCOVERY_AUDIT` y `audit_exclusion()` (usado por las 8 fuentes) **y el histórico en disco**: `save_discovery_audit()` / `load_audit_runs()`, que reciben la ruta como parámetro |
 | `analysis.py` | **La capa de análisis con Haiku**: las dos etapas (extracción factual y evaluación de encaje), sus dos prompts de sistema como constantes de módulo, el presupuesto de evidencia y la llamada estructurada con reintentos. Recibe la clave de API como parámetro; no lee el entorno |
+| `programme_annexes.py` | Las condiciones generales del programa, leídas del documento oficial que **la propia convocatoria enlaza**: un topic de Horizon no dice quién puede solicitar, y esto lo saca de sus Anexos Generales sin catálogo que mantener (AGENTS.md 50) |
 | `profile_scope.py` | Exclusiones de ámbito del perfil (`_hard_out_of_scope()`, `_explicit_profile_incompatibility()`). Viven aparte porque las usan **los dos lados**: la matriz de reglas antes de Claude y `_build_compatible_analysis()` después |
 | `holds.py` | Segunda mitad del dominio de holds: resolución determinista, validación de citas, piloto, replay y reincorporación al pipeline. **Recibe la matriz de reglas inyectada** (`intrinsic_exclusion`, `prefilter`), que es lo que permitió extraerlo sin tocarla |
 | `sources/boa_aragon.py` | Conector BOA Aragón (señal secundaria/backup, ver sección 26) |

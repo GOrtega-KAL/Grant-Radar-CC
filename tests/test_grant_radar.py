@@ -3174,6 +3174,34 @@ class HaikuPayloadTests(unittest.TestCase):
         self.assertEqual(facts["regiones"], ["ARAGÓN"])
         self.assertEqual(facts["dias_de_ejecucion"], 730)
 
+    def test_the_programme_conditions_travel_with_their_source_document(self):
+        """Sin esto, Horizon llegaba a Haiku sin decir quién puede solicitar.
+
+        Las condiciones generales no son de la convocatoria sino del programa,
+        así que viajan etiquetadas y con el documento del que se leyeron, para
+        que el modelo pueda citarlo y para que se vea de dónde salen
+        (AGENTS.md 49.7).
+        """
+        facts = APP["_official_structured_facts"]({
+            "source": "HORIZON EUROPE",
+            "types_of_action": "HORIZON Innovation Actions",
+            "programme_eligibility": {
+                "source_url": "https://ec.europa.eu/…/wp-15-general-annexes_horizon-2026-2027_en.pdf",
+                "consortium_composition": "three legal entities independent from each other",
+            },
+        })
+        programa = facts["condiciones_generales_del_programa"]
+        self.assertIn("general-annexes", programa["documento"])
+        self.assertIn("three legal entities", programa["consortium_composition"])
+        self.assertEqual(facts["tipo_de_accion"], "HORIZON Innovation Actions")
+
+    def test_a_call_without_programme_conditions_carries_no_empty_block(self):
+        facts = APP["_official_structured_facts"]({
+            "source": "BDNS", "bdns_regions": ["ARAGÓN"], "programme_eligibility": {},
+        })
+        self.assertNotIn("condiciones_generales_del_programa", facts)
+        self.assertNotIn("tipo_de_accion", facts)
+
     def test_pipeline_conclusions_are_not_sent_as_if_they_were_source_facts(self):
         # bdns_company_eligible y bdns_call_access son decisiones de la matriz,
         # no datos de la fuente: mezclarlas difuminaría esa frontera.
