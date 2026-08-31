@@ -80,7 +80,9 @@ def _fetch_cdti_static() -> list:
             "deadline_note": "ventanilla_permanente",
             "budget":        "Hasta 85% del presupuesto (mín. 175.000 €)",
             "url":           "https://www.cdti.es/ayudas/proyectos-de-i-d",
-            "url_generica":  True,
+            # Corregida el 21/08/2026 a la ficha concreta (AGENTS.md 44.1): ya no
+            # es una página general de programa, y el aviso del panel sobraba.
+            "url_generica":  False,
             "keywords":      ["eficiencia energética", "eficiencia térmica", "descarbonización",
                               "calor residual", "emisiones industriales"],
         },
@@ -96,7 +98,9 @@ def _fetch_cdti_static() -> list:
             "deadline_note": "ventanilla_permanente",
             "budget":        "Hasta 85% · 33% no reembolsable (mín. 175.000 €)",
             "url":           "https://www.cdti.es/ayudas/proyectos-de-id-de-transferencia-tecnologica-cervera-0",
-            "url_generica":  True,
+            # Corregida el 21/08/2026 a la ficha concreta (AGENTS.md 44.1): ya no
+            # es una página general de programa, y el aviso del panel sobraba.
+            "url_generica":  False,
             "keywords":      ["eficiencia energética", "calor residual", "descarbonización",
                               "hidrógeno", "eficiencia térmica"],
         },
@@ -112,7 +116,9 @@ def _fetch_cdti_static() -> list:
             "deadline_note": "ventanilla_permanente",
             "budget":        "Ver convocatoria",
             "url":           "https://www.cdti.es/ayudas/linea-de-ayudas-infraestructuras-de-ensayo-y-experimentacion",
-            "url_generica":  True,
+            # Corregida el 21/08/2026 a la ficha concreta (AGENTS.md 44.1): ya no
+            # es una página general de programa, y el aviso del panel sobraba.
+            "url_generica":  False,
             "keywords":      ["eficiencia energética", "eficiencia térmica", "hidrógeno",
                               "emisiones industriales"],
         },
@@ -867,6 +873,123 @@ def _drop_catalog_entries_with_dead_urls(
     return vivas, caidas
 
 
+# Palabras que no distinguen un documento de otro al comparar títulos.
+_CATALOG_TITLE_STOPWORDS = frozenset({
+    "de", "del", "la", "las", "el", "los", "y", "a", "en", "para", "por",
+    "linea", "ayudas", "ayuda", "convocatoria", "cdti", "ventanilla",
+    "abierta", "permanente", "todo",
+})
+
+
+def _catalog_programme_document(entry_title: str, documents: list) -> list:
+    """El documento de la ficha que describe el programa, si se reconoce.
+
+    Una ficha de CDTI enlaza su propio PDF —el que lleva «Entidades
+    beneficiarias», «Actividades excluidas» y «Gastos financiables»— junto a
+    dos o tres documentos genéricos que aparecen en todas (FAQ de empresas en
+    crisis, medidas de exención de garantías). Se distingue por lo obvio: su
+    título repite el nombre del programa.
+
+    Se devuelve con `document_role` de bases reguladoras porque es lo que es
+    para este pipeline —la fuente de las condiciones—, y porque
+    `enrich_with_official_documents()` solo descarga esos roles. Sin esta
+    reclasificación el documento llegaba en el rastro pero sin una línea de
+    texto, que fue justo lo que se midió la primera vez.
+    """
+    objetivo = {
+        palabra for palabra in _fold_text(entry_title).split()
+        if palabra not in _CATALOG_TITLE_STOPWORDS and len(palabra) > 2
+    }
+    mejor, coincidencias = None, 0
+    for documento in documents:
+        tokens = {
+            palabra for palabra in _fold_text(documento.get("title", "")).split()
+            if palabra not in _CATALOG_TITLE_STOPWORDS and len(palabra) > 2
+        }
+        comunes = len(objetivo & tokens)
+        if comunes > coincidencias:
+            mejor, coincidencias = documento, comunes
+    # Dos palabras significativas en común: menos es casualidad, y con menos se
+    # colaría el FAQ genérico en las fichas de título corto.
+    if mejor is None or coincidencias < 2:
+        return []
+    return [{**mejor, "document_role": "regulatory_bases"}]
+
+
+def _attach_catalog_official_documents(
+    browser: PlaywrightBrowser, curated: list
+) -> list:
+    """Da a las fichas de ventanilla abierta las bases que sí publica CDTI.
+
+    Las entradas del catálogo curado llegaban con ~300 caracteres tecleados a
+    mano y **cero documentos**, mientras las del calendario oficial llegaban con
+    sus bases adjuntas. De ahí que las cuatro de ventanilla abierta —PID,
+    Cervera, Bilaterales, Infraestructuras de Ensayo— salieran siempre con la
+    elegibilidad «por confirmar»: nadie le estaba enseñando al modelo quién
+    puede solicitarlas (AGENTS.md 51.2).
+
+    La ficha ya se visita con el navegador para comprobar que existe; aquí se
+    aprovecha para leerla. Se reutiliza el mismo extractor que el calendario,
+    así que un cambio en la maquetación de CDTI se arregla en un solo sitio.
+    """
+    if not curated:
+        return curated
+    enriquecidas = []
+    con_documentos = 0
+    for entry in curated:
+        url = entry.get("url", "")
+        # Solo las fichas concretas, que en cdti.es viven bajo /ayudas/. Una
+        # página de programa lista PDF de varias convocatorias y adjuntárselos
+        # a una sola sería peor que no adjuntar nada. No se usa `url_generica`
+        # para decidirlo: es una marca escrita a mano que ya se quedó vieja una
+        # vez —las tres fichas corregidas el 21/08 siguieron marcadas como
+        # genéricas— y la ruta es un hecho comprobable.
+        if not url or "/ayudas/" not in url:
+            enriquecidas.append(entry)
+            continue
+        try:
+            html = browser.html(url)
+        except Exception as exc:
+            log.warning(f"  CDTI: no se pudo leer la ficha {url}: {exc}")
+            enriquecidas.append(entry)
+            continue
+        if not html:
+            enriquecidas.append(entry)
+            continue
+        detalle = _parse_cdti_detail_html(
+            html, url, entry.get("title", ""), datetime.now().year
+        )
+        documentos = _catalog_programme_document(
+            entry.get("title", ""), detalle.get("documents") or []
+        )
+        if not documentos:
+            enriquecidas.append(entry)
+            continue
+        con_documentos += 1
+        entry = {
+            **entry,
+            "related_documents_trace": [
+                {
+                    "source": "CDTI",
+                    "title": entry.get("title", ""),
+                    "url": url,
+                    "document_role": "call",
+                },
+                *documentos,
+            ],
+            "related_documents_count": 1 + len(documentos),
+        }
+        enriquecidas.append(
+            enrich_with_official_documents(entry, documentos, "CDTI")
+        )
+    if con_documentos:
+        log.info(
+            f"  CDTI: {con_documentos} ficha(s) del catálogo curado con sus "
+            f"documentos oficiales"
+        )
+    return enriquecidas
+
+
 def fetch_cdti(browser: PlaywrightBrowser) -> list:
     """
     Combina el calendario oficial renderizado y el catálogo curado. La BDNS se
@@ -882,6 +1005,7 @@ def fetch_cdti(browser: PlaywrightBrowser) -> list:
     RUN_DIAGNOSTICS.setdefault("cdti_scrape_audit", {})[
         "catalog_dead_urls"
     ] = dead_catalog_urls
+    curated_results = _attach_catalog_official_documents(browser, curated_results)
     if not browser_results:
         log.warning("CDTI: fuentes en vivo sin resultados; cobertura solo mediante catálogo curado")
     # Prioridad creciente: catálogo < calendario oficial.

@@ -1082,6 +1082,54 @@ confirmar» tantas veces.
 
 ---
 
+---
+
+## 13. Estado a 31/08/2026 (cierre real): tres redes que faltaban
+
+La sesión termina con tres medidas que no arreglan un fallo concreto sino que
+tapan huecos de método, y con una pregunta del usuario que corrigió el trabajo
+recién hecho.
+
+**La pregunta, primero, porque es la lección.** Sobre los Anexos Generales de
+Horizon: ¿se guarda lo extraído para no reanalizarlo si no ha cambiado? La
+respuesta era «a medias», y estaba escrita como límite conocido en la propia
+documentación de la ronda anterior. Ahora la huella del anexo entra en la clave
+de caché **solo para las convocatorias que lo llevan**, de modo que se paga por
+leerlo una vez y solo se vuelve a pagar cuando cambia. Que el límite estuviera
+anotado no lo convertía en aceptable: documentarlo sirvió para que alguien lo
+leyera y preguntara, que es exactamente para lo que sirve documentarlo.
+
+**Frente a 2.8 (cobertura), la prueba de humo por conector.** Punto 17 del
+backlog, abierto desde el 19/08. Cada `fetch_*()` se recorre entero con la red
+sustituida: **diez pruebas en 0,2 segundos** frente a los once minutos de una
+recopilación, que era el único sitio donde aparecía un `NameError` tras mover
+código. Y una de las diez comprueba que el detector detecta, reproduciendo el
+fallo real de la sección 35. El encabezado dice también lo que no cubre: con
+respuestas vacías no se recorren las ramas que solo existen con datos.
+
+**Frente a 2.4 (fragilidad), la vigilancia del producto.** Este documento venía
+insistiendo en vigilar las fuentes, y el proyecto construyó para eso el control
+de salud y `compare_funnels()`. Faltaba el otro extremo: **nadie comparaba el
+JSON publicado con el anterior**. La propia sesión lo demostró — corregir una
+regla movió dieciséis análisis de golpe y nada lo habría dicho. Ahora se compara
+justo antes de publicar y se avisa de convocatorias que desaparecen sin vencer
+su plazo, elegibilidades que se mueven en bloque y campos que se vacían: una
+regresión que los recuentos no ven, porque siguen siendo setenta y siete fichas.
+
+**Frente a 2.3, CDTI cierra el círculo abierto en la sección 12.** Sus fichas de
+ventanilla abierta llegaban con trescientos caracteres tecleados a mano y cero
+documentos, mientras las del calendario traían sus bases. Ahora se leen con el
+mismo extractor, aprovechando la visita del navegador que ya se hacía para
+comprobar que la ficha existe. Es la misma idea que los Anexos Generales
+aplicada a otra fuente: **el dato no se copia, se lee de donde está**.
+
+Estado tras la sesión: **566 pruebas** en verde (471 al empezar el día) y 27
+puntos abiertos en el backlog, frente a los 32 de la mañana. La ejecución de
+pago sigue sin lanzarse por decisión del usuario, que prefiere acumular todas
+las mejoras identificables antes de reanalizar una sola vez.
+
+---
+
 ## Nota de alcance
 
 Este documento es una evaluación externa de solo lectura, ampliada con una

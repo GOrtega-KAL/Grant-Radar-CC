@@ -78,6 +78,19 @@ def source_hash(conv: dict) -> str:
             for document in conv.get("related_document_contents", [])
         ],
     }
+    # Huella de las condiciones generales del programa, cuando la convocatoria
+    # las lleva (hoy, Horizon). Va aparte y solo si existen, para no cambiar la
+    # huella de las fuentes que no las tienen: añadir una clave vacía
+    # invalidaría de golpe toda la caché por un dato que no usan.
+    #
+    # Con esto, el texto del anexo se comporta como el resto de la evidencia:
+    # mientras no cambie, un análisis ya pagado se reutiliza; cuando la Comisión
+    # publique otra edición o una corrección, las convocatorias de ese programa
+    # se vuelven a analizar solas y nadie tiene que acordarse de subir una
+    # versión a mano (AGENTS.md 51.1).
+    programme = conv.get("programme_eligibility")
+    if isinstance(programme, dict) and programme.get("fingerprint"):
+        source_document["programme_conditions"] = programme["fingerprint"]
     raw = json.dumps(
         source_document, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     )

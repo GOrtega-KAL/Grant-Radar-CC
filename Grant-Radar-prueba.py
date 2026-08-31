@@ -202,6 +202,10 @@ from grant_radar.documents import (
     _hold_document_text,
     enrich_with_official_documents,
 )
+from grant_radar.product_watch import (
+    compare_published_products,
+    summarize_product_changes,
+)
 from grant_radar.publishing import github_upload
 from grant_radar.claude_usage import (
     aggregate_aborted_run_usage,
@@ -1996,6 +2000,20 @@ def run_pipeline(
         ),
         "keywords":      build_keywords(enriched),
     }
+
+    # Qué cambia en lo que el usuario ve, comparado con la versión que este
+    # archivo está a punto de sustituir. Se lee ANTES de escribir, que es la
+    # única oportunidad de tener las dos versiones a mano (AGENTS.md 51.4).
+    try:
+        with open(OUTPUT_FILE, "r", encoding="utf-8") as previous_handle:
+            previous_published = json.load(previous_handle).get("convocatorias", [])
+    except (OSError, json.JSONDecodeError):
+        previous_published = []
+    product_changes = compare_published_products(
+        previous_published, output["convocatorias"]
+    )
+    RUN_DIAGNOSTICS["product_changes"] = product_changes
+    print("  " + summarize_product_changes(product_changes))
 
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)

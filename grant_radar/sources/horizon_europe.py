@@ -28,7 +28,11 @@ from grant_radar.audit import audit_exclusion
 from grant_radar.documents import _hold_document_text
 from grant_radar.http_client import _http_get
 from grant_radar.parsing_helpers import select_evidence_excerpt
-from grant_radar.programme_annexes import fetch_programme_eligibility
+from grant_radar.programme_annexes import (
+    fetch_programme_eligibility,
+    load_annexes_cache,
+    save_annexes_cache,
+)
 from grant_radar.runtime_state import SOURCE_RUNTIME_METADATA
 from grant_radar.tech_taxonomy import is_relevant, keyword_match
 
@@ -88,8 +92,11 @@ def fetch_horizon_europe() -> list:
     log.info("Consultando Horizon Europe (SEDIA API oficial)...")
     results = []
     # Una descarga de los Anexos Generales por edición del programa de trabajo,
-    # compartida por todos los topics de esta ejecución.
+    # compartida por todos los topics de esta ejecución; y lo leído en
+    # ejecuciones anteriores, que evita releerlo a diario y sirve de respaldo si
+    # el portal no responde.
     programme_annexes_cache: dict = {}
+    programme_annexes_stored = load_annexes_cache()
 
     endpoint = "https://api.tech.ec.europa.eu/search-api/prod/rest/search"
     all_docs = []
@@ -359,6 +366,7 @@ def fetch_horizon_europe() -> list:
                 http_get=_http_get,
                 document_text=_hold_document_text,
                 cache=programme_annexes_cache,
+                stored=programme_annexes_stored,
             ),
             "_call_year":           (
                 re.search(r"(?:^|-)(20\d{2})(?:-|$)", str(identifier)).group(1)
@@ -393,6 +401,7 @@ def fetch_horizon_europe() -> list:
         "status": "ok" if collected >= total_available else "warn",
         "strategy": "inventario global Horizon en inglés + filtro local",
     }
+    save_annexes_cache(programme_annexes_stored)
     return results
 
 

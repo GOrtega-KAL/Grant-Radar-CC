@@ -13,12 +13,16 @@
 
 import unittest
 
+from datetime import date
+
+from grant_radar.cache import source_hash
 from grant_radar.programme_annexes import (
     ELIGIBILITY_SECTIONS,
     annexes_url_from_conditions,
     clean_annexes_text,
     eligibility_sections,
     fetch_programme_eligibility,
+    sections_fingerprint,
 )
 
 CONDICIONES_HTML = (
@@ -155,6 +159,84 @@ class FetchProgrammeEligibilityTests(unittest.TestCase):
         self._fetch(status=404, cache=cache)
         _, segundas = self._fetch(status=404, cache=cache)
         self.assertEqual(segundas, [])
+
+
+class ReuseBetweenRunsTests(unittest.TestCase):
+    """Lo que evita pagar dos veces por leer el mismo anexo.
+
+    La caché de análisis reutiliza un análisis mientras la huella del documento
+    fuente no cambie. Si el texto del anexo no entrara en esa huella, dos cosas
+    saldrían mal a la vez: una corrección de la Comisión no se notaría, y para
+    forzar la relectura habría que subir una versión a mano e invalidar todo.
+    """
+
+    HOY = date(2026, 8, 31)
+
+    def _fetch(self, *, status=200, texto=ANEXOS_TEXTO, stored=None, hoy=None, llamadas=None):
+        registro = llamadas if llamadas is not None else []
+
+        def http_get(url, **kwargs):
+            registro.append(url)
+            return Respuesta(status) if status else None
+
+        return fetch_programme_eligibility(
+            CONDICIONES_HTML,
+            http_get=http_get,
+            document_text=lambda response, url, **kwargs: (texto, "pdf"),
+            stored=stored,
+            today=hoy or self.HOY,
+        ), registro
+
+    def test_the_sections_carry_their_own_fingerprint(self):
+        resultado, _ = self._fetch()
+        self.assertEqual(len(resultado["fingerprint"]), 16)
+
+    def test_the_same_annexes_give_the_same_call_fingerprint(self):
+        """Mientras el anexo no cambie, el análisis pagado se reutiliza."""
+        resultado, _ = self._fetch()
+        convocatoria = {"source": "HORIZON EUROPE", "title": "Topic", "programme_eligibility": resultado}
+        self.assertEqual(source_hash(convocatoria), source_hash(dict(convocatoria)))
+
+    def test_a_changed_annex_forces_a_new_analysis(self):
+        antes, _ = self._fetch()
+        despues, _ = self._fetch(texto=ANEXOS_TEXTO.replace("three legal entities", "four legal entities"))
+        self.assertNotEqual(antes["fingerprint"], despues["fingerprint"])
+        base = {"source": "HORIZON EUROPE", "title": "Topic"}
+        self.assertNotEqual(
+            source_hash({**base, "programme_eligibility": antes}),
+            source_hash({**base, "programme_eligibility": despues}),
+        )
+
+    def test_a_call_without_annexes_keeps_the_hash_it_always_had(self):
+        """Añadir esto no puede invalidar la caché de las demás fuentes."""
+        base = {"source": "BDNS", "title": "Ayuda industrial", "description": "x"}
+        self.assertEqual(
+            source_hash(base), source_hash({**base, "programme_eligibility": {}})
+        )
+
+    def test_a_recent_document_is_not_downloaded_again(self):
+        stored = {}
+        _, primeras = self._fetch(stored=stored)
+        self.assertEqual(len(primeras), 1)
+        _, segundas = self._fetch(stored=stored, hoy=date(2026, 9, 3))
+        self.assertEqual(segundas, [], "tres días después no hace falta releerlo")
+
+    def test_an_old_document_is_read_again(self):
+        stored = {}
+        self._fetch(stored=stored)
+        _, segundas = self._fetch(stored=stored, hoy=date(2026, 9, 30))
+        self.assertEqual(len(segundas), 1, "pasado el margen hay que releerlo")
+
+    def test_a_failed_download_falls_back_to_what_was_read_before(self):
+        """Sin esto, un portal caído dejaría 30 convocatorias sin elegibilidad."""
+        stored = {}
+        antes, _ = self._fetch(stored=stored)
+        despues, _ = self._fetch(status=503, stored=stored, hoy=date(2026, 9, 30))
+        self.assertEqual(despues["fingerprint"], antes["fingerprint"])
+
+    def test_nothing_stored_and_nothing_downloaded_is_an_empty_answer(self):
+        resultado, _ = self._fetch(status=503, stored={})
+        self.assertEqual(resultado, {})
 
 
 if __name__ == "__main__":

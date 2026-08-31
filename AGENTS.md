@@ -2457,14 +2457,12 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 5 | Modo de verificación por fuente (algo como `--no-claude --source BOE`) para no recorrer las ocho cuando un cambio solo toca una | 35 |
 | 6 | Instantánea de la estructura esperada de cada fuente, comparada en cada ejecución, con historial | `SUGERENCIAS.MD` 3.4 punto 2 |
 | 7 | Ejecución periódica automatizada en `--no-claude` solo para vigilar salud de fuentes | `SUGERENCIAS.MD` 3.4 punto 3 |
-| 17 | Prueba de humo por conector: llamar a cada `fetch_*()` con el HTTP simulado y comprobar que recorre su camino sin `NameError` | 35. Habría cazado el `statistics` ausente en segundos en vez de en una recopilación de diez minutos |
 | 27 | Los catálogos curados se teclean a mano y caducan en silencio: el 21/08, seis de las diez URLs del de CDTI eran 404 (sección 44.1). Las rutas correctas estaban en el calendario oficial que el conector ya recorre | Vale la pena estudiar si las entradas de ventanilla permanente pueden **derivarse** del listado oficial en vez de mantenerse a mano. `_drop_catalog_entries_with_dead_urls()` ya evita publicarlas rotas, pero no las repara |
 | 28 | El catálogo estático de `sources/boa_aragon.py` sigue con «última revisión 2026-04-09» y una de sus dos entradas está cerrada desde enero | Mismo problema que el 27, en la fuente que además ya no es el mecanismo principal para Aragón (sección 26). Conviene decidir si se mantiene o se retira |
 | 29 | El prefiltro de listado del BOE descarta 153 de 168 entradas **sin registrar exclusión**: solo deja rastro el filtro posterior, sobre el documento ya abierto | Sección 45.2. Auditar las 153 inflaría el catálogo (365 ejecuciones guardadas); lo razonable es un recuento por organismo, no una entrada por ficha |
 | 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
 | 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
 | 34 | Programar la recopilación `--no-claude` diaria en el Programador de tareas de Windows | Sección 47.6 tiene el comando. **Es una acción del usuario en su equipo**, no del agente: queda anotada para no darla por hecha |
-| 36 | CDTI sigue sin condiciones de elegibilidad: 3 de las convocatorias «por confirmar» son suyas | Sección 50. Le falta el equivalente a lo que Horizon ya tiene: leer las bases reguladoras oficiales que su propio calendario enlaza, con `programme_annexes.py` como precedente. Entra en la misma reanalisis que el resto |
 
 El 429 del 19/08/2026 tuvo cooldown de minutos: una sonda de una sola petición,
 7 minutos después, devolvió la página completa. No impone restricción horaria,
@@ -2530,6 +2528,8 @@ frío. No hay que buscarlos en las tablas de arriba: ya no están.
 | 31 | Una convocatoria publicaba como URL una frase entera con el esquema mal escrito | Sección 48.6: `_web_url_or_empty()` en el conector y en la publicación |
 | 33 | `extraction_system` era una variable local que ninguna prueba podía mirar | Sección 48.3: constante de módulo `CLAUDE_EXTRACTION_SYSTEM_PROMPT` con siete pruebas de integridad |
 | 35 | La elegibilidad de Horizon no estaba en el topic que leemos | Sección 50: el conector lee los Anexos Generales que el propio topic enlaza, una vez por edición, y envía tres extractos de 3.400 caracteres. Sin catálogo que mantener |
+| 17 | Prueba de humo por conector | Sección 51.3: diez pruebas, 0,2 s, con la red y el navegador sustituidos. Una de ellas comprueba que el detector detecta, reproduciendo el `statistics` de la sección 35 |
+| 36 | CDTI llegaba sin bases: 300 caracteres tecleados y cero documentos | Sección 51.2: las fichas del catálogo curado se leen con el navegador que ya las visitaba y traen sus documentos oficiales, con el mismo extractor que el calendario |
 
 ## 37. Decimotercera ronda a 19/08/2026: salida pública, publicación, selección y cobertura
 
@@ -4293,13 +4293,16 @@ cambio entra en la misma reanalisis pendiente sin coste adicional.
 
 ### 50.4. Un límite conocido, escrito para no descubrirlo dos veces
 
-`source_hash()` no incluye el bloque oficial —ni el de BDNS ni este—, así que si
-la Comisión corrigiera los anexos **dentro de la misma edición**, una
-convocatoria ya analizada no se reanalizaría por sí sola. En la práctica pesa
-poco: una edición nueva trae topics nuevos, con identificador, título y
-descripción distintos, y esos sí cambian la huella. Ampliar `source_hash()`
-invalidaría la caché entera de todas las fuentes, que es un precio mucho mayor
-que el riesgo. Queda anotado, no arreglado.
+`source_hash()` no incluía el bloque oficial —ni el de BDNS ni este—, así que
+si la Comisión corrigiera los anexos **dentro de la misma edición**, una
+convocatoria ya analizada no se reanalizaría por sí sola.
+
+**Resuelto el mismo día, y la solución merece leerse** (sección 51.1): la huella
+del anexo entra en `source_hash()` **solo cuando la convocatoria lleva
+condiciones de programa**. Así se consigue lo que hacía falta —reanalizar cuando
+el documento cambia— sin lo que se temía: añadir una clave a todos los registros
+habría invalidado de golpe la caché de las ocho fuentes por un dato que siete no
+usan.
 
 ### 50.5. Verificación
 
@@ -4312,3 +4315,136 @@ bloque vacío cuando no las hay.
 Ejecución del conector en vivo: 30 de 30 con condiciones, un solo documento
 leído, 94 s. Ejecución `--no-claude` completa: código 0 y las cifras de
 referencia intactas.
+
+## 51. Reutilizar lo leído, y las tres medidas propuestas, a 31/08/2026
+
+Cierre de la sesión. El usuario aprobó las tres medidas propuestas y añadió una
+pregunta que resultó ser la más importante de las cuatro.
+
+### 51.1. La pregunta: ¿y esto se reanaliza cada vez?
+
+Sobre los Anexos Generales recién implementados: *«¿se ha previsto guardar lo
+que se extraiga para que Haiku no lo analice si no ha cambiado?»*. La respuesta
+honesta era **a medias**, y el hueco estaba anotado en la sección 50.4 como
+límite conocido:
+
+- La caché de análisis ya evitaba reanalizar una convocatoria sin cambios, así
+  que el anexo viajaba solo cuando esa convocatoria se analizaba de todas
+  formas. Eso ya funcionaba.
+- Pero el texto del anexo **no entraba en `source_hash()`**, así que una
+  corrección de la Comisión no habría provocado reanálisis: se habría seguido
+  publicando con las reglas viejas hasta que alguien subiera una versión a mano.
+- Y el documento se descargaba en cada ejecución, sin memoria entre ellas.
+
+Las tres cosas quedan resueltas:
+
+1. **Huella en la clave de caché.** `sections_fingerprint()` resume el texto que
+   se le envía al modelo y `source_hash()` lo incorpora **solo cuando la
+   convocatoria lleva condiciones de programa**. El matiz importa: añadir una
+   clave vacía a todos los registros habría invalidado de golpe la caché de las
+   ocho fuentes por un dato que siete de ellas no usan.
+2. **Caché en disco** (`programme_annexes_cache.json`), con relectura cada 7
+   días. Un anexo publicado no cambia a diario, pero la Comisión publica
+   correcciones dentro de una misma edición.
+3. **Respaldo ante fallo.** Si el portal no responde, se conservan las
+   condiciones leídas la última vez en lugar de perderlas — que es lo que antes
+   habría dejado treinta convocatorias «por confirmar» y, peor, habría
+   provocado un reanálisis con peor información.
+
+El comportamiento resultante es el que pedía el usuario: **se paga por leer el
+anexo una vez, y solo se vuelve a pagar cuando el anexo cambia de verdad**. Y
+cuando cambie, el aviso queda en el registro de la ejecución.
+
+### 51.2. Medida (a): CDTI también trae sus bases
+
+Las tres convocatorias de CDTI que seguían «por confirmar» eran las de
+ventanilla abierta del catálogo curado, y la causa estaba medida: llegaban con
+**~300 caracteres tecleados a mano y cero documentos**, mientras las del
+calendario oficial llegaban con sus bases adjuntas. Nadie le estaba enseñando al
+modelo quién puede solicitarlas.
+
+`_attach_catalog_official_documents()` aprovecha que la ficha ya se visita con
+el navegador para comprobar que existe —lo que se añadió en la sección 44— y la
+lee con el mismo extractor que el calendario. Solo las fichas concretas, que en
+cdti.es viven bajo `/ayudas/`: una página de programa lista PDF de varias
+convocatorias y adjuntárselos a una sola sería peor que no adjuntar nada.
+
+**Dos cosas se midieron mal a la primera y conviene dejarlas escritas**, porque
+las dos parecían funcionar:
+
+1. La decisión de visitar o no se tomaba con el campo `url_generica` del
+   catálogo, y las tres fichas corregidas el 21/08 **seguían marcadas como
+   genéricas**: la mejora no hacía nada justo en las convocatorias que la
+   necesitaban. Ahora decide la ruta, que es un hecho comprobable, y de paso se
+   corrigen las tres marcas —el panel les mostraba un aviso de «página general
+   del programa» que ya no era cierto—.
+2. Con los documentos adjuntos, el rastro se llenaba y **no llegaba una sola
+   línea de texto al modelo**: `enrich_with_official_documents()` solo descarga
+   roles de bases o convocatoria, y el PDF de la ficha se clasificaba como
+   registro genérico. Cada página enlaza además dos documentos que salen en
+   todas (FAQ de empresas en crisis, exención de garantías), así que tampoco
+   valía con aceptarlos todos. `_catalog_programme_document()` reconoce el que
+   repite el nombre del programa y lo reclasifica como bases reguladoras.
+
+Resultado medido con Chromium real: **3 de las 4 fichas del catálogo llegan con
+su documento y 20.015 caracteres de texto**, incluidas sus secciones «Entidades
+beneficiarias», «Actividades excluidas» y «Gastos financiables». La cuarta
+—Proyectos Bilaterales— apunta a una página de programa y se queda como estaba.
+Un fallo del navegador nunca pierde la entrada.
+
+### 51.3. Medida (b): prueba de humo por conector
+
+Punto 17 del backlog, abierto desde el 19/08. Cada `fetch_*()` se ejecuta de
+principio a fin con la red y el navegador sustituidos por dobles que responden
+bien y vacío. **Diez pruebas, 0,2 segundos**, frente a los once minutos de una
+recopilación —o a una ejecución de pago, que es donde apareció el `statistics`
+del conector ECCP (sección 35)—.
+
+Una de las diez comprueba que el detector detecta: fuerza el error real de
+entonces y exige que salga a la superficie. Y el encabezado dice el límite en
+voz alta: con respuestas vacías no se recorren las ramas que solo existen
+cuando la fuente trae datos. Reduce el hueco, no lo cierra; la ejecución
+`--no-claude` sigue siendo obligatoria al cerrar una ronda.
+
+### 51.4. Medida (c): vigilar el producto, no solo el embudo
+
+`compare_funnels()` vigila la recopilación. El otro extremo —el JSON que ve el
+usuario— no lo vigilaba nadie, y esta misma sesión lo demostró: corregir la
+regla territorial movió dieciséis análisis a «no elegible» de golpe. Era lo
+correcto, pero **nada lo habría dicho** si no llega a mirarse a mano.
+
+`grant_radar/product_watch.py` compara la versión que se va a publicar con la
+que sustituye, justo antes de escribirla, que es la única oportunidad de tener
+las dos a mano. Cuatro señales, elegidas porque un cambio brusco en ellas suele
+significar un cambio de código y no del mundo:
+
+| Señal | Por qué |
+|---|---|
+| Convocatorias que desaparecen **sin vencer su plazo** | Si caducó, es normal; si no, alguien dejó de encontrarla |
+| Convocatorias nuevas | No son un problema, pero explican el resto |
+| Movimientos de elegibilidad en bloque | El caso de esta sesión |
+| Campos publicados que se vacían | Una regresión que los recuentos no ven: siguen siendo 77 fichas |
+
+Umbral de tres registros: en un producto de ochenta convocatorias, dos
+movimientos sueltos son funcionamiento normal. El resumen sale por consola y
+queda en `RUN_DIAGNOSTICS["product_changes"]`, es decir, en la auditoría.
+
+Probado contra el producto real: con el JSON actual contra sí mismo dice
+«Producto: 77 publicadas.» y calla; con una regresión simulada dice «⚠ 17
+desaparecen sin vencer su plazo · ⚠ 40 se quedan sin objeto_y_actuaciones».
+
+Un detalle que se corrigió sobre la marcha: el resumen contaba la **muestra**
+recortada a diez en vez del total, de modo que con diecisiete desaparecidas
+decía diez. Tiene prueba propia.
+
+### 51.5. Verificación
+
+**566 pruebas** en verde (523 antes). Las 43 nuevas: 8 de la reutilización de
+los anexos entre ejecuciones, 11 del catálogo de CDTI —incluidas las que fijan
+cómo se reconoce el documento del programa entre los genéricos de la página—,
+10 de humo por conector y 14 de la vigilancia del producto.
+
+Ejecución `--no-claude` completa, código 0: 916 detectadas, **81 vigentes**
+(Horizon 20 y EEN 4, uno más cada una que por la mañana; movimiento externo, no
+del código). Y una comprobación aparte con Chromium real sobre el catálogo de
+CDTI, porque es la única forma de ver que el texto llega de verdad.
