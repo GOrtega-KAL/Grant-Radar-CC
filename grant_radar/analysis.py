@@ -564,6 +564,12 @@ def _official_structured_facts(conv: dict) -> dict:
         }
     if conv.get("types_of_action"):
         facts["tipo_de_accion"] = conv["types_of_action"]
+    # Cifras económicas que la fuente publica ya estructuradas. Van aquí y no
+    # solo dentro de la frase de `budget` porque el modelo las declaraba
+    # ausentes en las 19 convocatorias de Horizon mientras existían en la
+    # respuesta que ya descargábamos (AGENTS.md 52.1).
+    if isinstance(conv.get("horizon_budget"), dict) and conv["horizon_budget"]:
+        facts["cifras_oficiales_del_topic"] = conv["horizon_budget"]
     return facts
 
 

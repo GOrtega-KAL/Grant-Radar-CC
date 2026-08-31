@@ -82,6 +82,81 @@ _HORIZON_MAX_PAGES = 40
 _HORIZON_SORT = {"field": "identifier", "order": "ASC"}
 
 
+def _horizon_budget_facts(budget_raw: str, identifier: str) -> dict:
+    """Las cifras que la SEDIA API entrega y el conector tiraba a la basura.
+
+    `budgetOverview` no es un adorno: trae, por topic, cuánto se financia por
+    proyecto (`minContribution`/`maxContribution`), el presupuesto de la
+    convocatoria (`budgetYearMap`), cuántos proyectos se esperan
+    (`expectedGrants`) y si la presentación es en una o dos fases
+    (`deadlineModel`). Hasta el 31/08/2026 todo eso se reducía a la cadena
+    «Presupuesto 2026», y el resultado estaba medido: **las 19 convocatorias de
+    Horizon llegaban a Haiku sin un solo dato económico** y las declaraba todas
+    ausentes (AGENTS.md 52.1).
+
+    El mapa lista varias acciones porque un mismo bloque presupuestario cubre
+    topics hermanos; la del topic es la que empieza por su identificador. Si no
+    aparece, se devuelve vacío: mejor sin cifra que con la del vecino.
+    """
+    if not budget_raw or budget_raw == "{}":
+        return {}
+    try:
+        overview = json.loads(budget_raw)
+    except (ValueError, TypeError):
+        return {}
+    propia = None
+    for acciones in (overview.get("budgetTopicActionMap") or {}).values():
+        for accion in acciones or []:
+            if str(accion.get("action", "")).startswith(str(identifier)):
+                propia = accion
+                break
+        if propia:
+            break
+    if not isinstance(propia, dict):
+        return {}
+
+    def entero(valor):
+        try:
+            return int(float(valor))
+        except (TypeError, ValueError):
+            return None
+
+    presupuesto = sum(
+        entero(importe) or 0
+        for importe in (propia.get("budgetYearMap") or {}).values()
+    )
+    hechos = {
+        "grant_min_eur": entero(propia.get("minContribution")),
+        "grant_max_eur": entero(propia.get("maxContribution")),
+        "call_budget_eur": presupuesto or None,
+        "expected_grants": entero(propia.get("expectedGrants")),
+        "deadline_model": str(propia.get("deadlineModel", "") or ""),
+    }
+    return {clave: valor for clave, valor in hechos.items() if valor}
+
+
+def _horizon_budget_summary(facts: dict, years: list) -> str:
+    """La misma información, en la frase que se publica en el panel."""
+    if not facts:
+        return f"Presupuesto {'/'.join(years)}" if years else "Ver convocatoria"
+    partes = []
+    maximo = facts.get("grant_max_eur")
+    minimo = facts.get("grant_min_eur")
+    if maximo and minimo and maximo != minimo:
+        partes.append(f"{minimo:,.0f}-{maximo:,.0f} € por proyecto".replace(",", "."))
+    elif maximo:
+        partes.append(f"{maximo:,.0f} € por proyecto".replace(",", "."))
+    if facts.get("call_budget_eur"):
+        partes.append(f"{facts['call_budget_eur']:,.0f} € en total".replace(",", "."))
+    previstos = facts.get("expected_grants")
+    if previstos:
+        partes.append(
+            f"{previstos} proyecto{'' if previstos == 1 else 's'} previsto"
+            f"{'' if previstos == 1 else 's'}"
+        )
+    return " · ".join(partes) if partes else "Ver convocatoria"
+
+
 def fetch_horizon_europe() -> list:
     """
     Horizon Europe — SEDIA Search API (backend oficial del portal F&T de la CE).
@@ -325,14 +400,14 @@ def fetch_horizon_europe() -> list:
 
         # Budget: dentro de budgetOverview (JSON string anidado)
         budget_raw = _sedia_meta(item, "budgetOverview")
-        budget_str = "Ver convocatoria"
+        budget_facts = _horizon_budget_facts(budget_raw, identifier)
+        years = []
         if budget_raw and budget_raw != "{}":
             try:
-                bo = json.loads(budget_raw)
-                years = bo.get("budgetYearsColumns", [])
-                budget_str = f"Presupuesto {'/'.join(years)}" if years else "Ver convocatoria"
-            except Exception:
-                pass
+                years = json.loads(budget_raw).get("budgetYearsColumns", []) or []
+            except (ValueError, TypeError):
+                years = []
+        budget_str = _horizon_budget_summary(budget_facts, years)
 
         results.append({
             "source":               "HORIZON EUROPE",
@@ -358,6 +433,8 @@ def fetch_horizon_europe() -> list:
             # exigen tres socios; una CSA no), y la API lo entrega desde
             # siempre. Se publicaba sin él.
             "types_of_action":      _sedia_meta(item, "typesOfAction"),
+            # Cifras oficiales del topic, que hasta hoy se descartaban.
+            "horizon_budget":       budget_facts,
             # Quién puede solicitar no está en el topic: está en los Anexos
             # Generales del programa, que el propio topic enlaza. Se leen una
             # vez por edición y se comparten (AGENTS.md 49.7).

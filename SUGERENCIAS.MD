@@ -1123,10 +1123,51 @@ mismo extractor, aprovechando la visita del navegador que ya se hacía para
 comprobar que la ficha existe. Es la misma idea que los Anexos Generales
 aplicada a otra fuente: **el dato no se copia, se lee de donde está**.
 
-Estado tras la sesión: **566 pruebas** en verde (471 al empezar el día) y 27
+Estado tras esa ronda: **566 pruebas** en verde y 27
 puntos abiertos en el backlog, frente a los 32 de la mañana. La ejecución de
 pago sigue sin lanzarse por decisión del usuario, que prefiere acumular todas
 las mejoras identificables antes de reanalizar una sola vez.
+
+---
+
+---
+
+## 14. Estado a 31/08/2026 (cierre definitivo): el dato que ya estaba en casa
+
+Dos encargos más del usuario, y el segundo —una pregunta— produjo el hallazgo
+más rentable del día.
+
+**El primero, de producto:** el aviso de estado de la recopilación se mueve del
+encabezado al pie. El motivo lo dio él y conviene que quede en esta evaluación
+porque toca el punto 2.7 desde otro ángulo: **la herramienta la usa personal que
+no la mantiene**, y el estado de la monitorización no es lo que esa persona ha
+venido a ver. Una herramienta interna tiene dos públicos y no atenderlos por
+separado es una forma silenciosa de acoplamiento.
+
+**El segundo:** ¿queda alguna mejora de extracción en la que se haya trabajado
+menos? Contestarlo con un recuento en vez de con una impresión dio esto: las
+**diecinueve** convocatorias de Horizon Europe llegaban al modelo **sin un solo
+dato económico** —ni presupuesto, ni importe por proyecto, ni tasa de
+financiación— y él los declaraba ausentes, correctamente. La causa no era la
+fuente: `budgetOverview` viene en la misma respuesta que ya descargamos, con el
+importe por proyecto, el presupuesto total, cuántos proyectos se esperan y si la
+presentación es en una o dos fases. El conector lo reducía a la cadena
+«Presupuesto 2026».
+
+**Es el tercer caso del mismo día con la misma forma**, y a estas alturas
+merece nombre propio: los Anexos Generales de Horizon (sección 12), las bases de
+las fichas de CDTI (sección 13) y ahora el presupuesto. En los tres, el dato
+estaba disponible y no se usaba; en ninguno hacía falta una fuente nueva. Frente
+al punto 2.4 de esta evaluación, que avisaba de la fragilidad ante las fuentes,
+la lección es la contraria de la que parecía: **antes de buscar más fuentes,
+conviene agotar lo que las actuales ya entregan**. Un recuento de campos
+ausentes por fuente cuesta cinco minutos y ha valido más que cualquier
+refactorización de hoy.
+
+Estado final de la sesión: **575 pruebas** en verde (471 al empezar el día) y
+una lista de pendientes que por primera vez cabe en una línea: una prueba
+dirigida de pago —tres convocatorias, unos 0,09 USD— y después la ejecución
+completa.
 
 ---
 

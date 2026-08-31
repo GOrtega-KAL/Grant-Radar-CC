@@ -7,7 +7,7 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
-> **Arranque en frío: AGENTS.md secciones 48 a 51**, todas del 31/08/2026.
+> **Arranque en frío: AGENTS.md secciones 48 a 52**, todas del 31/08/2026.
 > La 48 es la modularización, la 49 el producto, la 50 los Anexos Generales de
 > Horizon y la **51 es el cierre**: reutilización de lo leído y tres medidas
 > (CDTI con sus bases, humo por conector, vigilancia del producto). Cifras de
@@ -29,7 +29,15 @@ desactualizado si no se mantiene junto a ellos.
 > sus 77 fichas ya tienen el plazo vencido. Ponerlo al día es exactamente la
 > ejecución de pago del párrafo anterior.
 >
-> **Último trabajo (31/08/2026, sección 51):** el anexo de Horizon ya no se
+> **Último trabajo (31/08/2026, sección 52):** el presupuesto de Horizon
+> estaba en la respuesta de la API y se tiraba: `budgetOverview` trae el
+> importe por proyecto, el total y cuántos proyectos se financian, y el
+> conector lo reducía a «Presupuesto 2026». Las 19 convocatorias llegaban a
+> Haiku sin una sola cifra económica. Corregido y medido: **30 de 30 con
+> cifras**. El aviso de recopilación se movió al pie del panel, porque lo usa
+> quien mantiene la herramienta, no quien busca convocatorias.
+>
+> **Antes (31/08/2026, sección 51):** el anexo de Horizon ya no se
 > reanaliza sin motivo: su huella entra en la clave de caché, así que se paga
 > por leerlo una vez y solo se vuelve a pagar si cambia; y se guarda en disco
 > como respaldo si el portal falla. Con ello, tres medidas más: CDTI ya trae
@@ -112,7 +120,7 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
      —un segundo, señala módulo y nombre exactos si falta un import. Desde el
      31/08 comprueba también cada módulo del paquete, no solo el script;
   2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`;
-  3. `poetry run python -m unittest discover -s tests` —**566 pruebas**. Una,
+  3. `poetry run python -m unittest discover -s tests` —**575 pruebas**. Una,
      `FrontendLayoutTests::test_consortium_role_is_visible...`, es intermitente
      bajo carga porque conduce Chromium de verdad: repetir antes de investigar
      (AGENTS.md 44.7, nota sobre pruebas intermitentes);

@@ -241,20 +241,22 @@
   .icon-btn:hover { color: var(--brand); border-color: rgba(21, 86, 168, .35); background: var(--brand-soft-2); }
   .icon-btn:active, .ghost-btn:active, .primary-btn:active, .link-btn:active { transform: translateY(1px); }
 
-  /* Aviso de la recopilación diaria: cuántas convocatorias esperan análisis.
-     Mismo lenguaje visual que el aviso de datos pendientes de una ficha, para
-     que se lea como información y no como error. */
+  /* Estado de la recopilación diaria, junto al pie. Es una nota de
+     mantenimiento —cuántas convocatorias esperan análisis y qué costaría—, no
+     una alerta de trabajo: por eso va discreta y al final, donde no compite
+     con las convocatorias. */
   .collection-state {
-    margin: 0 0 14px;
-    padding: 10px 14px;
-    border: 1px solid rgba(191, 138, 20, .35);
-    border-left: 3px solid rgba(191, 138, 20, .75);
-    border-radius: 10px;
-    background: rgba(250, 204, 21, .09);
-    color: var(--text-1);
-    font-size: 12.5px;
+    margin: 18px 0 8px;
+    padding: 9px 13px;
+    border: 1px solid var(--border);
+    border-left: 3px solid rgba(191, 138, 20, .6);
+    border-radius: 9px;
+    background: var(--surface-2, rgba(250, 204, 21, .06));
+    color: var(--text-2);
+    font-size: 12px;
     line-height: 1.45;
   }
+  .collection-state strong { color: var(--text-1); }
 
   /* Bento overview */
   .overview-grid {
@@ -1388,11 +1390,6 @@
     </div>
   </header>
 
-  <!-- Estado de la recopilación diaria. Lo rellena loadCollectionState() con
-       estado_recopilacion.json, que publica el modo --no-claude sin llamar a
-       Claude. Oculto mientras no haya convocatorias esperando análisis. -->
-  <div class="collection-state" id="collection-state" role="status" style="display:none"></div>
-
   <section class="overview-grid" aria-label="Resumen del radar">
     <article class="overview-card overview-main">
       <div class="overview-kicker"><span>Oportunidades de alto encaje</span><span class="panel-tag">Prioridad alta</span></div>
@@ -1611,6 +1608,13 @@
       </section>
     </div>
   </section>
+
+  <!-- Estado de la recopilación diaria. Lo rellena loadCollectionState() con
+       estado_recopilacion.json, que publica el modo --no-claude sin llamar a
+       Claude. Va al final y no arriba a propósito: le sirve a quien mantiene
+       la herramienta, no a quien la usa para buscar convocatorias. Oculto
+       mientras no haya convocatorias esperando análisis. -->
+  <div class="collection-state" id="collection-state" role="status" style="display:none"></div>
 
   <footer class="footer">
     <div>Grant-Radar · Herramienta interna de vigilancia I+D para Kalfrisa</div>

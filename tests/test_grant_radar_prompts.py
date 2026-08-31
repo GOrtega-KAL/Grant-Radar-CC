@@ -229,13 +229,17 @@ class VersionBumpTests(unittest.TestCase):
         # presunciones declaradas (punto 24). El perfil no cambió, así que su
         # versión se queda: subirla sin motivo también cuesta dinero.
         self.assertEqual(EVALUATOR_VERSION, "fit-2026-08-v8-no-presumption")
-        self.assertEqual(ANALYSIS_PROMPT_VERSION, "2026-08-v13-programme-annexes")
+        self.assertEqual(
+            ANALYSIS_PROMPT_VERSION, "2026-08-v14-programme-annexes-and-budget"
+        )
         # El extractor entra en esta comprobación ahora que su prompt se puede
         # leer y editar: cambiar el texto sin subir la versión dejaría la caché
         # sirviendo hechos extraídos con el prompt anterior.
         # Subida el 31/08 al pasarle al extractor las condiciones generales del
         # programa leídas de los Anexos Generales (AGENTS.md 49.7).
-        self.assertEqual(EXTRACTOR_VERSION, "facts-2026-08-v8-programme-annexes")
+        self.assertEqual(
+            EXTRACTOR_VERSION, "facts-2026-08-v9-programme-annexes-and-budget"
+        )
 
 
 if __name__ == "__main__":

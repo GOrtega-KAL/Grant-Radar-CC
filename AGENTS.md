@@ -2463,6 +2463,7 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
 | 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
 | 34 | Programar la recopilación `--no-claude` diaria en el Programador de tareas de Windows | Sección 47.6 tiene el comando. **Es una acción del usuario en su equipo**, no del agente: queda anotada para no darla por hecha |
+| 37 | Prueba dirigida de pago antes de la ejecución completa: `--max-claude 3` con una convocatoria de Horizon, una de CDTI y una territorial | Sección 52.4. Es la única prueba que falta, porque la ruta de análisis solo se recorre pagando. Coste medido de una prueba equivalente el 20/08: 0,09 USD (sección 41). **Requiere autorización expresa**, como cualquier llamada a la API |
 
 El 429 del 19/08/2026 tuvo cooldown de minutos: una sonda de una sola petición,
 7 minutos después, devolvió la página completa. No impone restricción horaria,
@@ -4448,3 +4449,82 @@ Ejecución `--no-claude` completa, código 0: 916 detectadas, **81 vigentes**
 (Horizon 20 y EEN 4, uno más cada una que por la mañana; movimiento externo, no
 del código). Y una comprobación aparte con Chromium real sobre el catálogo de
 CDTI, porque es la única forma de ver que el texto llega de verdad.
+
+## 52. El dinero de Horizon, que estaba en la respuesta y se tiraba, a 31/08/2026
+
+El usuario pidió mover el aviso de recopilación al final del panel y preguntó si
+quedaba alguna prueba o mejora de extracción antes de pagar. Contestar esa
+pregunta con datos, y no de memoria, destapó el mayor hueco de extracción que
+tenía el proyecto.
+
+### 52.1. Dónde se estaba trabajando menos: el dinero
+
+Recuento de campos ausentes por fuente sobre los análisis en caché:
+
+| Fuente | Campos que más faltan |
+|---|---|
+| **Horizon Europe** | **19/19 sin `budget_total_eur`, `project_budget_eur`, `grant_max_eur` ni `funding_rate_percent`** |
+| BDNS | 42/50 `trl_source`, 34/50 `project_budget_eur`, 30/50 `eligible_actions` |
+| CDTI | 8/8 TRL, 7/8 presupuesto (mejorado hoy, sección 51.2) |
+
+Lo de BDNS es esperable: unas bases españolas rara vez hablan de TRL. Lo de
+Horizon no: **las diecinueve llegaban sin una sola cifra económica**, y la razón
+resultó ser nuestra.
+
+`budgetOverview` es un campo que la SEDIA API entrega en la misma respuesta que
+ya descargamos, y trae por topic:
+
+| Campo | Qué es |
+|---|---|
+| `minContribution` / `maxContribution` | Cuánto se financia **por proyecto** |
+| `budgetYearMap` | El presupuesto de la convocatoria, por año |
+| `expectedGrants` | Cuántos proyectos se esperan financiar |
+| `deadlineModel` | Una fase o dos |
+
+El conector lo reducía todo a la cadena **«Presupuesto 2026»**. Es exactamente
+el mismo patrón que los Anexos Generales de la sección 50: el dato estaba en
+casa y nadie lo miraba.
+
+### 52.2. Qué se ha cambiado
+
+`_horizon_budget_facts()` lee el bloque y `_horizon_budget_summary()` lo escribe
+para el panel. Un detalle que importa y tiene prueba propia: el mapa lista
+**varias acciones**, porque un mismo bloque presupuestario cubre topics
+hermanos, y hay que quedarse con la que empieza por el identificador del topic.
+Coger la primera habría publicado el presupuesto del vecino, que es peor que no
+publicar ninguno; si el topic no aparece, se devuelve vacío.
+
+Las cifras viajan además al bloque oficial como `cifras_oficiales_del_topic`,
+donde el prompt ya las trata como evidencia de primer orden.
+
+Medido en vivo sobre las 30 convocatorias de Horizon de hoy: **30 de 30 con
+cifras**. Lo que el panel publicaba y lo que publicará:
+
+> antes: `Presupuesto 2026`
+> ahora: `9.000.000 € por proyecto · 18.000.000 € en total · 2 proyectos previstos`
+
+Versiones subidas a `facts-2026-08-v9-programme-annexes-and-budget` y
+`2026-08-v14-programme-annexes-and-budget`.
+
+### 52.3. El aviso de recopilación, al final
+
+Movido del encabezado al pie, con tono de nota en vez de aviso. El motivo lo dio
+el usuario y conviene recordarlo al tocar el panel: **la herramienta la usa
+personal que no la mantiene**, y el estado de la monitorización no es lo que ha
+venido a ver. Sigue apareciendo solo cuando hay convocatorias esperando análisis.
+
+### 52.4. Lo que queda antes de pagar, dicho en orden
+
+1. **Una prueba dirigida de pago**, no la completa. El proyecto ya lo hizo el
+   20/08 (sección 41) por 0,09 USD: `--max-claude 3` con convocatorias elegidas
+   —una de Horizon, una de CDTI y una territorial— comprueba que los cambios de
+   hoy producen lo que se espera antes de gastar dos euros en ochenta y una. Es
+   la única prueba que falta, porque la ruta de análisis solo se recorre
+   pagando.
+2. Después, la ejecución completa.
+
+Lo que **no** conviene seguir persiguiendo antes de pagar: el TRL de BDNS
+(42/50 ausentes) no es un fallo de extracción sino una ausencia real en las
+bases españolas, y `eligible_actions` en BDNS (30/50) depende de que el hold
+haya descargado las bases, que ya tiene su propio mecanismo. Ahí no hay un dato
+en la mano sin usar, que es lo que sí había en Horizon.
