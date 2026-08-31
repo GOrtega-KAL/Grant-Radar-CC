@@ -157,3 +157,38 @@ def summarize_staleness(report: dict) -> str:
         f"{'s' if pendientes != 1 else ''} pendiente"
         f"{'s' if pendientes != 1 else ''} de analizar{importe} · {antiguedad}."
     )
+
+
+# Versión del archivo de estado que publica cada recopilación diaria. El
+# dashboard lo lee aparte de convocatorias.json y tolera que no exista.
+COLLECTION_STATE_SCHEMA_VERSION = 1
+
+
+def build_collection_state(
+    report: dict,
+    *,
+    detected: int,
+    active: int,
+    generated_at: str,
+) -> dict:
+    """Estado que publica una recopilación `--no-claude` para el dashboard.
+
+    Nace del flujo acordado el 21/08/2026 (AGENTS.md 47.5): una recopilación
+    diaria sin coste que sirva para decidir a mano cuándo pagar un análisis.
+    Hasta ahora ese dato solo se veía en consola, así que quien mira el panel
+    no tenía forma de saber si lo publicado seguía al día.
+
+    Es deliberadamente pequeño —seis cifras y dos fechas— y no repite nada de
+    `convocatorias.json`: describe la ÚLTIMA RECOPILACIÓN, no el producto.
+    """
+    return {
+        "schema_version": COLLECTION_STATE_SCHEMA_VERSION,
+        "generated_at": generated_at,
+        "collected_on": report.get("generated_on", ""),
+        "detected": detected,
+        "active": active,
+        "pending_analyses": report.get("pending"),
+        "estimated_cost_usd": report.get("estimated_cost_usd"),
+        "last_publication": report.get("last_publication", ""),
+        "days_since_publication": report.get("days_since_publication"),
+    }

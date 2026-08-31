@@ -361,37 +361,69 @@ def _normalize_model_manual_review(evaluation: dict) -> bool:
     return True
 
 
+# Marcadores de Aragón en un código NUTS o en su etiqueta. `es24` cubre también
+# las provincias (`es241` Huesca, `es242` Teruel, `es243` Zaragoza) porque se
+# busca como subcadena, no como código exacto.
+_ARAGON_REGION_MARKERS = ("es24", "aragon", "zaragoza", "huesca", "teruel")
+
+
+def _explicit_other_region_only(facts: dict, conv: dict) -> str:
+    """Devuelve la región española excluyente declarada, o cadena vacía.
+
+    Decide sobre el campo `regiones` de la API de BDNS —dato oficial— y, si no
+    llega, sobre las geografías que extrajo el modelo. Nunca sobre la prosa:
+    hasta el 31/08/2026 esta comprobación exigía que el razonamiento del modelo
+    contuviera una de seis expresiones tecleadas a mano («restriccion
+    geografica», «esta en zaragoza»…), y como el modelo redacta distinto cada
+    vez, disparaba en 1 de cada 12 casos reales. Los otros 11 se publicaban
+    como «elegibilidad por confirmar» diciendo en el propio texto que la
+    convocatoria se limita a Navarra, Cataluña o Murcia.
+
+    Dos guardas conservadoras, ambas medidas sobre el corpus real:
+    `ES - ESPAÑA` (convocatoria nacional) no lleva código de región y no
+    dispara; y si Aragón aparece entre las regiones admitidas, tampoco.
+    """
+    regions = conv.get("bdns_regions") or facts.get("eligible_geographies") or []
+    folded = _fold_text(" ".join(str(value) for value in regions))
+    # Un código más fino que el país: ES3, ES51, ES243... `ES` a secas es
+    # ámbito nacional y queda fuera a propósito.
+    if not re.search(r"\bes\d{1,3}\b", folded):
+        return ""
+    if any(marker in folded for marker in _ARAGON_REGION_MARKERS):
+        return ""
+    return ", ".join(str(value) for value in regions)
+
+
 def _enforce_explicit_regional_ineligibility(
     evaluation: dict,
     facts: dict,
     conv: dict,
 ) -> bool:
-    """Mantiene el descarte cuando modelo y hechos prueban otra región española."""
+    """Descarta una convocatoria territorial de otra comunidad autónoma."""
     if str(conv.get("source", "")).upper() != "BDNS":
         return False
-    geographies = _fold_text(" ".join(
-        str(value) for value in facts.get("eligible_geographies", [])
-    ))
-    has_specific_spanish_region = bool(re.search(r"\bes\d{2}\b", geographies))
-    aragon_allowed = any(marker in geographies for marker in (
-        "es24", "aragon", "zaragoza", "huesca", "teruel",
-    ))
-    if not has_specific_spanish_region or aragon_allowed:
-        return False
-    reason = _fold_text(evaluation.get("eligibility_reason", ""))
-    explicit_barrier = (
-        any(marker in reason for marker in (
-            "restriccion geografica", "ubicacion geografica", "geografia es",
-            "ubicacion:", "domiciliada en zaragoza", "esta en zaragoza",
-        ))
-        and any(marker in reason for marker in (
-            "determinante", "no cumple", "no es elegible", "inelegible",
-            "limita a", "restringida", "restringido",
-        ))
-    )
-    if not explicit_barrier:
+    other_region = _explicit_other_region_only(facts, conv)
+    if not other_region:
         return False
     evaluation["eligibility"] = "ineligible"
+    # El motivo publicado debe decir por qué se descarta. Se antepone el hecho
+    # territorial solo si no está ya: cuando el modelo lo explica —y suele
+    # hacerlo, aunque luego no concluya— su redacción es mejor que esta, y
+    # cuando no, aquí ya ha pasado _remove_unfounded_size_checks() y puede
+    # haber dejado una frase genérica sobre requisitos pendientes.
+    previous_reason = str(evaluation.get("eligibility_reason", "")).strip()
+    region_tokens = [
+        token for token in re.split(r"[^a-z0-9]+", _fold_text(other_region))
+        if len(token) > 2
+    ]
+    if not any(token in _fold_text(previous_reason) for token in region_tokens):
+        territorial_reason = (
+            f"Convocatoria territorial limitada a {other_region}; Kalfrisa "
+            "tiene su establecimiento en Zaragoza (ES243, Aragón)."
+        )
+        evaluation["eligibility_reason"] = (
+            f"{territorial_reason} {previous_reason}".strip()
+        )
     evaluation["decision"] = "discard_ineligible"
     evaluation["recommended_role"] = "not_applicable"
     evaluation["accion"] = (

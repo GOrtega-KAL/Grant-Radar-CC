@@ -14,6 +14,8 @@ import unittest
 from datetime import date
 
 from grant_radar.staleness import (
+    COLLECTION_STATE_SCHEMA_VERSION,
+    build_collection_state,
     build_staleness_report,
     format_staleness_report,
     summarize_staleness,
@@ -147,6 +149,61 @@ class StalenessRenderingTests(unittest.TestCase):
         ], today=HOY)
         self.assertIsInstance(format_staleness_report(informe), str)
         self.assertIsInstance(summarize_staleness(informe), str)
+
+
+class CollectionStateTests(unittest.TestCase):
+    """El archivo que publica la recopilación diaria para el panel.
+
+    Cierra el circuito acordado el 21/08/2026: una recopilación sin coste al
+    día, y la llamada de pago decidida a mano cuando el desfase la justifique.
+    Hasta el 31/08 ese número solo salía por consola.
+    """
+
+    def informe(self, **overrides):
+        base = {
+            "generated_on": "2026-08-31",
+            "pending": 80,
+            "estimated_cost_usd": 2.048,
+            "last_publication": "2026-08-21",
+            "days_since_publication": 10,
+        }
+        base.update(overrides)
+        return base
+
+    def test_the_state_carries_what_the_banner_needs(self):
+        estado = build_collection_state(
+            self.informe(), detected=915, active=80, generated_at="2026-08-31T07:00:00+00:00"
+        )
+        self.assertEqual(estado["schema_version"], COLLECTION_STATE_SCHEMA_VERSION)
+        self.assertEqual(estado["pending_analyses"], 80)
+        self.assertEqual(estado["estimated_cost_usd"], 2.048)
+        self.assertEqual(estado["days_since_publication"], 10)
+        self.assertEqual(estado["detected"], 915)
+        self.assertEqual(estado["active"], 80)
+        self.assertEqual(estado["collected_on"], "2026-08-31")
+
+    def test_it_does_not_repeat_the_published_product(self):
+        """Describe la recopilación, no las convocatorias: si crece, se acopla."""
+        estado = build_collection_state(
+            self.informe(), detected=1, active=1, generated_at="2026-08-31T07:00:00+00:00"
+        )
+        self.assertNotIn("convocatorias", estado)
+        self.assertLessEqual(len(estado), 9)
+
+    def test_nothing_pending_is_a_valid_state_not_an_absence(self):
+        estado = build_collection_state(
+            self.informe(pending=0, estimated_cost_usd=0.0),
+            detected=915, active=80, generated_at="2026-08-31T07:00:00+00:00",
+        )
+        self.assertEqual(estado["pending_analyses"], 0)
+
+    def test_an_audit_without_measurements_does_not_invent_a_number(self):
+        estado = build_collection_state(
+            self.informe(pending=None, estimated_cost_usd=None, days_since_publication=None),
+            detected=915, active=80, generated_at="2026-08-31T07:00:00+00:00",
+        )
+        self.assertIsNone(estado["pending_analyses"])
+        self.assertIsNone(estado["estimated_cost_usd"])
 
 
 if __name__ == "__main__":

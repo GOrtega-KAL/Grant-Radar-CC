@@ -241,6 +241,21 @@
   .icon-btn:hover { color: var(--brand); border-color: rgba(21, 86, 168, .35); background: var(--brand-soft-2); }
   .icon-btn:active, .ghost-btn:active, .primary-btn:active, .link-btn:active { transform: translateY(1px); }
 
+  /* Aviso de la recopilación diaria: cuántas convocatorias esperan análisis.
+     Mismo lenguaje visual que el aviso de datos pendientes de una ficha, para
+     que se lea como información y no como error. */
+  .collection-state {
+    margin: 0 0 14px;
+    padding: 10px 14px;
+    border: 1px solid rgba(191, 138, 20, .35);
+    border-left: 3px solid rgba(191, 138, 20, .75);
+    border-radius: 10px;
+    background: rgba(250, 204, 21, .09);
+    color: var(--text-1);
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+
   /* Bento overview */
   .overview-grid {
     display: grid;
@@ -1373,6 +1388,11 @@
     </div>
   </header>
 
+  <!-- Estado de la recopilación diaria. Lo rellena loadCollectionState() con
+       estado_recopilacion.json, que publica el modo --no-claude sin llamar a
+       Claude. Oculto mientras no haya convocatorias esperando análisis. -->
+  <div class="collection-state" id="collection-state" role="status" style="display:none"></div>
+
   <section class="overview-grid" aria-label="Resumen del radar">
     <article class="overview-card overview-main">
       <div class="overview-kicker"><span>Oportunidades de alto encaje</span><span class="panel-tag">Prioridad alta</span></div>
@@ -1694,6 +1714,31 @@
     energy_efficiency: 'Eficiencia energética'
   };
   const eligibilityMap = { eligible: 'Elegible', ineligible: 'No elegible', unknown: 'Por confirmar' };
+
+  // Campos de los hechos extraídos que deciden la elegibilidad. La tarjeta de
+  // ELEGIBILIDAD dice cuál de ellos falta —dato corto y que no aparece en
+  // ninguna otra parte de la ficha— en vez de repetir el razonamiento entero,
+  // que ya sale en el aviso superior.
+  const eligibilityFieldLabels = {
+    applicant_types: 'tipos de solicitante',
+    eligible_entity_types: 'entidades admitidas',
+    eligible_geographies: 'geografías',
+    eligibility_evidence: 'evidencia de elegibilidad',
+    consortium_required: 'requisito de consorcio'
+  };
+
+  function eligibilityNote(c) {
+    const missing = (((c.call_facts || {}).missing_fields) || [])
+      .filter(field => eligibilityFieldLabels[field])
+      .map(field => eligibilityFieldLabels[field]);
+    if (c.eligibility === 'ineligible') return 'Excluida por los hechos extraídos';
+    if (c.eligibility === 'unknown') {
+      return missing.length
+        ? `La fuente no publica: ${missing.slice(0, 3).join(', ')}`
+        : 'Motivo en el aviso de arriba';
+    }
+    return 'Sin restricción aplicable en los hechos extraídos';
+  }
   const roleMap = {
     leader: 'Líder', technology_partner: 'Socio tecnológico',
     demo_site: 'Emplazamiento demostrador', subcontractor: 'Subcontratista', end_user: 'Usuario final',
@@ -2396,6 +2441,48 @@
       updateGeneratedTimestamp();
       renderAll();
     }
+    loadCollectionState();
+  }
+
+  // Estado de la última recopilación diaria. Es un archivo aparte y opcional:
+  // lo publica el modo --no-claude, que no regenera convocatorias.json, y su
+  // única función es avisar de cuántas convocatorias esperan un análisis que
+  // todavía no se ha pagado. Si no existe —despliegues anteriores— no pasa
+  // nada: el aviso simplemente no aparece.
+  async function loadCollectionState() {
+    const banner = document.getElementById('collection-state');
+    if (!banner) return;
+    try {
+      const response = await fetch('estado_recopilacion.json?_=' + Date.now());
+      if (!response.ok) throw new Error('sin estado de recopilación');
+      const state = await response.json();
+      const pending = Number(state.pending_analyses);
+      if (!Number.isFinite(pending) || pending <= 0) {
+        banner.style.display = 'none';
+        return;
+      }
+      const cost = Number(state.estimated_cost_usd);
+      const days = Number(state.days_since_publication);
+      const partes = [
+        `<strong>${pending} convocatoria${pending === 1 ? '' : 's'} espera${pending === 1 ? '' : 'n'} análisis</strong>`,
+        Number.isFinite(cost) ? `coste estimado ${cost.toFixed(2)} USD` : '',
+        state.collected_on ? `recopilado el ${formatShortDate(state.collected_on)}` : '',
+        Number.isFinite(days)
+          ? `lo publicado tiene ${days} día${days === 1 ? '' : 's'}`
+          : ''
+      ].filter(Boolean);
+      banner.innerHTML = partes.join(' · ');
+      banner.style.display = 'block';
+    } catch (error) {
+      banner.style.display = 'none';
+    }
+  }
+
+  function formatShortDate(value) {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+      ? String(value)
+      : date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
   }
 
   function updateGeneratedTimestamp() {
@@ -2706,7 +2793,11 @@
     document.getElementById('ov-actionability').textContent = `${c.actionability_score}%`;
     document.getElementById('ov-confidence').textContent = c.confidence == null ? 'N/D' : `${c.confidence}%`;
     document.getElementById('ov-eligibility').textContent = eligibilityMap[c.eligibility] || c.eligibility;
-    document.getElementById('ov-eligibility-note').textContent = c.eligibility_reason || 'Según datos extraídos';
+    // La nota de la tarjeta NO repite el motivo: ese texto ya sale entero en el
+    // aviso de arriba, y duplicarlo estiraba la tarjeta hasta descuadrar la
+    // fila de indicadores. Aquí va lo que falta para decidir, que es corto y
+    // no está en ninguna otra parte de la ficha.
+    document.getElementById('ov-eligibility-note').textContent = eligibilityNote(c);
     document.getElementById('ov-deadline-days').textContent = deadlineText(c.deadline);
     document.getElementById('ov-deadline-days').className = `decision-card-value ${Number.isFinite(c.deadline) && c.deadline <= 20 ? 'danger' : ''}`;
     const deadlineDate = formatDeadlineDate(c.deadline_date);

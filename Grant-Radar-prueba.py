@@ -176,6 +176,7 @@ from grant_radar.http_client import (
 )
 from grant_radar.browser import PlaywrightBrowser
 from grant_radar.staleness import (
+    build_collection_state,
     build_staleness_report,
     format_staleness_report,
     summarize_staleness,
@@ -312,6 +313,10 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(PROJECT_DIR, "grant_radar_data")
 os.makedirs(DATA_DIR, exist_ok=True)
 OUTPUT_FILE = os.path.join(PROJECT_DIR, "convocatorias.json")
+# Estado de la ultima recopilacion, que publica tambien el modo --no-claude:
+# el dashboard lo lee aparte para avisar de cuantas convocatorias esperan
+# analisis. Vive en la raiz porque GitHub Pages sirve desde ahi.
+COLLECTION_STATE_FILE = os.path.join(PROJECT_DIR, "estado_recopilacion.json")
 CACHE_FILE = os.path.join(DATA_DIR, "grant_radar_cache.json")
 AUDIT_FILE = os.path.join(DATA_DIR, "grant_radar_audit.json")
 
@@ -1188,6 +1193,45 @@ print("✓ Función GitHub Pages cargada")
 # ─────────────────────────────────────────────────────────────────────
 
 
+def publish_collection_state(staleness: dict, detected: int, active: int) -> None:
+    """Deja a la vista del dashboard cuántas convocatorias esperan análisis.
+
+    Es la pieza que faltaba del flujo acordado el 21/08/2026 (AGENTS.md 47.5):
+    una recopilación diaria sin coste decide cuándo merece la pena pagar un
+    análisis, pero hasta ahora ese número solo salía por consola, así que quien
+    miraba el panel no podía saber si lo publicado seguía al día.
+
+    Matiz sobre el invariante de `--no-claude`: sigue sin llamar a Claude, sin
+    tocar la caché de análisis y sin generar ni publicar `convocatorias.json`.
+    Lo que publica es un archivo aparte, pequeño y de solo lectura para el
+    panel, que describe la recopilación y no el producto.
+    """
+    state = build_collection_state(
+        staleness,
+        detected=detected,
+        active=active,
+        generated_at=datetime.now(timezone.utc).isoformat(),
+    )
+    try:
+        with open(COLLECTION_STATE_FILE, "w", encoding="utf-8") as handle:
+            json.dump(state, handle, ensure_ascii=False, indent=2)
+    except OSError as exc:
+        log.warning(f"No se pudo escribir el estado de recopilación: {exc}")
+        return
+    print(f"  Estado de recopilación actualizado: {COLLECTION_STATE_FILE}")
+    github_upload(
+        COLLECTION_STATE_FILE,
+        token=GITHUB_TOKEN,
+        user=GITHUB_USER,
+        repo=GITHUB_REPO,
+        branch=GITHUB_BRANCH,
+        message=(
+            "Grant-Radar: estado de recopilación "
+            f"{datetime.now().strftime('%Y-%m-%d %H:%M')} UTC"
+        ),
+    )
+
+
 def run_pipeline(
 
 
@@ -1363,8 +1407,9 @@ def run_pipeline(
             f"  Cobertura recurrente [{check['status']}]: {check['label']} "
             f"(coincidencias={check['matches']})"
         )
+    detected_count = len(all_raw)
     print(
-        f"\nTotal convocatorias detectadas antes de filtros: {len(all_raw)} "
+        f"\nTotal convocatorias detectadas antes de filtros: {detected_count} "
         f"({deduplicated_count} duplicadas fusionadas)"
     )
 
@@ -1657,10 +1702,10 @@ def run_pipeline(
         # Con la auditoría ya guardada, esta recopilación cuenta para el
         # desfase. Es el dato que justifica —o no— pagar una ejecución con
         # Claude, y el motivo de programar esta recopilación a diario.
-        print("  " + summarize_staleness(
-            build_staleness_report(load_audit_runs(AUDIT_FILE))
-        ))
+        staleness = build_staleness_report(load_audit_runs(AUDIT_FILE))
+        print("  " + summarize_staleness(staleness))
         print("  Detalle: --staleness-report")
+        publish_collection_state(staleness, detected_count, len(all_raw))
         print("=" * 60)
         return all_raw
 

@@ -7,8 +7,9 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
-> **Arranque en frío: AGENTS.md sección 48**, que es el cierre de la sesión del
-> 31/08/2026. Cifras de referencia en 48.8; backlog abierto en la sección 36.
+> **Arranque en frío: AGENTS.md secciones 48 y 49**, las dos del 31/08/2026.
+> La 48 es la modularización; la **49 es el cierre** y toca producto. Cifras de
+> referencia en 48.8; backlog abierto en la sección 36.
 > Las secciones 44 a 47 son la sesión del 21/08 y siguen vigentes como
 > antecedente.
 >
@@ -26,7 +27,19 @@ desactualizado si no se mantiene junto a ellos.
 > sus 77 fichas ya tienen el plazo vencido. Ponerlo al día es exactamente la
 > ejecución de pago del párrafo anterior.
 >
-> **Último trabajo (31/08/2026, sección 48):** se terminó la modularización que
+> **Último trabajo (31/08/2026, sección 49):** tres encargos mirando el
+> producto. La recopilación diaria ya se ve en el panel —publica
+> `estado_recopilacion.json` y el dashboard avisa de cuántas convocatorias
+> esperan análisis—; la elegibilidad dejó de imprimirse dos veces en cada
+> ficha; y se encontró por qué 25 de 31 convocatorias salían «por confirmar»:
+> una regla determinista decidía leyendo la prosa del modelo y disparaba en 1
+> de cada 12 casos reales. Corregida sobre el campo oficial de regiones, 8
+> convocatorias territoriales de otras comunidades dejan de pedir confirmación,
+> **sin coste**. Las 14 que siguen «por confirmar» son de Horizon y CDTI, cuya
+> elegibilidad no está en la fuente que leemos: es el punto 35 del backlog y
+> requiere una decisión tuya.
+>
+> **Antes (31/08/2026, sección 48):** se terminó la modularización que
 > quedaba en el orden ya medido —auditoría, capa de análisis con Haiku y segunda
 > mitad del dominio de holds—, con lo que el script baja de 4.086 a **2.140
 > líneas** y el paquete pasa a **38 módulos**. En el script solo quedan la matriz
@@ -67,16 +80,20 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   staged — hay un hook en `.git/hooks/pre-commit` que ya lo hace, pero no
   hay que confiar solo en eso si se edita algo manualmente.
 - No modificar `Obsoleto/` ni `Frontend alternativo/` salvo petición expresa.
-- `--no-claude` nunca debe llamar a Claude, modificar la caché IA, generar
-  JSON ni publicar. Es el modo de validación por defecto tras un cambio de
-  código: `poetry run python "Grant-Radar-prueba.py" --no-claude`.
+- `--no-claude` nunca debe llamar a Claude, modificar la caché IA ni generar o
+  publicar `convocatorias.json`. Es el modo de validación por defecto tras un
+  cambio de código: `poetry run python "Grant-Radar-prueba.py" --no-claude`.
+  **Matiz desde el 31/08/2026 (AGENTS.md 49.5):** sí escribe y publica
+  `estado_recopilacion.json`, un archivo aparte de ocho cifras que describe la
+  recopilación —cuántas convocatorias esperan análisis y cuánto costaría— para
+  que el panel pueda avisar. No toca el producto ni la caché de análisis.
 - Después de cualquier cambio en `Grant-Radar-prueba.py` o `grant_radar/`,
   en este orden (el detalle en AGENTS.md 43.3; las cifras, en **48.8**):
   1. `poetry run python -m unittest tests.test_grant_radar_script_names`
      —un segundo, señala módulo y nombre exactos si falta un import. Desde el
      31/08 comprueba también cada módulo del paquete, no solo el script;
   2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`;
-  3. `poetry run python -m unittest discover -s tests` —**493 pruebas**. Una,
+  3. `poetry run python -m unittest discover -s tests` —**507 pruebas**. Una,
      `FrontendLayoutTests::test_consortium_role_is_visible...`, es intermitente
      bajo carga porque conduce Chromium de verdad: repetir antes de investigar
      (AGENTS.md 44.7, nota sobre pruebas intermitentes);
@@ -105,8 +122,13 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   ciclo real es de días o semanas, no de horas. Para saber cuánto se está
   desfasando lo publicado, sin red y sin coste:
   `poetry run python "Grant-Radar-prueba.py" --staleness-report`.
+  Desde el 31/08 ese mismo dato viaja al panel: cada recopilación publica
+  `estado_recopilacion.json` y el dashboard muestra un aviso mientras haya
+  convocatorias esperando análisis (AGENTS.md 49.5).
   El comando para programar la tarea diaria en Windows está en AGENTS.md 47.6.
-  **Programarla es una acción pendiente del usuario, no del agente.**
+  **Programarla es una acción pendiente del usuario, no del agente.** La tarea
+  necesita `GITHUB_TOKEN` en el entorno para poder publicar ese estado; sin él
+  la recopilación funciona igual y solo se salta la publicación.
 - Al cerrar cada ronda de trabajo, dejar `AGENTS.md`, `CLAUDE.md` y
   `SUGERENCIAS.MD` al día para que otra sesión pueda arrancar en frío. Es
   requisito del usuario, no una cortesía.

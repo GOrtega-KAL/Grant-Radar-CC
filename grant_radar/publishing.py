@@ -38,10 +38,15 @@ def github_upload(
     user: str,
     repo: str,
     branch: str,
+    message: str = "",
 ):
     """
-    Sube el convocatorias.json al repositorio GitHub usando la API REST.
+    Sube un archivo al repositorio GitHub usando la API REST.
     GitHub Pages servirá automáticamente el archivo actualizado.
+
+    `message` permite distinguir en el historial una publicación completa de la
+    del estado de recopilación diario, que sube un archivo distinto y mucho más
+    pequeño. Sin él, el mensaje es el de siempre.
     """
     if not github_token_format_is_valid(token):
         print("⚠ Formato de GITHUB_TOKEN no válido — se omite la publicación")
@@ -66,7 +71,10 @@ def github_upload(
 
     # Subir o actualizar el archivo
     payload = {
-        "message": f"Grant-Radar: actualización automática {datetime.now().strftime('%Y-%m-%d %H:%M')} UTC",
+        "message": message or (
+            "Grant-Radar: actualización automática "
+            f"{datetime.now().strftime('%Y-%m-%d %H:%M')} UTC"
+        ),
         "content": content_b64,
         "branch":  branch,
     }
@@ -76,7 +84,7 @@ def github_upload(
     resp = requests.put(url, headers=headers, json=payload)
 
     if resp.status_code in (200, 201):
-        print(f"✓ convocatorias.json subido a GitHub Pages")
-        print(f"  URL pública: https://{user}.github.io/{repo}/convocatorias.json")
+        print(f"✓ {filename} subido a GitHub Pages")
+        print(f"  URL pública: https://{user}.github.io/{repo}/{filename}")
     else:
         print(f"⚠ Error subiendo a GitHub: {resp.status_code} — {resp.json().get('message','')}")

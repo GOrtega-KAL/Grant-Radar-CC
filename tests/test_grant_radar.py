@@ -1996,6 +1996,21 @@ class FrontendContractTests(unittest.TestCase):
         ):
             self.assertIn(marker, self.html)
 
+    def test_the_eligibility_reason_is_printed_once(self):
+        """El motivo salía dos veces: en el aviso y en la nota de la tarjeta.
+
+        Además de repetirse, el texto largo estiraba la tarjeta de ELEGIBILIDAD
+        y descuadraba la fila de indicadores. La tarjeta pasa a decir qué dato
+        falta; el razonamiento se queda solo en el aviso superior.
+        """
+        self.assertIn("ov-eligibility-note').textContent = eligibilityNote(c)", self.html)
+        self.assertNotIn(
+            "ov-eligibility-note').textContent = c.eligibility_reason", self.html
+        )
+        # La nota corta se construye con los campos que deciden elegibilidad.
+        for campo in ("applicant_types", "eligible_geographies", "eligibility_evidence"):
+            self.assertIn(campo, self.html)
+
     def test_all_four_sort_explanations_are_present(self):
         for term in ("Compatibilidad", "Accionabilidad", "Tiempo restante", "Confianza"):
             self.assertIn(term, self.html)
@@ -2304,6 +2319,85 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
         self.assertEqual(analysis["eligibility"], "ineligible")
         self.assertFalse(analysis["data_pending"])
         self.assertFalse(analysis["review_required"])
+
+    def _regional_analysis(self, **overrides):
+        """Análisis mínimo con el que probar la regla territorial."""
+        facts = {
+            "eligible_geographies": overrides.pop("geographies", []),
+            "eligible_entity_types": ["Empresas"],
+            "funding_lines": [], "evidence": [],
+        }
+        analysis = {
+            "fit_score": 55, "actionability_score": 30, "confidence": 70,
+            "decision": "watch", "eligibility": "unknown",
+            "eligibility_reason": overrides.pop("reason", ""),
+            "recommended_role": "technology_partner",
+            "risks_and_unknowns": [], "positive_evidence": [],
+            "scores": {}, "summary": "", "action": "", "call_facts": facts,
+        }
+        raw = {
+            "source": "BDNS", "deadline_days": 90,
+            "title": "Ayuda a la inversión industrial",
+        }
+        raw.update(overrides)
+        APP["apply_current_deterministic_rules"]({"raw_document": raw, "analysis": analysis})
+        return analysis
+
+    def test_a_territorial_call_is_discarded_whatever_the_model_wrote(self):
+        """La causa de que 25 de 31 convocatorias salieran «por confirmar».
+
+        La regla exigía que el razonamiento del modelo contuviera una de seis
+        expresiones tecleadas a mano. Medido sobre el corpus real del 21/08:
+        disparaba en 1 de 12 casos. En los otros 11 el propio texto decía «la
+        convocatoria limita a ES22 (Navarra)» y aun así se publicaba como
+        pendiente de confirmar. Ahora decide el campo `regiones` de la API.
+        """
+        analysis = self._regional_analysis(
+            bdns_regions=["ES22 - COMUNIDAD FORAL DE NAVARRA"],
+            reason="Kalfrisa es empresa mediana; requiere confirmación geográfica.",
+        )
+        self.assertEqual(analysis["eligibility"], "ineligible")
+        self.assertEqual(analysis["decision"], "discard_ineligible")
+
+    def test_province_level_codes_also_count_as_another_region(self):
+        """`\\bes\\d{2}\\b` no casaba con ES212 ni ES614: media España se escapaba."""
+        for region in ("ES212 - Gipuzkoa", "ES614 - Granada", "ES3 - COMUNIDAD DE MADRID"):
+            with self.subTest(region=region):
+                analysis = self._regional_analysis(bdns_regions=[region])
+                self.assertEqual(analysis["eligibility"], "ineligible")
+
+    def test_a_national_call_is_not_discarded_as_territorial(self):
+        analysis = self._regional_analysis(bdns_regions=["ES - ESPAÑA"])
+        self.assertEqual(analysis["eligibility"], "unknown")
+        self.assertNotEqual(analysis["decision"], "discard_ineligible")
+
+    def test_aragon_in_any_form_keeps_the_call(self):
+        for region in ("ES24 - ARAGON", "ES243 - Zaragoza", "ES241 - Huesca"):
+            with self.subTest(region=region):
+                analysis = self._regional_analysis(bdns_regions=[region])
+                self.assertEqual(analysis["eligibility"], "unknown")
+
+    def test_a_call_open_to_several_regions_including_aragon_is_kept(self):
+        analysis = self._regional_analysis(
+            bdns_regions=["ES51 - CATALUÑA", "ES24 - ARAGON"],
+        )
+        self.assertEqual(analysis["eligibility"], "unknown")
+
+    def test_the_official_field_wins_over_the_model_extraction(self):
+        """`bdns_regions` viene de la API; `eligible_geographies`, del modelo."""
+        analysis = self._regional_analysis(
+            bdns_regions=["ES - ESPAÑA"], geographies=["ES22 - Navarra"],
+        )
+        self.assertEqual(analysis["eligibility"], "unknown")
+
+    def test_without_the_official_field_the_extracted_geographies_decide(self):
+        analysis = self._regional_analysis(geographies=["ES51 - CATALUÑA"])
+        self.assertEqual(analysis["eligibility"], "ineligible")
+
+    def test_a_discarded_call_explains_why_even_if_the_model_said_nothing(self):
+        analysis = self._regional_analysis(bdns_regions=["ES120 - Asturias"], reason="")
+        self.assertIn("ES120 - Asturias", analysis["eligibility_reason"])
+        self.assertIn("Zaragoza", analysis["eligibility_reason"])
 
     def test_own_industrial_investment_is_not_discarded_for_lacking_rd(self):
         facts = {
@@ -2621,6 +2715,28 @@ class FrontendLayoutTests(unittest.TestCase):
         if hasattr(cls, "server"):
             cls.server.shutdown()
             cls.server.server_close()
+
+    def test_the_daily_collection_state_is_shown_when_analyses_are_pending(self):
+        """El aviso que cierra el circuito de la recopilación diaria.
+
+        `--no-claude` publica `estado_recopilacion.json` sin llamar a Claude, y
+        el panel lo lee aparte para decir cuántas convocatorias esperan un
+        análisis que todavía no se ha pagado (AGENTS.md 47.5 y 49).
+        """
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        page.goto(self.url, wait_until="networkidle")
+        banner = page.locator("#collection-state")
+        estado = json.loads(
+            (ROOT / "estado_recopilacion.json").read_text(encoding="utf-8")
+        )
+        if not estado.get("pending_analyses"):
+            self.assertFalse(banner.is_visible(), "sin pendientes no debe avisar")
+        else:
+            self.assertTrue(banner.is_visible(), "con pendientes debe avisar")
+            texto = banner.inner_text()
+            self.assertIn(str(estado["pending_analyses"]), texto)
+            self.assertIn("espera", texto)
+        page.close()
 
     def test_requested_viewports_have_no_horizontal_overflow(self):
         for width, height in ((912, 368), (1080, 720), (820, 900), (390, 844)):

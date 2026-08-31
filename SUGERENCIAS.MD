@@ -1002,6 +1002,71 @@ defecto*. Diez días después, sigue siendo cierto.
 
 ---
 
+---
+
+## 12. Estado a 31/08/2026 (cierre): una regla determinista que dependía de cómo redactara el modelo
+
+Tres encargos del usuario sobre el producto publicado. Los tres tocan puntos de
+esta evaluación, y el segundo aporta el ejemplo más claro que ha dado el
+proyecto de lo que advierte el punto 2.3.
+
+**Frente a 2.3 (reglas de negocio como código y no como datos).** De las 31
+convocatorias no descartadas, 25 se publicaban con la elegibilidad «por
+confirmar». Ocho de ellas eran convocatorias territoriales de otras comunidades
+—Navarra, Cataluña, Murcia, Asturias…— y el propio texto publicado lo decía:
+«la convocatoria limita a ES22 (Navarra)». Existía una regla determinista para
+cerrar justo esos casos, pero **decidía leyendo la prosa del modelo**: exigía
+que el razonamiento contuviera una de seis expresiones tecleadas a mano. Medido
+sobre el corpus real, disparaba en 1 de cada 12 casos.
+
+Es la misma lección de la sección 10 llevada un paso más allá. Allí el problema
+era un prompt que se degradaba sin que nadie lo viera; aquí es una regla
+**determinista** cuyo dato de entrada era, en la práctica, el estilo de
+redacción de un modelo generativo. La corrección es la que este documento pide
+en 3.3: decidir sobre datos —el campo `regiones` de la API oficial, que ya
+llegaba— y dejar la prosa para explicar, no para decidir. Ocho convocatorias
+dejan de pedir confirmación, y no cuesta nada: las salvaguardas deterministas
+se reaplican al cargar la caché.
+
+De paso apareció un segundo fallo en la misma regla: el patrón `\bes\d{2}\b`
+solo casaba códigos de dos dígitos, así que ES212 (Gipuzkoa), ES614 (Granada) o
+ES3 (Madrid) nunca entraban. Media España se escapaba de una regla escrita para
+toda ella. Ninguna prueba lo cubría porque el único caso probado usaba ES53.
+
+**Frente a 2.8 (contrato frontend-backend).** La ficha de una convocatoria
+imprimía **el mismo texto dos veces**: el motivo de elegibilidad salía entero en
+el aviso superior y otra vez como nota de la tarjeta, que se estiraba y
+descuadraba la fila de indicadores. La tarjeta pasa a decir qué dato falta para
+decidir, leído de `missing_fields`; el razonamiento se queda en un solo sitio.
+Es una duplicación que ninguna prueba podía ver porque las dos mitades eran
+correctas por separado.
+
+En sentido contrario, se añade un contrato nuevo y deliberado:
+`estado_recopilacion.json`, ocho cifras que publica la recopilación diaria sin
+llamar a Claude para que el panel avise de cuántas convocatorias esperan
+análisis. Es la pieza que faltaba del flujo de la sección 10 —recopilar gratis a
+diario, pagar a mano cuando compense—, y responde también a lo que la sección 9
+dejó anotado: **mientras la publicación dependa de una autorización manual, el
+producto envejece por defecto**; al menos ahora el panel lo dice.
+
+**Frente a 2.4 (fragilidad ante las fuentes), un límite que no es un fallo.**
+Las 14 convocatorias que siguen «por confirmar» son de Horizon Europe y CDTI, y
+lo están porque **la fuente no publica el dato**: un topic de Horizon son 3.000
+caracteres de objetivos y alcance, y quién puede solicitar vive en los Anexos
+Generales del programa de trabajo. El modelo declara el dato ausente, que es lo
+correcto según su prompt. Resolverlo exige inyectar hechos de programa
+versionados, como ya se hace con el bloque oficial de BDNS, y eso crea otro
+catálogo mantenido a mano —los dos que existen han caducado en silencio—. Queda
+como punto 35 del backlog, marcado como decisión, no como tarea.
+
+Estado tras la ronda: **507 pruebas** en verde (493 antes) y un backlog de **29
+puntos abiertos**, uno más que hace un rato: no se cierra ninguno y se abre el
+35. A cambio se corrige un fallo que no estaba anotado en ninguna parte, porque
+nadie lo había visto hasta que el usuario preguntó por qué su panel decía «por
+confirmar» tantas veces.
+
+---
+
 ## Nota de alcance
 
 Este documento es una evaluación externa de solo lectura, ampliada con una

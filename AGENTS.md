@@ -2464,6 +2464,7 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
 | 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
 | 34 | Programar la recopilación `--no-claude` diaria en el Programador de tareas de Windows | Sección 47.6 tiene el comando. **Es una acción del usuario en su equipo**, no del agente: queda anotada para no darla por hecha |
+| 35 | La elegibilidad de Horizon Europe y CDTI no está en la fuente que leemos: 14 de las 17 convocatorias que siguen «por confirmar» lo están por eso | Sección 49.3. Un topic de Horizon no dice quién puede solicitar —eso vive en los Anexos Generales del programa— y el prompt prohíbe completar huecos, así que el modelo declara el dato ausente y acierta. La vía sería inyectar hechos de programa versionados, como ya se hace con el bloque oficial de BDNS. **Requiere decisión**: cuesta una reanalisis y crea otro catálogo escrito a mano, que en este proyecto ha caducado en silencio dos veces (puntos 27 y 28) |
 
 El 429 del 19/08/2026 tuvo cooldown de minutos: una sonda de una sola petición,
 7 minutos después, devolvió la página completa. No impone restricción horaria,
@@ -4038,3 +4039,122 @@ Requiere autorización expresa, como siempre.
 Y sigue anotado el **punto 34**: programar la recopilación diaria `--no-claude`
 en el Programador de tareas es una acción del usuario en su equipo, no del
 agente. El comando está en 47.6.
+
+## 49. Por qué casi nada llegaba a «elegible», y el aviso de la recopilación diaria, a 31/08/2026
+
+Tres encargos del usuario mirando el producto, no el código: que la
+recopilación diaria se vea en el panel, que la elegibilidad no aparezca dos
+veces en una ficha, y que se estudie por qué casi ninguna convocatoria
+consigue confirmarla.
+
+### 49.1. El dato que estaba a la vista y no se veía
+
+De las 31 convocatorias no descartadas del JSON publicado, **25 salían con
+elegibilidad «por confirmar»**. Leídas una a una, no eran un solo problema
+sino tres, y solo el primero era un fallo nuestro.
+
+| Familia | Cuántas | Qué pasa |
+|---|---|---|
+| Convocatorias territoriales de otra comunidad | 8 | El propio texto dice «la convocatoria limita a ES22 (Navarra)» y aun así se publicaba como pendiente de confirmar |
+| Horizon Europe y CDTI sin datos de elegibilidad | 14 | La fuente no publica quién puede solicitar: no está en el topic, está en los Anexos Generales del programa |
+| Dudas legítimas | 3 | CNAE no listado en el IDAE, alcance de una ayuda nacional, y una convocatoria de Aragón con condiciones abiertas |
+
+### 49.2. La primera familia: una regla que decidía leyendo prosa
+
+`_enforce_explicit_regional_ineligibility()` existe justamente para cerrar
+estos casos. Su intención estaba escrita —«mantiene el descarte cuando modelo y
+hechos prueban otra región española»— pero su implementación exigía que el
+**razonamiento redactado por el modelo** contuviera una de seis expresiones
+tecleadas a mano (`restriccion geografica`, `esta en zaragoza`, `ubicacion:`…)
+*y* una de otras siete (`limita a`, `no cumple`, `determinante`…).
+
+Medido sobre las doce convocatorias reales del corpus a las que debía
+aplicarse: **disparaba en una**. En las once restantes el modelo había escrito
+lo mismo con otras palabras —«Kalfrisa está ubicada en Zaragoza (ES24), no en
+Navarra (ES22)»— y la regla no lo reconocía.
+
+Es el mismo error que el proyecto ya se ha encontrado dos veces: una regla
+determinista que depende del vocabulario que el modelo elija esta vez. Ahora
+decide sobre datos:
+
+1. **El campo `regiones` de la API de BDNS**, que es oficial y llega en el
+   `official_structured_data` desde la sección 40; si faltara, las geografías
+   que extrajo el modelo.
+2. Dos guardas medidas sobre el corpus: `ES - ESPAÑA` (ámbito nacional) no
+   lleva código de región y no dispara, y si Aragón aparece entre las regiones
+   admitidas —en cualquier forma: `ES24`, `ES243`, «Zaragoza»— tampoco.
+
+Y de paso se corrige un segundo fallo del mismo sitio: el patrón `\bes\d{2}\b`
+solo casaba con códigos de dos dígitos, así que **ES212 (Gipuzkoa), ES614
+(Granada), ES120 (Asturias) o ES3 (Madrid) nunca entraban**. Media España se
+escapaba de una regla escrita para toda ella.
+
+**Efecto medido** con la función real sobre los 50 análisis BDNS en caché: 16
+pasan a «no elegible», de los cuales 8 ya estaban descartados por otra regla.
+Los **8 restantes desaparecen de las fichas «por confirmar»**: Navarra (2),
+Granada, Asturias, Murcia, Comunidad Valenciana, Castilla-La Mancha y Cataluña.
+Todas territoriales de otra comunidad, que es exactamente lo que la revisión de
+la sección 47.4 ya había dado por correcto descartar.
+
+**No cuesta un céntimo:** `apply_current_deterministic_rules()` se reaplica al
+cargar la caché, así que la corrección entra sin reanalizar.
+
+### 49.3. La segunda familia: la elegibilidad de Horizon no está en el topic
+
+Catorce de las diecisiete «por confirmar» que quedan son de Horizon Europe y
+CDTI, y no son un fallo del pipeline ni del modelo. El texto de un topic de
+Horizon son 3.000 caracteres de *Expected Outcome* y *Scope*: **no dice quién
+puede solicitar**, porque eso vive en los Anexos Generales del programa de
+trabajo, comunes a todos los topics. El prompt prohíbe explícitamente completar
+huecos, así que el modelo hace lo correcto: declara `applicant_types` ausente y
+deja la elegibilidad en «unknown».
+
+Queda como decisión abierta, no como pendiente técnico. La vía natural sería
+inyectar **hechos de programa** —igual que BDNS inyecta su bloque oficial—: un
+JSON versionado con las reglas generales de Horizon Europe y de CDTI, revisable
+y con fecha de última revisión. Se anota como punto 35 del backlog con su
+advertencia: los catálogos escritos a mano de este proyecto (puntos 27 y 28)
+han caducado en silencio dos veces.
+
+### 49.4. La elegibilidad salía dos veces en la misma ficha
+
+Literal: `ov-eligibility-note` (la nota de la tarjeta ELEGIBILIDAD) y el aviso
+amarillo de arriba imprimían **la misma cadena**, `c.eligibility_reason`. Como
+ese texto son varias frases, la tarjeta se estiraba y descuadraba la fila de
+indicadores.
+
+La tarjeta pasa a decir **qué falta para decidir**, que es corto y no está en
+ninguna otra parte de la ficha: «La fuente no publica: tipos de solicitante,
+entidades admitidas, evidencia de elegibilidad», leído de `missing_fields`. El
+razonamiento completo se queda donde tiene sitio, en el aviso.
+
+### 49.5. La recopilación diaria, por fin visible
+
+El flujo acordado el 21/08 (47.5) tenía un cabo suelto: la recopilación
+`--no-claude` diaria mide cuántas convocatorias esperan análisis, pero ese
+número solo salía por consola, así que **quien mira el panel no podía saber si
+lo publicado seguía al día**.
+
+Ahora cada recopilación escribe y publica `estado_recopilacion.json`: ocho
+cifras que describen la recopilación, no el producto. El panel lo lee aparte y
+muestra un aviso —«80 convocatorias esperan análisis · coste estimado 2,05 USD
+· recopilado el 31/08 · lo publicado tiene 10 días»— que desaparece solo cuando
+no hay nada pendiente.
+
+**Matiz del invariante de `--no-claude`, que conviene leer entero:** sigue sin
+llamar a Claude, sin tocar la caché de análisis y sin generar ni publicar
+`convocatorias.json`. Lo que publica es un archivo distinto, pequeño y de solo
+lectura para el panel. Publicar no es lo mismo que analizar, y era la parte del
+circuito que faltaba para que la ejecución diaria sirviera para algo sin
+intervención de nadie.
+
+`github_upload()` acepta ahora un mensaje de commit propio, para que en el
+historial se distinga una publicación completa de un estado diario.
+
+### 49.6. Verificación
+
+**507 pruebas** en verde (493 antes). Las 14 nuevas: 8 de la regla territorial
+—incluidos los códigos de provincia, la convocatoria nacional y el caso en que
+Aragón aparece junto a otra comunidad—, 4 del estado de recopilación, 1 del
+aviso en el panel conducido con Chromium de verdad y 1 de que el motivo de
+elegibilidad ya no se imprime dos veces.
