@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-31T08:04:48.357090+00:00",
+  "collected_on": "2026-08-31",
+  "detected": 915,
+  "active": 80,
+  "pending_analyses": 80,
+  "estimated_cost_usd": 2.048,
+  "last_publication": "2026-08-21",
+  "days_since_publication": 10
+}
