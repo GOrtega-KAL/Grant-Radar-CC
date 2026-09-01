@@ -59,8 +59,20 @@ def _hold_document_text(
     response: requests.Response,
     url: str,
     max_bytes: int = BDNS_HOLD_MAX_DOCUMENT_BYTES,
+    max_chars: int = BDNS_HOLD_MAX_EVIDENCE_CHARS,
 ) -> tuple[str, str]:
-    """Extrae texto acotado de HTML, texto plano o PDF oficial."""
+    """
+    Extrae texto acotado de HTML, texto plano o PDF oficial.
+
+    `max_chars` existe porque un documento puede ser mucho mayor que la
+    evidencia que interesa de él, y el corte por defecto es el adecuado para
+    las bases de una convocatoria. Los Anexos Generales de Horizon son la
+    excepción medida: 46 páginas y 124.411 caracteres, con las tasas de
+    financiación en la página 32 —muy por detrás del corte de 48.000— aunque
+    las condiciones de elegibilidad estén en las primeras (AGENTS.md 59).
+    Quien necesite leer más lejos lo pide explícitamente; nadie hereda un
+    documento más grande sin saberlo.
+    """
     content = response.content[:max_bytes]
     content_type = response.headers.get("content-type", "").casefold()
     is_pdf = "pdf" in content_type or content.startswith(b"%PDF")
@@ -72,9 +84,9 @@ def _hold_document_text(
                 page_text = " ".join(str(page.extract_text() or "").split())
                 if page_text:
                     pages.append(page_text)
-                if sum(len(value) for value in pages) >= BDNS_HOLD_MAX_EVIDENCE_CHARS:
+                if sum(len(value) for value in pages) >= max_chars:
                     break
-            return " ".join(pages)[:BDNS_HOLD_MAX_EVIDENCE_CHARS], "pdf"
+            return " ".join(pages)[:max_chars], "pdf"
         except Exception as exc:
             log.warning(f"No se pudo extraer PDF de {url}: {exc}")
             return "", "pdf_error"
@@ -85,9 +97,9 @@ def _hold_document_text(
         for node in soup(["script", "style", "noscript", "svg"]):
             node.decompose()
         main = soup.find("main") or soup.find("article") or soup.body or soup
-        return " ".join(main.get_text(" ", strip=True).split())[:BDNS_HOLD_MAX_EVIDENCE_CHARS], "html"
+        return " ".join(main.get_text(" ", strip=True).split())[:max_chars], "html"
     if "text" in content_type or "json" in content_type or "xml" in content_type:
-        return " ".join(response.text.split())[:BDNS_HOLD_MAX_EVIDENCE_CHARS], "text"
+        return " ".join(response.text.split())[:max_chars], "text"
     return "", "unsupported"
 
 

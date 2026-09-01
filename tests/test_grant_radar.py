@@ -14,89 +14,150 @@ from pydantic import BaseModel
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# `runpy` sigue aqui, pero ya solo por DOS nombres: `run_pipeline` y
+# `parse_args` viven en Grant-Radar-prueba.py, cuyo nombre con guiones no es
+# valido para `import`. Todo lo demas se importa de forma estandar.
+#
+# Hasta el 01/09/2026 este arnes fusionaba en `APP` unos ochenta nombres de los
+# modulos del paquete, para no reescribir los sitios que los buscaban por ahi.
+# Esa fusion tenia un coste que no era estetico: **podia tapar un `NameError`
+# real del script**, inyectando justo el nombre que faltaba antes de probarlo
+# (AGENTS.md 36.5). Paso tres veces. Al quedar el script reducido a
+# configuracion y orquestacion (seccion 57), la condicion para retirarla se
+# cumplio y se retiro (seccion 59).
+#
+# El hueco que la fusion tapaba lo sigue cubriendo
+# `tests/test_grant_radar_script_names.py`, que hace su propio `run_path()` con
+# globals limpios y sin fusion alguna. Es la razon de que se pueda quitar esto
+# sin perder red.
+#
+# Los tests que sustituyen dependencias con
+# `mock.patch.dict(funcion.__globals__, ...)` siguen funcionando igual: ahora
+# `__globals__` es el del modulo donde la funcion esta definida, que es
+# exactamente donde hay que parchear.
 APP = runpy.run_path(str(ROOT / "Grant-Radar-prueba.py"))
 
-# Estas funciones vivían en Grant-Radar-prueba.py y se probaban vía
-# APP["nombre"]; ahora viven en módulos de grant_radar/ (ver SUGERENCIAS.MD
-# 3.2). El script principal solo reimporta las que usa él mismo —los nombres
-# públicos de cada conector, por ejemplo, pero no sus helpers privados—, así
-# que no todas quedan en APP tras el runpy. Se añaden aquí para no reescribir
-# los sitios de este archivo que ya las buscan por ese nombre; los tests
-# nuevos de esos módulos (test_grant_radar_*.py) las importan de forma
-# estándar.
-#
-# Ojo: los tests que sustituyen dependencias con
-# `mock.patch.dict(APP["fn"].__globals__, ...)` siguen funcionando sin cambios
-# tras mover una función a un módulo, porque `__globals__` apunta al módulo
-# donde queda definida, no al script principal.
-from grant_radar import cache as _cache_module
-from grant_radar import deterministic_rules as _rules_module
-from grant_radar import claude_selection as _selection_module
-from grant_radar import claude_usage as _usage_module
-from grant_radar import hold_quotes as _quotes_module
-from grant_radar import coverage_watch as _coverage_module
-from grant_radar import public_output as _public_output_module
-from grant_radar import analysis as _analysis_module
-from grant_radar import holds as _holds_module
-from grant_radar import profile_scope as _profile_scope_module
-from grant_radar import bdns_rules as _bdns_rules_module
-from grant_radar.sources import bdns as _bdns_module
-from grant_radar.sources import cdti as _cdti_module
-from grant_radar.sources import eccp as _eccp_module
-from grant_radar.sources import een as _een_module
-from grant_radar.sources import idae as _idae_module
-
-for _module in (
-    _cache_module, _rules_module, _public_output_module,
-    _selection_module, _coverage_module, _usage_module, _quotes_module,
-    _analysis_module, _profile_scope_module, _holds_module, _bdns_rules_module,
-    _bdns_module, _cdti_module, _eccp_module, _een_module, _idae_module,
-):
-    for _name in dir(_module):
-        if not _name.startswith("_") or _name.startswith("__"):
-            continue
-        APP.setdefault(_name, getattr(_module, _name))
-APP.setdefault("deterministic_prefilter", _bdns_rules_module.deterministic_prefilter)
-APP.setdefault("apply_current_deterministic_rules", _rules_module.apply_current_deterministic_rules)
-APP.setdefault("filter_usable_cache", _cache_module.filter_usable_cache)
-APP.setdefault("analysis_is_usable", _cache_module.analysis_is_usable)
-APP.setdefault("cache_key", _cache_module.cache_key)
-APP.setdefault("cache_load", _cache_module.cache_load)
-APP.setdefault("cache_save", _cache_module.cache_save)
-APP.setdefault("source_hash", _cache_module.source_hash)
-# Constantes públicas del conector BDNS: el bucle de arriba solo copia nombres
-# privados, y el script principal no las reimporta porque no las usa él.
-APP.setdefault("BDNS_LATEST_MAX_PAGES", _bdns_module.BDNS_LATEST_MAX_PAGES)
-APP.setdefault("BDNS_PAGE_SIZE", _bdns_module.BDNS_PAGE_SIZE)
-# Igual con las de la capa de análisis: el presupuesto de evidencia y el techo
-# de salida son públicos y el script ya no los usa desde que la capa se extrajo
-# (AGENTS.md, sección 48).
-for _name in (
-    "EVIDENCE_SOURCE_DESCRIPTION_BUDGET", "EVIDENCE_MAX_RELATED_DOCUMENTS",
-    "EVIDENCE_PER_DOCUMENT_BUDGET", "EVIDENCE_TOTAL_DOCUMENT_BUDGET",
-    "STRUCTURED_OUTPUT_TOKEN_CEILING", "STABLE_CACHED_DOCUMENT_ROLES",
-    "BDNS_STRUCTURED_PROMPT_FIELDS",
-):
-    APP.setdefault(_name, getattr(_analysis_module, _name))
-# Dos nombres que el script reimportaba sin usarlos y que solo necesita este
-# arnés: se toman de su módulo, que es de donde vienen. Llegaban de rebote por
-# el runpy, y eso ataba los imports del script a las pruebas.
-from grant_radar.hold_evidence import retrieve_bdns_hold_evidence as _retrieve_evidence  # noqa: E402
-from grant_radar.tech_taxonomy import TECH_TAGS as _TECH_TAGS  # noqa: E402
-
-APP.setdefault("retrieve_bdns_hold_evidence", _retrieve_evidence)
-APP.setdefault("TECH_TAGS", _TECH_TAGS)
-# Y con las públicas del dominio de holds, extraído el 31/08/2026: el script
-# solo reimporta las tres entradas que llama run_pipeline().
-for _name in (
-    "BDNS_HOLD_AI_VERSION", "BDNS_HOLD_CACHE_FILE", "BDNS_HOLD_REPORT_FILE",
-    "BDNS_HOLD_REPLAY_FILE", "apply_verified_bdns_hold_resolution",
-    "replay_bdns_hold_item", "replay_bdns_hold_report",
-    "resolve_bdns_holds_for_pipeline", "resolve_hold_deterministically",
-    "run_bdns_hold_pilot", "select_bdns_hold_pilot",
-    "select_bdns_hold_qa_sample", "analyze_bdns_hold_with_claude",
-):
-    APP.setdefault(_name, getattr(_holds_module, _name))
+from grant_radar.analysis import (
+    EVIDENCE_PER_DOCUMENT_BUDGET,
+    EVIDENCE_TOTAL_DOCUMENT_BUDGET,
+    STRUCTURED_OUTPUT_TOKEN_CEILING,
+    _hydrate_stable_cached_documents,
+    _official_structured_facts,
+    _related_document_evidence,
+    _structured_claude_call,
+)
+from grant_radar.bdns_rules import (
+    _bdns_intrinsic_exclusion,
+    _bdns_pre_claude_gate,
+    _bdns_structured_scope_exclusion,
+    deterministic_prefilter,
+)
+from grant_radar.cache import (
+    _reindex_cache_entries,
+    cache_key,
+    source_hash,
+)
+from grant_radar.call_text import (
+    _extract_funding_budget,
+    _official_call_identifier,
+)
+from grant_radar.claude_schemas import (
+    BdnsHoldFacts,
+    CallFacts,
+    ClaudeAnalysisError,
+    validate_structured_output_schema,
+)
+from grant_radar.claude_selection import (
+    build_no_claude_candidate_inventory,
+    claude_safety_preflight,
+)
+from grant_radar.claude_usage import (
+    aggregate_aborted_run_usage,
+    aggregate_partial_token_usage,
+)
+from grant_radar.dedup import (
+    _deduplicate_raw_convocations,
+    _document_role,
+)
+from grant_radar.deterministic_rules import (
+    _correct_consortium_participation_ineligibility,
+    _correct_direct_valorisation_scope,
+    _correct_own_industrial_investment_scope,
+    _correct_required_consortium_member_ineligibility,
+    _deterministic_call_status,
+    _required_consortium_member_category,
+    apply_current_deterministic_rules,
+)
+from grant_radar.documents import (
+    _hold_document_text,
+    enrich_with_official_documents,
+)
+from grant_radar.hold_evidence import retrieve_bdns_hold_evidence
+from grant_radar.holds import (
+    _archive_previous_hold_artifact,
+    _attach_bdns_hold_evidence,
+    _validated_hold_resolution,
+    apply_verified_bdns_hold_resolution,
+    replay_bdns_hold_item,
+    resolve_bdns_holds_for_pipeline,
+    resolve_hold_deterministically,
+    run_bdns_hold_pilot,
+    select_bdns_hold_pilot,
+    select_bdns_hold_qa_sample,
+)
+from grant_radar.http_client import _http_get
+from grant_radar.parsing_helpers import (
+    _extract_application_dates,
+    _parse_flexible_date,
+)
+from grant_radar.public_output import (
+    _assemble_public_record,
+    _normalize_public_url,
+    _public_deadline_values,
+    build_source_status,
+    build_stats,
+    derive_eligible_actions,
+)
+from grant_radar.source_health import assess_web_inventory_health
+from grant_radar.sources.bdns import (
+    BDNS_PUBLIC_BASE,
+    BDNS_LATEST_MAX_PAGES,
+    BDNS_PAGE_SIZE,
+    _bdns_detail_to_raw,
+    _bdns_document_records,
+    _bdns_relative_application_deadline,
+    fetch_bdns,
+)
+from grant_radar.sources.boe_miteco import fetch_boe
+from grant_radar.sources.cdti import (
+    _fetch_cdti_playwright,
+    _parse_cdti_application_period,
+    _parse_cdti_calendar_html,
+    fetch_cdti,
+)
+from grant_radar.sources.eccp import (
+    _choose_eccp_depth,
+    _eccp_call_from_html,
+    _parse_eccp_inventory_html,
+)
+from grant_radar.sources.een import (
+    _een_call_from_page,
+    _een_listing_params,
+)
+from grant_radar.sources.idae import _parse_idae_inventory_html
+from grant_radar.tech_taxonomy import (
+    TECH_TAGS,
+    TECH_TAG_CONTEXTUAL_TERMS,
+    TECH_TAG_STRONG_TERMS,
+    detect_tech_tags,
+    has_technology_discovery_signal,
+)
+from grant_radar.runtime_state import (
+    RUN_DIAGNOSTICS,
+    SOURCE_RUNTIME_METADATA,
+)
+from grant_radar.audit import DISCOVERY_AUDIT
 
 
 class SourceParserTests(unittest.TestCase):
@@ -122,20 +183,20 @@ class SourceParserTests(unittest.TestCase):
                 calls.append(url)
                 return inventory if url.endswith("ayudas.php") else detail
 
-        APP["SOURCE_RUNTIME_METADATA"].clear()
-        APP["RUN_DIAGNOSTICS"].clear()
-        results = APP["fetch_boe"](FakeBrowser())
-        self.assertEqual(len(results), 1, {"audit": APP["DISCOVERY_AUDIT"], "calls": calls})
+        SOURCE_RUNTIME_METADATA.clear()
+        RUN_DIAGNOSTICS.clear()
+        results = fetch_boe(FakeBrowser())
+        self.assertEqual(len(results), 1, {"audit": DISCOVERY_AUDIT, "calls": calls})
         self.assertEqual(results[0]["bdns_id"], "990100")
         self.assertEqual(results[0]["deadline_date"], "2099-11-30")
         self.assertTrue(results[0]["title"].startswith("Extracto de la convocatoria"))
-        metadata = APP["SOURCE_RUNTIME_METADATA"]["BOE / MITECO"]
+        metadata = SOURCE_RUNTIME_METADATA["BOE / MITECO"]
         self.assertEqual(metadata["inventory_count"], 1)
         self.assertEqual(metadata["detail_loaded"], 1)
         self.assertEqual(metadata["accepted_count"], 1)
 
     def test_public_url_normalization_only_adds_missing_web_scheme(self):
-        normalize = APP["_normalize_public_url"]
+        normalize = _normalize_public_url
         self.assertEqual(normalize("www.navarra.es"), "https://www.navarra.es")
         self.assertEqual(normalize("sede.uco.es/ruta"), "https://sede.uco.es/ruta")
         self.assertEqual(
@@ -148,7 +209,7 @@ class SourceParserTests(unittest.TestCase):
     def test_a_sentence_with_a_scheme_is_not_published_as_a_link(self):
         # Punto 31 del backlog: la BDNS 922117 publicó como `url` una frase
         # entera con el esquema mal escrito, y viajó así al JSON y al export.
-        normalize = APP["_normalize_public_url"]
+        normalize = _normalize_public_url
         self.assertEqual(
             normalize(
                 "hhtp://www.aragon.es/tramites), incluyendo en el buscador de "
@@ -162,7 +223,7 @@ class SourceParserTests(unittest.TestCase):
         )
 
     def test_bdns_falls_back_to_the_official_page_when_the_sede_is_prose(self):
-        raw = APP["_bdns_detail_to_raw"](
+        raw = _bdns_detail_to_raw(
             {
                 "codigoBDNS": 922117,
                 "descripcion": "Ayudas para certámenes feriales",
@@ -177,12 +238,12 @@ class SourceParserTests(unittest.TestCase):
         )
         self.assertEqual(
             raw["url"],
-            f"{APP['BDNS_PUBLIC_BASE']}/922117",
+            f"{BDNS_PUBLIC_BASE}/922117",
             "una sede electrónica ilegible debe caer al enlace oficial de BDNS",
         )
 
     def test_bdns_detail_keeps_strong_identity_and_documents(self):
-        raw = APP["_bdns_detail_to_raw"](
+        raw = _bdns_detail_to_raw(
             {
                 "codigoBDNS": 900001,
                 "descripcion": "Ayudas a proyectos de eficiencia energética industrial",
@@ -211,7 +272,7 @@ class SourceParserTests(unittest.TestCase):
         )
 
     def test_bdns_old_record_is_not_reopened_by_stale_api_flag(self):
-        raw = APP["_bdns_detail_to_raw"](
+        raw = _bdns_detail_to_raw(
             {
                 "codigoBDNS": 900002,
                 "descripcion": "Ayudas históricas de eficiencia energética industrial",
@@ -223,12 +284,12 @@ class SourceParserTests(unittest.TestCase):
         )
         self.assertEqual(raw["bdns_active_status"], "unverified_old")
         self.assertTrue(raw["bdns_api_open_flag"])
-        outcome = APP["_bdns_pre_claude_gate"](raw)
+        outcome = _bdns_pre_claude_gate(raw)
         self.assertEqual(outcome["decision"], "reject")
         self.assertEqual(outcome["reason_code"], "no_active_evidence")
 
     def test_bdns_text_fin_is_parsed_before_creating_a_hold(self):
-        raw = APP["_bdns_detail_to_raw"](
+        raw = _bdns_detail_to_raw(
             {
                 "codigoBDNS": 900003,
                 "descripcion": "Ayudas industriales",
@@ -244,7 +305,7 @@ class SourceParserTests(unittest.TestCase):
         self.assertEqual(raw["bdns_active_status"], "confirmed_deadline")
 
     def test_bdns_relative_deadline_uses_official_announcement_date(self):
-        raw = APP["_bdns_detail_to_raw"](
+        raw = _bdns_detail_to_raw(
             {
                 "codigoBDNS": 900004,
                 "descripcion": "Ayudas industriales",
@@ -260,7 +321,7 @@ class SourceParserTests(unittest.TestCase):
         self.assertFalse(raw["fecha_sin_confirmar"])
 
     def test_bdns_relative_deadline_can_use_current_call_document_date(self):
-        raw = APP["_bdns_detail_to_raw"](
+        raw = _bdns_detail_to_raw(
             {
                 "codigoBDNS": 900005,
                 "descripcion": "Ayudas industriales",
@@ -279,16 +340,16 @@ class SourceParserTests(unittest.TestCase):
         self.assertEqual(raw["deadline_date"], "2099-03-02")
 
     def test_bdns_business_day_deadline_is_marked_estimated(self):
-        deadline, estimated = APP["_bdns_relative_application_deadline"](
+        deadline, estimated = _bdns_relative_application_deadline(
             "10 días hábiles desde el día siguiente a la publicación",
             "2099-01-01",
         )
         self.assertTrue(deadline)
         self.assertTrue(estimated)
-        self.assertEqual(APP["_parse_flexible_date"]("26.08.2099"), "2099-08-26")
+        self.assertEqual(_parse_flexible_date("26.08.2099"), "2099-08-26")
 
     def test_bdns_document_id_builds_the_official_download_endpoint(self):
-        records = APP["_bdns_document_records"]({
+        records = _bdns_document_records({
             "documentos": [{
                 "id": 1503373,
                 "descripcion": "Texto de la convocatoria",
@@ -325,7 +386,7 @@ class SourceParserTests(unittest.TestCase):
                 "published_date": "2026-08-01",
             }],
         }
-        globals_dict = APP["retrieve_bdns_hold_evidence"].__globals__
+        globals_dict = retrieve_bdns_hold_evidence.__globals__
         state = globals_dict["_BDNS_DOCUMENT_CACHE_STATE"]
         with tempfile.TemporaryDirectory() as temporary:
             cache_path = str(Path(temporary) / "documents.json")
@@ -338,10 +399,10 @@ class SourceParserTests(unittest.TestCase):
                 # La regla intrínseca se inyecta: aquí no se prueba el
                 # filtrado, solo que el texto ya descargado no se vuelve a pedir.
                 sin_exclusion = lambda conv, texto="": None  # noqa: E731
-                first = APP["retrieve_bdns_hold_evidence"](
+                first = retrieve_bdns_hold_evidence(
                     conv, intrinsic_exclusion=sin_exclusion
                 )
-                second = APP["retrieve_bdns_hold_evidence"](
+                second = retrieve_bdns_hold_evidence(
                     conv, intrinsic_exclusion=sin_exclusion
                 )
             self.assertTrue(Path(cache_path).exists())
@@ -353,7 +414,7 @@ class SourceParserTests(unittest.TestCase):
         self.assertEqual(second["metrics"]["bytes"], 0)
 
     def test_named_grant_title_is_classified_without_checking_vigency(self):
-        raw = APP["_bdns_detail_to_raw"](
+        raw = _bdns_detail_to_raw(
             {
                 "codigoBDNS": 900006,
                 "descripcion": "Subvención a favor del Ayuntamiento para obras",
@@ -364,11 +425,11 @@ class SourceParserTests(unittest.TestCase):
         )
         self.assertEqual(raw["bdns_call_access"], "named")
         self.assertEqual(
-            APP["_bdns_pre_claude_gate"](raw)["reason_code"], "not_open_call"
+            _bdns_pre_claude_gate(raw)["reason_code"], "not_open_call"
         )
 
     def test_instrumental_award_mode_is_not_treated_as_a_consortium_route(self):
-        raw = APP["_bdns_detail_to_raw"](
+        raw = _bdns_detail_to_raw(
             {
                 "codigoBDNS": 900008,
                 "descripcion": "Financiación de Consorcio de infraestructuras",
@@ -381,7 +442,7 @@ class SourceParserTests(unittest.TestCase):
             {"numeroConvocatoria": 900008},
         )
         self.assertEqual(raw["bdns_call_access"], "instrumental")
-        outcome = APP["deterministic_prefilter"](raw)
+        outcome = deterministic_prefilter(raw)
         self.assertEqual((outcome["decision"], outcome["reason_code"]), (
             "reject", "not_open_call"
         ))
@@ -393,15 +454,15 @@ class SourceParserTests(unittest.TestCase):
             "fechaFinSolicitud": "2020-01-01",
             "tiposBeneficiarios": [{"descripcion": "Empresas"}],
         }
-        self.assertIsNone(APP["_bdns_detail_to_raw"](
+        self.assertIsNone(_bdns_detail_to_raw(
             detail, {"numeroConvocatoria": 900007}
         ))
-        raw = APP["_bdns_detail_to_raw"](
+        raw = _bdns_detail_to_raw(
             detail, {"numeroConvocatoria": 900007}, include_closed=True
         )
         self.assertEqual(raw["bdns_active_status"], "closed")
         self.assertEqual(
-            APP["deterministic_prefilter"](raw)["reason_code"], "deadline_closed"
+            deterministic_prefilter(raw)["reason_code"], "deadline_closed"
         )
 
     def test_eccp_powerup_regression_is_cascade_and_not_rejected(self):
@@ -413,7 +474,7 @@ class SourceParserTests(unittest.TestCase):
         <a href="https://example.test/powerup/apply">Apply for financial support</a>
         </main><footer><a href="https://social.example.test">Social</a></footer></html>
         """
-        raw = APP["_eccp_call_from_html"](
+        raw = _eccp_call_from_html(
             "https://www.clustercollaboration.eu/content/powerup-netzero-open-call-innovation-projects",
             html,
         )
@@ -426,12 +487,12 @@ class SourceParserTests(unittest.TestCase):
             ["https://example.test/powerup/apply"],
         )
         self.assertEqual(
-            APP["_extract_funding_budget"](
+            _extract_funding_budget(
                 "The call has a total budget of €12.95 million."
             ),
             "€12.95 million total",
         )
-        self.assertNotEqual(APP["deterministic_prefilter"](raw)["decision"], "reject")
+        self.assertNotEqual(deterministic_prefilter(raw)["decision"], "reject")
 
     def test_eccp_inventory_parser_uses_current_accessible_pager_markup(self):
         html = """
@@ -440,7 +501,7 @@ class SourceParserTests(unittest.TestCase):
         </div><nav class="pager"><a aria-label="Next page" rel="next"
           href="?type=eccp_calls&amp;page=1">Next</a></nav></body></html>
         """
-        parsed = APP["_parse_eccp_inventory_html"](
+        parsed = _parse_eccp_inventory_html(
             "https://www.clustercollaboration.eu/search-results?type=eccp_calls&page=0",
             html,
         )
@@ -456,14 +517,14 @@ class SourceParserTests(unittest.TestCase):
     def test_een_partner_request_without_call_is_excluded(self):
         html = """<main><h1>Partner sought for heat exchanger distribution</h1>
         <p>A company seeks a commercial agreement and distributors.</p></main>"""
-        self.assertIsNone(APP["_een_call_from_page"](
+        self.assertIsNone(_een_call_from_page(
             "https://een.ec.europa.eu/partnering-opportunities/example", html, "profile"
         ))
 
     def test_een_historical_news_without_deadline_is_excluded(self):
         html = """<main><h1>The success of cascade funding</h1>
         <p>An EEN project provided financial support to SMEs in a past call.</p></main>"""
-        self.assertIsNone(APP["_een_call_from_page"](
+        self.assertIsNone(_een_call_from_page(
             "https://een.ec.europa.eu/news/historical-call", html, "news"
         ))
 
@@ -479,7 +540,7 @@ class SourceParserTests(unittest.TestCase):
         <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2026-01-D2-01">Web link</a>
         </main>
         """
-        raw = APP["_een_call_from_page"](
+        raw = _een_call_from_page(
             "https://een.ec.europa.eu/partnering-opportunities/example", html, "profile"
         )
         self.assertIsNotNone(raw)
@@ -489,16 +550,16 @@ class SourceParserTests(unittest.TestCase):
 
     def test_een_eurostars_call_number_becomes_strong_identity(self):
         self.assertEqual(
-            APP["_official_call_identifier"]("Eurostars 3 Call 11"),
+            _official_call_identifier("Eurostars 3 Call 11"),
             "EUROSTARS-CALL-11",
         )
 
     def test_een_profiles_use_server_side_rd_request_filter(self):
         self.assertEqual(
-            APP["_een_listing_params"]("profile", 4),
+            _een_listing_params("profile", 4),
             {"page": 4, "f[0]": "p:4355"},
         )
-        self.assertEqual(APP["_een_listing_params"]("news", 4), {"page": 4})
+        self.assertEqual(_een_listing_params("news", 4), {"page": 4})
 
     def test_een_structured_profile_without_official_call_link_is_excluded(self):
         html = """
@@ -511,7 +572,7 @@ class SourceParserTests(unittest.TestCase):
         <a href="https://example.test/company">Company website</a>
         </main>
         """
-        self.assertIsNone(APP["_een_call_from_page"](
+        self.assertIsNone(_een_call_from_page(
             "https://een.ec.europa.eu/partnering-opportunities/example", html, "profile"
         ))
 
@@ -525,7 +586,7 @@ class SourceParserTests(unittest.TestCase):
         <a href="https://www.eurekanetwork.org/programmes-and-calls/eurostars/">Web link to the call</a>
         </main>
         """
-        self.assertIsNone(APP["_een_call_from_page"](
+        self.assertIsNone(_een_call_from_page(
             "https://een.ec.europa.eu/partnering-opportunities/example", html, "profile"
         ))
 
@@ -558,7 +619,7 @@ class SourceParserTests(unittest.TestCase):
                 },
             ],
         }
-        diagnostics = APP["_hydrate_stable_cached_documents"](
+        diagnostics = _hydrate_stable_cached_documents(
             [current], {"cache-key": {"raw_document": cached_raw}}
         )
         self.assertEqual(diagnostics["documents_restored"], 1)
@@ -568,14 +629,14 @@ class SourceParserTests(unittest.TestCase):
 
     def test_cdti_abbreviated_application_period_is_parsed(self):
         self.assertEqual(
-            APP["_parse_cdti_application_period"](
+            _parse_cdti_application_period(
                 "Del 17 de junio al 16 de julio de 2026, a las 12:00 horas.",
                 2026,
             ),
             ("2026-06-17", "2026-07-16"),
         )
         self.assertEqual(
-            APP["_parse_cdti_application_period"](
+            _parse_cdti_application_period(
                 "Del 6 al 17 de julio de 2026.", 2026,
             ),
             ("2026-07-06", "2026-07-17"),
@@ -611,17 +672,17 @@ class SourceParserTests(unittest.TestCase):
                 return pages.get(url, "")
 
         browser = FakeBrowser()
-        parsed_calls, calendar_meta = APP["_parse_cdti_calendar_html"](
+        parsed_calls, calendar_meta = _parse_cdti_calendar_html(
             calendar_html
         )
         self.assertEqual(len(parsed_calls), 3)
         self.assertEqual(calendar_meta["source_version"], "2099-08-07")
-        globals_dict = APP["_fetch_cdti_playwright"].__globals__
+        globals_dict = _fetch_cdti_playwright.__globals__
         with mock.patch.dict(globals_dict, {
             "enrich_with_official_documents": lambda call, *_args, **_kwargs: call,
         }):
-            results = APP["_fetch_cdti_playwright"](browser)
-        diagnostics = APP["RUN_DIAGNOSTICS"]["cdti_scrape_audit"]
+            results = _fetch_cdti_playwright(browser)
+        diagnostics = RUN_DIAGNOSTICS["cdti_scrape_audit"]
         self.assertEqual(browser.visited, [calendar_url, *list(pages)[1:]])
         self.assertEqual(diagnostics["calendar_calls"], 3)
         self.assertEqual(diagnostics["detail_attempted"], 3)
@@ -658,22 +719,22 @@ class SourceParserTests(unittest.TestCase):
                 "document_role": "source_record",
             },
         ]
-        self.assertEqual(APP["_document_role"](candidates[0]), "regulatory_bases")
+        self.assertEqual(_document_role(candidates[0]), "regulatory_bases")
         with tempfile.TemporaryDirectory() as temporary:
             cache_path = str(Path(temporary) / "source_documents.json")
             http_get = mock.Mock(return_value=response)
-            globals_dict = APP["enrich_with_official_documents"].__globals__
+            globals_dict = enrich_with_official_documents.__globals__
             with mock.patch.dict(globals_dict, {
                 "SOURCE_DOCUMENT_CACHE_FILE": cache_path,
                 "_SOURCE_DOCUMENT_CACHE_STATE": {"path": "", "entries": {}},
                 "_http_get": http_get,
             }):
-                first = APP["enrich_with_official_documents"](
+                first = enrich_with_official_documents(
                     {"title": "Ayuda CDTI", "related_document_contents": []},
                     candidates,
                     "CDTI",
                 )
-                second = APP["enrich_with_official_documents"](
+                second = enrich_with_official_documents(
                     {"title": "Ayuda CDTI", "related_document_contents": []},
                     candidates,
                     "CDTI",
@@ -691,14 +752,14 @@ class SourceParserTests(unittest.TestCase):
         <a href="/ayudas-y-financiacion/convocatorias-cerradas/antigua">Antigua</a>
         <a href="/noticias/otra">Noticia</a>
         """
-        inventory = APP["_parse_idae_inventory_html"](
+        inventory = _parse_idae_inventory_html(
             "https://www.idae.es/ayudas-y-financiacion", html,
         )
         self.assertEqual(len(inventory), 2)
         self.assertFalse(inventory[0]["explicitly_closed"])
         self.assertTrue(inventory[1]["explicitly_closed"])
         self.assertEqual(
-            APP["_extract_application_dates"](
+            _extract_application_dates(
                 "El plazo para presentar solicitudes comenzará tras el BOE. "
                 "Finalizará a las 14:00 h del 15 de julio de 2025."
             ),
@@ -706,7 +767,7 @@ class SourceParserTests(unittest.TestCase):
         )
 
     def test_cdti_does_not_repeat_the_transversal_bdns_collection(self):
-        globals_dict = APP["fetch_cdti"].__globals__
+        globals_dict = fetch_cdti.__globals__
         with mock.patch.dict(globals_dict, {
             "_legacy_bdns_cdti_session_scraper": mock.Mock(
                 side_effect=AssertionError("BDNS must be collected only by fetch_bdns")
@@ -714,10 +775,10 @@ class SourceParserTests(unittest.TestCase):
             "_fetch_cdti_playwright": mock.Mock(return_value=[]),
             "_fetch_cdti_static": mock.Mock(return_value=[]),
         }):
-            self.assertEqual(APP["fetch_cdti"](object()), [])
+            self.assertEqual(fetch_cdti(object()), [])
 
     def test_common_web_health_distinguishes_degraded_from_unhealthy(self):
-        healthy = APP["assess_web_inventory_health"](
+        healthy = assess_web_inventory_health(
             "TEST HEALTHY",
             inventory_loaded=True,
             structure_ok=True,
@@ -730,7 +791,7 @@ class SourceParserTests(unittest.TestCase):
             source_version="2099-08-07",
             max_version_age_days=62,
         )
-        degraded = APP["assess_web_inventory_health"](
+        degraded = assess_web_inventory_health(
             "TEST DEGRADED",
             inventory_loaded=True,
             structure_ok=True,
@@ -740,7 +801,7 @@ class SourceParserTests(unittest.TestCase):
             dated_count=10,
             expected_min_inventory=10,
         )
-        unhealthy = APP["assess_web_inventory_health"](
+        unhealthy = assess_web_inventory_health(
             "TEST UNHEALTHY",
             inventory_loaded=False,
             structure_ok=False,
@@ -787,12 +848,12 @@ class SourceParserTests(unittest.TestCase):
                 raise AssertionError(f"Unexpected BDNS endpoint: {url}")
             return response
 
-        globals_dict = APP["fetch_bdns"].__globals__
+        globals_dict = fetch_bdns.__globals__
         with mock.patch.dict(globals_dict, {"_http_get": mock.Mock(side_effect=fake_http_get)}):
-            results = APP["fetch_bdns"]()
+            results = fetch_bdns()
 
         self.assertEqual(sorted(r["bdns_id"] for r in results), ["900101", "900102"])
-        metadata = APP["SOURCE_RUNTIME_METADATA"]["BDNS"]
+        metadata = SOURCE_RUNTIME_METADATA["BDNS"]
         self.assertEqual(metadata["prefilter_candidates"], 2)
         self.assertEqual(metadata["aragon_admin_candidates"], 1)
 
@@ -809,7 +870,7 @@ class SourceParserTests(unittest.TestCase):
         observed_daily_volume = 54
         minimum_required_days = 60
         covered_days = (
-            APP["BDNS_LATEST_MAX_PAGES"] * APP["BDNS_PAGE_SIZE"] / observed_daily_volume
+            BDNS_LATEST_MAX_PAGES * BDNS_PAGE_SIZE / observed_daily_volume
         )
         self.assertGreaterEqual(covered_days, minimum_required_days)
 
@@ -843,14 +904,14 @@ class IdentityAndFilterTests(unittest.TestCase):
             bdns_finality="Agricultura, Pesca y Alimentación",
             bdns_nace_sections=[],
         )
-        candidate = APP["_bdns_structured_scope_exclusion"](primary)
+        candidate = _bdns_structured_scope_exclusion(primary)
         self.assertEqual(candidate["reason_code"], "structured_primary_sector_scope")
-        production = APP["deterministic_prefilter"](dict(primary))
+        production = deterministic_prefilter(dict(primary))
         self.assertEqual(production["reason_code"], "structured_primary_sector_scope")
         consortium = dict(primary)
         consortium["title"] = "Ayudas a grupos operativos de innovación agraria 2027"
-        self.assertIsNone(APP["_bdns_structured_scope_exclusion"](consortium))
-        consortium_outcome = APP["deterministic_prefilter"](consortium)
+        self.assertIsNone(_bdns_structured_scope_exclusion(consortium))
+        consortium_outcome = deterministic_prefilter(consortium)
         self.assertNotEqual(
             consortium_outcome["reason_code"], "structured_primary_sector_scope"
         )
@@ -867,14 +928,14 @@ class IdentityAndFilterTests(unittest.TestCase):
                 conv = self.structured_bdns_raw(
                     title=title, description=title, bdns_finality=finality,
                 )
-                self.assertIsNone(APP["_bdns_structured_scope_exclusion"](conv))
+                self.assertIsNone(_bdns_structured_scope_exclusion(conv))
 
     def test_historical_rule_ignores_old_legal_reference_without_annuality_marker(self):
         conv = self.structured_bdns_raw(
             title="Convocatoria de innovación basada en la Ley 14/2011",
             bdns_active_status="unverified_recent",
         )
-        self.assertIsNone(APP["_bdns_structured_scope_exclusion"](conv))
+        self.assertIsNone(_bdns_structured_scope_exclusion(conv))
 
     def test_structured_scope_detects_public_and_historical_calls(self):
         public = self.structured_bdns_raw(
@@ -885,14 +946,14 @@ class IdentityAndFilterTests(unittest.TestCase):
             bdns_active_status="unverified_recent",
         )
         self.assertEqual(
-            APP["_bdns_structured_scope_exclusion"](public)["reason_code"],
+            _bdns_structured_scope_exclusion(public)["reason_code"],
             "structured_public_beneficiaries_only",
         )
         public_consortium = dict(public)
         public_consortium["title"] += " mediante proyectos en cooperación"
-        self.assertIsNone(APP["_bdns_structured_scope_exclusion"](public_consortium))
+        self.assertIsNone(_bdns_structured_scope_exclusion(public_consortium))
         self.assertEqual(
-            APP["_bdns_structured_scope_exclusion"](historical)["reason_code"],
+            _bdns_structured_scope_exclusion(historical)["reason_code"],
             "historical_call_year_unverified",
         )
 
@@ -906,7 +967,7 @@ class IdentityAndFilterTests(unittest.TestCase):
         )
         for title in cases:
             with self.subTest(title=title):
-                outcome = APP["deterministic_prefilter"](
+                outcome = deterministic_prefilter(
                     self.structured_bdns_raw(title=title, description=title)
                 )
                 self.assertEqual(outcome["decision"], "reject")
@@ -919,14 +980,14 @@ class IdentityAndFilterTests(unittest.TestCase):
             "org": "European Commission",
             "catalog_category": "",
         }
-        outcome = APP["deterministic_prefilter"](unrelated)
+        outcome = deterministic_prefilter(unrelated)
         self.assertEqual(outcome["decision"], "reject")
         self.assertIn("salud mental", outcome["reason"].casefold())
         industrial = dict(unrelated)
         industrial["title"] = "School pilot for industrial waste heat recovery"
         industrial["description"] = "Waste heat recovery in an industrial process."
         self.assertNotEqual(
-            APP["deterministic_prefilter"](industrial)["decision"], "reject"
+            deterministic_prefilter(industrial)["decision"], "reject"
         )
 
     def test_common_scope_fixture_preserves_only_explicit_thermal_overrides(self):
@@ -939,7 +1000,7 @@ class IdentityAndFilterTests(unittest.TestCase):
         self.assertEqual(len(case_ids), len(set(case_ids)))
         for case in fixture["cases"]:
             with self.subTest(case=case["id"]):
-                outcome = APP["deterministic_prefilter"]({
+                outcome = deterministic_prefilter({
                     "source": "HORIZON EUROPE",
                     "title": case["title"],
                     "description": case["description"],
@@ -960,7 +1021,7 @@ class IdentityAndFilterTests(unittest.TestCase):
         )
         for case in fixture["cases"]:
             with self.subTest(case=case["id"]):
-                outcome = APP["deterministic_prefilter"]({
+                outcome = deterministic_prefilter({
                     "source": "ECCP",
                     "title": case["title"],
                     "description": case["description"],
@@ -1000,12 +1061,12 @@ class IdentityAndFilterTests(unittest.TestCase):
                     "deadline_days": 100,
                 }
                 if case["stage"] == "document":
-                    result = APP["_bdns_intrinsic_exclusion"](
+                    result = _bdns_intrinsic_exclusion(
                         conv, case.get("evidence", "")
                     )
                     decision = result["decision"] if result else "not_reject"
                 else:
-                    decision = APP["deterministic_prefilter"](conv)["decision"]
+                    decision = deterministic_prefilter(conv)["decision"]
                     if case["expected"] == "not_reject" and decision != "reject":
                         decision = "not_reject"
                 self.assertEqual(decision, case["expected"])
@@ -1030,11 +1091,11 @@ class IdentityAndFilterTests(unittest.TestCase):
             },
         }
         cache = {
-            APP["cache_key"](cached_conv): {
+            cache_key(cached_conv): {
                 "raw_document": cached_conv, "analysis": {},
             },
         }
-        inventory = APP["build_no_claude_candidate_inventory"](
+        inventory = build_no_claude_candidate_inventory(
             [cached_conv, changed, new_conv], cache
         )
         self.assertEqual(inventory["count"], 3)
@@ -1067,18 +1128,18 @@ class IdentityAndFilterTests(unittest.TestCase):
         changed_deadline = call(
             "14 de agosto 2026, 11:07:57", "16 de octubre de 2026"
         )
-        self.assertEqual(APP["source_hash"](first), APP["source_hash"](second))
+        self.assertEqual(source_hash(first), source_hash(second))
         self.assertNotEqual(
-            APP["source_hash"](second), APP["source_hash"](changed_deadline)
+            source_hash(second), source_hash(changed_deadline)
         )
 
-        reindexed = APP["_reindex_cache_entries"]({
+        reindexed = _reindex_cache_entries({
             "old-a": {"raw_document": first, "cached_at": "2026-08-13T08:00:00"},
             "old-b": {"raw_document": second, "cached_at": "2026-08-14T12:00:00"},
         })
-        self.assertEqual(list(reindexed), [APP["cache_key"](second)])
+        self.assertEqual(list(reindexed), [cache_key(second)])
         self.assertEqual(
-            reindexed[APP["cache_key"](second)]["cached_at"],
+            reindexed[cache_key(second)]["cached_at"],
             "2026-08-14T12:00:00",
         )
 
@@ -1090,16 +1151,16 @@ class IdentityAndFilterTests(unittest.TestCase):
     def test_claude_safety_preflight_enforces_candidate_and_cost_limits(self):
         # 106/107 desde la recalibración del 20/08/2026 (antes 142/143, con un
         # coste unitario que salía de una muestra de dos convocatorias).
-        within_budget = APP["claude_safety_preflight"](106)
+        within_budget = claude_safety_preflight(106)
         self.assertTrue(within_budget["allowed"])
         self.assertEqual(within_budget["effective_max_analyses"], 106)
         self.assertLessEqual(within_budget["estimated_upper_cost_usd"], 5.0)
 
-        over_cost = APP["claude_safety_preflight"](107)
+        over_cost = claude_safety_preflight(107)
         self.assertFalse(over_cost["allowed"])
         self.assertEqual(over_cost["breaches"], ["estimated_cost_limit"])
 
-        over_both = APP["claude_safety_preflight"](201)
+        over_both = claude_safety_preflight(201)
         self.assertFalse(over_both["allowed"])
         self.assertEqual(
             over_both["breaches"],
@@ -1124,7 +1185,7 @@ class IdentityAndFilterTests(unittest.TestCase):
             "bdns_project_execution_days": None,
         }
         base.update(overrides)
-        return APP["deterministic_prefilter"](base)
+        return deterministic_prefilter(base)
 
     def test_bdns_unverified_records_do_not_reach_claude(self):
         self.assertEqual(
@@ -1293,7 +1354,7 @@ class IdentityAndFilterTests(unittest.TestCase):
             "deadline_days": 57,
             "url": "https://example.test/call",
         }
-        merged = APP["_deduplicate_raw_convocations"]([
+        merged = _deduplicate_raw_convocations([
             {**base, "source": "ECCP", "discovery_sources": ["ECCP"]},
             {**base, "source": "HORIZON EUROPE", "discovery_sources": ["EEN"]},
         ])
@@ -1301,7 +1362,7 @@ class IdentityAndFilterTests(unittest.TestCase):
         self.assertEqual(set(merged[0]["discovery_sources"]), {"ECCP", "EEN", "HORIZON EUROPE"})
 
     def test_ambiguous_records_are_retained_for_claude(self):
-        result = APP["deterministic_prefilter"]({
+        result = deterministic_prefilter({
             "title": "Convocatoria de innovación",
             "description": "Ayuda a empresas para proyectos piloto.",
         })
@@ -1315,11 +1376,11 @@ class IdentityAndFilterTests(unittest.TestCase):
             "deadline_date": "",
             "fecha_sin_confirmar": True,
         }
-        self.assertEqual(APP["_deterministic_call_status"](conv), "unknown")
-        self.assertEqual(APP["_public_deadline_values"](conv), (None, "", True))
+        self.assertEqual(_deterministic_call_status(conv), "unknown")
+        self.assertEqual(_public_deadline_values(conv), (None, "", True))
 
     def test_unknown_public_deadline_is_active_but_never_urgent(self):
-        stats = APP["build_stats"]([{
+        stats = build_stats([{
             "deadline": None,
             "descartada": False,
             "priority": "medium",
@@ -1335,7 +1396,7 @@ class IdentityAndFilterTests(unittest.TestCase):
         positives = [item for item in payload["convocatorias"] if not item.get("descartada")]
         rejected = [
             item["title"] for item in positives
-            if APP["deterministic_prefilter"](item)["decision"] == "reject"
+            if deterministic_prefilter(item)["decision"] == "reject"
         ]
         self.assertEqual(rejected, [])
 
@@ -1348,7 +1409,7 @@ class IdentityAndFilterTests(unittest.TestCase):
             {"depth": 2, "critical_fields": 41, "requests": 22,
              "irrelevant": 1, "median_requests_per_call": 3, "unique_call_gain_pct": 320},
         ]
-        self.assertEqual(APP["_choose_eccp_depth"](metrics), 1)
+        self.assertEqual(_choose_eccp_depth(metrics), 1)
 
 
 class BdnsHoldPilotTests(unittest.TestCase):
@@ -1371,7 +1432,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
             + [self.hold_pair("consortium_role_unverified", 200 + i) for i in range(4)]
             + [self.hold_pair("cluster_role_unverified", 300)]
         )
-        selected = APP["select_bdns_hold_pilot"](holds, 20)
+        selected = select_bdns_hold_pilot(holds, 20)
         counts = {}
         for _, outcome in selected:
             reason = outcome["reason_code"]
@@ -1385,7 +1446,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
         })
 
     def test_document_links_reject_local_or_insecure_urls(self):
-        records = APP["_bdns_document_records"]({
+        records = _bdns_document_records({
             "documentos": [
                 {"nombre": "Bases", "url": "https://administracion.example/bases.pdf"},
                 {"nombre": "Inseguro", "url": "http://example.test/file.pdf"},
@@ -1401,7 +1462,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
             encoding = "utf-8"
             text = content.decode("utf-8")
 
-        text, document_format = APP["_hold_document_text"](
+        text, document_format = _hold_document_text(
             Response(), "https://example.test/bases"
         )
         self.assertEqual(document_format, "html")
@@ -1423,7 +1484,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
         response = Response()
         session = mock.Mock()
         session.get.return_value = response
-        result = APP["_http_get"](
+        result = _http_get(
             "https://example.test/large.pdf",
             session=session,
             retries=1,
@@ -1440,9 +1501,9 @@ class BdnsHoldPilotTests(unittest.TestCase):
                 "text": "El plazo de presentación de solicitudes finaliza el 30/09/2026.",
             }]
         }
-        result = APP["resolve_hold_deterministically"](
+        result = resolve_hold_deterministically(
             {}, "active_status_unverified", evidence,
-            APP["_bdns_intrinsic_exclusion"],
+            _bdns_intrinsic_exclusion,
         )
         self.assertEqual(result["decision"], "retain")
         self.assertEqual(result["facts"]["deadline_date"], "2026-09-30")
@@ -1454,9 +1515,9 @@ class BdnsHoldPilotTests(unittest.TestCase):
                 "text": "El proyecto podrá ejecutarse hasta el 30/09/2026.",
             }]
         }
-        result = APP["resolve_hold_deterministically"](
+        result = resolve_hold_deterministically(
             {}, "active_status_unverified", evidence,
-            APP["_bdns_intrinsic_exclusion"],
+            _bdns_intrinsic_exclusion,
         )
         self.assertEqual(result["decision"], "unresolved")
 
@@ -1467,11 +1528,11 @@ class BdnsHoldPilotTests(unittest.TestCase):
                 "text": "Las actuaciones se realizarán en viviendas del municipio.",
             }]
         }
-        result = APP["resolve_hold_deterministically"](
+        result = resolve_hold_deterministically(
             {"title": "Programa de ahorro energético"},
             "territorial_eligibility_unverified",
             evidence,
-            APP["_bdns_intrinsic_exclusion"],
+            _bdns_intrinsic_exclusion,
         )
         self.assertEqual(result["decision"], "reject")
         self.assertEqual(result["reason_code"], "explicit_non_industrial_scope")
@@ -1490,11 +1551,11 @@ class BdnsHoldPilotTests(unittest.TestCase):
             }],
             "deterministic_scope_exclusion": full_scope,
         }
-        result = APP["resolve_hold_deterministically"](
+        result = resolve_hold_deterministically(
             {"title": "Ayuda para iniciativas de investigación"},
             "territorial_eligibility_unverified",
             evidence,
-            APP["_bdns_intrinsic_exclusion"],
+            _bdns_intrinsic_exclusion,
         )
         self.assertEqual((result["decision"], result["reason_code"]), (
             "reject", "explicit_non_industrial_scope"
@@ -1507,11 +1568,11 @@ class BdnsHoldPilotTests(unittest.TestCase):
                 "los gastos de participación en feria ni ciertas empresas de economía social."
             )
         }]}
-        result = APP["resolve_hold_deterministically"](
+        result = resolve_hold_deterministically(
             {"title": "Eficiencia energética para empresas"},
             "territorial_eligibility_unverified",
             evidence,
-            APP["_bdns_intrinsic_exclusion"],
+            _bdns_intrinsic_exclusion,
         )
         self.assertEqual(result["decision"], "unresolved")
 
@@ -1522,18 +1583,18 @@ class BdnsHoldPilotTests(unittest.TestCase):
                 "text": "Convenio a suscribir con la universidad beneficiaria.",
             }]
         }
-        result = APP["resolve_hold_deterministically"](
+        result = resolve_hold_deterministically(
             {"title": "Programa de innovación"},
             "active_status_unverified",
             evidence,
-            APP["_bdns_intrinsic_exclusion"],
+            _bdns_intrinsic_exclusion,
         )
         self.assertEqual((result["decision"], result["reason_code"]), (
             "reject", "not_open_call"
         ))
 
     def test_haiku_quote_must_exist_in_the_declared_document(self):
-        facts = APP["BdnsHoldFacts"](
+        facts = BdnsHoldFacts(
             call_status="unknown",
             deadline_date="",
             territorial_condition="existing_establishment",
@@ -1549,7 +1610,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
             "url": "https://example.test/bases",
             "text": "No consta ese texto en las bases.",
         }]}
-        result = APP["_validated_hold_resolution"](
+        result = _validated_hold_resolution(
             {}, "territorial_eligibility_unverified", facts, evidence
         )
         self.assertEqual(result["decision"], "unresolved")
@@ -1557,7 +1618,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
 
     def test_quote_whitespace_and_pdf_punctuation_are_normalized(self):
         quote = "cuenten con establecimiento operativo en La Rioja"
-        facts = APP["BdnsHoldFacts"](
+        facts = BdnsHoldFacts(
             call_status="unknown", deadline_date="",
             territorial_condition="existing_establishment", execution_days=-1,
             consortium_participation="unknown", cluster_support_to_members="unknown",
@@ -1569,7 +1630,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
             "text": "Las empresas deberán acreditar que cuenten con\n"
                     "establecimiento operativo en La Rioja.",
         }]}
-        result = APP["_validated_hold_resolution"](
+        result = _validated_hold_resolution(
             {}, "territorial_eligibility_unverified", facts, evidence
         )
         self.assertEqual(result["decision"], "reject")
@@ -1585,14 +1646,14 @@ class BdnsHoldPilotTests(unittest.TestCase):
             "y su participacion en proyectos para mejorar su competitividad a traves "
             "de aso ciaciones tipo cluster"
         )
-        facts = APP["BdnsHoldFacts"](
+        facts = BdnsHoldFacts(
             call_status="unknown", deadline_date="", territorial_condition="unknown",
             execution_days=-1, consortium_participation="unknown",
             cluster_support_to_members="yes", evidence_quote=quote,
             evidence_source_url="https://example.test/cluster.pdf",
             confidence=90, explanation="Apoyo a proyectos empresariales.",
         )
-        result = APP["_validated_hold_resolution"](
+        result = _validated_hold_resolution(
             {}, "cluster_role_unverified", facts,
             {"documents": [{"url": facts.evidence_source_url, "text": pdf_text}]},
         )
@@ -1600,14 +1661,14 @@ class BdnsHoldPilotTests(unittest.TestCase):
 
     def test_project_location_quote_cannot_prove_existing_establishment(self):
         quote = "Son subvencionables las actuaciones que se realicen en las Islas Baleares"
-        facts = APP["BdnsHoldFacts"](
+        facts = BdnsHoldFacts(
             call_status="unknown", deadline_date="",
             territorial_condition="existing_establishment", execution_days=-1,
             consortium_participation="unknown", cluster_support_to_members="unknown",
             evidence_quote=quote, evidence_source_url="https://example.test/bases",
             confidence=85, explanation="Clasificación propuesta por el modelo.",
         )
-        result = APP["_validated_hold_resolution"](
+        result = _validated_hold_resolution(
             {}, "territorial_eligibility_unverified", facts,
             {"documents": [{"url": facts.evidence_source_url, "text": quote}]},
         )
@@ -1618,14 +1679,14 @@ class BdnsHoldPilotTests(unittest.TestCase):
 
     def test_execution_period_quote_cannot_prove_call_is_closed(self):
         quote = "El plazo máximo de ejecución será de 30 meses desde la concesión."
-        facts = APP["BdnsHoldFacts"](
+        facts = BdnsHoldFacts(
             call_status="closed", deadline_date="",
             territorial_condition="unknown", execution_days=30,
             consortium_participation="unknown", cluster_support_to_members="unknown",
             evidence_quote=quote, evidence_source_url="https://example.test/bases",
             confidence=85, explanation="La ejecución se vincula a la concesión.",
         )
-        result = APP["_validated_hold_resolution"](
+        result = _validated_hold_resolution(
             {}, "active_status_unverified", facts,
             {"documents": [{"url": facts.evidence_source_url, "text": quote}]},
         )
@@ -1634,14 +1695,14 @@ class BdnsHoldPilotTests(unittest.TestCase):
 
     def test_negative_consortium_answer_never_causes_automatic_rejection(self):
         quote = "No consta información detallada sobre la participación en consorcio."
-        facts = APP["BdnsHoldFacts"](
+        facts = BdnsHoldFacts(
             call_status="unknown", deadline_date="",
             territorial_condition="unknown", execution_days=-1,
             consortium_participation="no", cluster_support_to_members="unknown",
             evidence_quote=quote, evidence_source_url="https://example.test/bases",
             confidence=90, explanation="No se acredita participación formal.",
         )
-        result = APP["_validated_hold_resolution"](
+        result = _validated_hold_resolution(
             {}, "consortium_role_unverified", facts,
             {"documents": [{"url": facts.evidence_source_url, "text": quote}]},
         )
@@ -1652,14 +1713,14 @@ class BdnsHoldPilotTests(unittest.TestCase):
             "El consorcio podrá contratar proveedores externos y subcontratistas "
             "para el suministro de equipos."
         )
-        facts = APP["BdnsHoldFacts"](
+        facts = BdnsHoldFacts(
             call_status="unknown", deadline_date="",
             territorial_condition="unknown", execution_days=-1,
             consortium_participation="yes", cluster_support_to_members="unknown",
             evidence_quote=quote, evidence_source_url="https://example.test/bases",
             confidence=95, explanation="Solo se describe contratación comercial.",
         )
-        result = APP["_validated_hold_resolution"](
+        result = _validated_hold_resolution(
             {}, "consortium_role_unverified", facts,
             {"documents": [{"url": facts.evidence_source_url, "text": quote}]},
         )
@@ -1685,9 +1746,9 @@ class BdnsHoldPilotTests(unittest.TestCase):
             "reason_code": "haiku_consortium_participation_confirmed",
             "facts": {"consortium_participation": "yes"},
         }
-        updated, outcome = APP["apply_verified_bdns_hold_resolution"](
+        updated, outcome = apply_verified_bdns_hold_resolution(
             conv, "consortium_role_unverified", resolution,
-            APP["deterministic_prefilter"],
+            deterministic_prefilter,
         )
         self.assertTrue(updated["bdns_verified_consortium_participation"])
         self.assertEqual(outcome["decision"], "retain")
@@ -1709,23 +1770,23 @@ class BdnsHoldPilotTests(unittest.TestCase):
         boundary_quote = (
             "Se permite establecer un centro tras la concesión; el plazo de ejecución será de 730 días."
         )
-        below = APP["BdnsHoldFacts"](
+        below = BdnsHoldFacts(
             **common, execution_days=729, evidence_quote=below_quote
         )
-        boundary = APP["BdnsHoldFacts"](
+        boundary = BdnsHoldFacts(
             **common, execution_days=730, evidence_quote=boundary_quote
         )
-        self.assertEqual(APP["_validated_hold_resolution"](
+        self.assertEqual(_validated_hold_resolution(
             {}, "territorial_eligibility_unverified", below,
             {"documents": [{"url": common["evidence_source_url"], "text": below_quote}]},
         )["decision"], "reject")
-        self.assertEqual(APP["_validated_hold_resolution"](
+        self.assertEqual(_validated_hold_resolution(
             {}, "territorial_eligibility_unverified", boundary,
             {"documents": [{"url": common["evidence_source_url"], "text": boundary_quote}]},
         )["decision"], "retain")
 
     def test_hold_schema_has_no_optional_fields_or_unions(self):
-        metrics = APP["validate_structured_output_schema"](APP["BdnsHoldFacts"])
+        metrics = validate_structured_output_schema(BdnsHoldFacts)
         self.assertEqual(metrics["optional_fields"], 0)
         self.assertEqual(metrics["union_fields"], 0)
 
@@ -1745,9 +1806,9 @@ class BdnsHoldPilotTests(unittest.TestCase):
             "reason_code": "verified_future_deadline",
             "facts": {"call_status": "open", "deadline_date": "2099-09-30"},
         }
-        updated, outcome = APP["apply_verified_bdns_hold_resolution"](
+        updated, outcome = apply_verified_bdns_hold_resolution(
             conv, "active_status_unverified", resolution,
-            APP["deterministic_prefilter"],
+            deterministic_prefilter,
         )
         self.assertEqual(updated["deadline_date"], "2099-09-30")
         self.assertEqual(updated["bdns_active_status"], "confirmed_deadline")
@@ -1776,9 +1837,9 @@ class BdnsHoldPilotTests(unittest.TestCase):
                 "execution_days": -1,
             },
         }
-        updated, outcome = APP["apply_verified_bdns_hold_resolution"](
+        updated, outcome = apply_verified_bdns_hold_resolution(
             conv, "territorial_eligibility_unverified", resolution,
-            APP["deterministic_prefilter"],
+            deterministic_prefilter,
         )
         self.assertEqual(
             updated["bdns_territorial_requirement"], "project_location_only"
@@ -1789,11 +1850,11 @@ class BdnsHoldPilotTests(unittest.TestCase):
         )
 
     def test_unresolved_verified_hold_becomes_ambiguous_not_manual_or_reject(self):
-        updated, outcome = APP["apply_verified_bdns_hold_resolution"](
+        updated, outcome = apply_verified_bdns_hold_resolution(
             {"source": "BDNS", "bdns_id": "900100"},
             "consortium_role_unverified",
             {"decision": "unresolved", "reason_code": "insufficient_evidence"},
-            APP["deterministic_prefilter"],
+            deterministic_prefilter,
         )
         self.assertEqual(updated["bdns_id"], "900100")
         self.assertEqual(outcome["decision"], "ambiguous")
@@ -1815,7 +1876,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
         evidence = {"documents": [{
             "text": "La actuación consiste en un programa de empleo y acciones formativas."
         }]}
-        _, outcome, resolved_by = APP["replay_bdns_hold_item"](conv, old, evidence, APP["deterministic_prefilter"], APP["_bdns_intrinsic_exclusion"])
+        _, outcome, resolved_by = replay_bdns_hold_item(conv, old, evidence, deterministic_prefilter, _bdns_intrinsic_exclusion)
         self.assertEqual(outcome["decision"], "reject")
         self.assertEqual(outcome["reason_code"], "explicit_non_industrial_scope")
         self.assertEqual(resolved_by, "current_document_rules")
@@ -1826,11 +1887,11 @@ class BdnsHoldPilotTests(unittest.TestCase):
             "reason_code": "verified_existing_establishment",
             "reason": "Se exige un centro previo fuera de Aragón.",
         }
-        _, outcome = APP["apply_verified_bdns_hold_resolution"](
+        _, outcome = apply_verified_bdns_hold_resolution(
             {"source": "BDNS", "bdns_id": "900101"},
             "territorial_eligibility_unverified",
             resolution,
-            APP["deterministic_prefilter"],
+            deterministic_prefilter,
         )
         self.assertEqual(outcome["decision"], "reject")
         self.assertEqual(outcome["reason_code"], "verified_existing_establishment")
@@ -1850,7 +1911,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
                 (4, "cluster_role_unverified", "unresolved"),
             )
         ]
-        sample = APP["select_bdns_hold_qa_sample"](results, limit=3)
+        sample = select_bdns_hold_qa_sample(results, limit=3)
         self.assertEqual(sample, [1, 3, 4])
 
     def test_cli_rejects_more_than_twenty_hold_cases(self):
@@ -1878,11 +1939,11 @@ class BdnsHoldPilotTests(unittest.TestCase):
             }],
             "metrics": {"documents_with_text": 1, "fetched_urls": 1},
         }
-        globals_dict = APP["resolve_bdns_holds_for_pipeline"].__globals__
+        globals_dict = resolve_bdns_holds_for_pipeline.__globals__
         with mock.patch.dict(globals_dict, {
             "retrieve_bdns_hold_evidence": mock.Mock(return_value=evidence),
         }):
-            result = APP["resolve_bdns_holds_for_pipeline"]([hold], APP["_bdns_intrinsic_exclusion"], APP["deterministic_prefilter"])
+            result = resolve_bdns_holds_for_pipeline([hold], _bdns_intrinsic_exclusion, deterministic_prefilter)
         self.assertEqual(result["counts"], {"ambiguous": 1})
         self.assertEqual(result["rejected"], [])
         self.assertEqual(len(result["retained"]), 1)
@@ -1906,11 +1967,11 @@ class BdnsHoldPilotTests(unittest.TestCase):
             }],
             "metrics": {"documents_with_text": 1},
         }
-        globals_dict = APP["resolve_bdns_holds_for_pipeline"].__globals__
+        globals_dict = resolve_bdns_holds_for_pipeline.__globals__
         with mock.patch.dict(globals_dict, {
             "retrieve_bdns_hold_evidence": mock.Mock(return_value=evidence),
         }):
-            result = APP["resolve_bdns_holds_for_pipeline"]([hold], APP["_bdns_intrinsic_exclusion"], APP["deterministic_prefilter"])
+            result = resolve_bdns_holds_for_pipeline([hold], _bdns_intrinsic_exclusion, deterministic_prefilter)
         self.assertEqual(result["counts"], {"reject": 1})
         self.assertEqual(result["retained"], [])
         self.assertEqual(
@@ -1954,7 +2015,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
             "metrics": {"documents_with_text": 1},
         }
         forbidden_ai = mock.Mock(side_effect=AssertionError("No debía llamar a Haiku"))
-        globals_dict = APP["run_bdns_hold_pilot"].__globals__
+        globals_dict = run_bdns_hold_pilot.__globals__
         with tempfile.TemporaryDirectory() as temporary:
             report_path = str(Path(temporary) / "report.json")
             cache_path = str(Path(temporary) / "cache.json")
@@ -1965,7 +2026,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
                 "analyze_bdns_hold_with_claude": forbidden_ai,
             }
             with mock.patch.dict(globals_dict, replacements):
-                report = APP["run_bdns_hold_pilot"]([hold], 1, "clave-no-usada-el-piloto-no-llama", APP["_bdns_intrinsic_exclusion"])
+                report = run_bdns_hold_pilot([hold], 1, "clave-no-usada-el-piloto-no-llama", _bdns_intrinsic_exclusion)
             self.assertEqual(report["counts"], {"retain": 1})
             self.assertEqual(report["usage"]["completed_api_calls"], 0)
             self.assertTrue(Path(report_path).exists())
@@ -1978,7 +2039,7 @@ class BdnsHoldPilotTests(unittest.TestCase):
             path.write_text(json.dumps({
                 "pilot_version": "bdns-hold-old", "status": "completed"
             }), encoding="utf-8")
-            APP["_archive_previous_hold_artifact"](
+            _archive_previous_hold_artifact(
                 str(path), None, "pilot_version"
             )
             archive = Path(temporary) / "report.bdns-hold-old.json"
@@ -2105,7 +2166,7 @@ class FrontendContractTests(unittest.TestCase):
             "catalog_scope", "catalog_category", "catalog_ref",
             "related_documents_count", "bdns_url",
         }
-        record = APP["_assemble_public_record"](1, conv, analysis)
+        record = _assemble_public_record(1, conv, analysis)
         missing = [
             field for field in record
             if field not in backend_only_fields and field not in self.html
@@ -2115,7 +2176,7 @@ class FrontendContractTests(unittest.TestCase):
 
 class DeterministicPostAnalysisTests(unittest.TestCase):
     def test_eligible_actions_prefer_explicit_facts_and_keep_provenance(self):
-        actions, basis = APP["derive_eligible_actions"](
+        actions, basis = derive_eligible_actions(
             {"description": "Texto general"},
             {
                 "eligible_actions": [
@@ -2129,7 +2190,7 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
         self.assertEqual(actions[0], "Adquisición de maquinaria productiva")
 
     def test_eligible_actions_do_not_present_required_topics_as_costs(self):
-        actions, basis = APP["derive_eligible_actions"](
+        actions, basis = derive_eligible_actions(
             {"description": "Convocatoria de demostración industrial"},
             {"required_topics": ["Demostrar recuperación de calor residual"]},
         )
@@ -2137,7 +2198,7 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
         self.assertEqual(basis, "required_topics")
 
     def test_eligible_actions_can_reuse_literal_section_from_old_analysis(self):
-        actions, basis = APP["derive_eligible_actions"](
+        actions, basis = derive_eligible_actions(
             {
                 "description": (
                     "Artículo 4. Actuaciones subvencionables: adquisición de "
@@ -2152,37 +2213,37 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
     def test_taxonomy_separates_strong_contextual_and_discovery_terms(self):
         self.assertIn(
             "waste-to-energy",
-            APP["TECH_TAG_STRONG_TERMS"]["thermal_waste"],
+            TECH_TAG_STRONG_TERMS["thermal_waste"],
         )
         self.assertIn(
             "digital twin",
-            APP["TECH_TAG_CONTEXTUAL_TERMS"]["digital_thermal"],
+            TECH_TAG_CONTEXTUAL_TERMS["digital_thermal"],
         )
         self.assertNotIn("oxidación", [
-            term for values in APP["TECH_TAGS"].values() for term in values
+            term for values in TECH_TAGS.values() for term in values
         ])
         discovery_only = "Industrial process optimisation for a new factory"
-        self.assertTrue(APP["has_technology_discovery_signal"](discovery_only))
-        self.assertEqual(APP["detect_tech_tags"](discovery_only), [])
+        self.assertTrue(has_technology_discovery_signal(discovery_only))
+        self.assertEqual(detect_tech_tags(discovery_only), [])
 
     def test_contextual_digital_and_efficiency_terms_need_industrial_context(self):
         self.assertNotIn(
             "digital_thermal",
-            APP["detect_tech_tags"]("A digital twin of the ocean ecosystem"),
+            detect_tech_tags("A digital twin of the ocean ecosystem"),
         )
         self.assertIn(
             "digital_thermal",
-            APP["detect_tech_tags"](
+            detect_tech_tags(
                 "Digital twin for monitoring an industrial furnace and process heat"
             ),
         )
         self.assertNotIn(
             "energy_efficiency",
-            APP["detect_tech_tags"]("Energy efficiency in residential buildings"),
+            detect_tech_tags("Energy efficiency in residential buildings"),
         )
         self.assertIn(
             "energy_efficiency",
-            APP["detect_tech_tags"](
+            detect_tech_tags(
                 "Energy efficiency investment in industrial process equipment"
             ),
         )
@@ -2190,19 +2251,19 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
     def test_biomass_flow_mapping_is_not_thermal_valorisation(self):
         self.assertNotIn(
             "thermal_waste",
-            APP["detect_tech_tags"](
+            detect_tech_tags(
                 "Understanding biomass flows, availability and business data in Europe"
             ),
         )
         self.assertIn(
             "thermal_waste",
-            APP["detect_tech_tags"](
+            detect_tech_tags(
                 "Open call for technology for valorisation of biomass side-streams"
             ),
         )
 
     def test_source_status_separates_raw_and_consolidated_counts(self):
-        status = APP["build_source_status"](
+        status = build_source_status(
             {"BOE / MITECO": [{"title": "Documento 1"}, {"title": "Documento 2"}]},
             {},
             {},
@@ -2251,7 +2312,7 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
             "action": "Descartar como proveedor de equipos.",
             "call_facts": facts, "review_reasons": [],
         }
-        APP["apply_current_deterministic_rules"]({
+        apply_current_deterministic_rules({
             "raw_document": {
                 "deadline_days": 60,
                 "title": (
@@ -2288,7 +2349,7 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
                 "Kalfrisa solo podría actuar como proveedor tecnológico para un beneficiario."
             ),
         }
-        self.assertFalse(APP["_correct_direct_valorisation_scope"](
+        self.assertFalse(_correct_direct_valorisation_scope(
             evaluation, facts, {"tech_tags": ["thermal_waste"]},
         ))
 
@@ -2310,7 +2371,7 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
             "scores": {}, "summary": "Existe encaje técnico, no territorial.",
             "action": "Revisar.", "call_facts": facts,
         }
-        APP["apply_current_deterministic_rules"]({
+        apply_current_deterministic_rules({
             "raw_document": {
                 "source": "BDNS", "deadline_days": 90,
                 "title": "Ayuda regional para inversión industrial",
@@ -2342,7 +2403,7 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
             "title": "Ayuda a la inversión industrial",
         }
         raw.update(overrides)
-        APP["apply_current_deterministic_rules"]({"raw_document": raw, "analysis": analysis})
+        apply_current_deterministic_rules({"raw_document": raw, "analysis": analysis})
         return analysis
 
     def test_a_territorial_call_is_discarded_whatever_the_model_wrote(self):
@@ -2435,7 +2496,7 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
             "summary": "Fuera del foco de I+D.",
             "action": "Descartar.", "call_facts": facts, "review_reasons": [],
         }
-        APP["apply_current_deterministic_rules"]({
+        apply_current_deterministic_rules({
             "raw_document": {"deadline_days": 60}, "analysis": analysis,
         })
         self.assertEqual(analysis["decision"], "watch")
@@ -2460,7 +2521,7 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
             "decision": "discard_out_of_scope", "eligibility": "eligible",
             "eligibility_reason": "No es de I+D.",
         }
-        changed = APP["_correct_own_industrial_investment_scope"](
+        changed = _correct_own_industrial_investment_scope(
             evaluation, facts,
         )
         self.assertFalse(changed)
@@ -2479,7 +2540,7 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
             "decision": "discard_out_of_scope", "eligibility": "eligible",
             "eligibility_reason": "No es de I+D.",
         }
-        self.assertFalse(APP["_correct_own_industrial_investment_scope"](
+        self.assertFalse(_correct_own_industrial_investment_scope(
             evaluation, facts,
         ))
 
@@ -2504,7 +2565,7 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
             "raw_document": {"deadline_days": 30},
             "analysis": analysis,
         }
-        APP["apply_current_deterministic_rules"](record)
+        apply_current_deterministic_rules(record)
         self.assertEqual(analysis["eligibility"], "unknown")
         self.assertEqual(analysis["decision"], "watch")
         self.assertFalse(analysis["descartada"])
@@ -2519,7 +2580,7 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
             "eligibility_reason": "Solo ayuntamientos en consorcio.",
             "recommended_role": "consortium_partner", "risks_and_unknowns": [],
         }
-        changed = APP["_correct_consortium_participation_ineligibility"](
+        changed = _correct_consortium_participation_ineligibility(
             evaluation,
             {
                 "eligible_entity_types": ["Ayuntamientos"],
@@ -2551,7 +2612,7 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
             "recommended_role": "not_applicable", "risks_and_unknowns": [],
             "accion": "Descartar.", "call_facts": facts, "review_reasons": [],
         }
-        APP["apply_current_deterministic_rules"]({
+        apply_current_deterministic_rules({
             "raw_document": {"deadline_days": 400}, "analysis": analysis,
         })
         self.assertEqual(analysis["eligibility"], "unknown")
@@ -2580,7 +2641,7 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
             "action": "Discard.", "call_facts": facts, "review_reasons": [],
             "deadline_days": 400,
         }
-        APP["apply_current_deterministic_rules"]({
+        apply_current_deterministic_rules({
             "raw_document": item, "analysis": item,
         })
         self.assertNotIn("accion", item)
@@ -2596,7 +2657,7 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
                 "Applicants must be local water management organisations."
             ],
         }
-        self.assertEqual(APP["_required_consortium_member_category"](facts), "")
+        self.assertEqual(_required_consortium_member_category(facts), "")
         evaluation = {
             "eligibility": "ineligible", "decision": "discard_ineligible",
             "eligibility_reason": (
@@ -2604,7 +2665,7 @@ class DeterministicPostAnalysisTests(unittest.TestCase):
             ),
         }
         self.assertFalse(
-            APP["_correct_required_consortium_member_ineligibility"](
+            _correct_required_consortium_member_ineligibility(
                 evaluation, facts
             )
         )
@@ -2633,9 +2694,9 @@ class ClaudeUsageAccountingTests(unittest.TestCase):
                 self.message('{"value":"ok"}', 110, 10),
             ]
         )))
-        globals_dict = APP["_structured_claude_call"].__globals__
+        globals_dict = _structured_claude_call.__globals__
         with mock.patch.dict(globals_dict, {"CLAUDE_SLEEP_S": 0}):
-            parsed, usage = APP["_structured_claude_call"](
+            parsed, usage = _structured_claude_call(
                 client, self.TinyOutput, "system", "user", 100,
                 "Fixture", "evaluation", 2,
             )
@@ -2659,7 +2720,7 @@ class ClaudeUsageAccountingTests(unittest.TestCase):
             "cache_write_tokens": 0, "cache_read_tokens": 0,
             "total_tokens": 60, "estimated_cost_usd": 0.0001,
         }]
-        usage = APP["aggregate_aborted_run_usage"](completed, failed)
+        usage = aggregate_aborted_run_usage(completed, failed)
         self.assertEqual(usage["analyzed_convocations"], 1)
         self.assertEqual(usage["failed_convocations"], 1)
         self.assertEqual(usage["api_calls"], 3)
@@ -2670,12 +2731,12 @@ class ClaudeUsageAccountingTests(unittest.TestCase):
         client = SimpleNamespace(messages=SimpleNamespace(create=mock.Mock(
             side_effect=error
         )))
-        with self.assertRaises(APP["ClaudeAnalysisError"]) as caught:
-            APP["_structured_claude_call"](
+        with self.assertRaises(ClaudeAnalysisError) as caught:
+            _structured_claude_call(
                 client, self.TinyOutput, "system", "user", 100,
                 "Fixture", "evaluation", 1,
             )
-        partial = APP["aggregate_partial_token_usage"](
+        partial = aggregate_partial_token_usage(
             caught.exception.partial_usages
         )
         self.assertEqual(partial["completed_api_calls"], 1)
@@ -3092,11 +3153,11 @@ class StructuredCallRetryTests(unittest.TestCase):
 
     def test_each_retry_raises_the_output_ceiling(self):
         techos = []
-        with mock.patch.dict(APP["_structured_claude_call"].__globals__,
+        with mock.patch.dict(_structured_claude_call.__globals__,
                              {"CLAUDE_SLEEP_S": 0}):
-            with self.assertRaises(APP["ClaudeAnalysisError"]):
-                APP["_structured_claude_call"](
-                    self._cliente_que_trunca(techos), APP["CallFacts"],
+            with self.assertRaises(ClaudeAnalysisError):
+                _structured_claude_call(
+                    self._cliente_que_trunca(techos), CallFacts,
                     "sistema", "prompt", 2_000,
                     "Convocatoria de prueba", "extracción factual", 3,
                 )
@@ -3107,29 +3168,29 @@ class StructuredCallRetryTests(unittest.TestCase):
 
     def test_the_ceiling_is_bounded(self):
         techos = []
-        with mock.patch.dict(APP["_structured_claude_call"].__globals__,
+        with mock.patch.dict(_structured_claude_call.__globals__,
                              {"CLAUDE_SLEEP_S": 0}):
-            with self.assertRaises(APP["ClaudeAnalysisError"]):
-                APP["_structured_claude_call"](
-                    self._cliente_que_trunca(techos), APP["CallFacts"],
+            with self.assertRaises(ClaudeAnalysisError):
+                _structured_claude_call(
+                    self._cliente_que_trunca(techos), CallFacts,
                     "sistema", "prompt", 9_000,
                     "Convocatoria de prueba", "extracción factual", 3,
                 )
         for techo in techos:
-            self.assertLessEqual(techo, APP["STRUCTURED_OUTPUT_TOKEN_CEILING"])
+            self.assertLessEqual(techo, STRUCTURED_OUTPUT_TOKEN_CEILING)
 
     def test_the_partial_spend_of_failed_attempts_is_reported(self):
         # El aborto debe poder explicar qué se gastó sin resultado.
         techos = []
-        with mock.patch.dict(APP["_structured_claude_call"].__globals__,
+        with mock.patch.dict(_structured_claude_call.__globals__,
                              {"CLAUDE_SLEEP_S": 0}):
             try:
-                APP["_structured_claude_call"](
-                    self._cliente_que_trunca(techos), APP["CallFacts"],
+                _structured_claude_call(
+                    self._cliente_que_trunca(techos), CallFacts,
                     "sistema", "prompt", 2_000,
                     "Convocatoria de prueba", "extracción factual", 3,
                 )
-            except APP["ClaudeAnalysisError"] as exc:
+            except ClaudeAnalysisError as exc:
                 self.assertEqual(len(exc.partial_usages), 3)
                 self.assertTrue(all(not u["valid_output"] for u in exc.partial_usages))
             else:
@@ -3167,7 +3228,7 @@ class HaikuPayloadTests(unittest.TestCase):
             "bdns_instruments": ["SUBVENCIÓN"],
             "bdns_project_execution_days": 730,
         }
-        facts = APP["_official_structured_facts"](conv)
+        facts = _official_structured_facts(conv)
         self.assertEqual(
             facts["tipos_de_beneficiario"],
             ["PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"],
@@ -3184,7 +3245,7 @@ class HaikuPayloadTests(unittest.TestCase):
         que el modelo pueda citarlo y para que se vea de dónde salen
         (AGENTS.md 49.7).
         """
-        facts = APP["_official_structured_facts"]({
+        facts = _official_structured_facts({
             "source": "HORIZON EUROPE",
             "types_of_action": "HORIZON Innovation Actions",
             "programme_eligibility": {
@@ -3198,7 +3259,7 @@ class HaikuPayloadTests(unittest.TestCase):
         self.assertEqual(facts["tipo_de_accion"], "HORIZON Innovation Actions")
 
     def test_a_call_without_programme_conditions_carries_no_empty_block(self):
-        facts = APP["_official_structured_facts"]({
+        facts = _official_structured_facts({
             "source": "BDNS", "bdns_regions": ["ARAGÓN"], "programme_eligibility": {},
         })
         self.assertNotIn("condiciones_generales_del_programa", facts)
@@ -3213,7 +3274,7 @@ class HaikuPayloadTests(unittest.TestCase):
             "bdns_call_access": "named",
             "bdns_territorial_requirement": "existing_establishment",
         }
-        facts = APP["_official_structured_facts"](conv)
+        facts = _official_structured_facts(conv)
         for prohibido in ("bdns_company_eligible", "bdns_call_access",
                           "bdns_territorial_requirement"):
             self.assertNotIn(prohibido, facts)
@@ -3221,7 +3282,7 @@ class HaikuPayloadTests(unittest.TestCase):
 
     def test_a_call_without_structured_data_yields_nothing(self):
         # Horizon, ECCP o EEN no traen estos campos: el bloque no debe añadirse.
-        self.assertEqual(APP["_official_structured_facts"]({"title": "x"}), {})
+        self.assertEqual(_official_structured_facts({"title": "x"}), {})
 
     def test_recovered_bases_keep_a_role_the_ranking_understands(self):
         conv = {"related_document_contents": []}
@@ -3231,36 +3292,36 @@ class HaikuPayloadTests(unittest.TestCase):
             {"title": "Anuncio", "url": "https://x.test/anuncio",
              "kind": "announcement", "text": "Extracto de la convocatoria. " * 40},
         ]}
-        actualizado = APP["_attach_bdns_hold_evidence"](conv, evidence)
+        actualizado = _attach_bdns_hold_evidence(conv, evidence)
         roles = [d["document_role"] for d in actualizado["related_document_contents"]]
         self.assertEqual(roles, ["regulatory_bases", "call_extract"])
 
     def test_the_document_budget_is_shared_and_bounded(self):
-        presupuesto = {"remaining": APP["EVIDENCE_TOTAL_DOCUMENT_BUDGET"]}
+        presupuesto = {"remaining": EVIDENCE_TOTAL_DOCUMENT_BUDGET}
         documento = {
             "title": "Bases", "url": "https://x.test/a",
             "document_role": "regulatory_bases",
             "description": "Requisitos de los beneficiarios. " * 2_000,
         }
-        primero = APP["_related_document_evidence"](documento, presupuesto)
+        primero = _related_document_evidence(documento, presupuesto)
         self.assertIsNotNone(primero)
         self.assertLessEqual(
-            len(primero["description"]), APP["EVIDENCE_PER_DOCUMENT_BUDGET"]
+            len(primero["description"]), EVIDENCE_PER_DOCUMENT_BUDGET
         )
         self.assertLess(
-            presupuesto["remaining"], APP["EVIDENCE_TOTAL_DOCUMENT_BUDGET"]
+            presupuesto["remaining"], EVIDENCE_TOTAL_DOCUMENT_BUDGET
         )
 
     def test_a_document_is_dropped_when_the_budget_is_exhausted(self):
         presupuesto = {"remaining": 100}
-        self.assertIsNone(APP["_related_document_evidence"](
+        self.assertIsNone(_related_document_evidence(
             {"title": "Bases", "description": "texto " * 500}, presupuesto
         ))
 
     def test_recovered_bases_get_more_room_than_before(self):
         # La regresión concreta: se guardaban 12.000 caracteres y el prompt los
         # recortaba a 6.000, perdiendo la mitad de la evidencia recuperada.
-        self.assertGreater(APP["EVIDENCE_PER_DOCUMENT_BUDGET"], 6_000)
+        self.assertGreater(EVIDENCE_PER_DOCUMENT_BUDGET, 6_000)
 
 
 if __name__ == "__main__":

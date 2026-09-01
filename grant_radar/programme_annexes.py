@@ -42,7 +42,12 @@ _PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ANNEXES_CACHE_FILE = os.path.join(
     _PROJECT_DIR, "grant_radar_data", "programme_annexes_cache.json"
 )
-ANNEXES_CACHE_VERSION = "programme-annexes-2026-08-v1"
+# Subir esta versión invalida lo guardado y obliga a releer el documento. Hay
+# que hacerlo siempre que cambie QUÉ se extrae, no solo cuando cambie el
+# documento: el 01/09/2026 se añadió la sección de tasas de financiación, y sin
+# invalidar, las entradas escritas el 31/08 se habrían reutilizado durante los
+# siete días de `ANNEXES_REFRESH_DAYS` sin la sección nueva (AGENTS.md 59).
+ANNEXES_CACHE_VERSION = "programme-annexes-2026-09-v2-funding-rates"
 # Cada cuántos días se vuelve a leer el documento. Un anexo publicado no cambia
 # a diario, pero la Comisión publica correcciones dentro de una misma edición y
 # descargarlo cuesta 0,7 s: una semana es suficiente margen sin ser terco.
@@ -69,7 +74,22 @@ ELIGIBILITY_SECTIONS = (
     ("entities_eligible_to_participate", "Entities eligible to participate", 700),
     ("entities_eligible_for_funding", "Entities eligible for funding", 1500),
     ("consortium_composition", "Consortium composition", 1200),
+    # Cuánto de tu gasto cubre la ayuda. Es el dato que decide si una
+    # convocatoria interesa: en un proyecto de 3 M€, la diferencia entre el
+    # 100 % de una Research and Innovation Action y el 70 % de una Innovation
+    # Action son 900.000 € que pone la empresa. Vive en la sección G del mismo
+    # documento, y hasta el 01/09/2026 no se leía porque cae en la página 32,
+    # más allá del corte de caracteres por defecto (AGENTS.md 59).
+    # 1.900 caracteres: medidos, la lista completa de tasas ocupa 1.578 desde
+    # el encabezado.
+    ("funding_rates", "Form of grant, funding rate and maximum grant amount", 1900),
 )
+
+# Los Anexos Generales tienen 46 páginas y 124.411 caracteres (edición
+# 2026-2027). El corte por defecto de la capa documental —48.000— basta para la
+# elegibilidad, que va en las primeras páginas, pero deja fuera las tasas de
+# financiación. Se pide explícitamente leer más lejos solo para este documento.
+ANNEXES_MAX_CHARS = 130_000
 
 
 def sections_fingerprint(sections: dict) -> str:
@@ -222,7 +242,9 @@ def fetch_programme_eligibility(
                 "programa queda sin declarar", url
             )
     else:
-        sections = eligibility_sections(document_text(response, url)[0])
+        sections = eligibility_sections(
+            document_text(response, url, max_chars=ANNEXES_MAX_CHARS)[0]
+        )
         if sections:
             result = {
                 "source_url": url,

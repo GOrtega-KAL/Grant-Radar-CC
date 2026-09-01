@@ -96,5 +96,93 @@ class MatchingTests(unittest.TestCase):
         self.assertEqual(_compat_tags_for(["unknown_tag"]), [])
 
 
+class PluralMatchingTests(unittest.TestCase):
+    """
+    El plural, añadido el 01/09/2026 tras medirlo dos veces (AGENTS.md 56.2).
+
+    El español administrativo de las convocatorias escribe casi siempre en
+    plural, y la coincidencia exacta lo perdía. El caso que decidió el asunto
+    es el primero: «recuperación de calores residuales» es el negocio central
+    de Kalfrisa y no activaba nada por una «s».
+    """
+
+    def test_el_plural_del_negocio_central_ya_se_detecta(self):
+        self.assertTrue(_term_present(
+            "recuperacion de calores residuales en la industria", "calor residual"
+        ))
+        self.assertIn(
+            "waste_heat",
+            detect_tech_tags("recuperacion de calores residuales industriales"),
+        )
+
+    def test_el_singular_sigue_detectandose(self):
+        self.assertTrue(_term_present("recuperacion de calor residual", "calor residual"))
+
+    def test_admite_las_dos_formas_de_plural_espanol(self):
+        # -s en la palabra llana, -es en la aguda: «hornos industriales».
+        self.assertTrue(_term_present(
+            "sustitucion de hornos industriales", "horno industrial"
+        ))
+        self.assertTrue(_term_present(
+            "inversiones en tratamientos termicos", "tratamiento termico"
+        ))
+
+    def test_el_plural_ingles_tambien(self):
+        self.assertTrue(_term_present(
+            "high-temperature processes in industry", "high-temperature process"
+        ))
+
+    def test_el_guardian_de_siglas_sigue_intacto(self):
+        # Era la razón de ser del patrón original y no debe haberse aflojado.
+        self.assertFalse(_term_present("demonstration of the technology", "rto"))
+
+    def test_las_siglas_no_se_pluralizan(self):
+        """
+        El fallo que costó ocho convocatorias irrelevantes (AGENTS.md 59.4).
+
+        `RTO` es, en el vocabulario de Kalfrisa, un *Regenerative Thermal
+        Oxidizer*. En la letra pequeña de Horizon, «RTOs» son las *Research and
+        Technology Organisations*, y aparecen en casi todos los topics. La
+        primera versión del plural las hacía casar, y entraron al embudo
+        infraestructura cuántica, mundos virtuales y software de automoción.
+        """
+        boilerplate = (
+            "Universities, RTOs and SMEs are encouraged to participate in "
+            "this quantum computing infrastructure topic"
+        )
+        self.assertFalse(_term_present(boilerplate, "rto"))
+        # Y la sigla exacta debe seguir detectándose donde sí toca.
+        self.assertTrue(_term_present("instalacion de un RTO para COV", "rto"))
+
+    def test_ninguna_palabra_corta_del_vocabulario_se_pluraliza(self):
+        # La regla, comprobada sobre el vocabulario real: todo lo de tres
+        # letras o menos es sigla («cfd», «cov», «voc») o partícula («de»,
+        # «of», «en»). Ninguna admite plural.
+        for sigla in ("rto", "voc", "cov", "cfd"):
+            with self.subTest(sigla=sigla):
+                self.assertFalse(_term_present(f"los {sigla}s del sector", sigla))
+
+    def test_no_casa_dentro_de_otra_palabra(self):
+        # ALDEHORNO es un municipio de Segovia; apareció de verdad en los
+        # documentos oficiales al investigar el chip «Hornos» (AGENTS.md 55.1).
+        self.assertFalse(_term_present("aldehorno industrializado", "horno industrial"))
+        self.assertFalse(_term_present(
+            "la empresa procesa termicamente los residuos", "proceso termico"
+        ))
+
+    def test_no_se_admite_variacion_de_genero(self):
+        # Decisión medida, no descuido: el género no cambia ni una
+        # clasificación sobre 368 textos reales y añade concordancias
+        # incorrectas (AGENTS.md 58). Esta prueba existe para que no se
+        # reabra sin volver a medir.
+        self.assertFalse(_term_present(
+            "optimizacion de procesos termicas", "proceso termico"
+        ))
+
+    def test_un_termino_vacio_no_casa_con_nada(self):
+        self.assertFalse(_term_present("cualquier texto", ""))
+        self.assertFalse(_term_present("cualquier texto", "   "))
+
+
 if __name__ == "__main__":
     unittest.main()

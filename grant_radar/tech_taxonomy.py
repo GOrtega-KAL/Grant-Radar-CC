@@ -14,6 +14,7 @@
 
 import json
 import re
+from functools import lru_cache
 from pathlib import Path
 
 from grant_radar.parsing_helpers import _fold_text
@@ -62,27 +63,69 @@ TECH_CONTEXT_TERMS = tuple(dict.fromkeys([
 ]))
 
 
+# Las palabras de tres letras o menos NO se pluralizan, y esto no es un detalle
+# de estilo: en este vocabulario son todas siglas (`rto`, `voc`, `cov`, `cfd`)
+# o partículas (`de`, `of`, `en`, `del`).
+#
+# Lo aprendimos pagando en atención, no en dinero. La primera versión sí las
+# pluralizaba, y `rto` pasó a casar con «RTOs». En el vocabulario de Kalfrisa
+# `RTO` es un *Regenerative Thermal Oxidizer*; en la letra pequeña de Horizon,
+# «RTOs» son las *Research and Technology Organisations*, que aparecen en casi
+# todos los topics. Resultado: ocho convocatorias irrelevantes —infraestructura
+# cuántica, mundos virtuales, software de automoción— entraron al embudo de una
+# sola pasada (AGENTS.md 59.4).
+#
+# El docstring original de `_term_present()` ya avisaba de esto mismo: «evita
+# falsos positivos de siglas: RTO no debe casar con demonstration». El guardián
+# de límites lo impedía; pluralizar sin más lo reabrió por otra puerta.
+PLURAL_MIN_LENGTH = 3
+
+
+@lru_cache(maxsize=4096)
+def _term_pattern(folded_term: str) -> re.Pattern | None:
+    """
+    Patrón de un término ya plegado, tolerante al plural.
+
+    Cada palabra admite el sufijo `-s` o `-es`, porque el español
+    administrativo de las convocatorias escribe casi siempre en plural y la
+    coincidencia exacta lo perdía: «recuperación de calores residuales» no
+    activaba `calor residual`, que es el negocio central del cliente
+    (AGENTS.md 56.2). Afectaba igual a `recuperadores`, `intercambiadores de
+    calor industriales` y `tratamientos térmicos`.
+
+    **Solo plural, no género.** Se midió aparte: aceptar `-o`/`-a` no cambia
+    ni una clasificación sobre 368 textos reales, y las formas que añade
+    —«procesos térmicas»— son concordancias incorrectas que una convocatoria
+    no escribe (AGENTS.md 58). No reabrirlo.
+
+    Se conserva el guardián de límites `(?<![a-z0-9])…(?![a-z0-9])`, que es
+    lo que evita los falsos positivos de siglas —RTO no debe casar con
+    demonstration— y lo que impide que `término` case dentro de
+    `térmicamente`.
+    """
+    if not folded_term:
+        return None
+    cuerpo = r"\s+".join(
+        re.escape(palabra) + (r"(?:e?s)?" if len(palabra) > PLURAL_MIN_LENGTH else "")
+        for palabra in folded_term.split()
+    )
+    return re.compile(rf"(?<![a-z0-9]){cuerpo}(?![a-z0-9])")
+
+
 def _term_present(text: str, term: str) -> bool:
     """Evita falsos positivos de siglas: RTO no debe casar con demonstration."""
-    folded_text = _fold_text(text)
-    folded_term = _fold_text(term).strip()
-    if not folded_term:
+    pattern = _term_pattern(_fold_text(term).strip())
+    if pattern is None:
         return False
-    return bool(re.search(
-        rf"(?<![a-z0-9]){re.escape(folded_term)}(?![a-z0-9])",
-        folded_text,
-    ))
+    return bool(pattern.search(_fold_text(text)))
 
 
 def _contextual_term_present(text: str, term: str, window: int = 280) -> bool:
     """Exige contexto industrial/térmico cerca de una expresión ambigua."""
     folded_text = _fold_text(text)
-    folded_term = _fold_text(term).strip()
-    if not folded_term:
+    pattern = _term_pattern(_fold_text(term).strip())
+    if pattern is None:
         return False
-    pattern = re.compile(
-        rf"(?<![a-z0-9]){re.escape(folded_term)}(?![a-z0-9])"
-    )
     for match in pattern.finditer(folded_text):
         excerpt = folded_text[
             max(0, match.start() - window):min(len(folded_text), match.end() + window)

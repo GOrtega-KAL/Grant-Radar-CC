@@ -53,7 +53,23 @@ ANEXOS_TEXTO = (
     "each established in a different country as follows: at least one "
     "independent legal entity established in a Member State; and at least two "
     "other independent legal entities, each established in different Member "
-    "States or Associated Countries."
+    "States or Associated Countries. "
+    # Sección G del documento real, página 32. Texto literal de la edición
+    # 2026-2027: es el dato que dice cuánto del gasto cubre la ayuda.
+    "Horizon Europe - Work programme 2026-2027 General Annexes Part 15 - Page 32 of 46 "
+    "Form of grant, funding rate and maximum grant amount The grant parameters "
+    "(maximum grant amount, funding rate, total eligible costs, etc.) will be "
+    "fixed in the grant agreement. The costs will be reimbursed at the funding "
+    "rate fixed in the specific call/topic conditions and in the grant "
+    "agreement. The maximum Horizon Europe funding rates are as follows: "
+    "Research and innovation action: 100% "
+    "Innovation action: 70% (except for non-profit legal entities, where a "
+    "rate of up to 100% applies) "
+    "Coordination and support action: 100% "
+    "Programme co-fund action: between 30% and 70% "
+    "Training and mobility action: 100% "
+    "Pre-commercial procurement action: 100% "
+    "Public procurement of innovative solutions action: 50%"
 )
 
 
@@ -90,6 +106,26 @@ class EligibilitySectionsTests(unittest.TestCase):
             sorted(secciones), sorted(clave for clave, _, _ in ELIGIBILITY_SECTIONS)
         )
 
+    def test_the_funding_rates_survive_whole(self):
+        """
+        El dato que decide si una convocatoria interesa de verdad.
+
+        Vive en la página 32 del mismo documento, más allá del corte de
+        caracteres por defecto de la capa documental, y por eso no se leía
+        hasta el 01/09/2026 (AGENTS.md 59). Con `types_of_action`, que la API
+        ya entrega, el modelo puede cruzar el tipo de acción con su tasa.
+        """
+        texto = eligibility_sections(ANEXOS_TEXTO)["funding_rates"]
+        # Las dos que importan a una PYME con ánimo de lucro: 100 % en una RIA
+        # y 70 % en una IA. En un proyecto de 3 M€ son 900.000 € de diferencia.
+        self.assertIn("Research and innovation action: 100%", texto)
+        self.assertIn("Innovation action: 70%", texto)
+        # La excepción de las entidades sin ánimo de lucro no debe perderse:
+        # sin ella, un 70 % parecería aplicable a cualquiera.
+        self.assertIn("non-profit legal entities", texto)
+        # Y la lista debe llegar entera hasta la última tasa.
+        self.assertIn("Public procurement of innovative solutions action: 50%", texto)
+
     def test_the_consortium_minimum_survives_whole(self):
         """El dato por el que se hace todo esto: tres socios de tres países."""
         texto = eligibility_sections(ANEXOS_TEXTO)["consortium_composition"]
@@ -106,9 +142,18 @@ class EligibilitySectionsTests(unittest.TestCase):
         self.assertNotIn("Part 15", limpio)
 
     def test_the_excerpts_stay_small_enough_to_be_worth_sending(self):
-        """El documento entero son ~33.000 tokens; esto debe ser marginal."""
+        """
+        El documento entero son ~31.000 tokens; esto debe seguir siendo marginal.
+
+        El tope subió de 4.000 a 5.000 caracteres el 01/09/2026 al añadir la
+        sección de tasas de financiación (AGENTS.md 59). Son unos 175 tokens
+        más por convocatoria de Horizon: con 37 topics, del orden de 6.500
+        tokens de entrada por ejecución completa, menos de un céntimo. La
+        guardia sigue existiendo porque el riesgo real no es este añadido sino
+        que alguien suba un límite de sección sin mirar lo que arrastra.
+        """
         total = sum(len(v) for v in eligibility_sections(ANEXOS_TEXTO).values())
-        self.assertLess(total, 4_000)
+        self.assertLess(total, 5_000)
 
     def test_a_document_with_another_structure_returns_what_it_finds(self):
         secciones = eligibility_sections("Un documento cualquiera sin secciones.")

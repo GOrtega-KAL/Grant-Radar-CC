@@ -326,22 +326,55 @@ def build_source_status(
     return status
 
 
+# Color de cada categoría técnica en el panel de palabras clave. Se colorea por
+# CATEGORÍA, no por palabra suelta, y esa es la corrección: antes había siete
+# colores tecleados a mano contra palabras concretas y **cuatro de los siete
+# estaban muertos** —«hidrógeno», «hydrogen», «hornos industriales» y
+# «combustión limpia» no existen en KEYWORDS, que las escribe de otra forma—,
+# así que las palabras que de verdad se publican (`decarbonisation`,
+# `waste heat`, `heat recovery`) caían todas al color por defecto y el panel se
+# veía plano (AGENTS.md 59).
+#
+# Derivarlo de la taxonomía impide que vuelva a caducar: si mañana se añade
+# vocabulario al JSON, hereda el color de su categoría sin tocar nada aquí.
+TECH_CATEGORY_COLORS = {
+    "hydrogen_combustion":        "var(--teal)",
+    "energy_efficiency":          "var(--accent)",
+    "waste_heat":                 "var(--teal)",
+    "thermal_processes":          "var(--violet)",
+    "thermal_waste":              "var(--violet)",
+    "emissions":                  "var(--red)",
+    "industrial_electrification": "var(--blue)",
+    "digital_thermal":            "var(--blue)",
+    "circular_manufacturing":     "var(--blue)",
+}
+DEFAULT_KEYWORD_COLOR = "var(--accent)"
+
+
+def _keyword_color(keyword: str) -> str:
+    """
+    Color de una palabra clave según la categoría técnica a la que pertenece.
+
+    Una palabra puede estar en varias categorías (`process heat` es a la vez
+    `waste_heat` y `thermal_processes`); se toma la primera en el orden de
+    `TECH_CATEGORY_COLORS`, que es estable, para que el mismo término salga
+    siempre del mismo color entre ejecuciones.
+    """
+    folded = _fold_text(keyword)
+    for category, color in TECH_CATEGORY_COLORS.items():
+        for term in TECH_TAGS.get(category, []):
+            if _fold_text(term) == folded:
+                return color
+    return DEFAULT_KEYWORD_COLOR
+
+
 def build_keywords(convs: list) -> list:
     counter = Counter()
     for c in convs:
         for kw in c.get("keywords_found", []):
             counter[kw] += 1
-    colors = {
-        "hidrógeno":            "var(--teal)",
-        "hydrogen":             "var(--teal)",
-        "eficiencia energética":"var(--accent)",
-        "descarbonización":     "var(--blue)",
-        "hornos industriales":  "#a080e0",
-        "emisiones industriales":"var(--red)",
-        "combustión limpia":    "var(--teal)",
-    }
     return [
-        {"name": kw, "count": cnt, "color": colors.get(kw, "var(--accent)")}
+        {"name": kw, "count": cnt, "color": _keyword_color(kw)}
         for kw, cnt in counter.most_common(8)
     ]
 

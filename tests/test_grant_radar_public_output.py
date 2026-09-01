@@ -9,13 +9,17 @@ import unittest
 from unittest import mock
 
 from grant_radar.public_output import (
+    DEFAULT_KEYWORD_COLOR,
     ENTIDADES_CANONICAS,
+    TECH_CATEGORY_COLORS,
     URL_CONTROL_INEXISTENTE,
+    build_keywords,
     derive_eligible_actions,
     post_procesar_texto,
     verificar_urls,
 )
 from grant_radar.runtime_state import RUN_DIAGNOSTICS
+from grant_radar.tech_taxonomy import TECH_TAGS
 
 
 class EntityNormalisationTests(unittest.TestCase):
@@ -206,6 +210,76 @@ class UrlVerificationTests(unittest.TestCase):
 
         controles = [u for u in pedidas if u.endswith(URL_CONTROL_INEXISTENTE)]
         self.assertEqual(len(controles), 1, pedidas)
+
+
+class KeywordPanelTests(unittest.TestCase):
+    """
+    `build_keywords()`: el panel de palabras clave del dashboard.
+
+    Era la única función del backlog sin ninguna prueba (punto 19), y tenía un
+    fallo: siete colores tecleados a mano contra palabras concretas, de los
+    cuales **cuatro estaban muertos** porque el vocabulario escribe esas
+    palabras de otra forma («hidrógeno» frente a la forma sin tilde de
+    KEYWORDS, «hornos industriales» frente a `horno industrial`). Nunca podían
+    coincidir, así que las palabras que de verdad se publican caían todas al
+    color por defecto.
+
+    Ahora el color se deriva de la CATEGORÍA técnica, que es lo que impide que
+    vuelva a caducar (AGENTS.md 59).
+    """
+
+    def _fichas(self, *listas):
+        return [{"keywords_found": list(l)} for l in listas]
+
+    def test_cuenta_las_apariciones_y_ordena_por_frecuencia(self):
+        panel = build_keywords(self._fichas(
+            ["waste heat"], ["waste heat"], ["waste heat"],
+            ["calor residual"], ["calor residual"],
+            ["heat recovery"],
+        ))
+        self.assertEqual([(k["name"], k["count"]) for k in panel], [
+            ("waste heat", 3), ("calor residual", 2), ("heat recovery", 1),
+        ])
+
+    def test_nunca_devuelve_mas_de_ocho(self):
+        panel = build_keywords(self._fichas(*[[f"termino {i}"] for i in range(20)]))
+        self.assertEqual(len(panel), 8)
+
+    def test_una_palabra_del_vocabulario_recibe_el_color_de_su_categoria(self):
+        panel = build_keywords(self._fichas(["waste heat"]))
+        self.assertEqual(panel[0]["color"], TECH_CATEGORY_COLORS["waste_heat"])
+
+    def test_las_dos_grafias_del_mismo_concepto_comparten_color(self):
+        # El fallo que esto cierra: «descarbonización» tenía un color tecleado
+        # a mano y «decarbonisation» no, para el mismo concepto.
+        panel = build_keywords(self._fichas(["decarbonisation"], ["descarbonizacion"]))
+        colores = {k["color"] for k in panel}
+        self.assertEqual(len(colores), 1, f"colores distintos: {colores}")
+
+    def test_ningun_color_declarado_apunta_a_una_categoria_inexistente(self):
+        # La prueba que habría detectado el fallo original: que las claves del
+        # mapa existan de verdad en la taxonomía.
+        for categoria in TECH_CATEGORY_COLORS:
+            self.assertIn(
+                categoria, TECH_TAGS,
+                f"{categoria} no existe en la taxonomía: color muerto",
+            )
+
+    def test_todas_las_categorias_de_la_taxonomia_tienen_color(self):
+        # Y la simétrica: que no quede ninguna categoría sin colorear.
+        faltan = sorted(set(TECH_TAGS) - set(TECH_CATEGORY_COLORS))
+        self.assertFalse(faltan, f"categorías sin color asignado: {faltan}")
+
+    def test_una_palabra_ajena_al_vocabulario_cae_al_color_por_defecto(self):
+        panel = build_keywords(self._fichas(["algo que no es de la taxonomia"]))
+        self.assertEqual(panel[0]["color"], DEFAULT_KEYWORD_COLOR)
+
+    def test_sin_convocatorias_devuelve_lista_vacia(self):
+        self.assertEqual(build_keywords([]), [])
+        self.assertEqual(build_keywords([{"keywords_found": []}]), [])
+
+    def test_una_ficha_sin_el_campo_no_rompe(self):
+        self.assertEqual(build_keywords([{}]), [])
 
 
 if __name__ == "__main__":
