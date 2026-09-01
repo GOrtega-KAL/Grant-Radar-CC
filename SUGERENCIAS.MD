@@ -1271,6 +1271,78 @@ haberla depurado. Queda anotado porque el punto 2.4 de este documento invita
 justamente a leer cualquier señal como fragilidad, y no todas piden acción
 inmediata.
 
+
+---
+
+## 16. Estado a 01/09/2026 (tarde): un filtro vacío que no era un fallo
+
+Tres encargos de depuración, y el primero deja la mejor lección del día sobre el
+punto **2.3** de esta evaluación (reglas de negocio como datos).
+
+**El chip «Hornos» del panel llevaba quien sabe cuánto devolviendo cero.** La
+hipótesis natural —y la que este documento habría suscrito— era que el
+vocabulario se había quedado corto y bastaba con ampliarlo. Al medirlo resultó
+lo contrario. En los 288 documentos oficiales de la caché, «horno» aparece tres
+veces: dos en una ayuda a **talleres artesanos** (electricidad y combustible de
+un taller) y una dentro del nombre del municipio **ALDEHORNO**. Ampliar el
+vocabulario habría poblado el filtro con subvenciones a alfarería y con un
+pueblo de Segovia.
+
+El problema real era **de nivel de abstracción**: el chip filtraba por *equipo*
+mientras las convocatorias se describen por *objetivo*. Las que financiarían un
+proyecto de hornos dicen «descarbonización de procesos industriales», y ya
+estaban en el producto bajo otras etiquetas. Se retiró el chip.
+
+**Para el punto 2.3, el matiz es este:** sacar las reglas a datos —que es lo que
+este documento pide— no las hace correctas. La taxonomía **ya** vive en un JSON
+editable, y aun así codificaba una categoría que el dominio no usa. Un
+vocabulario en fichero es más fácil de cambiar, no más fácil de acertar. Y un
+filtro que siempre devuelve cero es peor que no tenerlo: enseña al usuario a
+desconfiar del resto del panel.
+
+De paso apareció un fallo genuino y separado: la coincidencia exige la frase
+exacta, así que **el plural no casa** —«hornos industriales» no activa `horno
+industrial`—. Afecta a vocabulario que sí aparece en las convocatorias
+(`recuperadores`, `intercambiadores de calor industriales`). Queda anotado sin
+arreglar, porque tocarlo ensancha el prefiltro y con él el coste: es de los
+cambios que hay que medir antes.
+
+### Frente a 2.4: los catálogos curados, por fin medidos
+
+Este documento y el backlog venían tratando los catálogos tecleados a mano como
+deuda técnica homogénea. La medición los separa en dos casos opuestos:
+
+- **CDTI aporta 4 de sus 5 convocatorias vigentes desde el catálogo curado.** No
+  por descuido, sino por una razón estructural: la ventanilla permanente no
+  tiene fecha, y el calendario oficial solo publica lo fechado. **No se puede
+  derivar del listado oficial**, que era justo lo que el backlog proponía
+  estudiar. Necesita revisión periódica, no sustitución.
+- **BOA aporta 0 por las dos vías**: el scraper en vivo no encuentra nada y sus
+  dos entradas estáticas están vencidas. 198 líneas y 8 s por ejecución para
+  nada, en una fuente cuya cobertura ya asumió BDNS.
+
+La lección para 2.4 es que **«frágil» y «sin valor» no son lo mismo**, y que
+distinguirlos exige medir en vez de razonar por analogía. Los dos catálogos
+tenían el mismo olor y la conclusión correcta es opuesta para cada uno.
+
+### Frente a 2.8: los ocho conectores ya tienen archivo de prueba propio
+
+Faltaban dos, no cuatro: BDNS —que aporta 50 de las 82 vigentes y era el mayor
+sin archivo— y EEN. En ambos se probó lo que duele, no el camino feliz: en BDNS
+la aritmética de fechas, donde un plazo mal calculado publica como abierta una
+convocatoria cerrada sin que nada avise; en EEN la discriminación entre el
+enlace a la convocatoria y la web del socio que la busca, cuyo fallo produce una
+ficha con URL que carga y no lleva a ninguna ayuda.
+
+Una nota de método que vale para cualquier sesión futura: al escribir las
+pruebas de EEN, la primera versión daba por válido un perfil que el conector
+rechazaba, y **el conector tenía razón**. Cuando una prueba nueva falla contra
+código rodado, la hipótesis por defecto es que la prueba está mal.
+
+Estado: **651 pruebas** en verde, sin coste — no se llamó a la API en toda la
+tarde. Lo siguiente, decidido con el usuario, es la matriz de reglas en sesión
+propia.
+
 ## Nota de alcance
 
 Este documento es una evaluación externa de solo lectura, ampliada con una

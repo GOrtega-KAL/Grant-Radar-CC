@@ -2455,11 +2455,12 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 |---|---|---|
 | 4 | Reintento con espera ante `HTTP 429` en `PlaywrightBrowser`, en vez de tratarlo como fuente caída | 35 |
 | 38 | `boletin.dpz.es` (Boletín Oficial de la **provincia de Zaragoza**) falla con `CERTIFICATE_VERIFY_FAILED` al descargar edictos: cadena de certificados incompleta en el servidor. Dos documentos afectados, reproducible en dos ejecuciones seguidas del 01/09, y **es el único host que falla** de toda la recopilación | Sección 54.7. No rompe nada —el pipeline sigue y solo degrada la evidencia de esas fichas—, pero es la provincia de la propia empresa. Arreglarlo obliga a elegir entre añadir un paquete de CA o relajar la verificación TLS, y lo segundo contradice `_is_safe_public_https_url()`: **es decisión del usuario**, no del agente |
+| 40 | `_term_present()` exige la frase exacta, así que **el plural no casa**: «hornos industriales» no activa `horno industrial`, ni «tratamientos térmicos» a `tratamiento térmico`. Afecta a vocabulario que sí aparece en las convocatorias (`recuperadores`, `intercambiadores de calor industriales`) | Sección 55.1, encontrado al investigar el chip «Hornos». **No era la causa de aquel filtro vacío**, pero es un fallo real por su cuenta. Ojo: arreglarlo ensancha `detect_tech_tags()` y con ello el prefiltro, el embudo y el coste, así que hay que medirlo antes de aceptarlo |
 | 39 | `funding_rate_percent` de Horizon: `budgetOverview` no lo trae, pero los **Anexos Generales que ya descargamos** sí lo indican (una *Innovation Action* financia al 70 % a una empresa con ánimo de lucro, una *RIA* al 100 %) | Sería el quinto caso del patrón «el dato ya está en casa» (54.5). Importa comercialmente: 70 % frente a 100 % cambia el caso de negocio. Pendiente de decisión del usuario; conviene medirlo antes con `--gap-report` sobre la ejecución completa, no sobre tres análisis |
 | 6 | Instantánea de la estructura esperada de cada fuente, comparada en cada ejecución, con historial | `SUGERENCIAS.MD` 3.4 punto 2 |
 | 7 | Ejecución periódica automatizada en `--no-claude` solo para vigilar salud de fuentes | `SUGERENCIAS.MD` 3.4 punto 3 |
-| 27 | Los catálogos curados se teclean a mano y caducan en silencio: el 21/08, seis de las diez URLs del de CDTI eran 404 (sección 44.1). Las rutas correctas estaban en el calendario oficial que el conector ya recorre | Vale la pena estudiar si las entradas de ventanilla permanente pueden **derivarse** del listado oficial en vez de mantenerse a mano. `_drop_catalog_entries_with_dead_urls()` ya evita publicarlas rotas, pero no las repara |
-| 28 | El catálogo estático de `sources/boa_aragon.py` sigue con «última revisión 2026-04-09» y una de sus dos entradas está cerrada desde enero | Mismo problema que el 27, en la fuente que además ya no es el mecanismo principal para Aragón (sección 26). Conviene decidir si se mantiene o se retira |
+| 27 | Los catálogos curados se teclean a mano y caducan en silencio: el 21/08, seis de las diez URLs del de CDTI eran 404 (sección 44.1). **Medido el 01/09 (sección 55.2): el catálogo de CDTI aporta 4 de sus 5 vigentes, el 80 %**, porque la ventanilla permanente no tiene fecha y el calendario oficial solo publica lo fechado. No es deuda que retirar: derivarlo del calendario probablemente no es posible, y lo que necesita es revisión periódica | Vale la pena estudiar si las entradas de ventanilla permanente pueden **derivarse** del listado oficial en vez de mantenerse a mano. `_drop_catalog_entries_with_dead_urls()` ya evita publicarlas rotas, pero no las repara |
+| 28 | **BOA aporta 0 por las dos vías** (sección 55.2): el scraper en vivo no encuentra nada y sus dos entradas estáticas están vencidas (05/05/2026 y 15/01/2026). 8 s por ejecución y 198 líneas para nada. Aragón se cubre desde la sección 26 por el filtro `nivel1`/`nivel2` de `fetch_bdns()`, así que retirarlo no perdería cobertura. **Recomendación registrada: retirar el conector**; es decisión del usuario | Mismo problema que el 27, en la fuente que además ya no es el mecanismo principal para Aragón (sección 26). Conviene decidir si se mantiene o se retira |
 | 29 | El prefiltro de listado del BOE descarta 153 de 168 entradas **sin registrar exclusión**: solo deja rastro el filtro posterior, sobre el documento ya abierto | Sección 45.2. Auditar las 153 inflaría el catálogo (365 ejecuciones guardadas); lo razonable es un recuento por organismo, no una entrada por ficha |
 | 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
 | 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
@@ -2493,7 +2494,7 @@ de los huecos de abajo pero sí marcan la forma preferida: import normal, sin
 | # | Qué | Detalle |
 |---|---|---|
 | 19 | `build_keywords()` sigue sin aparecer en ninguna prueba | Afecta al panel de palabras clave. `verificar_urls()` sí tiene pruebas desde el 21/08 (sección 44.3), incluida la sonda de control por host |
-| 20 | Sin archivo de test dedicado, aunque sí cubiertos de forma indirecta vía `runpy`: `sources/bdns.py`, `sources/cdti.py`, `sources/een.py`, `sources/horizon_europe.py`, `versions.py`, `publishing.py`, `claude_usage.py`, `hold_quotes.py`, `hold_evidence.py`, y desde el 31/08 también `holds.py` y `profile_scope.py`, que salieron del script con sus pruebas donde estaban (`tests/test_grant_radar.py`, vía `APP`) | No es urgente —el camino principal de cada uno se ejercita ahí—, pero un archivo propio con import estándar hace la regresión más legible y sobreviviría a retirar el patrón `runpy` (punto 10). `analysis.py` sí tiene ya uno para lo que más duele: `tests/test_grant_radar_prompts.py` |
+| 20 | **Los ocho conectores ya tienen archivo propio** desde el 01/09 (sección 55.3: BDNS con 20 pruebas y EEN con 17; CDTI y Horizon lo ganaron antes). Siguen sin archivo dedicado, cubiertos solo de forma indirecta vía `runpy`: `versions.py`, `publishing.py`, `claude_usage.py`, `hold_quotes.py`, `hold_evidence.py`, `holds.py` y `profile_scope.py` | No es urgente —el camino principal de cada uno se ejercita ahí—, pero un archivo propio con import estándar hace la regresión más legible y sobreviviría a retirar el patrón `runpy` (punto 10). `analysis.py` sí tiene ya uno para lo que más duele: `tests/test_grant_radar_prompts.py` |
 
 ### 36.5. Mapa de las tres redes de seguridad, y qué se escapa de cada una
 
@@ -4884,3 +4885,142 @@ Nota menor: la ficha sale con `fit_score` 72 pese a estar descartada. No es un
 defecto — el encaje temático es real (proyectos de I+D+i industrial) y lo que
 falla es el territorio. `descartada: True` y `discard_ineligible` impiden que
 aparezca como oportunidad.
+
+## 55. Un filtro que buscaba la palabra equivocada, y qué aportan los catálogos, a 01/09/2026 (tarde)
+
+Ronda de depuración, en la línea de la prioridad fijada en 54.9. Sin coste: no
+se llamó a la API.
+
+### 55.1. El chip «Hornos», retirado
+
+Estaba desierto. La cadena, medida de punta a punta:
+
+1. `horn` lo produce **una sola** categoría técnica, `thermal_processes`, por un
+   mapa determinista (`_compat_tags_for`), no por el modelo;
+2. `thermal_processes` se disparó **0 veces** en las 77 fichas publicadas;
+3. su vocabulario son 13 frases compuestas exactas (`horno industrial`, `kiln`,
+   `calcinación`…) y **cero términos contextuales**.
+
+Hay además un fallo real: `_term_present` exige la frase exacta, así que
+**«hornos industriales» no casa con `horno industrial`**. Comprobado:
+«modernización de horno industrial» → `horn`; «mejora de hornos industriales» →
+nada. El español administrativo escribe en plural casi siempre.
+
+**Pero ese no era el motivo, y aquí está la lección.** En los 288 documentos
+oficiales de `bdns_document_cache.json`, «horno» aparece **tres veces**:
+
+| Dónde | Qué es |
+|---|---|
+| Ayudas a talleres artesanos | electricidad de «maquinaria, herramientas, **hornos**» |
+| La misma convocatoria | combustible para «**hornos**, maquinaria, herramientas» |
+| Listado de municipios de Segovia | **ALDEHORNO** |
+
+Ensanchar el vocabulario habría llenado el filtro de subvenciones a alfarería y
+de un pueblo. La exigencia de compuestos no era un descuido: era lo que impedía
+esa basura.
+
+**El motivo de fondo es de diseño**: el chip filtraba por **equipo** mientras las
+convocatorias se describen por **objetivo**. Las que sí financiarían un proyecto
+de hornos no dicen «horno», dicen «descarbonización de procesos industriales», y
+**ya están en el producto** bajo `ee` y `desc`. Por eso no podía funcionar por
+muchos sinónimos que se le añadieran, y por eso se retira en vez de ampliarse.
+
+`thermal_processes` pasa a mapear a `["ee", "desc"]`, como su hermana
+`waste_heat`, para que si algún día se dispara la ficha caiga en un chip
+existente en vez de quedarse sin ninguno. **`compat_aliases` solo alimenta el
+campo público `tags`, no la detección**: verificado con `--no-claude`, el embudo
+sale idéntico (`retain=34, ambiguous=7, hold_manual=75, reject=804`).
+
+No se tocaron `BDNS_TECHNOLOGY_TERMS` (vocabulario de búsqueda de la matriz de
+reglas) ni el mapa de colores de `build_keywords()`: comparten la palabra pero
+no son el filtro.
+
+**Queda abierto el fallo del plural**, que es real y afecta a vocabulario que sí
+existe en las convocatorias: `recuperadores`, `intercambiadores de calor
+industriales`, `tratamientos térmicos`. Es punto 40 del backlog. Ojo: tocarlo sí
+ensancha `detect_tech_tags` y por tanto el embudo y el coste, así que hay que
+medirlo antes.
+
+### 55.2. Qué aportan los catálogos curados, medido
+
+Pregunta del usuario. La respuesta reordena el backlog, y empieza por una
+corrección: **el BOE no tiene catálogo curado**. `BOE_TRACKED_AUTHORITIES` es una
+lista de cinco organismos a vigilar, no de convocatorias; el BOE se lee siempre
+en vivo. Los dos catálogos curados son CDTI y BOA, y rinden al revés.
+
+**CDTI: el catálogo aporta 4 de 5, el 80 %.**
+
+> CDTI Playwright: 14 fichas comprobadas, 13 cerradas y **1** vigente
+> → **4** convocatorias CDTI vigentes en catálogo curado
+> CDTI combinado: **5** convocatorias únicas vigentes
+
+Y son las que importan: las tres de ventanilla permanente (PID, Cervera,
+Infraestructuras de Ensayo) más los Bilaterales, tres de ellas ya con sus
+documentos oficiales desde 51.2. La razón es estructural: **el calendario
+oficial publica convocatorias con fecha, y la ventanilla permanente no tiene
+fecha**, así que no aparece ahí.
+
+**Esto corrige el punto 27 del backlog**, que proponía estudiar si esas entradas
+podían derivarse del listado oficial. La medición dice que probablemente no,
+porque el calendario no las lista. El catálogo de CDTI no es deuda técnica que
+retirar: es la única vía a cuatro de las cinco convocatorias de CDTI. **Lo que
+necesita es revisión periódica, no sustitución.**
+
+**BOA: el catálogo aporta 0, y la fuente entera también.**
+
+> BOA Playwright: 0 convocatorias relevantes
+> BOA: navegación en vivo sin resultados; activando catálogo estático
+> → **0** convocatorias BOA cargadas desde el respaldo
+
+Sus dos entradas están vencidas —Fondo de Transición Justa (05/05/2026) y PAIP
+TDI-Feder (15/01/2026, marcada `✗ CERRADA` en el propio código)—, así que el
+filtro las excluye a las dos. La fuente cuesta 8 s por ejecución y 198 líneas
+para no aportar nada.
+
+No es pérdida de cobertura: **Aragón se cubre desde la sección 26 por el filtro
+`nivel1`/`nivel2` de `fetch_bdns()`**. BOA quedó como señal secundaria y hoy no
+da señal. La recomendación registrada es **retirar el conector** (punto 28), pero
+es decisión del usuario porque implica renunciar a una fuente.
+
+### 55.3. Archivo propio para los dos conectores que faltaban
+
+Punto 20 del backlog, que estaba desactualizado: decía cuatro conectores sin
+archivo y solo faltaban **dos**, porque CDTI y Horizon lo ganaron en rondas
+anteriores.
+
+- **`tests/test_grant_radar_sources_bdns.py`, 20 pruebas.** BDNS aporta 50 de las
+  82 vigentes —más que las otras siete fuentes juntas— y era el mayor sin
+  archivo. Se prueba la **aritmética de fechas**, que es donde un fallo no se
+  nota: un plazo mal calculado no rompe nada, solo publica como abierta una
+  convocatoria cerrada. Días hábiles frente a naturales, números escritos con
+  letra («quince días»), meses de calendario (31 de enero + 1 mes = 28 de
+  febrero, y 29 en bisiesto) y la ventana de 45 días que evita fechar la
+  convocatoria con una reedición posterior.
+- **`tests/test_grant_radar_sources_een.py`, 17 pruebas.** Su fallo
+  característico no es de red sino de ambigüedad: en una página de perfil
+  conviven el enlace a la convocatoria y la web del socio que la busca, y
+  publicar el segundo produce una ficha con URL que carga y no lleva a ninguna
+  ayuda. Incluye que `callback` y `recall` no se confundan con `call`, y que un
+  topic de Horizon descubierto vía EEN se atribuya a Horizon y no a EEN.
+
+Nota de método: al escribir las de EEN, la primera versión daba por válido un
+perfil con solo «Call details» y el conector lo rechazaba **con razón** —exige
+además plazo futuro y enlace externo—. Se corrigió la prueba, no el código, y se
+añadieron las tres ramas de descarte. Conviene dejarlo escrito: cuando una
+prueba nueva falla contra código rodado, la hipótesis por defecto es que la
+prueba está mal.
+
+### 55.4. Estado y cifras
+
+**651 pruebas** en verde (614 al empezar la tarde). Verificación `--no-claude`
+completa idéntica a la referencia de 54.7: 920 detectadas, **82 vigentes**,
+prefiltro `retain=34, ambiguous=7, hold_manual=75, reject=804`. Pendientes de
+analizar **78** (~2,00 USD): baja de 79 porque la BDNS 919481 quedó en caché.
+
+### 55.5. Lo siguiente: la matriz de reglas, en sesión propia
+
+Decidido con el usuario. Es el punto 8 del backlog y lo único que queda del
+orden de extracción junto a `run_pipeline()`: 526 líneas y siete niveles de
+precedencia que deciden qué llega a Claude y, con ello, el coste. `AGENTS.md`
+4.1 y 36.3 piden sesión dedicada y no encadenarla a otra tarea; el usuario lo ha
+confirmado explícitamente.

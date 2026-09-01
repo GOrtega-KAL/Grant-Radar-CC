@@ -22,7 +22,7 @@ desactualizado si no se mantiene junto a ellos.
 > El desfase, para informar sin empujar: producto del **21/08**, cuatro fichas
 > ya vencidas y doce que vencen en catorce días; entre ellas tres topics de
 > Horizon de máximo encaje que cierran el 15/09. Detalle en AGENTS.md 54.2.
-> Cuando el usuario decida publicar, cuesta **~2,02 USD sobre 79
+> Cuando el usuario decida publicar, cuesta **~2,00 USD sobre 78
 > convocatorias** y requiere autorización expresa.
 >
 > ### Qué hacer mientras tanto: trabajo gratis que reduce fallos
@@ -35,17 +35,26 @@ desactualizado si no se mantiene junto a ellos.
 > - `--source horizon|bdns|eccp|een|cdti|idae|boe|boa` — recopila una fuente en
 >   vez de las ocho: 13,7 s frente a 937 s. Exige `--no-claude` (54.6).
 > - `--staleness-report` — cuánto se desfasa lo publicado, sin red.
-> - El backlog de la **sección 36**, que tiene 29 puntos abiertos y casi todos
->   son depuración pura: el punto 8 (extraer la matriz de reglas, que merece
->   sesión propia), los huecos de cobertura de pruebas de 36.4, los catálogos
->   curados que caducan en silencio (27 y 28), los umbrales de salud calibrados
->   a ojo (30).
+> - El backlog de la **sección 36**, casi todo depuración pura: el punto 8
+>   (extraer la matriz de reglas, que merece sesión propia), el 40 (el plural en
+>   `_term_present()`, que sí ensancha el embudo y hay que medir antes), el 28
+>   (retirar BOA, que aporta 0) y los umbrales de salud calibrados a ojo (30).
 >
 > ---
 >
 > **Estado del código a 01/09/2026:** 2.368 líneas en el script, 41 módulos,
-> **614 pruebas en verde**. Verificación `--no-claude` completa sin
-> desviaciones. Cifras de referencia en **AGENTS.md 54.7**.
+> **651 pruebas en verde**. Verificación `--no-claude` completa sin
+> desviaciones. Cifras de referencia en **AGENTS.md 54.7**; pendientes de
+> analizar 78 (~2,00 USD).
+>
+> **Dos hallazgos de la tarde del 01/09 que conviene no reabrir a ciegas**
+> (AGENTS.md 55): el chip «Hornos» **se retiró a propósito** —filtraba por
+> equipo mientras las convocatorias se describen por objetivo, y ensanchar su
+> vocabulario habría llenado el filtro de ayudas a alfarería y de un municipio
+> llamado ALDEHORNO—; y **el catálogo curado de CDTI no es deuda técnica**:
+> aporta 4 de sus 5 convocatorias vigentes, porque la ventanilla permanente no
+> tiene fecha y el calendario oficial solo publica lo fechado. El que sí sobra
+> es **BOA, que aporta 0 por las dos vías**.
 >
 > **Lo que se validó pagando el 01/09 (0,1271 USD en total, dos pruebas
 > dirigidas). Los tres controles de 53.2 están ejercitados y no queda
@@ -72,9 +81,17 @@ desactualizado si no se mantiene junto a ellos.
 >    fuente sería el anti-patrón que el proyecto descartó el 31/08. **Encargo
 >    cancelado por medición.**
 >
-> **Arranque en frío: AGENTS.md sección 54**, que cierra la sesión del
-> 01/09/2026. Antes de ella, la 53 resume las cinco del 31/08 (48 a 52).
-> Backlog abierto en la sección 36.
+> ### Lo siguiente, decidido con el usuario: la matriz de reglas
+>
+> **En sesión propia y sin encadenarla a nada.** Punto 8 del backlog: 526
+> líneas y siete niveles de precedencia que deciden qué llega a Claude y, con
+> ello, el coste. Es lo único que queda del orden de extracción junto a
+> `run_pipeline()`. `AGENTS.md` 4.1 y 36.3 piden sesión dedicada, y el usuario
+> lo ha confirmado explícitamente el 01/09.
+>
+> **Arranque en frío: AGENTS.md secciones 54 y 55**, que cierran el 01/09/2026.
+> Antes de ellas, la 53 resume las cinco del 31/08 (48 a 52). Backlog abierto
+> en la sección 36.
 >
 > **OJO AL LANZAR CUALQUIER EJECUCIÓN LARGA:** dura más de quince minutos. **No
 > redirijas su salida a un archivo propio.** El 01/09 se hizo con la primera
@@ -125,7 +142,7 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
      —un segundo, señala módulo y nombre exactos si falta un import. Desde el
      31/08 comprueba también cada módulo del paquete, no solo el script;
   2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`;
-  3. `poetry run python -m unittest discover -s tests` —**614 pruebas**. Una,
+  3. `poetry run python -m unittest discover -s tests` —**651 pruebas**. Una,
      `FrontendLayoutTests::test_consortium_role_is_visible...`, es intermitente
      bajo carga porque conduce Chromium de verdad: repetir antes de investigar
      (AGENTS.md 44.7, nota sobre pruebas intermitentes);
