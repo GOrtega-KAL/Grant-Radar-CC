@@ -22,7 +22,7 @@ desactualizado si no se mantiene junto a ellos.
 > El desfase, para informar sin empujar: producto del **21/08**, cuatro fichas
 > ya vencidas y doce que vencen en catorce días; entre ellas tres topics de
 > Horizon de máximo encaje que cierran el 15/09. Detalle en AGENTS.md 54.2.
-> Cuando el usuario decida publicar, cuesta **~2,00 USD sobre 78
+> Cuando el usuario decida publicar, cuesta **~2,07 USD sobre 81
 > convocatorias** y requiere autorización expresa.
 >
 > ### Qué hacer mientras tanto: trabajo gratis que reduce fallos
@@ -36,21 +36,28 @@ desactualizado si no se mantiene junto a ellos.
 >   de las siete: `--source een` 81 s frente a 513-937 s. Exige `--no-claude`
 >   (54.6). El alias `boa` se retiró con su conector (56.1).
 > - `--staleness-report` — cuánto se desfasa lo publicado, sin red.
-> - **TAREA APLAZADA por el usuario, lista para ejecutar: el punto 40**, aplicar
->   el plural en `_term_present()` —y **solo el plural**—. Medido dos veces y
->   **no hace falta volver a medirlo**: plural +1 texto de 368 con 0 falsos
->   positivos; **género +0, cero cambios**. Recupera «recuperación de calores
->   residuales», que es el negocio central del cliente y hoy se pierde por una
->   «s».
-> - El resto del backlog de la **sección 36**: el punto 10 (retirar el patrón
->   `runpy`/`APP` de las pruebas, cuya condición ya se cumple) y los umbrales de
->   salud calibrados a ojo (30).
+> - **La recopilación diaria está preparada y sin registrar:**
+>   `scripts/Recopilacion diaria.ps1`. Registrarla en el Programador de tareas
+>   es una acción del usuario; el comando va comentado al final del archivo.
+> - El backlog de la **sección 36**. Los puntos 8, 10, 19, 27, 28, 39 y 40 se
+>   cerraron el 01-02/09; queda sobre todo vigilancia de fuentes (4, 6, 7, 29,
+>   30, 32, 38) y tres reglas de negocio que exigen decisión (1, 2, 3).
 >
 > ---
 >
-> **Estado del código a 01/09/2026:** 40 módulos, **646 pruebas en verde**. Verificación `--no-claude` completa sin
-> desviaciones. Cifras de referencia en **AGENTS.md 54.7**; pendientes de
-> analizar 78 (~2,00 USD).
+> **Estado del código a 02/09/2026:** 41 módulos, **666 pruebas en verde**.
+> Verificación `--no-claude` completa: 921 detectadas, **84 vigentes**,
+> prefiltro `retain=38, ambiguous=5, hold_manual=75, reject=803`. Pendientes de
+> analizar **81** (~2,07 USD). Cifras de referencia en **AGENTS.md 59.8**.
+>
+> **Un aviso de método que costó caro y no conviene reaprender** (AGENTS.md
+> 59.1): al medir el impacto del plural se usó el corpus que había en disco
+> —documentos de BDNS y fichas publicadas— y **Horizon no estaba ahí**, porque
+> se descarga en vivo. La estimación salió ocho veces corta y el cambio coló
+> ocho convocatorias irrelevantes, por una sigla (`RTO`) que significa una cosa
+> en el vocabulario del cliente y otra en la letra pequeña de Horizon. **Un
+> cambio que toca la clasificación se mide llamando al conector, no sobre la
+> muestra cómoda.**
 >
 > **El conector BOA se retiró el 01/09 (AGENTS.md 56.1), así que las fuentes son
 > SIETE, no ocho.** Se comprobó antes lo que el usuario pidió: BDNS encuentra el
@@ -102,7 +109,7 @@ desactualizado si no se mantiene junto a ellos.
 > No queda orden de extracción pendiente. Si una sesión futura busca «lo
 > siguiente de la modularización», la respuesta es que no hay.
 >
-> **Arranque en frío: AGENTS.md secciones 54 a 57**, que cierran el 01/09/2026.
+> **Arranque en frío: AGENTS.md secciones 54 a 59**, que cierran el 01-02/09/2026.
 > Antes de ellas, la 53 resume las cinco del 31/08 (48 a 52). Backlog abierto
 > en la sección 36.
 >
@@ -155,13 +162,14 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
      —un segundo, señala módulo y nombre exactos si falta un import. Desde el
      31/08 comprueba también cada módulo del paquete, no solo el script;
   2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`;
-  3. `poetry run python -m unittest discover -s tests` —**646 pruebas**. Una,
+  3. `poetry run python -m unittest discover -s tests` —**666 pruebas**. Una,
      `FrontendLayoutTests::test_consortium_role_is_visible...`, es intermitente
      bajo carga porque conduce Chromium de verdad: repetir antes de investigar
      (AGENTS.md 44.7, nota sobre pruebas intermitentes);
   4. `poetry run python "Grant-Radar-prueba.py" --no-claude` al cerrar la
      ronda, comparando contra los números de referencia de AGENTS.md 54.7:
-     920 detectadas, **82 vigentes** (01/09/2026). Si el cambio solo toca un
+     921 detectadas, **84 vigentes** (02/09/2026; subió de 82 al aplicar el
+     plural, AGENTS.md 59.3). Si el cambio solo toca un
      conector, `--no-claude --source <alias>` recorre esa fuente sola: 13,7 s
      en vez de 937 s. La ronda se cierra igualmente con la completa. Ojo: ese recuento **ya no es un invariante fijo**, la
      ventana deslizante de BDNS lo mueve por causas externas; ante un desvío,

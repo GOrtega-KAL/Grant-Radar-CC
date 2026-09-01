@@ -1446,6 +1446,71 @@ que el criterio de aceptación de arriba signifique algo.
 Estado: **646 pruebas** en verde, 41 módulos, **0 USD** gastados. Con esto, el
 punto 2.2 de esta evaluación queda cerrado y el 3.2 completado.
 
+
+---
+
+## 19. Estado a 02/09/2026: la medición también se puede hacer mal
+
+Esta evaluación lleva varias secciones celebrando que medir cancela trabajo
+inútil y autoriza trabajo que parecía arriesgado. Toca la contrapartida: **una
+medición mal diseñada da la misma sensación de rigor y lleva al sitio
+equivocado.**
+
+Se estimó el impacto de tolerar el plural en la coincidencia de términos en «+1
+texto de 368, cero falsos positivos». Al aplicarlo fueron **+8 convocatorias,
+casi todas irrelevantes**: infraestructura cuántica, mundos virtuales, software
+de automoción. La estimación no fue conservadora ni optimista: fue **ciega en un
+cuadrante entero**.
+
+El motivo es sencillo y por eso vale la pena anotarlo. La medición se hizo sobre
+el corpus que había en disco —documentos de BDNS y fichas publicadas—, y las
+descripciones de Horizon **no se guardan**: se descargan en vivo en cada
+recopilación. Se midió donde había datos a mano, no donde estaba el riesgo. Y el
+riesgo estaba precisamente ahí, porque los topics de Horizon están en inglés y
+llenos de plurales, que era justo lo que el cambio tocaba.
+
+**La causa concreta ilustra por qué esto importa más de lo que parece.** La
+sigla `RTO` es, en el vocabulario del cliente, un *Regenerative Thermal
+Oxidizer*. En la letra pequeña de Horizon, «RTOs» son las *Research and
+Technology Organisations*, y aparecen en casi todos los topics. Una «s» convirtió
+un término técnico específico en una palabra de relleno administrativo. Ningún
+análisis estático lo habría anticipado; solo verlo en el corpus real.
+
+Frente al punto **2.3** de este documento —reglas de negocio como datos—, la
+lección añade un matiz incómodo: **el vocabulario técnico de un cliente colisiona
+con la jerga del dominio, y esa colisión no vive en el código sino en el
+lenguaje**. Sacar las reglas a un JSON no protege de esto. Lo único que protege
+es medir sobre texto real de cada fuente.
+
+La corrección fue pequeña —no pluralizar palabras de tres letras o menos, que en
+este vocabulario son todas siglas o partículas— y el efecto final quedó en 82 →
+84 convocatorias, sin ninguna pérdida. Pero conviene registrar también que **el
+beneficio es más modesto de lo que se vendió al proponerlo**: el caso estrella,
+«recuperación de calores residuales», no añade ninguna convocatoria; mejora la
+clasificación de las que ya entraban.
+
+### Frente a 2.8: donde no hay pruebas, los fallos no faltan, no se ven
+
+`build_keywords()` era la única función que el backlog señalaba **sin ninguna
+prueba**. Al escribírselas apareció un fallo: cuatro de sus siete colores
+apuntaban a palabras que el vocabulario escribe de otra forma, así que no podían
+coincidir nunca y el panel salía monocromo. Llevaba así quién sabe cuánto.
+
+No es casualidad estadística: es que una función sin pruebas tampoco tiene a
+nadie que la haya leído con intención de romperla. Se corrigió derivando el color
+de la categoría técnica, de modo que no pueda volver a caducar.
+
+### Y una nota sobre las afirmaciones heredadas
+
+El punto 39 del backlog afirmaba que la tasa de financiación de Horizon «ya está
+en los Anexos Generales que descargamos». **Era falso**, y solo se supo al ir a
+buscarla: está en el mismo PDF, pero en la página 32, y el extractor cortaba en
+el 37 % del documento. La afirmación se había escrito de memoria, no de
+medición, y sobrevivió varias sesiones porque sonaba razonable.
+
+Estado: **666 pruebas** en verde, 41 módulos, **0 USD** gastados en API en toda
+la sesión.
+
 ## Nota de alcance
 
 Este documento es una evaluación externa de solo lectura, ampliada con una

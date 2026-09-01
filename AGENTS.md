@@ -2455,8 +2455,6 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 |---|---|---|
 | 4 | Reintento con espera ante `HTTP 429` en `PlaywrightBrowser`, en vez de tratarlo como fuente caída | 35 |
 | 38 | `boletin.dpz.es` (Boletín Oficial de la **provincia de Zaragoza**) falla con `CERTIFICATE_VERIFY_FAILED` al descargar edictos: cadena de certificados incompleta en el servidor. Dos documentos afectados, reproducible en dos ejecuciones seguidas del 01/09, y **es el único host que falla** de toda la recopilación | Sección 54.7. No rompe nada —el pipeline sigue y solo degrada la evidencia de esas fichas—, pero es la provincia de la propia empresa. Arreglarlo obliga a elegir entre añadir un paquete de CA o relajar la verificación TLS, y lo segundo contradice `_is_safe_public_https_url()`: **es decisión del usuario**, no del agente |
-| 40 | **TAREA PENDIENTE: aplicar el plural en `_term_present()`, y SOLO el plural.** Hoy exige la frase exacta, así que «calores residuales» no activa `calor residual` | **Medido dos veces sobre 368 textos reales, no hace falta repetirlo** (secciones 56.2 y 58). Plural: +1 pasa el prefiltro, 0 lo pierden, 0 falsos positivos; las dos coincidencias que gana son aciertos y una es «recuperación de calores residuales», el negocio central del cliente. **Género: +0, exactamente cero cambios sobre el plural.** El matcher de género funciona —acepta «procesos térmicas»— y el falso positivo que se temía («la empresa procesa térmicamente») no se produce, pero no aporta nada y duplica la complejidad de la expresión regular: las formas que añade son concordancias incorrectas que una convocatoria real no escribe. Implementación: sufijo `(?:e?s)?` por palabra |
-| 39 | `funding_rate_percent` de Horizon: `budgetOverview` no lo trae, pero los **Anexos Generales que ya descargamos** sí lo indican (una *Innovation Action* financia al 70 % a una empresa con ánimo de lucro, una *RIA* al 100 %) | Sería el quinto caso del patrón «el dato ya está en casa» (54.5). Importa comercialmente: 70 % frente a 100 % cambia el caso de negocio. Pendiente de decisión del usuario; conviene medirlo antes con `--gap-report` sobre la ejecución completa, no sobre tres análisis |
 | 6 | Instantánea de la estructura esperada de cada fuente, comparada en cada ejecución, con historial | `SUGERENCIAS.MD` 3.4 punto 2 |
 | 7 | Ejecución periódica automatizada en `--no-claude` solo para vigilar salud de fuentes | `SUGERENCIAS.MD` 3.4 punto 3 |
 | 27 | Los catálogos curados se teclean a mano y caducan en silencio: el 21/08, seis de las diez URLs del de CDTI eran 404 (sección 44.1). **Medido el 01/09 (sección 55.2): el catálogo de CDTI aporta 4 de sus 5 vigentes, el 80 %**, porque la ventanilla permanente no tiene fecha y el calendario oficial solo publica lo fechado. No es deuda que retirar: derivarlo del calendario probablemente no es posible, y lo que necesita es revisión periódica | Vale la pena estudiar si las entradas de ventanilla permanente pueden **derivarse** del listado oficial en vez de mantenerse a mano. `_drop_catalog_entries_with_dead_urls()` ya evita publicarlas rotas, pero no las repara |
@@ -2476,7 +2474,6 @@ rondas el mismo día.
 | # | Qué falta | Notas |
 |---|---|---|
 | 9 | Motor de reglas genérico, declarativo | `SUGERENCIAS.MD` 3.3 punto 2. Requiere formalizar antes todas las variantes de condición existentes |
-| 10 | Retirar el patrón `runpy` + fusión de `APP` en `tests/test_grant_radar.py` | **Su condición ya se cumple desde la sección 57**: el script quedó reducido a configuración, punto de entrada y orquestación. Ya tiene sentido plantearlo. Ojo: la fusión de `APP` es también lo que puede tapar un `NameError` real (36.5), así que al retirarla hay que comprobar que `test_grant_radar_script_names.py` sigue cubriendo ese hueco |
 | 15 | Orden de extracción medido (secciones 37 y 38): `save_discovery_audit` → capa Haiku → segunda mitad de holds → reglas → `run_pipeline()`. **Los cuatro primeros están cerrados**: los tres primeros el 31/08 (sección 48) y la matriz de reglas el 01/09 (sección 57) | Queda solo `run_pipeline()`, que va el último por definición y hoy ya no arrastra lógica de dominio: el script conserva cuatro funciones y ninguna lo es |
 | 21 | Ejecutar `tests/test_grant_radar_script_names.py` **antes** que la suite completa tras cada extracción | Señala el módulo y el nombre exactos en un segundo; la suite completa los presenta como errores en pruebas de otra cosa (pasó tres veces) |
 | 16 | Usar `node.end_lineno`, nunca `max(lineno)`, al cortar bloques por AST | Un `return (` multilínea pierde el paréntesis de cierre; ocurrió en la sección 37 |
@@ -2491,7 +2488,6 @@ de los huecos de abajo pero sí marcan la forma preferida: import normal, sin
 
 | # | Qué | Detalle |
 |---|---|---|
-| 19 | `build_keywords()` sigue sin aparecer en ninguna prueba | Afecta al panel de palabras clave. `verificar_urls()` sí tiene pruebas desde el 21/08 (sección 44.3), incluida la sonda de control por host |
 | 20 | **Los ocho conectores ya tienen archivo propio** desde el 01/09 (sección 55.3: BDNS con 20 pruebas y EEN con 17; CDTI y Horizon lo ganaron antes). Siguen sin archivo dedicado, cubiertos solo de forma indirecta vía `runpy`: `versions.py`, `publishing.py`, `claude_usage.py`, `hold_quotes.py`, `hold_evidence.py`, `holds.py` y `profile_scope.py` | No es urgente —el camino principal de cada uno se ejercita ahí—, pero un archivo propio con import estándar hace la regresión más legible y sobreviviría a retirar el patrón `runpy` (punto 10). `analysis.py` sí tiene ya uno para lo que más duele: `tests/test_grant_radar_prompts.py` |
 
 ### 36.5. Mapa de las tres redes de seguridad, y qué se escapa de cada una
@@ -2543,6 +2539,10 @@ frío. No hay que buscarlos en las tablas de arriba: ya no están.
 | 36 | CDTI llegaba sin bases: 300 caracteres tecleados y cero documentos | Sección 51.2: las fichas del catálogo curado se leen con el navegador que ya las visitaba y traen sus documentos oficiales, con el mismo extractor que el calendario |
 | 8 | La matriz de reglas previa a Claude, lo último del orden de extracción | Sección 57: extraída a `grant_radar/bdns_rules.py` en sesión dedicada, 774 líneas movidas y **el embudo idéntico dígito a dígito** (`ambiguous=7, hold_manual=75, reject=803, retain=34`). Resultó más limpia de lo temido —cero dependencias de globales del script, ningún módulo la importa— porque `holds.py` y ECCP la reciben inyectada, decisión tomada en su día justo para esto |
 | 28 | ¿Mantener o retirar el catálogo estático de BOA? | Sección 56.1: **retirado el conector entero**, con la condición que puso el usuario comprobada antes: `paip_aragon` sale `active_captured` con 12 coincidencias y `sources=["BDNS"]`, y la caché documental trae el texto oficial del PAIP, 24 documentos de Transición Justa y 4 con Teruel. Verificado tras retirarlo: 82 vigentes, las mismas. El proyecto pasa de ocho fuentes a **siete** |
+| 40 | El plural en `_term_present()` | Sección 59: aplicado **con guardia de siglas** (`PLURAL_MIN_LENGTH = 3`). La primera versión hizo casar `rto` con «RTOs» —que en Horizon son *Research and Technology Organisations*— y coló ocho convocatorias irrelevantes. Efecto final: 82 → 84 vigentes, ninguna sale. **Beneficio más modesto de lo estimado**: «calores residuales» no añade convocatorias, solo mejora la clasificación de las que ya entraban |
+| 39 | La tasa de financiación de Horizon | Sección 59.5: leída de la sección G de los Anexos Generales. **La premisa de este punto era falsa**: no estaba en lo que ya descargábamos, sino en la página 32, más allá del corte de 48.000 caracteres. `max_chars` es ahora parámetro |
+| 19 | `build_keywords()` sin ninguna prueba | Sección 59.4: nueve pruebas, y tenía un fallo —cuatro de sus siete colores estaban muertos—. El color se deriva ahora de la categoría técnica |
+| 10 | Retirar el patrón `runpy` + fusión de `APP` | Sección 59.6: 81 de los 85 nombres ya eran importables; solo `run_pipeline` y `parse_args` obligan a mantener `runpy`. De 216 llamadas a `APP[...]` quedan 4 |
 | 5 | Modo de verificación por fuente, para no recorrer las ocho cuando un cambio solo toca una | Sección 54.6: `--source`, con alias cortos. Medido contra los 937 s de una recopilación completa: `--source boa` 13,7 s (68×) y `--source een` 81,4 s (11×, sin arrancar Chromium). Exige `--no-claude` y apaga la vigilancia de recurrentes, que con fuentes sin consultar daría alarmas falsas seguras |
 
 ## 37. Decimotercera ronda a 19/08/2026: salida pública, publicación, selección y cobertura
@@ -5220,3 +5220,148 @@ habían dejado de ser ciertos.
 
 Cifras de referencia sin cambios respecto a 56.3: 919 detectadas, 82 vigentes,
 78 pendientes de analizar (~2,00 USD).
+
+## 59. Medir donde hay luz, y otras tres cosas, a 02/09/2026
+
+Cuatro encargos del usuario. El primero produjo el error de método más caro de
+la sesión y conviene que abra la sección, porque la lección no es sobre el
+plural sino sobre cómo se mide.
+
+### 59.1. La lección: medí donde había luz, no donde estaba el riesgo
+
+Se propuso aplicar el plural en `_term_present()` con esta estimación, dada dos
+veces y con confianza: **«+1 texto de 368, 0 falsos positivos, ~0,03 USD»**.
+
+La realidad al aplicarlo: **+8 convocatorias y +0,23 USD**, y casi todas basura
+—infraestructura cuántica, mundos virtuales, plataformas de software de
+automoción—.
+
+**Falló el método, no el código.** La medición se hizo sobre el corpus que había
+en disco: 291 documentos de BDNS y las 77 fichas publicadas. **Horizon no estaba
+ahí**, porque sus descripciones se descargan en vivo y no se guardan. Y los
+topics de Horizon están en inglés y llenos de plurales, que es exactamente lo
+que el cambio tocaba.
+
+> **Regla para la próxima vez: un cambio que toca la clasificación debe medirse
+> sobre el corpus que el pipeline procesa de verdad, no sobre el que resulta
+> cómodo tener a mano.** Si una fuente no está en la muestra, la medición no
+> dice nada sobre ella. Cuesta cinco minutos más llamar al conector.
+
+### 59.2. La causa concreta: una sigla que significa dos cosas
+
+`rto` pasó a casar con **«RTOs»**. En el vocabulario de Kalfrisa `RTO` es un
+*Regenerative Thermal Oxidizer* —tratamiento de emisiones—; en la letra pequeña
+de Horizon, «RTOs» son las *Research and Technology Organisations*, y aparecen
+en casi todos los topics («Universities, RTOs and SMEs are encouraged to…»).
+Cinco coincidencias arrastrando ocho convocatorias.
+
+**El propio código lo había advertido.** El docstring original de
+`_term_present()` decía, literalmente: «evita falsos positivos de siglas: RTO no
+debe casar con demonstration». El guardián de límites lo impedía; pluralizar sin
+más lo reabrió por otra puerta. Que un aviso esté escrito no basta si quien
+cambia el código lo lee como una anécdota y no como una restricción.
+
+**Arreglo:** `PLURAL_MIN_LENGTH = 3`. Las palabras de tres letras o menos no se
+pluralizan, porque en este vocabulario **son todas siglas** (`rto`, `voc`,
+`cov`, `cfd`) **o partículas** (`de`, `of`, `en`, `del`). Comprobado sobre el
+vocabulario real, no supuesto.
+
+Al nivel del conector Horizon: **30 exacto → 37 con el plural sin guardia → 32
+ahora**, y las únicas coincidencias que el plural añade ya son legítimas:
+`digital twins` y `high-temperature processes`.
+
+### 59.3. El balance honesto del plural
+
+| | Exacto | Plural sin guardia | Plural corregido |
+|---|---|---|---|
+| Vigentes | 82 | 90 | **84** |
+| Horizon | 20 | 28 | **22** |
+| `retain` | 34 | 43 | **38** |
+| Coste | 2,00 USD | 2,23 | **2,07** |
+
+Entran dos convocatorias de Horizon y **no sale ninguna**: «Advanced
+manufacturing for key products (Made in Europe)», plausible para una PYME
+industrial, y «Next-generation battery concepts», marginal.
+
+**El beneficio es más modesto de lo que se dijo al proponerlo.** El caso que se
+usó para justificarlo —«recuperación de calores residuales», el negocio central
+del cliente— **no añade ninguna convocatoria**: BDNS sigue en 50. Su efecto está
+en la clasificación de convocatorias que ya entraban, que es real —mejores
+`tech_tags`, mejor preselección de socios— pero mucho menos vistoso que como se
+vendió. Conviene dejarlo escrito para que nadie herede una expectativa inflada.
+
+### 59.4. Los colores del panel, derivados en vez de tecleados
+
+`build_keywords()` tenía siete colores escritos a mano contra palabras
+concretas, y **cuatro estaban muertos**: «hidrógeno», «hydrogen», «hornos
+industriales» y «combustión limpia» no existen en `KEYWORDS`, que las escribe de
+otra forma. Nunca podían coincidir, así que las palabras que de verdad se
+publican —`decarbonisation`, `waste heat`, `heat recovery`— caían todas al color
+por defecto y el panel se veía plano.
+
+Ahora el color se deriva de la **categoría técnica**, así que no puede volver a
+caducar: vocabulario nuevo en el JSON hereda el color de su categoría.
+
+Cierra el punto 19 del backlog, que señalaba esta función como **la única sin
+ninguna prueba**. Tenía un fallo. No es coincidencia y merece anotarse: donde no
+hay pruebas, no es que no haya fallos, es que no se ven.
+
+### 59.5. La tasa de financiación de Horizon, y otra imprecisión corregida
+
+Se había escrito que el dato «ya está en los Anexos Generales que descargamos»
+(punto 39). **Era falso, y solo se supo al ir a buscarlo.** Está en el mismo PDF,
+pero en la página 32, y el extractor cortaba en 48.000 caracteres de los 124.411
+del documento: descargábamos el 37 %.
+
+Hecho: `max_chars` pasa a ser parámetro de `_hold_document_text()` —con el mismo
+valor por defecto, así que nadie hereda un documento mayor sin pedirlo— y solo
+los Anexos Generales suben a 130.000. Nueva sección `funding_rates`.
+
+Verificado contra el documento oficial: **cuatro secciones**, con la lista de
+tasas entera —«Research and innovation action: 100%», «Innovation action: 70%
+(except for non-profit legal entities)»—. En un proyecto de 3 M€ esa diferencia
+son **900.000 € que pone la empresa**, y hasta hoy el panel no lo decía.
+
+Detalle que casi se escapa: hubo que **subir `ANNEXES_CACHE_VERSION`**. Sin eso,
+las entradas escritas el 31/08 se habrían reutilizado durante los siete días de
+`ANNEXES_REFRESH_DAYS` sin la sección nueva, y el cambio no habría hecho nada
+sin que nada lo dijera.
+
+### 59.6. Retirado el patrón `runpy` + fusión de `APP` (punto 10)
+
+Resultó mucho más limpio de lo previsto: de los 85 nombres que las pruebas
+pedían a `APP`, **81 ya vivían en módulos importables**. Solo `run_pipeline` y
+`parse_args` obligan a mantener `runpy`, porque `Grant-Radar-prueba.py` no se
+puede importar. Las **216 llamadas a `APP[...]` bajan a 4**.
+
+El motivo no era estético: **esa fusión podía tapar un `NameError` real** del
+script, inyectando justo el nombre que faltaba antes de probarlo (36.5). Pasó
+tres veces. El hueco lo sigue cubriendo `test_grant_radar_script_names.py`, que
+hace su propio `run_path()` con globals limpios y sin fusión: es la razón de que
+se pueda quitar sin perder red.
+
+### 59.7. La recopilación diaria, preparada
+
+`scripts/Recopilacion diaria.ps1`, lista para registrar en el Programador de
+tareas. **No llama a `poetry`**, y eso es deliberado: en una tarea programada el
+`PATH` no es el de la sesión interactiva, y este equipo tiene una `VIRTUAL_ENV`
+heredada que apunta al `.venv` de la carpeta original. Llamar directamente a
+`.venv\Scripts\python.exe` esquiva las dos cosas. Escribe a un log rotado de 30
+días y el comando de registro va comentado al final del propio archivo.
+
+**Sobre automatizarlo en GitHub Actions**, que preguntó el usuario: técnicamente
+cabe —15 min/día, y el repositorio es público, así que los minutos son
+ilimitados—, pero **el riesgo no es la capacidad de cálculo sino la IP**. Los
+runners salen por rangos de Azure compartidos, y estas fuentes ya han enseñado
+que vigilan: `boe.es` devolvió 429 tras ocho ejecuciones en un día desde la IP
+local. Lo probable es un bloqueo intermitente, que es la peor variante porque
+parece un fallo del código. Recomendación registrada: **empezar en local**, y si
+se quiere, montar Actions en paralelo una semana y comparar recuentos antes de
+migrar.
+
+### 59.8. Estado
+
+**666 pruebas** en verde (646 al empezar). Verificación `--no-claude`: 921
+detectadas, **84 vigentes**, prefiltro `retain=38, ambiguous=5, hold_manual=75,
+reject=803`. Pendientes de analizar **81** (~2,07 USD). Coste de la sesión en
+API: **0 USD**.
