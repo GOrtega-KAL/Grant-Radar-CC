@@ -279,6 +279,22 @@ from grant_radar.sources.cdti import fetch_cdti
 from grant_radar.sources.idae import fetch_idae, fetch_idae_catalog
 from grant_radar.sources.boa_aragon import fetch_boa
 
+# Alias cortos de `--source`. Los nombres internos llevan espacios y acentos
+# ("BOE / MITECO", "BOA ARAGÓN"), que en línea de comandos obligan a comillas y
+# se teclean mal; estos son los que se escriben. `idae` selecciona las dos
+# mitades de esa fuente —fichas y catálogo—, porque son un solo conector
+# partido en dos llamadas y comprobar una sin la otra no dice nada.
+SOURCE_ALIASES = {
+    "horizon": ["HORIZON EUROPE"],
+    "bdns":    ["BDNS"],
+    "eccp":    ["ECCP"],
+    "een":     ["EEN"],
+    "cdti":    ["CDTI"],
+    "idae":    ["IDAE", "IDAE CATÁLOGO"],
+    "boe":     ["BOE / MITECO"],
+    "boa":     ["BOA ARAGÓN"],
+}
+
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 if hasattr(sys.stderr, "reconfigure"):
@@ -1256,6 +1272,7 @@ def run_pipeline(
 
 
     hold_pilot: int | None = None,
+    sources: list[str] | None = None,
 ):
 
 
@@ -1316,53 +1333,100 @@ def run_pipeline(
             source_timings[source_name] = time.perf_counter() - started
 
     browser_startup_seconds = None
+    # Selección parcial de fuentes (`--source`). Existe porque comprobar un
+    # cambio en un solo conector obligaba a recorrer los ocho: quince minutos,
+    # y ocho ejecuciones en un día bastaron el 19/08 para que boe.es
+    # respondiera 429 (AGENTS.md 35, punto 5 del backlog). Solo se admite con
+    # `--no-claude`, porque un recuento parcial no puede alimentar el producto.
+    selected = set(sources or ())
+    partial = bool(selected)
+
+    def wanted(source_name: str) -> bool:
+        return not partial or source_name in selected
+
     if hold_pilot is not None:
         # El piloto responde únicamente preguntas sobre registros BDNS en espera.
         # Evita iniciar Chromium o consultar fuentes que no pueden aportar casos.
         raw_by_source = {"BDNS": timed_fetch("BDNS", fetch_bdns)}
     else:
-        horizon_results = timed_fetch("HORIZON EUROPE", fetch_horizon_europe)
-        bdns_results = timed_fetch("BDNS", fetch_bdns)
-        # El conector recibe el prefiltro como predicado de relevancia: no
-        # conoce las reglas, solo pregunta si algo merece conservarse.
-        eccp_results = timed_fetch("ECCP", fetch_eccp, deterministic_prefilter)
-        een_results = timed_fetch("EEN", fetch_een_funding)
-        browser_started = time.perf_counter()
-        with PlaywrightBrowser(headless=True) as browser:
-            browser_startup_seconds = time.perf_counter() - browser_started
-            idae_results = timed_fetch("IDAE", fetch_idae, browser)
-            boe_results = timed_fetch("BOE / MITECO", fetch_boe, browser)
-            boa_results = timed_fetch("BOA ARAGÓN", fetch_boa, browser)
-            idae_catalog_results = timed_fetch(
-                "IDAE CATÁLOGO",
-                fetch_idae_catalog,
-                browser,
+        raw_by_source = {}
+        if wanted("HORIZON EUROPE"):
+            raw_by_source["HORIZON EUROPE"] = timed_fetch(
+                "HORIZON EUROPE", fetch_horizon_europe
             )
-            raw_by_source = {
-                "HORIZON EUROPE": horizon_results,
-                "BDNS":            bdns_results,
-                "ECCP":            eccp_results,
-                "EEN":             een_results,
-                "CDTI":           timed_fetch("CDTI", fetch_cdti, browser),
-                "IDAE":           idae_results,
-                "IDAE CATÁLOGO":  idae_catalog_results,
-                "BOE / MITECO":   boe_results,
-                "BOA ARAGÓN":     boa_results,
-            }
-            coverage_items = [
-                item for items in raw_by_source.values() for item in items
-            ] + IDENTITY_LANDINGS
-            COVERAGE_WATCH_RESULTS.extend(
-                probe_missing_recurrent_coverage(browser, coverage_items)
+        if wanted("BDNS"):
+            raw_by_source["BDNS"] = timed_fetch("BDNS", fetch_bdns)
+        if wanted("ECCP"):
+            # El conector recibe el prefiltro como predicado de relevancia: no
+            # conoce las reglas, solo pregunta si algo merece conservarse.
+            raw_by_source["ECCP"] = timed_fetch(
+                "ECCP", fetch_eccp, deterministic_prefilter
             )
+        if wanted("EEN"):
+            raw_by_source["EEN"] = timed_fetch("EEN", fetch_een_funding)
+        # Chromium solo se arranca si alguna fuente seleccionada lo necesita:
+        # las cuatro de arriba son HTTP puro, así que verificar un cambio en
+        # Horizon o BDNS ya no paga el navegador.
+        browser_sources = [
+            name for name in
+            ("IDAE", "BOE / MITECO", "BOA ARAGÓN", "IDAE CATÁLOGO", "CDTI")
+            if wanted(name)
+        ]
+        if browser_sources:
+            browser_started = time.perf_counter()
+            with PlaywrightBrowser(headless=True) as browser:
+                browser_startup_seconds = time.perf_counter() - browser_started
+                if wanted("IDAE"):
+                    raw_by_source["IDAE"] = timed_fetch("IDAE", fetch_idae, browser)
+                if wanted("BOE / MITECO"):
+                    raw_by_source["BOE / MITECO"] = timed_fetch(
+                        "BOE / MITECO", fetch_boe, browser
+                    )
+                if wanted("BOA ARAGÓN"):
+                    raw_by_source["BOA ARAGÓN"] = timed_fetch(
+                        "BOA ARAGÓN", fetch_boa, browser
+                    )
+                if wanted("IDAE CATÁLOGO"):
+                    raw_by_source["IDAE CATÁLOGO"] = timed_fetch(
+                        "IDAE CATÁLOGO", fetch_idae_catalog, browser
+                    )
+                if wanted("CDTI"):
+                    raw_by_source["CDTI"] = timed_fetch("CDTI", fetch_cdti, browser)
+                # La vigilancia de programas recurrentes compara lo recopilado
+                # con un catálogo de programas que se sabe que existen. Con una
+                # selección parcial daría por desaparecido todo lo que vive en
+                # las fuentes no consultadas: son alarmas falsas garantizadas,
+                # así que no se ejecuta (AGENTS.md 46.4).
+                if not partial:
+                    coverage_items = [
+                        item for items in raw_by_source.values() for item in items
+                    ] + IDENTITY_LANDINGS
+                    COVERAGE_WATCH_RESULTS.extend(
+                        probe_missing_recurrent_coverage(browser, coverage_items)
+                    )
     collection_seconds = time.perf_counter() - pipeline_started
 
     print("\nTiempos de recopilación:")
     if browser_startup_seconds is not None:
         print(f"  {'Chromium (inicio)':<18} {browser_startup_seconds:>7.2f} s")
+    else:
+        print(f"  {'Chromium':<18} {'no arrancado':>12}")
     for source_name in raw_by_source:
         print(f"  {source_name:<18} {source_timings.get(source_name, 0.0):>7.2f} s")
     print(f"  {'TOTAL RECOPILACIÓN':<18} {collection_seconds:>7.2f} s")
+    if partial:
+        # Este aviso no es decorativo: los recuentos de referencia (AGENTS.md
+        # 53.4) solo significan algo sobre las ocho fuentes. Sin decirlo, un
+        # "82 vigentes" parcial se compararía con el completo y parecería una
+        # avería donde solo hay una selección.
+        print(
+            "\n  AVISO: recopilación PARCIAL de "
+            f"{len(raw_by_source)} fuente(s): {', '.join(raw_by_source)}."
+        )
+        print(
+            "  Los recuentos NO son comparables con las cifras de referencia,"
+        )
+        print("  y la vigilancia de programas recurrentes queda desactivada.")
 
     # Resumen consolidado de salud de fuentes: cada fuente ya avisó por
     # consola en el momento (log.warning dentro de assess_web_inventory_health),
@@ -2125,6 +2189,19 @@ def parse_args():
         ),
     )
     parser.add_argument(
+        "--source",
+        action="append",
+        default=[],
+        metavar="FUENTE",
+        choices=sorted(SOURCE_ALIASES),
+        help=(
+            "Recopila solo la fuente indicada, en vez de las ocho. Puede "
+            "repetirse. Exige --no-claude: un recuento parcial no puede "
+            "alimentar el producto. Alias admitidos: "
+            + ", ".join(sorted(SOURCE_ALIASES))
+        ),
+    )
+    parser.add_argument(
         "--gap-report",
         action="store_true",
         help=(
@@ -2180,6 +2257,14 @@ def parse_args():
     ):
         parser.error(
             "--gap-report no puede combinarse con otros modos de ejecución"
+        )
+    if args.source and not args.no_claude:
+        # Deliberadamente estricto. Una selección parcial produce un catálogo
+        # incompleto, y dejarla llegar al análisis publicaría un producto al
+        # que le faltan fuentes enteras sin que nada lo advierta.
+        parser.error(
+            "--source exige --no-claude: una recopilación parcial no puede "
+            "generar ni publicar el producto"
         )
     if args.claude_match and args.max_claude is None:
         parser.error("--claude-match requiere utilizar también --max-claude")
@@ -2275,4 +2360,9 @@ if __name__ == "__main__":
             claude_matches=args.claude_match,
             force_reanalysis=args.force_reanalysis,
             hold_pilot=args.hold_pilot,
+            sources=[
+                nombre
+                for alias in args.source
+                for nombre in SOURCE_ALIASES[alias]
+            ],
         )
