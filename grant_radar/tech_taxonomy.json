@@ -86,7 +86,7 @@
     "waste_heat": ["ee", "desc"],
     "industrial_electrification": ["desc"],
     "emissions": ["emis"],
-    "thermal_processes": ["horn"],
+    "thermal_processes": ["ee", "desc"],
     "digital_thermal": ["ee"],
     "thermal_waste": ["desc", "emis"],
     "circular_manufacturing": ["desc"]
