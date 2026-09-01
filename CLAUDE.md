@@ -36,9 +36,14 @@ desactualizado si no se mantiene junto a ellos.
 >   de las siete: `--source een` 81 s frente a 513-937 s. Exige `--no-claude`
 >   (54.6). El alias `boa` se retiró con su conector (56.1).
 > - `--staleness-report` — cuánto se desfasa lo publicado, sin red.
-> - **La recopilación diaria está preparada y sin registrar:**
->   `scripts/Recopilacion diaria.ps1`. Registrarla en el Programador de tareas
->   es una acción del usuario; el comando va comentado al final del archivo.
+> - **La recopilación diaria: doble clic en `scripts/Grant-Radar diario.bat`.**
+>   Abre VS Code con el proyecto y lanza `--no-claude` en la misma ventana.
+>   Admite `/q` (sin VS Code, para el Programador de tareas) y `/log` (guarda
+>   además la salida). Es la solución acordada con el usuario **hasta alojar la
+>   herramienta en un servidor, previsto para dentro de unos meses**. El
+>   análisis con Claude sigue siendo manual y discrecional: ningún script lo
+>   lanza. Existe también `scripts/Recopilacion diaria.ps1`, equivalente en
+>   PowerShell y sin VS Code, si algún día se programa la tarea.
 > - El backlog de la **sección 36**. Los puntos 8, 10, 19, 27, 28, 39 y 40 se
 >   cerraron el 01-02/09; queda sobre todo vigilancia de fuentes (4, 6, 7, 29,
 >   30, 32, 38) y tres reglas de negocio que exigen decisión (1, 2, 3).

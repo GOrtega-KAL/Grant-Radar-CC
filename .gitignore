@@ -15,3 +15,8 @@ convocatorias.json
 .venv/
 __pycache__/
 *.pyc
+
+# Registros de las recopilaciones lanzadas con "Grant-Radar diario.bat /log".
+# Son para diagnosticar una ejecucion concreta; el historial que importa vive
+# en grant_radar_data/grant_radar_audit.json, que si se versiona.
+grant_radar_data/logs/

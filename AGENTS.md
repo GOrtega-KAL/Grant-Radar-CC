@@ -5359,6 +5359,37 @@ parece un fallo del código. Recomendación registrada: **empezar en local**, y 
 se quiere, montar Actions en paralelo una semana y comparar recuentos antes de
 migrar.
 
+### 59.9. La solución intermedia acordada: un `.bat` de doble clic
+
+Decidido con el usuario el 02/09/2026. **Hasta alojar la herramienta en un
+servidor —previsto para dentro de unos meses—**, la recopilación diaria se
+lanza a mano con `scripts/Grant-Radar diario.bat`: abre VS Code con el proyecto
+y ejecuta `--no-claude` en la misma ventana. El análisis con Claude **sigue
+siendo manual y discrecional**, y ningún script lo lanza.
+
+Tres decisiones del archivo que no son evidentes y conviene no deshacer:
+
+1. **No llama a `poetry`, llama a `.venv\Scripts\python.exe`.** En una tarea
+   programada el `PATH` no es el de la sesión interactiva, y este equipo tiene
+   una `VIRTUAL_ENV` heredada que apunta al `.venv` de la carpeta original.
+2. **`chcp 65001` al principio.** La salida del pipeline lleva acentos y `✓`;
+   sin eso `cmd` los destroza.
+3. **VS Code se abre con `start`, no llamando a `code`.** `code` es un shim
+   `.cmd`: invocarlo directo desde un `.bat` se lleva por delante el proceso
+   padre y la recopilación no llegaría a ejecutarse.
+
+Y un fallo clásico de `.bat` que apareció al escribirlo: la marca de tiempo del
+log se calculaba **dentro** de un bloque `if`, donde `cmd` expande las variables
+al parsear el bloque entero y por tanto salía vacía. Se sacó fuera.
+
+Probado de verdad antes de darlo por bueno, con una copia que sustituía
+`--no-claude` por `--staleness-report` —el mismo script, cinco segundos— para
+ejercitar todo el flujo sin esperar quince minutos: argumentos, rutas, acentos,
+el *tee* de `/log` y los dos caminos de salida.
+
+`grant_radar_data/logs/` queda en `.gitignore`: son para diagnosticar una
+ejecución concreta, y el historial que importa vive en la auditoría.
+
 ### 59.8. Estado
 
 **666 pruebas** en verde (646 al empezar). Verificación `--no-claude`: 921
