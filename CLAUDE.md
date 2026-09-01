@@ -37,10 +37,11 @@ desactualizado si no se mantiene junto a ellos.
 >   (54.6). El alias `boa` se retiró con su conector (56.1).
 > - `--staleness-report` — cuánto se desfasa lo publicado, sin red.
 > - **TAREA APLAZADA por el usuario, lista para ejecutar: el punto 40**, aplicar
->   el plural en `_term_present()`. Ya está medido (56.2) y **no hace falta
->   volver a medirlo**: +1 texto de 368 pasa el prefiltro, 0 falsos positivos,
->   ~0,03 USD por ejecución. Recupera «recuperación de calores residuales», que
->   es el negocio central del cliente y hoy se pierde por una «s».
+>   el plural en `_term_present()` —y **solo el plural**—. Medido dos veces y
+>   **no hace falta volver a medirlo**: plural +1 texto de 368 con 0 falsos
+>   positivos; **género +0, cero cambios**. Recupera «recuperación de calores
+>   residuales», que es el negocio central del cliente y hoy se pierde por una
+>   «s».
 > - El resto del backlog de la **sección 36**: el punto 10 (retirar el patrón
 >   `runpy`/`APP` de las pruebas, cuya condición ya se cumple) y los umbrales de
 >   salud calibrados a ojo (30).
