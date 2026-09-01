@@ -5,7 +5,8 @@
 # una: la recopilación completa tarda unos quince minutos y ocho ejecuciones
 # en un día bastaron el 19/08/2026 para que boe.es respondiera 429
 # (AGENTS.md 35; punto 5 del backlog). Medido al añadirla: BOA sola en 13,7 s
-# y EEN sola en 81 s, frente a 937 s de las ocho.
+# y EEN sola en 81 s, frente a 937 s de las ocho (BOA se retiró después, en la
+# sección 56, pero la medida sigue siendo la referencia del ahorro).
 #
 # El riesgo que estas pruebas cubren no es que la selección falle, sino que se
 # DESINCRONICE: si mañana se añade un conector y nadie toca el mapa de alias,
@@ -41,12 +42,12 @@ class MapaDeAliasTests(unittest.TestCase):
 
     def test_estan_las_ocho_fuentes(self):
         self.assertEqual(set(ALIASES), {
-            "horizon", "bdns", "eccp", "een", "cdti", "idae", "boe", "boa",
+            "horizon", "bdns", "eccp", "een", "cdti", "idae", "boe",
         })
 
     def test_los_alias_se_pueden_teclear_sin_comillas(self):
         # El motivo de que existan: los nombres internos llevan espacios y
-        # acentos ("BOE / MITECO", "BOA ARAGÓN").
+        # acentos ("BOE / MITECO", "IDAE CATÁLOGO").
         for alias in ALIASES:
             self.assertRegex(alias, r"^[a-z]+$", f"alias poco práctico: {alias}")
 
@@ -138,7 +139,7 @@ class SalvaguardasTests(unittest.TestCase):
 class ArranqueDelNavegadorTests(unittest.TestCase):
     """La otra mitad del ahorro: no pagar Chromium si nadie lo necesita."""
 
-    CON_NAVEGADOR = {"IDAE", "BOE / MITECO", "BOA ARAGÓN", "IDAE CATÁLOGO", "CDTI"}
+    CON_NAVEGADOR = {"IDAE", "BOE / MITECO", "IDAE CATÁLOGO", "CDTI"}
     SIN_NAVEGADOR = {"HORIZON EUROPE", "BDNS", "ECCP", "EEN"}
 
     def test_las_cuatro_fuentes_http_no_arrastran_chromium(self):

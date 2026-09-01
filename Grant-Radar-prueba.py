@@ -277,10 +277,9 @@ from grant_radar.sources.bdns import (
 from grant_radar.sources.boe_miteco import fetch_boe
 from grant_radar.sources.cdti import fetch_cdti
 from grant_radar.sources.idae import fetch_idae, fetch_idae_catalog
-from grant_radar.sources.boa_aragon import fetch_boa
 
 # Alias cortos de `--source`. Los nombres internos llevan espacios y acentos
-# ("BOE / MITECO", "BOA ARAGÓN"), que en línea de comandos obligan a comillas y
+# ("BOE / MITECO", "IDAE CATÁLOGO"), que en línea de comandos obligan a comillas y
 # se teclean mal; estos son los que se escriben. `idae` selecciona las dos
 # mitades de esa fuente —fichas y catálogo—, porque son un solo conector
 # partido en dos llamadas y comprobar una sin la otra no dice nada.
@@ -292,7 +291,6 @@ SOURCE_ALIASES = {
     "cdti":    ["CDTI"],
     "idae":    ["IDAE", "IDAE CATÁLOGO"],
     "boe":     ["BOE / MITECO"],
-    "boa":     ["BOA ARAGÓN"],
 }
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -1369,7 +1367,7 @@ def run_pipeline(
         # Horizon o BDNS ya no paga el navegador.
         browser_sources = [
             name for name in
-            ("IDAE", "BOE / MITECO", "BOA ARAGÓN", "IDAE CATÁLOGO", "CDTI")
+            ("IDAE", "BOE / MITECO", "IDAE CATÁLOGO", "CDTI")
             if wanted(name)
         ]
         if browser_sources:
@@ -1381,10 +1379,6 @@ def run_pipeline(
                 if wanted("BOE / MITECO"):
                     raw_by_source["BOE / MITECO"] = timed_fetch(
                         "BOE / MITECO", fetch_boe, browser
-                    )
-                if wanted("BOA ARAGÓN"):
-                    raw_by_source["BOA ARAGÓN"] = timed_fetch(
-                        "BOA ARAGÓN", fetch_boa, browser
                     )
                 if wanted("IDAE CATÁLOGO"):
                     raw_by_source["IDAE CATÁLOGO"] = timed_fetch(

@@ -29,7 +29,6 @@ from grant_radar import runtime_state
 from grant_radar.audit import DISCOVERY_AUDIT
 from grant_radar.sources import (
     bdns as bdns_module,
-    boa_aragon as boa_module,
     boe_miteco as boe_module,
     cdti as cdti_module,
     eccp as eccp_module,
@@ -127,11 +126,6 @@ class SourceSmokeTests(unittest.TestCase):
     def test_boe_miteco(self):
         self.assertIsInstance(
             self._correr(boe_module, boe_module.fetch_boe, NavegadorVacio()), list
-        )
-
-    def test_boa_aragon(self):
-        self.assertIsInstance(
-            self._correr(boa_module, boa_module.fetch_boa, NavegadorVacio()), list
         )
 
     def test_idae(self):

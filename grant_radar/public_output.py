@@ -268,7 +268,6 @@ def build_source_status(
         "IDAE":           "Playwright",
         "IDAE CATÁLOGO":  "Playwright (descubrimiento agregado)",
         "BOE / MITECO":   "Playwright",
-        "BOA ARAGÓN":     "Playwright / respaldo",
     }
     now_str = datetime.now().strftime("%H:%M")
     consolidated_items = consolidated_items or []

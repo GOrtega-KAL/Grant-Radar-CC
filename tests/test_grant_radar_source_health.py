@@ -136,7 +136,7 @@ class WebInventoryHealthTests(unittest.TestCase):
 
     def test_rates_are_none_when_there_is_nothing_to_divide_by(self):
         health = assess_web_inventory_health(
-            "BOA ARAGÓN",
+            "IDAE CATÁLOGO",
             inventory_loaded=True, structure_ok=True, discovered_count=0,
         )
         self.assertIsNone(health["selection_rate"])

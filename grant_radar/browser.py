@@ -1,6 +1,6 @@
 # browser.py — sesión Chromium única compartida por las fuentes sin API
 #
-# Cuatro conectores (CDTI, IDAE, BOE/MITECO y BOA Aragón) necesitan JavaScript
+# Tres conectores (CDTI, IDAE y BOE/MITECO) necesitan JavaScript
 # para ver su inventario, así que comparten una sola instancia de Chromium en
 # vez de arrancar un navegador por petición. Se usa como gestor de contexto
 # desde `run_pipeline()`; si Chromium no arranca, el objeto queda inservible a

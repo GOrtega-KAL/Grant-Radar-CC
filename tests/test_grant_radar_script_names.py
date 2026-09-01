@@ -216,7 +216,7 @@ class ScriptGlobalNamesTests(unittest.TestCase):
 
     def test_the_public_entry_points_of_every_extracted_source_are_reachable(self):
         for name in (
-            "fetch_bdns", "fetch_boa", "fetch_boe", "fetch_cdti", "fetch_eccp",
+            "fetch_bdns", "fetch_boe", "fetch_cdti", "fetch_eccp",
             "fetch_een_funding", "fetch_horizon_europe", "fetch_idae",
             "fetch_idae_catalog",
         ):
