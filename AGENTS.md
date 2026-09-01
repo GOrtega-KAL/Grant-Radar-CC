@@ -2455,12 +2455,11 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 |---|---|---|
 | 4 | Reintento con espera ante `HTTP 429` en `PlaywrightBrowser`, en vez de tratarlo como fuente caída | 35 |
 | 38 | `boletin.dpz.es` (Boletín Oficial de la **provincia de Zaragoza**) falla con `CERTIFICATE_VERIFY_FAILED` al descargar edictos: cadena de certificados incompleta en el servidor. Dos documentos afectados, reproducible en dos ejecuciones seguidas del 01/09, y **es el único host que falla** de toda la recopilación | Sección 54.7. No rompe nada —el pipeline sigue y solo degrada la evidencia de esas fichas—, pero es la provincia de la propia empresa. Arreglarlo obliga a elegir entre añadir un paquete de CA o relajar la verificación TLS, y lo segundo contradice `_is_safe_public_https_url()`: **es decisión del usuario**, no del agente |
-| 40 | `_term_present()` exige la frase exacta, así que **el plural no casa**: «hornos industriales» no activa `horno industrial`, ni «tratamientos térmicos» a `tratamiento térmico`. Afecta a vocabulario que sí aparece en las convocatorias (`recuperadores`, `intercambiadores de calor industriales`) | Sección 55.1, encontrado al investigar el chip «Hornos». **No era la causa de aquel filtro vacío**, pero es un fallo real por su cuenta. Ojo: arreglarlo ensancha `detect_tech_tags()` y con ello el prefiltro, el embudo y el coste, así que hay que medirlo antes de aceptarlo |
+| 40 | `_term_present()` exige la frase exacta, así que **el plural no casa**: «calores residuales» no activa `calor residual`. **Medido el 01/09 (sección 56.2): +1 texto de 368 pasa el prefiltro, 0 lo pierden, 0 falsos positivos.** Las dos ganancias son aciertos reales, una de ellas recuperación de calor residual, que es el negocio central del cliente | Coste marginal despreciable (0,03-0,08 USD por ejecución completa). **Recomendación registrada: aplicarlo.** Queda sin implementar porque el encargo era medir. Ojo al ampliarlo a género («térmico» → «térmicas»): eso sí exige medir otra vez |
 | 39 | `funding_rate_percent` de Horizon: `budgetOverview` no lo trae, pero los **Anexos Generales que ya descargamos** sí lo indican (una *Innovation Action* financia al 70 % a una empresa con ánimo de lucro, una *RIA* al 100 %) | Sería el quinto caso del patrón «el dato ya está en casa» (54.5). Importa comercialmente: 70 % frente a 100 % cambia el caso de negocio. Pendiente de decisión del usuario; conviene medirlo antes con `--gap-report` sobre la ejecución completa, no sobre tres análisis |
 | 6 | Instantánea de la estructura esperada de cada fuente, comparada en cada ejecución, con historial | `SUGERENCIAS.MD` 3.4 punto 2 |
 | 7 | Ejecución periódica automatizada en `--no-claude` solo para vigilar salud de fuentes | `SUGERENCIAS.MD` 3.4 punto 3 |
 | 27 | Los catálogos curados se teclean a mano y caducan en silencio: el 21/08, seis de las diez URLs del de CDTI eran 404 (sección 44.1). **Medido el 01/09 (sección 55.2): el catálogo de CDTI aporta 4 de sus 5 vigentes, el 80 %**, porque la ventanilla permanente no tiene fecha y el calendario oficial solo publica lo fechado. No es deuda que retirar: derivarlo del calendario probablemente no es posible, y lo que necesita es revisión periódica | Vale la pena estudiar si las entradas de ventanilla permanente pueden **derivarse** del listado oficial en vez de mantenerse a mano. `_drop_catalog_entries_with_dead_urls()` ya evita publicarlas rotas, pero no las repara |
-| 28 | **BOA aporta 0 por las dos vías** (sección 55.2): el scraper en vivo no encuentra nada y sus dos entradas estáticas están vencidas (05/05/2026 y 15/01/2026). 8 s por ejecución y 198 líneas para nada. Aragón se cubre desde la sección 26 por el filtro `nivel1`/`nivel2` de `fetch_bdns()`, así que retirarlo no perdería cobertura. **Recomendación registrada: retirar el conector**; es decisión del usuario | Mismo problema que el 27, en la fuente que además ya no es el mecanismo principal para Aragón (sección 26). Conviene decidir si se mantiene o se retira |
 | 29 | El prefiltro de listado del BOE descarta 153 de 168 entradas **sin registrar exclusión**: solo deja rastro el filtro posterior, sobre el documento ya abierto | Sección 45.2. Auditar las 153 inflaría el catálogo (365 ejecuciones guardadas); lo razonable es un recuento por organismo, no una entrada por ficha |
 | 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
 | 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
@@ -2543,6 +2542,7 @@ frío. No hay que buscarlos en las tablas de arriba: ya no están.
 | 35 | La elegibilidad de Horizon no estaba en el topic que leemos | Sección 50: el conector lee los Anexos Generales que el propio topic enlaza, una vez por edición, y envía tres extractos de 3.400 caracteres. Sin catálogo que mantener |
 | 17 | Prueba de humo por conector | Sección 51.3: diez pruebas, 0,2 s, con la red y el navegador sustituidos. Una de ellas comprueba que el detector detecta, reproduciendo el `statistics` de la sección 35 |
 | 36 | CDTI llegaba sin bases: 300 caracteres tecleados y cero documentos | Sección 51.2: las fichas del catálogo curado se leen con el navegador que ya las visitaba y traen sus documentos oficiales, con el mismo extractor que el calendario |
+| 28 | ¿Mantener o retirar el catálogo estático de BOA? | Sección 56.1: **retirado el conector entero**, con la condición que puso el usuario comprobada antes: `paip_aragon` sale `active_captured` con 12 coincidencias y `sources=["BDNS"]`, y la caché documental trae el texto oficial del PAIP, 24 documentos de Transición Justa y 4 con Teruel. Verificado tras retirarlo: 82 vigentes, las mismas. El proyecto pasa de ocho fuentes a **siete** |
 | 5 | Modo de verificación por fuente, para no recorrer las ocho cuando un cambio solo toca una | Sección 54.6: `--source`, con alias cortos. Medido contra los 937 s de una recopilación completa: `--source boa` 13,7 s (68×) y `--source een` 81,4 s (11×, sin arrancar Chromium). Exige `--no-claude` y apaga la vigilancia de recurrentes, que con fuentes sin consultar daría alarmas falsas seguras |
 
 ## 37. Decimotercera ronda a 19/08/2026: salida pública, publicación, selección y cobertura
@@ -5024,3 +5024,115 @@ orden de extracción junto a `run_pipeline()`: 526 líneas y siete niveles de
 precedencia que deciden qué llega a Claude y, con ello, el coste. `AGENTS.md`
 4.1 y 36.3 piden sesión dedicada y no encadenarla a otra tarea; el usuario lo ha
 confirmado explícitamente.
+
+## 56. BOA retirado con pruebas, y el plural medido, a 01/09/2026 (cierre)
+
+Dos encargos, los dos con la misma forma: **comprobar antes de tocar**. El
+primero condicionaba una retirada a que la comprobación saliera bien; el
+segundo era solo medir. Sin coste: no se llamó a la API.
+
+### 56.1. El conector BOA, retirado
+
+El usuario puso la condición: retirar solo si el filtro `nivel1`/`nivel2` de
+`fetch_bdns()` encuentra por su cuenta las convocatorias que el catálogo de BOA
+mantiene a mano —el PAIP entre ellas—, porque eso probaría que no hace falta
+teclearlas. Se comprobó y se cumple, por dos vías independientes:
+
+**1. La vigilancia de programas recurrentes ya lo decía.** En el registro de la
+auditoría, para la ejecución del 01/09:
+
+```
+key: paip_aragon · status: active_captured · matches: 12 · sources: ["BDNS"]
+```
+
+Doce coincidencias, todas de BDNS, ninguna de BOA. La sonda que existe para
+avisar cuando un programa recurrente **desaparece** estaba diciendo lo
+contrario: que este se captura de sobra sin el catálogo.
+
+**2. La caché documental lo confirma con el texto oficial.** Sobre los 291
+documentos de `bdns_document_cache.json`:
+
+| Búsqueda | Documentos |
+|---|---|
+| `PAIP` | 1, con el texto oficial del «Programa de Ayudas a la Industria y la pyme en Aragón» |
+| `Transición Justa` | **24** |
+| `Teruel` | 4, incluida la tabla de intensidades de ayuda por provincia (Teruel 70/60/50 %) |
+
+Las dos entradas del catálogo de BOA —Fondo de Transición Justa de Teruel y PAIP
+TDI-Feder— son por tanto materia que BDNS ya trae, con su documentación.
+
+Sumado a lo medido en 55.2 —BOA aporta **0 por sus dos vías**: el scraper en vivo
+no encuentra nada y sus dos entradas estáticas vencieron el 05/05/2026 y el
+15/01/2026—, la condición se cumple y el conector se retira.
+
+**Verificado después de retirarlo:** 919 detectadas, **82 vigentes**, las mismas
+que antes. Prefiltro `retain=34, ambiguous=7, hold_manual=75, reject=803`.
+**Cobertura perdida: cero.** (Las 919 frente a 920 y el 803 frente a 804 son la
+ventana deslizante de BDNS, no el cambio.)
+
+Piezas retiradas: el módulo (198 líneas), su archivo de pruebas, el import, el
+alias `--source boa`, el bloque de recolección, la etiqueta de fuente de
+`public_output.py`, el comentario de `browser.py` («cuatro conectores» → tres) y
+la entrada de los datos de demostración del frontend. Cuatro pruebas que lo
+citaban como ejemplo pasan a citar fuentes vivas.
+
+**El proyecto pasa de ocho fuentes a siete.** Conviene decirlo así en cualquier
+descripción del sistema, porque «8 fuentes oficiales» aparece en varios sitios.
+
+Nota de método: `test_grant_radar_script_names` falló al instante señalando
+`fetch_boa`, antes de que la suite completa tuviera ocasión de presentarlo como
+un error en pruebas de otra cosa. Es la tercera vez que esa prueba paga su
+coste (secciones 29, 35 y esta).
+
+### 56.2. El plural en `_term_present()`, medido
+
+Punto 40 del backlog, abierto en 55.1. La pregunta era si arreglarlo ensancha el
+embudo lo bastante como para que importe. **No lo hace.**
+
+Simulación sobre 368 textos reales —291 documentos oficiales de BDNS más las 77
+fichas publicadas— parcheando `_term_present()` en memoria para que cada palabra
+del término admita sufijo de plural (`-s` / `-es`):
+
+| | Antes | Después |
+|---|---|---|
+| Textos que pasan `is_relevant()` | 35 | **36** |
+| Textos que **pierden** relevancia | — | **0** |
+
+| Categoría técnica | Antes | Después |
+|---|---|---|
+| `waste_heat` | 9 | **10** |
+| `thermal_processes` | 0 | **1** |
+| Las otras seis | — | sin cambio |
+
+**Impacto en el embudo: +1 de 368.** Extrapolado a la recopilación completa,
+entre uno y tres análisis más: del orden de 0,03-0,08 USD por ejecución completa.
+
+**Y las dos ganancias son aciertos, no ruido.** Es lo que decide el asunto:
+
+1. «Recuperación de **calores residuales**» — plural de `calor residual`. Es
+   literalmente el negocio central de Kalfrisa, y hoy se pierde por una «s».
+2. «**High-temperature processes**, by innovative technologies for electrified
+   and hybrid high-temperature…» — un topic de Horizon sobre procesos de alta
+   temperatura.
+
+Ni un falso positivo en los 368 textos, y ninguna pérdida. El riesgo que se
+temía en 55.1 —que ensanchar la detección disparara el coste— **no se
+materializa**, porque el vocabulario es específico: admitir el plural de
+«intercambiador de calor industrial» no abre la puerta a nada genérico.
+
+**Queda medido y sin implementar**, porque el encargo era medir. La
+recomendación registrada es aplicarlo: coste marginal despreciable, dos aciertos
+recuperados y uno de ellos en la tecnología central del cliente.
+
+Un matiz para quien lo implemente: el sufijo `(?:e?s)?` cubre el plural pero no
+el género («térmico» → «térmicas»). Ampliarlo a género exigiría medir otra vez,
+porque ahí sí empieza a haber riesgo de sobrecoincidencia.
+
+### 56.3. Estado
+
+**646 pruebas** en verde (651 antes; las cinco que faltan son las de BOA).
+Verificación `--no-claude` completa: 919 detectadas, **82 vigentes**, siete
+fuentes. Pendientes de analizar 78 (~2,00 USD). Coste de la ronda: **0 USD**.
+
+Lo siguiente, confirmado por el usuario: **la matriz de reglas, en sesión
+propia** (punto 8 del backlog; ver 55.5).

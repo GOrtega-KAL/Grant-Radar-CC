@@ -32,20 +32,26 @@ desactualizado si no se mantiene junto a ellos.
 > - `--gap-report` — qué campos faltan por fuente, leyendo el JSON publicado y
 >   la caché. Es la comprobación de regresión de todo lo hecho el 31/08 y el
 >   01/09 (AGENTS.md 54.3).
-> - `--source horizon|bdns|eccp|een|cdti|idae|boe|boa` — recopila una fuente en
->   vez de las ocho: 13,7 s frente a 937 s. Exige `--no-claude` (54.6).
+> - `--source horizon|bdns|eccp|een|cdti|idae|boe` — recopila una fuente en vez
+>   de las siete: `--source een` 81 s frente a 513-937 s. Exige `--no-claude`
+>   (54.6). El alias `boa` se retiró con su conector (56.1).
 > - `--staleness-report` — cuánto se desfasa lo publicado, sin red.
 > - El backlog de la **sección 36**, casi todo depuración pura: el punto 8
 >   (extraer la matriz de reglas, que merece sesión propia), el 40 (el plural en
->   `_term_present()`, que sí ensancha el embudo y hay que medir antes), el 28
->   (retirar BOA, que aporta 0) y los umbrales de salud calibrados a ojo (30).
+>   `_term_present()`, **ya medido y recomendado, sin implementar**: +1 de 368,
+>   0 falsos positivos — 56.2) y los umbrales de salud calibrados a ojo (30).
 >
 > ---
 >
-> **Estado del código a 01/09/2026:** 2.368 líneas en el script, 41 módulos,
-> **651 pruebas en verde**. Verificación `--no-claude` completa sin
+> **Estado del código a 01/09/2026:** 40 módulos, **646 pruebas en verde**. Verificación `--no-claude` completa sin
 > desviaciones. Cifras de referencia en **AGENTS.md 54.7**; pendientes de
 > analizar 78 (~2,00 USD).
+>
+> **El conector BOA se retiró el 01/09 (AGENTS.md 56.1), así que las fuentes son
+> SIETE, no ocho.** Se comprobó antes lo que el usuario pidió: BDNS encuentra el
+> PAIP por su cuenta —`active_captured`, 12 coincidencias, `sources=["BDNS"]`— y
+> su caché documental trae el texto oficial del PAIP, 24 documentos de Transición
+> Justa y 4 con Teruel. Verificado tras retirarlo: **82 vigentes, las mismas**.
 >
 > **Dos hallazgos de la tarde del 01/09 que conviene no reabrir a ciegas**
 > (AGENTS.md 55): el chip «Hornos» **se retiró a propósito** —filtraba por
@@ -53,8 +59,7 @@ desactualizado si no se mantiene junto a ellos.
 > vocabulario habría llenado el filtro de ayudas a alfarería y de un municipio
 > llamado ALDEHORNO—; y **el catálogo curado de CDTI no es deuda técnica**:
 > aporta 4 de sus 5 convocatorias vigentes, porque la ventanilla permanente no
-> tiene fecha y el calendario oficial solo publica lo fechado. El que sí sobra
-> es **BOA, que aporta 0 por las dos vías**.
+> tiene fecha y el calendario oficial solo publica lo fechado.
 >
 > **Lo que se validó pagando el 01/09 (0,1271 USD en total, dos pruebas
 > dirigidas). Los tres controles de 53.2 están ejercitados y no queda
@@ -89,7 +94,7 @@ desactualizado si no se mantiene junto a ellos.
 > `run_pipeline()`. `AGENTS.md` 4.1 y 36.3 piden sesión dedicada, y el usuario
 > lo ha confirmado explícitamente el 01/09.
 >
-> **Arranque en frío: AGENTS.md secciones 54 y 55**, que cierran el 01/09/2026.
+> **Arranque en frío: AGENTS.md secciones 54, 55 y 56**, que cierran el 01/09/2026.
 > Antes de ellas, la 53 resume las cinco del 31/08 (48 a 52). Backlog abierto
 > en la sección 36.
 >
@@ -109,7 +114,7 @@ desactualizado si no se mantiene junto a ellos.
 
 Grant-Radar-CC monitoriza subvenciones para Kalfrisa (PYME industrial de
 Zaragoza). Backend Python (`Grant-Radar-prueba.py` + paquete `grant_radar/`)
-recopila convocatorias de 8 fuentes oficiales, las filtra con reglas
+recopila convocatorias de 7 fuentes oficiales, las filtra con reglas
 deterministas, evalúa las ambiguas con Claude Haiku 4.5, y publica un JSON
 que consume un dashboard estático (`index.html`).
 
@@ -142,7 +147,7 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
      —un segundo, señala módulo y nombre exactos si falta un import. Desde el
      31/08 comprueba también cada módulo del paquete, no solo el script;
   2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`;
-  3. `poetry run python -m unittest discover -s tests` —**651 pruebas**. Una,
+  3. `poetry run python -m unittest discover -s tests` —**646 pruebas**. Una,
      `FrontendLayoutTests::test_consortium_role_is_visible...`, es intermitente
      bajo carga porque conduce Chromium de verdad: repetir antes de investigar
      (AGENTS.md 44.7, nota sobre pruebas intermitentes);
@@ -193,8 +198,8 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l` el 01/09/2026: **2.368 líneas en el
-script y 12.708 en los 41 módulos del paquete**. El script tenía 9.199 líneas
+`import`). Recuento verificado con `wc -l` el 01/09/2026: **2.362 líneas en el
+script y 12.509 en los 40 módulos del paquete**. El script tenía 9.199 líneas
 antes de las nueve rondas del 19/08/2026, 4.086 al empezar el 31/08, y hoy
 conserva **solo ocho funciones**: las seis de la matriz de reglas previa a
 Claude (526 líneas) y `run_pipeline()` con su `parse_args()`. Subió 165 líneas
@@ -221,7 +226,6 @@ Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 | `product_watch.py` | Qué cambia en el JSON publicado respecto a la versión anterior: convocatorias que desaparecen sin vencer su plazo, elegibilidades que se mueven en bloque y campos que se vacían (AGENTS.md 51.4) |
 | `profile_scope.py` | Exclusiones de ámbito del perfil (`_hard_out_of_scope()`, `_explicit_profile_incompatibility()`). Viven aparte porque las usan **los dos lados**: la matriz de reglas antes de Claude y `_build_compatible_analysis()` después |
 | `holds.py` | Segunda mitad del dominio de holds: resolución determinista, validación de citas, piloto, replay y reincorporación al pipeline. **Recibe la matriz de reglas inyectada** (`intrinsic_exclusion`, `prefilter`), que es lo que permitió extraerlo sin tocarla |
-| `sources/boa_aragon.py` | Conector BOA Aragón (señal secundaria/backup, ver sección 26) |
 | `bdns_scope.py` | Filtro de candidatas BDNS: palabras clave + administración autonómica de Aragón |
 | `runtime_state.py` | Estado compartido de la ejecución (metadatos por fuente, diagnósticos, landings, coverage watch) |
 | `http_client.py` | `_http_get()` con reintentos y límite de bytes + `_is_safe_public_https_url()` |

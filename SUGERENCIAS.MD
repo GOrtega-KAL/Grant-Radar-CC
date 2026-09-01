@@ -1343,6 +1343,56 @@ Estado: **651 pruebas** en verde, sin coste — no se llamó a la API en toda la
 tarde. Lo siguiente, decidido con el usuario, es la matriz de reglas en sesión
 propia.
 
+
+---
+
+## 17. Estado a 01/09/2026 (cierre real): retirar con pruebas, y medir antes de temer
+
+Dos encargos que comparten método y que cierran, cada uno a su manera, un frente
+que este documento tenía abierto.
+
+**Frente a 2.4 (fragilidad ante las fuentes): se retira una fuente entera, y es
+una mejora.** El usuario no pidió retirar BOA sin más: puso una condición
+falsable —que BDNS encontrara por su cuenta las convocatorias que el catálogo de
+BOA teclea a mano— y la retirada quedó supeditada a comprobarla. Se comprobó por
+dos vías independientes: la vigilancia de programas recurrentes registra el PAIP
+como `active_captured` con doce coincidencias y `sources=["BDNS"]`, y la caché
+documental de BDNS trae el texto oficial del PAIP, veinticuatro documentos de
+Transición Justa y cuatro que mencionan Teruel con su tabla de intensidades.
+
+Verificado tras retirarlo: **82 convocatorias vigentes, exactamente las mismas**.
+El proyecto pasa de ocho fuentes a siete y no pierde nada.
+
+Esto matiza el punto 2.4 en una dirección que no estaba escrita. Este documento
+llevaba avisando de la fragilidad ante las fuentes externas, y la reacción
+natural a esa advertencia es **acumular fuentes por si acaso**. BOA era
+exactamente eso: una fuente conservada «por si acaso» que llevaba meses
+aportando cero y cuyo respaldo estático estaba vencido entero. **Una fuente que
+no aporta no es cobertura de reserva: es superficie de mantenimiento y ruido en
+los diagnósticos.** La robustez se midió, no se acumuló.
+
+**Frente a 2.3 (reglas como datos): el miedo al coste, medido, no se
+sostiene.** En la sección 16 se dejó anotado el fallo del plural —«calores
+residuales» no activa `calor residual`— sin arreglarlo, por temor a que
+ensanchar la detección disparara el embudo y con él el gasto. Medido sobre 368
+textos reales: **+1 texto pasa el prefiltro, 0 lo pierden, 0 falsos positivos**.
+Del orden de tres céntimos por ejecución completa.
+
+Y las dos coincidencias que se ganan son aciertos: una es literalmente
+«recuperación de calores residuales», que es el negocio central del cliente y
+hoy se pierde por una «s». **Un fallo que llevaba quien sabe cuánto costando una
+convocatoria del núcleo del perfil, y la prudencia que lo mantenía sin arreglar
+era infundada — pero solo se pudo saber midiendo.**
+
+La lección conjunta de las dos mitades del día es la misma vista por sus dos
+caras: en la sección 16 una medición **canceló** un trabajo que parecía
+necesario (ampliar el vocabulario de «Hornos»); aquí una medición **autoriza**
+un trabajo que parecía arriesgado. Ni la prudencia ni el entusiasmo son
+argumentos; el corpus sí.
+
+Estado: **646 pruebas** en verde, siete fuentes, **0 USD** gastados en toda la
+ronda. Lo siguiente es la matriz de reglas, en sesión propia.
+
 ## Nota de alcance
 
 Este documento es una evaluación externa de solo lectura, ampliada con una
