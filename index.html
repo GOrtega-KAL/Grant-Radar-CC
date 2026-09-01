@@ -1107,8 +1107,11 @@
     border-left: 3px solid var(--brand);
     background: var(--surface-2, rgba(21, 86, 168, 0.06));
     border-radius: 0 6px 6px 0;
-    font-size: 15px;
-    line-height: 1.5;
+    /* Sigue destacando sobre el texto gris de 12.5px, pero el salto era
+       demasiado grande: 15px hacía que el resumen ejecutivo pareciera de
+       otra ficha. 14px mantiene la jerarquía con menos contraste. */
+    font-size: 14px;
+    line-height: 1.55;
     color: var(--text);
     font-weight: 500;
   }
@@ -2600,7 +2603,11 @@
   function renderConvs() {
     const list = getFiltered();
     const base = convocatorias.filter(c => (c.deadline ?? 1) > 0 && (filterState.showDiscarded || !c.descartada) && (!filterState.onlyReview || c.data_pending || c.review_required));
-    document.getElementById('filter-count-tag').textContent = list.length === base.length ? `${list.length} resultados` : `${list.length} de ${base.length}`;
+    // Siempre la fracción, también cuando no hay filtro: "77/77" dice de un
+    // vistazo cuánto se está ocultando, y "77 resultados" no lo decía. El
+    // denominador es lo visible antes de tema y búsqueda, así que no se mueve
+    // al filtrar y sirve de referencia estable.
+    document.getElementById('filter-count-tag').textContent = `${list.length}/${base.length}`;
 
     const element = document.getElementById('conv-list');
     if (!list.length) {
