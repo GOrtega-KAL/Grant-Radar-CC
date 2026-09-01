@@ -2475,10 +2475,9 @@ rondas el mismo día.
 
 | # | Qué falta | Notas |
 |---|---|---|
-| 8 | La matriz de reglas (`_bdns_pre_claude_gate()`, `deterministic_prefilter()`, `_bdns_intrinsic_exclusion()`, `_bdns_structured_scope_exclusion()`, `_bdns_gate_result()`, `_bdns_applicant_section()`) | Sesión dedicada; es la lógica más ajustada del proyecto (siete niveles de precedencia, sección 4.1). Desde el 31/08/2026 es, junto a `run_pipeline()`, lo único que queda en el script: 526 de sus 2.140 líneas. `holds.py` ya la recibe inyectada, así que extraerla no obliga a tocar el dominio de holds |
 | 9 | Motor de reglas genérico, declarativo | `SUGERENCIAS.MD` 3.3 punto 2. Requiere formalizar antes todas las variantes de condición existentes |
-| 10 | Retirar el patrón `runpy` + fusión de `APP` en `tests/test_grant_radar.py` | Tiene sentido revisarlo cuando el script principal quede reducido a configuración y punto de entrada |
-| 15 | Orden de extracción medido (secciones 37 y 38): `save_discovery_audit` → capa Haiku → segunda mitad de holds → reglas → `run_pipeline()`. **Los tres primeros se cerraron el 31/08/2026** (sección 48) | Quedan los dos últimos, y en ese orden: la matriz de reglas es el punto 8 y necesita sesión propia; `run_pipeline()` va después, cuando ya no arrastre nada |
+| 10 | Retirar el patrón `runpy` + fusión de `APP` en `tests/test_grant_radar.py` | **Su condición ya se cumple desde la sección 57**: el script quedó reducido a configuración, punto de entrada y orquestación. Ya tiene sentido plantearlo. Ojo: la fusión de `APP` es también lo que puede tapar un `NameError` real (36.5), así que al retirarla hay que comprobar que `test_grant_radar_script_names.py` sigue cubriendo ese hueco |
+| 15 | Orden de extracción medido (secciones 37 y 38): `save_discovery_audit` → capa Haiku → segunda mitad de holds → reglas → `run_pipeline()`. **Los cuatro primeros están cerrados**: los tres primeros el 31/08 (sección 48) y la matriz de reglas el 01/09 (sección 57) | Queda solo `run_pipeline()`, que va el último por definición y hoy ya no arrastra lógica de dominio: el script conserva cuatro funciones y ninguna lo es |
 | 21 | Ejecutar `tests/test_grant_radar_script_names.py` **antes** que la suite completa tras cada extracción | Señala el módulo y el nombre exactos en un segundo; la suite completa los presenta como errores en pruebas de otra cosa (pasó tres veces) |
 | 16 | Usar `node.end_lineno`, nunca `max(lineno)`, al cortar bloques por AST | Un `return (` multilínea pierde el paréntesis de cierre; ocurrió en la sección 37 |
 
@@ -2542,6 +2541,7 @@ frío. No hay que buscarlos en las tablas de arriba: ya no están.
 | 35 | La elegibilidad de Horizon no estaba en el topic que leemos | Sección 50: el conector lee los Anexos Generales que el propio topic enlaza, una vez por edición, y envía tres extractos de 3.400 caracteres. Sin catálogo que mantener |
 | 17 | Prueba de humo por conector | Sección 51.3: diez pruebas, 0,2 s, con la red y el navegador sustituidos. Una de ellas comprueba que el detector detecta, reproduciendo el `statistics` de la sección 35 |
 | 36 | CDTI llegaba sin bases: 300 caracteres tecleados y cero documentos | Sección 51.2: las fichas del catálogo curado se leen con el navegador que ya las visitaba y traen sus documentos oficiales, con el mismo extractor que el calendario |
+| 8 | La matriz de reglas previa a Claude, lo último del orden de extracción | Sección 57: extraída a `grant_radar/bdns_rules.py` en sesión dedicada, 774 líneas movidas y **el embudo idéntico dígito a dígito** (`ambiguous=7, hold_manual=75, reject=803, retain=34`). Resultó más limpia de lo temido —cero dependencias de globales del script, ningún módulo la importa— porque `holds.py` y ECCP la reciben inyectada, decisión tomada en su día justo para esto |
 | 28 | ¿Mantener o retirar el catálogo estático de BOA? | Sección 56.1: **retirado el conector entero**, con la condición que puso el usuario comprobada antes: `paip_aragon` sale `active_captured` con 12 coincidencias y `sources=["BDNS"]`, y la caché documental trae el texto oficial del PAIP, 24 documentos de Transición Justa y 4 con Teruel. Verificado tras retirarlo: 82 vigentes, las mismas. El proyecto pasa de ocho fuentes a **siete** |
 | 5 | Modo de verificación por fuente, para no recorrer las ocho cuando un cambio solo toca una | Sección 54.6: `--source`, con alias cortos. Medido contra los 937 s de una recopilación completa: `--source boa` 13,7 s (68×) y `--source een` 81,4 s (11×, sin arrancar Chromium). Exige `--no-claude` y apaga la vigilancia de recurrentes, que con fuentes sin consultar daría alarmas falsas seguras |
 
@@ -5136,3 +5136,87 @@ fuentes. Pendientes de analizar 78 (~2,00 USD). Coste de la ronda: **0 USD**.
 
 Lo siguiente, confirmado por el usuario: **la matriz de reglas, en sesión
 propia** (punto 8 del backlog; ver 55.5).
+
+## 57. La matriz de reglas, extraída: se acaba la modularización, a 01/09/2026 (noche)
+
+Sesión dedicada, como pedían `AGENTS.md` 4.1 y 36.3 y como confirmó el usuario.
+Punto 8 del backlog, y con él **el orden de extracción medido en las secciones
+37 y 38 queda cerrado**. Sin coste: no se llamó a la API.
+
+### 57.1. El criterio de aceptación, cumplido
+
+Una extracción no puede cambiar comportamiento. El criterio era que el embudo
+saliera idéntico, y sale **dígito a dígito**:
+
+| | Antes | Después |
+|---|---|---|
+| Prefiltro común | `ambiguous=7, hold_manual=75, reject=803, retain=34` | **igual** |
+| Detectadas | 919 (34 fusionadas) | **igual** |
+| Vigentes | 82 | **igual** |
+| Por fuente | BDNS 50, Horizon 20, CDTI 5, ECCP 4, EEN 4, IDAE 1, BOE 1 | **igual** |
+
+### 57.2. El bloque era más limpio de lo que temíamos
+
+Se analizó con AST antes de mover una línea, y conviene que conste porque la
+documentación llevaba meses describiéndolo como la pieza más delicada:
+
+- **774 líneas**: 27 constantes de vocabulario y 6 funciones;
+- **cero dependencias de globales del script**. Todo lo que usa ya venía de
+  módulos de `grant_radar/` (`bdns_fields`, `call_text`, `deterministic_rules`,
+  `parsing_helpers`, `profile_scope`, `tech_taxonomy`) o de la stdlib;
+- **solo `run_pipeline()` la usa**, y solo dos de los seis nombres:
+  `_bdns_intrinsic_exclusion` y `deterministic_prefilter`;
+- **ningún módulo del paquete la importa.** Un `grep` daba ocho módulos, pero
+  todas eran menciones en comentarios salvo dos claves de diccionario;
+- **sin ciclos de import**: el grafo es un DAG con raíz en `parsing_helpers`.
+
+La razón de que fuera tan limpio no es suerte: **`holds.py` y el conector ECCP
+la reciben inyectada como parámetro**, y esa decisión se tomó en su día
+precisamente para poder hacer esto. La apuesta se cobra hoy — extraer la matriz
+no obligó a tocar ni el dominio de holds ni el conector.
+
+Lo delicado de la matriz, entonces, nunca fue su acoplamiento: era **lo que
+decide**. Sigue siéndolo, y por eso el módulo nuevo abre con los siete niveles
+de precedencia y con la disciplina obligatoria para tocar cualquier condición
+(ampliar antes `tests/fixtures/bdns_filter_cases.json`).
+
+### 57.3. Dos avisos del backlog, y uno se ganó el sueldo
+
+- **Punto 16: cortar por `node.end_lineno`, nunca por `max(lineno)`.** Respetado,
+  y además con tres aserciones de frontera antes de escribir nada. **Una falló**
+  —la expectativa sobre la última línea del bloque era errónea— y abortó sin
+  tocar los archivos. Ese es exactamente el fallo que el punto 16 describe, y
+  esta vez no llegó a producirse.
+- **Punto 21: `test_grant_radar_script_names` antes que la suite completa.**
+  Respetado.
+
+### 57.4. Qué queda en el script
+
+**Cuatro funciones**, y ninguna es lógica de dominio:
+
+| Función | Qué es |
+|---|---|
+| `run_pipeline()` | el orquestador |
+| `parse_args()` | las banderas de línea de comandos |
+| `build_gap_reports()` | reúne los dos orígenes de `--gap-report` |
+| `publish_collection_state()` | ayudante de publicación del estado |
+
+El script pasa de **2.362 a 1.595 líneas**; el paquete, a **41 módulos** y 13.345
+líneas. Recordatorio del punto de partida: el script tenía **9.199 líneas** antes
+de las nueve rondas del 19/08/2026.
+
+**El script ya es lo que el proyecto perseguía: configuración, punto de entrada y
+orquestación.** Con eso se cumple la condición que el punto 10 del backlog ponía
+para revisar el patrón `runpy` + fusión de `APP` en `tests/test_grant_radar.py`:
+ya tiene sentido plantearlo. No se hace aquí porque sería mezclar dos cosas en
+una sesión, que es justo lo que esta sección ha evitado.
+
+### 57.5. Estado
+
+**646 pruebas** en verde. Se añadió `bdns_rules` al bloque de fusión de `APP`
+para las 46 pruebas que alcanzan estos nombres, y se corrigieron seis
+comentarios de otros módulos que decían «sigue en `Grant-Radar-prueba.py`» y
+habían dejado de ser ciertos.
+
+Cifras de referencia sin cambios respecto a 56.3: 919 detectadas, 82 vigentes,
+78 pendientes de analizar (~2,00 USD).

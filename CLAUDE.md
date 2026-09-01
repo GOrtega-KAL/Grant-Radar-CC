@@ -41,8 +41,9 @@ desactualizado si no se mantiene junto a ellos.
 >   volver a medirlo**: +1 texto de 368 pasa el prefiltro, 0 falsos positivos,
 >   ~0,03 USD por ejecución. Recupera «recuperación de calores residuales», que
 >   es el negocio central del cliente y hoy se pierde por una «s».
-> - El resto del backlog de la **sección 36**: el punto 8 (la matriz de reglas)
->   y los umbrales de salud calibrados a ojo (30).
+> - El resto del backlog de la **sección 36**: el punto 10 (retirar el patrón
+>   `runpy`/`APP` de las pruebas, cuya condición ya se cumple) y los umbrales de
+>   salud calibrados a ojo (30).
 >
 > ---
 >
@@ -89,15 +90,18 @@ desactualizado si no se mantiene junto a ellos.
 >    fuente sería el anti-patrón que el proyecto descartó el 31/08. **Encargo
 >    cancelado por medición.**
 >
-> ### Lo siguiente, decidido con el usuario: la matriz de reglas
+> ### La modularización está TERMINADA (01/09/2026, AGENTS.md 57)
 >
-> **En sesión propia y sin encadenarla a nada.** Punto 8 del backlog: 526
-> líneas y siete niveles de precedencia que deciden qué llega a Claude y, con
-> ello, el coste. Es lo único que queda del orden de extracción junto a
-> `run_pipeline()`. `AGENTS.md` 4.1 y 36.3 piden sesión dedicada, y el usuario
-> lo ha confirmado explícitamente el 01/09.
+> La matriz de reglas se extrajo a `grant_radar/bdns_rules.py` en su sesión
+> dedicada, con el embudo **idéntico dígito a dígito**. El script conserva
+> **cuatro funciones** —`run_pipeline()`, `parse_args()`, `build_gap_reports()`
+> y un ayudante de publicación— y **ninguna es lógica de dominio**: ya es
+> configuración, punto de entrada y orquestación, que era el objetivo.
 >
-> **Arranque en frío: AGENTS.md secciones 54, 55 y 56**, que cierran el 01/09/2026.
+> No queda orden de extracción pendiente. Si una sesión futura busca «lo
+> siguiente de la modularización», la respuesta es que no hay.
+>
+> **Arranque en frío: AGENTS.md secciones 54 a 57**, que cierran el 01/09/2026.
 > Antes de ellas, la 53 resume las cinco del 31/08 (48 a 52). Backlog abierto
 > en la sección 36.
 >
@@ -201,15 +205,13 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l` el 01/09/2026: **2.362 líneas en el
-script y 12.509 en los 40 módulos del paquete**. El script tenía 9.199 líneas
-antes de las nueve rondas del 19/08/2026, 4.086 al empezar el 31/08, y hoy
-conserva **solo ocho funciones**: las seis de la matriz de reglas previa a
-Claude (526 líneas) y `run_pipeline()` con su `parse_args()`. Subió 165 líneas
-el 01/09 al añadir `--gap-report` y `--source`, que es crecimiento en el punto
-de entrada —banderas y despacho—, no lógica de dominio. (La cifra "8.835" de una
-nota anterior de este archivo estaba mal calculada — ver AGENTS.md sección 24,
-nota de discrepancia.)
+`import`). Recuento verificado con `wc -l` el 01/09/2026: **1.595 líneas en el
+script y 13.345 en los 41 módulos del paquete**. El script tenía 9.199 líneas
+antes de las nueve rondas del 19/08/2026, 4.086 al empezar el 31/08, 2.362 tras
+la mañana del 01/09, y hoy conserva **solo cuatro funciones**: `run_pipeline()`,
+`parse_args()`, `build_gap_reports()` y `publish_collection_state()`. **Ninguna
+es lógica de dominio.** (La cifra "8.835" de una nota anterior de este archivo
+estaba mal calculada — ver AGENTS.md sección 24, nota de discrepancia.)
 Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 
 | Módulo | Contiene |
@@ -249,6 +251,7 @@ Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 | `publishing.py` | Subida a GitHub Pages (credenciales como parámetros, nunca leídas aquí) |
 | `claude_selection.py` | Qué se manda a Claude y la barrera de coste previa |
 | `staleness.py` | Cuánto se está desfasando lo publicado, leyendo solo la auditoría (`--staleness-report`). Sin red y sin coste |
+| `bdns_rules.py` | **La matriz de reglas previa a Claude**: siete niveles de precedencia que deciden qué convocatorias llegan a Haiku y, con ello, el coste. Fue lo último en salir del script (AGENTS.md 57). Para tocar cualquier condición de aquí, ampliar antes `tests/fixtures/bdns_filter_cases.json` |
 | `gap_report.py` | Qué campos faltan, por fuente, en lo ya analizado (`--gap-report`). Lee el JSON publicado **y la caché de análisis**: ese segundo origen es el que permite comprobar una prueba `--max-claude` sin volver a pagarla. Sin red y sin coste (AGENTS.md 54.3) |
 | `coverage_watch.py` | Vigilancia de programas recurrentes conocidos. `active_not_captured` es el único estado que significa avería: abierta en su landing y no encontrada (sección 46.4) |
 | `hold_quotes.py` | Validación de que una cita prueba la conclusión de un hold |
@@ -277,24 +280,15 @@ negocio de 60 días con 5 de margen, y explica por sí sola que el recuento de
 vigentes se mueva entre ejecuciones. Detalle en AGENTS.md secciones 26 y 40.4;
 queda como punto 22 del backlog.
 
-**Del orden de extracción ya solo quedan dos piezas**, y las dos por decisión,
-no por descuido (detalle en AGENTS.md 48.8):
+**El orden de extracción está terminado** (AGENTS.md 57). `run_pipeline()` se
+queda donde está: es el orquestador y su sitio es el punto de entrada.
 
-1. **La matriz de reglas** (`_bdns_pre_claude_gate()`,
-   `deterministic_prefilter()`, `_bdns_intrinsic_exclusion()`,
-   `_bdns_structured_scope_exclusion()` y dos ayudantes): 526 líneas y siete
-   niveles de precedencia. Sigue deliberadamente sin extraer porque es la lógica
-   más ajustada del proyecto —decide qué llega a Claude y, con ello, el coste—.
-   **No encadenarla detrás de otra tarea sin que el usuario lo pida
-   explícitamente**; merece sesión propia (sección 4.1 de `AGENTS.md`).
-2. **`run_pipeline()`**, que va el último por definición: es el orquestador y
-   arrastra lo que quede.
-
-`holds.py` y el conector ECCP reciben ya lo que necesitan de la matriz como
-parámetro (`intrinsic_exclusion`, `prefilter`, `is_relevant_enough`), así que
-extraerla no obliga a tocarlos. **Los ocho conectores están en
-`grant_radar/sources/`.** Detalle completo de cada ronda en `AGENTS.md`,
-secciones 21-48, y en `SUGERENCIAS.MD` (3.2/3.3 y secciones 6 y 11).
+`holds.py` y el conector ECCP siguen recibiendo lo que necesitan de la matriz
+como **parámetro** (`intrinsic_exclusion`, `prefilter`, `is_relevant_enough`), no
+importado. Conviene mantenerlo así: fue lo que permitió extraer holds sin tocar
+la matriz, y después extraer la matriz sin tocar holds. **Los siete conectores
+están en `grant_radar/sources/`.** Detalle completo de cada ronda en `AGENTS.md`,
+secciones 21-57, y en `SUGERENCIAS.MD` (3.2/3.3 y secciones 6 y 11).
 
 **Auditoría del embudo determinista (18/08/2026, sin cambios de código):**
 tras ampliar la ventana de BDNS, se comprobó con datos reales si

@@ -1393,6 +1393,59 @@ argumentos; el corpus sí.
 Estado: **646 pruebas** en verde, siete fuentes, **0 USD** gastados en toda la
 ronda. Lo siguiente es la matriz de reglas, en sesión propia.
 
+
+---
+
+## 18. Estado a 01/09/2026 (noche): se acaba la modularización, y el punto 2.2 se cierra
+
+Esta evaluación abrió con un punto 2.2 titulado «arquitectura monolítica»: un
+único archivo de casi 11.000 líneas donde convivían configuración, ocho
+conectores, reglas de negocio, llamadas al modelo y publicación. Hoy ese punto
+se cierra.
+
+**El script conserva cuatro funciones y ninguna es lógica de dominio:**
+`run_pipeline()`, `parse_args()`, `build_gap_reports()` y un ayudante de
+publicación. 1.595 líneas frente a las 9.199 del 19/08. Todo lo demás vive en
+41 módulos con nombre importable.
+
+La última pieza —la matriz de reglas previa a Claude— salió hoy en sesión
+dedicada, y su extracción deja dos lecciones que merecen constar aquí porque
+contradicen, en parte, lo que este documento suponía.
+
+**Primera: lo delicado de un módulo no es su acoplamiento, es lo que decide.**
+La matriz llevaba meses descrita como «la pieza más ajustada del proyecto» y se
+dejó para el final por miedo a moverla. Al analizarla con AST antes de tocarla
+resultó ser de lo más limpio del código: cero dependencias de globales del
+script, ningún módulo del paquete importándola, sin ciclos. **El miedo estaba
+justificado, pero no por la razón que creíamos.** No era difícil de mover; era
+—y sigue siendo— peligrosa de cambiar, porque decide qué convocatorias se pagan.
+Son dos propiedades distintas y este documento las había confundido bajo la
+etiqueta «monolítico».
+
+**Segunda: la inyección de dependencias se cobró la apuesta.** Cuando se extrajo
+el dominio de holds, se decidió que recibiera la matriz **inyectada como
+parámetro** en vez de importarla, precisamente para poder extraer la matriz
+después sin tocar holds. Esa decisión, tomada semanas antes, es la razón exacta
+de que hoy la extracción no haya obligado a modificar ni holds ni el conector
+ECCP. Frente al punto 2.2, la lección práctica es que **el orden de extracción
+importa menos que las costuras que se dejan al extraer**.
+
+**Y una tercera, sobre el método.** El criterio de aceptación no fue «pasan las
+pruebas»: fue que el embudo saliera idéntico dígito a dígito
+(`ambiguous=7, hold_manual=75, reject=803, retain=34` sobre 82 vigentes). Una
+extracción que cambia un veredicto no es una extracción, y las 646 pruebas no
+habrían detectado por sí solas un cambio de comportamiento en las convocatorias
+reales. La red que lo cubre es la ejecución completa, no la suite.
+
+**Lo que esto abre.** El punto 10 del backlog —retirar el patrón `runpy` +
+fusión de `APP` de las pruebas— condicionaba su revisión a que el script quedara
+reducido a configuración y punto de entrada. Esa condición ya se cumple. No se
+hizo en esta sesión para no mezclar dos cosas, que es justo lo que ha permitido
+que el criterio de aceptación de arriba signifique algo.
+
+Estado: **646 pruebas** en verde, 41 módulos, **0 USD** gastados. Con esto, el
+punto 2.2 de esta evaluación queda cerrado y el 3.2 completado.
+
 ## Nota de alcance
 
 Este documento es una evaluación externa de solo lectura, ampliada con una
