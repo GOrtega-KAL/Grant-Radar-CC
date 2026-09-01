@@ -7,7 +7,7 @@
     "evaluator_version": "fit-2026-08-v8-no-presumption",
     "partner_catalog_version": "2026-07-v2",
     "model_version": "claude-haiku-4-5",
-    "saved_at": "2026-09-01T06:44:34.686440+00:00"
+    "saved_at": "2026-09-01T07:36:17.993963+00:00"
   },
   "entries": {
     "8632dbf0fa3eafa1c97558bc5eb5949e64e516c103c947ff5321c11d67fc3511": {
@@ -389,8 +389,8 @@
           ]
         },
         "tech_tags": [
-          "energy_efficiency",
-          "waste_heat"
+          "waste_heat",
+          "energy_efficiency"
         ],
         "data_pending": false,
         "data_gaps": [],
@@ -2480,6 +2480,820 @@
       "partner_catalog_version": "2026-07-v2",
       "model_version": "claude-haiku-4-5",
       "cached_at": "2026-09-01T06:44:34.686415+00:00"
+    },
+    "ef01235caf6a12c16aeb6f62f44e2192daf79dfd44d0e0c23bf92b071367c6dd": {
+      "raw_document": {
+        "source": "BDNS",
+        "identifier": "919481",
+        "bdns_id": "919481",
+        "bdns_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/919481",
+        "title": "Convocatoria de 2026 de ayudas para la realización de proyectos de I+D+i_Innovacion_Proceso",
+        "description": "Convocatoria de 2026 de ayudas para la realización de proyectos de I+D+i_Innovacion_Proceso Ayudas para la realización de proyectos de I+D+i. Convocatoria 2026 Industria y Energía [{'descripcion': 'ART. 29 AYUDAS DE I+D+I. AYUDAS A LA INNOVACIÓN EN MATERIA DE PROCESOS Y ORGANIZACIÓN'}] Pendiente publicación BON 8 de septiembre Concurrencia competitiva - canónica [{\"descripcion\": \"PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA\"}] [{\"descripcion\": \"SUBVENCIÓN Y ENTREGA DINERARIA SIN CONTRAPRESTACIÓN \"}] [{\"descripcion\": \"ES22 - COMUNIDAD FORAL DE NAVARRA\"}] [{\"descripcion\": \"INDUSTRIA MANUFACTURERA\", \"codigo\": \"C\"}] [{\"id\": 1494486, \"descripcion\": \"Texto en castellano de la convocatoria\", \"nombreFic\": \"BBRR IDi_2026_197E-2026.pdf\", \"long\": 1370027, \"datMod\": \"2026-07-15\", \"datPublicacion\": \"2026-07-15\"}]",
+        "deadline_days": 7,
+        "deadline_date": "2026-09-08",
+        "open_date": "2026-07-31",
+        "fecha_sin_confirmar": false,
+        "budget": "€1,385,000",
+        "url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/919481",
+        "keywords_found": [],
+        "org": "AUTONOMICA · COMUNIDAD FORAL DE NAVARRA · DEPARTAMENTO DE INDUSTRIA Y DE TRANSICION ECOLOGICA Y DIGITAL EMPRESARIAL",
+        "source_type": "API REST SNPSAP",
+        "funding_mechanism": "direct",
+        "document_role": "call",
+        "discovery_sources": [
+          "BDNS"
+        ],
+        "bdns_filter_ready": true,
+        "bdns_active_status": "confirmed_deadline",
+        "bdns_api_open_flag": false,
+        "bdns_received_date": "2026-07-15",
+        "bdns_call_publication_date": "2026-07-15",
+        "bdns_admin_type": "AUTONOMICA",
+        "bdns_admin_levels": {
+          "nivel1": "AUTONOMICA",
+          "nivel2": "COMUNIDAD FORAL DE NAVARRA",
+          "nivel3": "DEPARTAMENTO DE INDUSTRIA Y DE TRANSICION ECOLOGICA Y DIGITAL EMPRESARIAL"
+        },
+        "bdns_regions": [
+          "ES22 - COMUNIDAD FORAL DE NAVARRA"
+        ],
+        "bdns_beneficiary_types": [
+          "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+        ],
+        "bdns_company_eligible": true,
+        "bdns_nace_codes": [
+          "INDUSTRIA MANUFACTURERA"
+        ],
+        "bdns_nace_sections": [],
+        "bdns_finality": "Industria y Energía",
+        "bdns_objectives": "[{'descripcion': 'ART. 29 AYUDAS DE I+D+I. AYUDAS A LA INNOVACIÓN EN MATERIA DE PROCESOS Y ORGANIZACIÓN'}]",
+        "bdns_instruments": [
+          "SUBVENCIÓN Y ENTREGA DINERARIA SIN CONTRAPRESTACIÓN"
+        ],
+        "bdns_award_mode": "Concurrencia competitiva - canónica",
+        "bdns_call_access": "open_or_unknown",
+        "bdns_territorial_requirement": "unknown",
+        "bdns_explicit_outside_aragon": false,
+        "bdns_project_execution_days": null,
+        "bdns_is_open_ended": false,
+        "bdns_state_aid_reference": "",
+        "bdns_is_mrr": false,
+        "bdns_documents": [
+          {
+            "title": "Texto en castellano de la convocatoria",
+            "url": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1494486",
+            "kind": "document",
+            "source_key": "id",
+            "published_date": "2026-07-15"
+          }
+        ],
+        "opportunity_role": "direct_beneficiary",
+        "opportunity_labels": [],
+        "deterministic_prefilter": {
+          "decision": "ambiguous",
+          "reason_code": "verified_hold_still_unresolved",
+          "reason": "La evidencia focalizada no resuelve la causa; debe continuar al análisis general y nunca convertirse en descarte silencioso.",
+          "score": 0,
+          "signals": {
+            "hold_reason": "territorial_eligibility_unverified"
+          }
+        },
+        "related_document_contents": [
+          {
+            "source": "BDNS",
+            "title": "Metadatos estructurados SNPSAP",
+            "url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/919481",
+            "document_role": "regulatory_bases",
+            "description": "METADATOS SNPSAP CON ETIQUETAS: {\"beneficiarios\": [\"PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA\"], \"codigo_bdns\": \"919481\", \"estado_calculado\": \"confirmed_deadline\", \"fecha_fin_solicitud\": \"2026-09-08\", \"fecha_inicio_solicitud\": \"2026-07-31\", \"fecha_publicacion_convocatoria\": \"2026-07-15\", \"fecha_recepcion\": \"2026-07-15\", \"finalidad\": \"Industria y Energía\", \"indicador_abierto_api_no_concluyente\": false, \"instrumentos\": [\"SUBVENCIÓN Y ENTREGA DINERARIA SIN CONTRAPRESTACIÓN\"], \"modo_concesion\": \"Concurrencia competitiva - canónica\", \"objetivos\": \"[{'descripcion': 'ART. 29 AYUDAS DE I+D+I. AYUDAS A LA INNOVACIÓN EN MATERIA DE PROCESOS Y ORGANIZACIÓN'}]\", \"regiones\": [\"ES22 - COMUNIDAD FORAL DE NAVARRA\"], \"tipo_administracion\": \"AUTONOMICA\", \"titulo\": \"Convocatoria de 2026 de ayudas para la realización de proyectos de I+D+i_Innovacion_Proceso\"} CONTENIDO ADICIONAL: Convocatoria de 2026 de ayudas para la realización de proyectos de I+D+i_Innovacion_Proceso Ayudas para la realización de proyectos de I+D+i. Convocatoria 2026 Industria y Energía [{'descripcion': 'ART. 29 AYUDAS DE I+D+I. AYUDAS A LA INNOVACIÓN EN MATERIA DE PROCESOS Y ORGANIZACIÓN'}] Pendiente publicación BON 8 de septiembre Concurrencia competitiva - canónica [{\"descripcion\": \"PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA\"}] [{\"descripcion\": \"SUBVENCIÓN Y ENTREGA DINERARIA SIN CONTRAPRESTACIÓN \"}] [{\"descripcion\": \"ES22 - COMUNIDAD FORAL DE NAVARRA\"}] [{\"descripcion\": \"INDUSTRIA MANUFACTURERA\", \"codigo\": \"C\"}] [{\"id\": 1494486, \"descripcion\": \"Texto en castellano de la convocatoria\", \"nombreFic\": \"BBRR IDi_2026_197E-2026.pdf\", \"long\": 1370027, \"datMod\": \"2026-07-15\", \"datPublicacion\": \"2026-07-15\"}]"
+          },
+          {
+            "source": "BDNS",
+            "title": "Texto en castellano de la convocatoria",
+            "url": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1494486",
+            "document_role": "regulatory_bases",
+            "description": "Pág..: 1 /54 EX.0 3 .000 1 Rev.: 1 RESOLUCIÓN 197E/2026 , de 14 de julio , de la Directora General de Transición Energética y Digital, I+D+i E mpresarial y Emprendimiento , por la que se aprueba la convocatoria de 2026 de ayudas para la realización de proyectos de I+D +i . REFERENCIA: Código Expediente: 0011- 1365 -2026 -000000 UNIDAD GESTORA: Departamento de Industria y de Transición Ecológica y Digital Empresarial Dirección General de Transición Energética y Digital, I+D+i E mpresarial y Emprendimiento Servicio de Planificación, Digitalización e I+D+i E mpresarial Teléfono: 848 42 2883 Dirección: Parque Tomás Caballero Nº 1 Edificio \"Fuerte del Príncipe II\", 31006 P amplona Correo-Electrónico: fomento.innovacion@ navarra .es Tipo de Expediente: Ayudas para la realización de proyectos de I+D +i . Normas de aplicación: - Ley Foral 11/2005, de 9 de noviembre, de Subvenciones . - Reglamento (UE) nº 651/2014, de 17 de junio de 2014, por el que se declaran determinadas categorías de ayudas compatibles con el mercado interior en aplicación de los artículos 107 y 108 del Tratado . - Reglamento (UE) 2023/2831, de 13 de diciembre de 2023, relativo a las ayudas de minimis . - Ley Foral 17/2 […]  la Ley 18/2022). E sta documentación del apartado 4 podrá presentarse opcionalmente con la solicitud de la ayuda y, en caso de no hacerlo en ese momento, se concederá un plazo de un mes para ello tras la publicación del acto de concesión de la ayuda en el Catálogo de Trámites del Portal del Gobierno de Navarra en Internet www. n avarra .es (en adelante, la ficha de las ayudas). No obstante, si la documentación de la letra b) no pudiera obtenerse antes de ese CSV: F740A9A0ACA2E941 Puede verificar su autenticidad introduciendo el CSV en / Benetakoa dela egiaztatu dezakezu CSVa hemen sartuta: https://administracionelectronica.navarra.es/ValidarCSV/default.aspx Emitido por Gobierno de Navarra / Nafarroako Gobernuak emana (DIR3: A15007522) Fecha de emisión / Noiz emana: 2026-07-14 15:56:38 Pág..: 6 /54 EX.0 3 .000 1 Rev.: 1 plazo, se aportará justificante de haberse solicitado dentro del plazo y, una vez obtenido, s e presentará en los tres meses siguientes a la mencionada publicación en la ficha de las a yudas. Transcurrido el citado plazo sin haber presentado la documentación indicada, se declarará la pérdida d e l derecho al cobro de la ayuda. 5. No podrán obtener la condición de beneficiarias: a) Las entidades que estén sujetas a una orden de recuperación pendiente tras una decisión previa de la Comisión de la Unión Europea que haya declarado una ayuda ilegal e incompatible con el mercado común . b) Las “empresas en crisis ” conforme a la definición 18 del artículo 2 del Reglamento (UE) nº 651/2014 de la Comisión. A excepción de las empresas que no se encontraban en crisis el 31 de diciembre de 2019, pero han pasado a ser empresas en crisis en el período comprendido entre el 1 de enero de 2020 y el 31 de diciembre de 2021 (artículo 1.4.c) del RGEC). Asimismo, quedarán excluidas las entidades que operen en los sectores y bajo las condiciones establecidas en el artículo 1 del referido Reglamento. c) Las empresas que desarrollen alguna de las actividades prohibidas por el Real Decreto- ley 10/2025, de 23 de septiembre, por el que se adoptan medidas urgentes contra el genocidio en Gaza y de apoyo a la población palestina. En la solicitud de la ayuda se incluirá una declaración responsable en la que se afirme que no se incurre en ninguna de las prohibiciones de este apartado 5. 6. En el caso de que la empresa beneficiaria de la ayuda sea objeto de una modificación estructural (fusión, escisión o cesión global de activo y pasivo), la sucesora deberá reunir los requisitos exigidos en estas bases para subrogarse en la condición de beneficiaria, lo que deberá acreditarse suficientemente. El órgano gestor de las ayudas autorizará, en su caso, la subrogación y recalculará la intensidad de la ayuda conforme a la base 6 en función del tamaño de la sucesora , sin que en ningún caso se super e la inicial . Base 3. R equisitos de los proyectos subvencionables 1. Los requisitos que deben cumplir los proyectos definidos en la base 1 son los siguientes: 1.1. Los p royectos estratégicos : a) D eberán desarrollar actividades de investigación industrial o desarrollo experimental, conforme a las definiciones establecidas en los apartados 85) y 86) del artículo 2 del RGEC. b) El proyecto deberá adscribirse en uno de los retos recogidos en el a nexo I.A . Un proyecto únicamente podrá adscribirse a un reto , de lo contrario, la solicitud será inadmitida. CSV: F740A9A0ACA2E941 Puede verificar su autenticidad introduciendo el CSV en / Benetakoa dela egiaztatu dezakezu CSVa hemen sartuta: https://administracionelectronica.navarra.es/ValidarCSV/default.aspx Emitido por Gobierno de Navarra / Nafarroako Gobernuak emana (DIR3: A15007522) Fecha de emisión / Noiz emana: 2026-07-14 15:56:38 Pág..: 7 /54 EX.0 3 .000 1 Rev.: 1 c) El proyecto deberá ser ejecutado por un consorcio compuesto por un mínimo de tres entidades no vinculadas entre sí , con participación obligatoria de al menos dos empresas, una de las cuales deberá ser pyme. A estos efectos se rá de aplicación la definición de “empresa vinculada ” del artículo 3 .3 del a nexo I del RGEC . d) Las entidades participantes en el consorcio deberán colaborar en la ejecución del proyecto de forma que se cumpla la definición de “colaboración efectiva ” de l apartado 90) del artículo 2 del RGEC. e) Las entidades participantes en el consorcio d eberán suscribir un acuerdo de colaboración que regule el funcionamiento del consorcio y que designe a la entidad coordinadora del proyecto, la cual actuará como interlocutora única ante la A dministración. f) El presupuesto del proyecto que, según el órgano gestor de las ayudas resulte subvencionable conforme a estas bases, deberá ser superior a 850 .000 euros. g) El presupuesto del proyecto deberá cumplir las siguientes condiciones: i. Ninguna entidad podrá asumir por sí sola más del 70% del presupuesto subvencionable ii. Cuando participen empresas junto con Agentes del SINAI , la participación empresarial deberá ser superior al 30% del presupuesto subvencionable. 1.2. Los p royectos competitivos : Los proyectos competitivos podrán ser de tres modalidades distintas : individual, de colaboración entre empresas o de transferencia del conocimiento . Estos proyectos , además de desarrollar actividades de investigación industrial o de desarrollo experimental conforme a las d efiniciones de los apartados 85 ) y 86 ) del artículo 2 del RGEC , deberán cumplir los siguientes requisitos en función de cada modalidad: A. Los proyectos individuales serán los que desarrolle una sola empresa. C uando las actividades previstas en el proyecto no puedan calificarse como de investigación indust rial o desarrollo experimental , el órgano gestor de las ayudas podrá considerarlo en su caso como de innovación. B. Los proyectos de colaboración entre empresas: a) Deberán ser ejecutados por un consorcio compuesto por un mínimo de dos empresas, una de las cuales deberá ser py me , no vinculadas entre sí según la definición de “empresa vinculada ” del artículo 3 .3 del a nexo I del RGEC . b) Las empresas participantes en el consorcio deberán colaborar en la ejecución del proyecto de forma que se cumpla la definición de “colaboración efectiva ” del apartado 90) del artículo 2 del RGEC. CSV: F740A9A0ACA2E941 Puede verificar su autenticidad introduciendo el CSV en / Benetakoa dela egiaztatu dezakezu CSVa hemen sartuta: https://administracionelectronica.navarra.es/ValidarCSV/default.aspx Emitido por Gobierno de Navarra / Nafarroako Gobernuak emana (DIR3: A15007522) Fecha de emisión / Noiz emana: 2026-07-14 15:56:38 Pág..: 8 /54 EX.0 3 .000 1 Rev.: 1 c) Las e mpresas participantes en el consorcio deberán suscribir un acuerdo de colaboración que regule el funcionamiento del consorcio y que designe a la entidad coordinadora del proyecto, la cual actuará como interlocutora única ante la Administración . d) El presupuesto del proyecto , que según el órgano gestor de las ayudas resulte subvencionable conforme a estas bases , deberá respetar que ninguna empresa asuma por sí sola más del 70% del presupuesto subvencionable del proyecto y que, en conjunto , las pymes participen con al menos el 30% del mismo. C. Proyectos de transferencia del conocimiento : a) Deberán ser ejecutados por un consorcio compuesto por un mínimo de dos entidades que deberá contar, al menos, con la participación de una pyme y de un agente del SINAI. b) Las entidades participantes en el consorcio deberán colaborar en la ejecución del proyecto de forma que se cumpla la definición de “colaboración efectiva ” del apartado 90) del artículo 2 del RGEC . c) Las empresas participantes en el consorcio deberán suscribir un acuerdo de colaboración que regule el funcionamiento del consorcio y que designe a la entidad coordinadora del proyecto, la cual actuará como interlocuto ra única ante la Administración . d) El presupuesto del proyecto, que según el órgano gestor de las ayudas resulte subvencionable conforme a estas bases, deberá respetar que los A gentes del SINAI asuman, en el conjunto del proyecto, una participación mínima del 10% y máxima del 40% de los costes subvencionables. 1.3. Los p royectos de innovación en procesos : a) Deberán desarrollar actividades de innovación en mat eria de procesos, conforme a la definición del apartado 97 ) del artículo 2 del RGEC . Se considerarán incluidos en dicha definición aquellos proyectos que impliquen una mejora de los métodos de producción o suministro mediante la aplicación o adaptación de técnicas, equipos o sistemas, incluidos los informáticos, que modifiquen de forma significativa la manera en que se ejecutan las operaciones productivas o de prestación del servicio, permitiendo obtener mejoras objetivas y medibles en términos de productividad, calidad, sostenibilidad, fiabilidad o reducción de costes, siempre que dichas actuaciones conlleven un desarrollo o adaptación técnica relevante. Quedan excluidas de esta definición las actuaciones consistentes en la implantación de sistemas estándar de gestión empresarial, tales como aplicaciones comerciales de tipo ERP, contabilidad, facturación, recursos humanos, ventas o marketing, así como las meras actualizaciones, sustituciones rutinarias o informatizaciones [ […] es de ayuda d el apartado 1.1 podrán incrementarse hasta un máximo de 10 puntos porcentuales cuando concurran los siguientes supuestos que se detallan en el anexo I.B “Incremento de la intensidad de ayuda ”: Supuesto Puntos porcentuales Igualdad de género 5 Despoblación 5 Inclusión socio laboral 5 Inserción jóvenes en el mercado laboral 5 Si al examinar la justificación del proyecto se comprueba que no se cumple el supuesto que motivó la ayuda adicional, no se procederá a su pago o se solicitará su reintegro con intereses de demora . 1.4. Si una empresa cambi a de tamaño durante la ejecución del proyecto, el órgano gestor de las ayudas recalculará la intensidad de la subvención conforme a l apartado 1.1, sin superar en ningún caso la inicialmente concedida. La nueva intensidad se aplicará a los gastos facturados con posterioridad a la fecha en que se produzca el cambio de tamaño . 2. Límites de ayuda por tipo de proyecto : Las ayudas a conceder no podrán superar los siguientes importes: a) Proyectos estratégicos : La ayuda concedida a todos los Agentes del SINAI que participen en el proyecto será como máximo de 900.000 euros . b) Proyectos competitivos : El límite de ayuda por beneficiaria será el que se indica a continuación, si bien no podrá superarse el importe máximo establecido por proyecto (cuando proceda, este máximo CSV: F740A9A0ACA2E941 Puede verificar su autenticidad introduciendo el CSV en / Benetakoa dela egiaztatu dezakezu CSVa hemen sartuta: https://administracionelectronica.navarra.es/ValidarCSV/default.aspx Emitido por Gobierno de Navarra / Nafarr"
+          }
+        ],
+        "bdns_initial_hold_reason": "territorial_eligibility_unverified",
+        "bdns_hold_resolution": {
+          "decision": "unresolved",
+          "reason_code": "semantic_evidence_required",
+          "resolved_by": "deterministic"
+        }
+      },
+      "extracted_facts": {
+        "call_status": "open",
+        "programme": "Convocatoria de 2026 de ayudas para la realización de proyectos de I+D+i",
+        "action_type": "Ayudas a la innovación en materia de procesos y organización",
+        "applicant_types": [
+          "PYME",
+          "Personas físicas que desarrollan actividad económica"
+        ],
+        "eligible_geographies": [
+          "ES22 - Comunidad Foral de Navarra"
+        ],
+        "eligible_entity_types": [
+          "PYME",
+          "Personas físicas que desarrollan actividad económica"
+        ],
+        "eligibility_evidence": [
+          "Metadatos SNPSAP: tipos_de_beneficiario incluyen PYME y personas físicas",
+          "Documento oficial: Base 2 establece requisitos de beneficiarios"
+        ],
+        "budget_total_eur": 1385000.0,
+        "funding_rate_percent": null,
+        "project_budget_eur": null,
+        "project_cost_min_eur": 850000.0,
+        "grant_max_eur": null,
+        "deadline_date": "2026-09-08",
+        "trl_min": null,
+        "trl_max": null,
+        "trl_source": null,
+        "consortium_required": true,
+        "consortium_evidence": "Base 3.1.1.c: proyectos estratégicos requieren consorcio de mínimo 3 entidades no vinculadas con participación obligatoria de al menos 2 empresas. Base 3.1.2.B: proyectos de colaboración entre empresas requieren mínimo 2 empresas. Base 3.1.2.C: proyectos de transferencia requieren mínimo 2 entidades.",
+        "required_topics": [],
+        "eligible_actions": [
+          "Investigación industrial",
+          "Desarrollo experimental",
+          "Innovación en procesos"
+        ],
+        "expected_outcomes": [],
+        "funding_lines": [
+          {
+            "name": "Proyectos estratégicos",
+            "scope": "Investigación industrial o desarrollo experimental",
+            "applicant_types": [
+              "PYME",
+              "Empresas"
+            ],
+            "eligible_entity_types": [
+              "Empresas",
+              "Agentes del SINAI"
+            ],
+            "eligible_cnae": [
+              "INDUSTRIA MANUFACTURERA"
+            ],
+            "eligible_actions": [
+              "Investigación industrial",
+              "Desarrollo experimental"
+            ],
+            "requirements": [
+              "Consorcio de mínimo 3 entidades no vinculadas",
+              "Participación obligatoria de al menos 2 empresas, una pyme",
+              "Presupuesto superior a 850.000 euros",
+              "Ninguna entidad asume más del 70% del presupuesto subvencionable",
+              "Cuando participen empresas con Agentes del SINAI, participación empresarial superior al 30%",
+              "Acuerdo de colaboración que designe coordinador",
+              "Colaboración efectiva según RGEC"
+            ],
+            "budget_total_eur": null,
+            "project_cost_min_eur": 850000.0,
+            "grant_max_eur": null,
+            "funding_rate_percent": null,
+            "deadline_date": "2026-09-08",
+            "consortium_required": true,
+            "evidence": [
+              "Base 3.1.1: definición y requisitos de proyectos estratégicos"
+            ]
+          },
+          {
+            "name": "Proyectos competitivos - Modalidad individual",
+            "scope": "Investigación industrial, desarrollo experimental o innovación",
+            "applicant_types": [
+              "Empresas"
+            ],
+            "eligible_entity_types": [
+              "Empresas"
+            ],
+            "eligible_cnae": [
+              "INDUSTRIA MANUFACTURERA"
+            ],
+            "eligible_actions": [
+              "Investigación industrial",
+              "Desarrollo experimental",
+              "Innovación"
+            ],
+            "requirements": [
+              "Desarrollada por una sola empresa"
+            ],
+            "budget_total_eur": null,
+            "project_cost_min_eur": null,
+            "grant_max_eur": null,
+            "funding_rate_percent": null,
+            "deadline_date": "2026-09-08",
+            "consortium_required": false,
+            "evidence": [
+              "Base 3.1.2.A: proyectos individuales desarrollados por una sola empresa"
+            ]
+          },
+          {
+            "name": "Proyectos competitivos - Colaboración entre empresas",
+            "scope": "Investigación industrial o desarrollo experimental",
+            "applicant_types": [
+              "PYME",
+              "Empresas"
+            ],
+            "eligible_entity_types": [
+              "Empresas"
+            ],
+            "eligible_cnae": [
+              "INDUSTRIA MANUFACTURERA"
+            ],
+            "eligible_actions": [
+              "Investigación industrial",
+              "Desarrollo experimental"
+            ],
+            "requirements": [
+              "Consorcio de mínimo 2 empresas no vinculadas",
+              "Una de las empresas debe ser pyme",
+              "Ninguna empresa asume más del 70% del presupuesto subvencionable",
+              "Pymes participan con al menos el 30% del presupuesto",
+              "Acuerdo de colaboración que designe coordinador",
+              "Colaboración efectiva según RGEC"
+            ],
+            "budget_total_eur": null,
+            "project_cost_min_eur": null,
+            "grant_max_eur": null,
+            "funding_rate_percent": null,
+            "deadline_date": "2026-09-08",
+            "consortium_required": true,
+            "evidence": [
+              "Base 3.1.2.B: requisitos de proyectos de colaboración entre empresas"
+            ]
+          },
+          {
+            "name": "Proyectos competitivos - Transferencia del conocimiento",
+            "scope": "Investigación industrial o desarrollo experimental",
+            "applicant_types": [
+              "PYME",
+              "Empresas"
+            ],
+            "eligible_entity_types": [
+              "Empresas",
+              "Agentes del SINAI"
+            ],
+            "eligible_cnae": [
+              "INDUSTRIA MANUFACTURERA"
+            ],
+            "eligible_actions": [
+              "Investigación industrial",
+              "Desarrollo experimental"
+            ],
+            "requirements": [
+              "Consorcio de mínimo 2 entidades",
+              "Participación obligatoria de una pyme y un agente del SINAI",
+              "Agentes del SINAI asumen participación mínima del 10% y máxima del 40% de costes subvencionables",
+              "Acuerdo de colaboración que designe coordinador",
+              "Colaboración efectiva según RGEC"
+            ],
+            "budget_total_eur": null,
+            "project_cost_min_eur": null,
+            "grant_max_eur": null,
+            "funding_rate_percent": null,
+            "deadline_date": "2026-09-08",
+            "consortium_required": true,
+            "evidence": [
+              "Base 3.1.2.C: requisitos de proyectos de transferencia del conocimiento"
+            ]
+          },
+          {
+            "name": "Proyectos de innovación en procesos",
+            "scope": "Innovación en procesos",
+            "applicant_types": [
+              "PYME",
+              "Empresas"
+            ],
+            "eligible_entity_types": [
+              "Empresas"
+            ],
+            "eligible_cnae": [
+              "INDUSTRIA MANUFACTURERA"
+            ],
+            "eligible_actions": [
+              "Innovación en procesos"
+            ],
+            "requirements": [
+              "Mejora de métodos de producción o suministro mediante aplicación o adaptación de técnicas, equipos o sistemas",
+              "Modificación significativa de operaciones productivas o de prestación de servicio",
+              "Mejoras objetivas y medibles en productividad, calidad, sostenibilidad, fiabilidad o reducción de costes"
+            ],
+            "budget_total_eur": null,
+            "project_cost_min_eur": null,
+            "grant_max_eur": null,
+            "funding_rate_percent": null,
+            "deadline_date": "2026-09-08",
+            "consortium_required": null,
+            "evidence": [
+              "Base 3.1.3.a: definición de proyectos de innovación en procesos"
+            ]
+          }
+        ],
+        "evidence": [
+          "Metadatos SNPSAP: beneficiarios, CNAE, regiones, instrumentos",
+          "Documento oficial BBRR IDi_2026_197E-2026.pdf: Bases reguladoras completas",
+          "Fecha de publicación: 2026-07-15",
+          "Fecha de inicio de solicitud: 2026-07-31",
+          "Presupuesto total: 1.385.000 euros",
+          "Modo de concesión: Concurrencia competitiva - canónica"
+        ],
+        "missing_fields": [
+          "funding_rate_percent",
+          "grant_max_eur",
+          "project_budget_eur",
+          "trl_min",
+          "trl_max",
+          "trl_source",
+          "eligible_actions (a nivel general)",
+          "expected_outcomes"
+        ]
+      },
+      "evaluation": {
+        "fit_score": 72,
+        "actionability_score": 58,
+        "confidence": 65,
+        "decision": "discard_ineligible",
+        "eligibility": "ineligible",
+        "eligibility_reason": "La convocatoria admite empresas en Navarra y Kalfrisa está en Zaragoza (Aragón), lo que genera una incompatibilidad geográfica crítica: la elegibilidad territorial es ES22 (Navarra) y Kalfrisa no reside allí. Sin embargo, la línea 'Proyectos competitivos - Modalidad individual' no especifica restricción geográfica explícita en los hechos extraídos, solo en metadatos generales. Debe verificarse si la restricción a Navarra aplica a todas las líneas o solo a algunas. Si aplica universalmente, Kalfrisa es ineligible por ubicación. Si la modalidad individual admite solicitantes de otras regiones, Kalfrisa sería elegible bajo esa línea específica.",
+        "recommended_role": "not_applicable",
+        "scores": {
+          "technological_fit": 75,
+          "strategic_fit": 70,
+          "role_fit": 68,
+          "trl_fit": 65,
+          "consortium_readiness": 72
+        },
+        "evidence_quality": "medium",
+        "positive_evidence": [
+          "Kalfrisa posee capacidades en procesos térmicos industriales (hornos, combustión, recuperación de calor residual, electrificación) alineadas con 'Innovación en procesos' y 'Desarrollo experimental'",
+          "Experiencia acreditada en consorcios de I+D (HIGH2-FURNACES, DESCARB-e, EHAT, DT4RAF, etc.) que demuestra capacidad para participar en modalidades que requieren colaboración",
+          "CNAE 2899 (Fabricación de máquinas y equipos no clasificados en otra parte) es compatible con 'INDUSTRIA MANUFACTURERA' declarado en la convocatoria",
+          "La línea 'Proyectos de innovación en procesos' encaja directamente con mejoras en métodos de producción, equipos y sistemas térmicos que Kalfrisa desarrolla",
+          "Presupuesto mínimo de proyecto (850.000 EUR) es accesible para un consorcio con participación de Kalfrisa como socio industrial o tecnológico"
+        ],
+        "risks_and_unknowns": [
+          "RIESGO CRÍTICO: Kalfrisa está ubicada en Zaragoza (Aragón), pero la convocatoria especifica elegibilidad geográfica ES22 (Navarra). Los hechos no aclaran si esta restricción aplica a todas las líneas o solo a algunas. Debe verificarse inmediatamente si Kalfrisa puede participar desde fuera de Navarra o si queda excluida por ubicación",
+          "No constan TRL mínimo ni máximo en la convocatoria; Kalfrisa opera preferentemente en TRL 4-7, pero no se puede confirmar alineación sin estos umbrales",
+          "No se especifica tasa de financiación ni importe máximo de subvención por proyecto; esto afecta la viabilidad económica",
+          "La línea 'Proyectos de innovación en procesos' no especifica si requiere consorcio o puede ser individual; los hechos no lo aclaran",
+          "No constan temas específicos (required_topics está vacío), pero la convocatoria es genérica de I+D+i en procesos. Kalfrisa debe demostrar que su proyecto de innovación en procesos térmicos encaja en los objetivos de la administración navarra (Departamento de Industria y Transición Ecológica)",
+          "Plazo de solicitud muy próximo (8 de septiembre de 2026, solo 7 días desde la fecha de referencia 1 de septiembre): tiempo crítico para formar consorcio, redactar propuesta y cumplir requisitos administrativos"
+        ],
+        "partner_needs": [
+          "Socio empresarial de tamaño grande (no PYME) si se opta por 'Proyectos estratégicos' o 'Colaboración entre empresas'",
+          "Agente del SINAI (universidad, centro de investigación, centro tecnológico) si se opta por 'Proyectos de transferencia del conocimiento'",
+          "Tercera entidad (empresa u agente del SINAI) si se opta por 'Proyectos estratégicos'",
+          "Coordinador designado mediante acuerdo de colaboración formal"
+        ],
+        "recommended_partners": [],
+        "resumen": "Kalfrisa encaja tecnológicamente en la convocatoria por su experiencia en innovación de procesos térmicos industriales (recuperación de calor, combustión, electrificación, tratamiento de emisiones) y su CNAE compatible con 'Industria Manufacturera'. La línea más aplicable es 'Proyectos de innovación en procesos', que no requiere consorcio obligatorio según los hechos disponibles, aunque esto debe confirmarse. OBSTÁCULO CRÍTICO: Kalfrisa reside en Zaragoza (Aragón), pero la convocatoria especifica elegibilidad en ES22 (Navarra). Debe verificarse urgentemente si esta restricción geográfica aplica a todas las líneas o solo a algunas, ya que podría hacer ineligible a Kalfrisa. PLAZO CRÍTICO: Solicitud cierra el 8 de septiembre de 2026 (7 días desde la referencia). Si se requiere consorcio, debe identificarse socio(s) inmediatamente. No constan TRL, tasa de financiación ni importe máximo de subvención.",
+        "accion": "Descartar por restricción regional expresa. Reconsiderar solo si unas bases futuras admiten ejecución en Aragón o participación financiada directa sin establecimiento previo en la región convocante.",
+        "tags": []
+      },
+      "analysis": {
+        "fit_score": 72,
+        "actionability_score": 58,
+        "confidence": 65,
+        "decision": "discard_ineligible",
+        "eligibility": "ineligible",
+        "eligibility_reason": "La convocatoria admite empresas en Navarra y Kalfrisa está en Zaragoza (Aragón), lo que genera una incompatibilidad geográfica crítica: la elegibilidad territorial es ES22 (Navarra) y Kalfrisa no reside allí. Sin embargo, la línea 'Proyectos competitivos - Modalidad individual' no especifica restricción geográfica explícita en los hechos extraídos, solo en metadatos generales. Debe verificarse si la restricción a Navarra aplica a todas las líneas o solo a algunas. Si aplica universalmente, Kalfrisa es ineligible por ubicación. Si la modalidad individual admite solicitantes de otras regiones, Kalfrisa sería elegible bajo esa línea específica.",
+        "recommended_role": "not_applicable",
+        "scores": {
+          "technological_fit": 75,
+          "strategic_fit": 70,
+          "role_fit": 68,
+          "trl_fit": 65,
+          "consortium_readiness": 72
+        },
+        "evidence_quality": "medium",
+        "positive_evidence": [
+          "Kalfrisa posee capacidades en procesos térmicos industriales (hornos, combustión, recuperación de calor residual, electrificación) alineadas con 'Innovación en procesos' y 'Desarrollo experimental'",
+          "Experiencia acreditada en consorcios de I+D (HIGH2-FURNACES, DESCARB-e, EHAT, DT4RAF, etc.) que demuestra capacidad para participar en modalidades que requieren colaboración",
+          "CNAE 2899 (Fabricación de máquinas y equipos no clasificados en otra parte) es compatible con 'INDUSTRIA MANUFACTURERA' declarado en la convocatoria",
+          "La línea 'Proyectos de innovación en procesos' encaja directamente con mejoras en métodos de producción, equipos y sistemas térmicos que Kalfrisa desarrolla",
+          "Presupuesto mínimo de proyecto (850.000 EUR) es accesible para un consorcio con participación de Kalfrisa como socio industrial o tecnológico"
+        ],
+        "risks_and_unknowns": [
+          "RIESGO CRÍTICO: Kalfrisa está ubicada en Zaragoza (Aragón), pero la convocatoria especifica elegibilidad geográfica ES22 (Navarra). Los hechos no aclaran si esta restricción aplica a todas las líneas o solo a algunas. Debe verificarse inmediatamente si Kalfrisa puede participar desde fuera de Navarra o si queda excluida por ubicación",
+          "No constan TRL mínimo ni máximo en la convocatoria; Kalfrisa opera preferentemente en TRL 4-7, pero no se puede confirmar alineación sin estos umbrales",
+          "No se especifica tasa de financiación ni importe máximo de subvención por proyecto; esto afecta la viabilidad económica",
+          "La línea 'Proyectos de innovación en procesos' no especifica si requiere consorcio o puede ser individual; los hechos no lo aclaran",
+          "No constan temas específicos (required_topics está vacío), pero la convocatoria es genérica de I+D+i en procesos. Kalfrisa debe demostrar que su proyecto de innovación en procesos térmicos encaja en los objetivos de la administración navarra (Departamento de Industria y Transición Ecológica)",
+          "Plazo de solicitud muy próximo (8 de septiembre de 2026, solo 7 días desde la fecha de referencia 1 de septiembre): tiempo crítico para formar consorcio, redactar propuesta y cumplir requisitos administrativos"
+        ],
+        "partner_needs": [
+          "Socio empresarial de tamaño grande (no PYME) si se opta por 'Proyectos estratégicos' o 'Colaboración entre empresas'",
+          "Agente del SINAI (universidad, centro de investigación, centro tecnológico) si se opta por 'Proyectos de transferencia del conocimiento'",
+          "Tercera entidad (empresa u agente del SINAI) si se opta por 'Proyectos estratégicos'",
+          "Coordinador designado mediante acuerdo de colaboración formal"
+        ],
+        "recommended_partner_ids": [],
+        "objeto_y_actuaciones": "Convocatoria de ayudas para proyectos de I+D+i en procesos y organización, gestionada por la Comunidad Foral de Navarra. Financia investigación industrial, desarrollo experimental e innovación en procesos mediante subvención sin contraprestación. Presupuesto total disponible: 1.385.000 EUR. Modalidades: (1) Proyectos estratégicos (consorcio ≥3 entidades, presupuesto ≥850.000 EUR); (2) Proyectos competitivos individuales (empresa única); (3) Proyectos competitivos de colaboración entre empresas (consorcio ≥2 empresas, una PYME); (4) Proyectos de transferencia (consorcio ≥2 entidades, PYME + agente SINAI). Gastos elegibles: no especificados en los hechos extraídos. Exclusiones: no constan en los hechos disponibles. Restricción geográfica: ES22 (Navarra), aunque su aplicación a todas las líneas requiere verificación.",
+        "resumen": "Kalfrisa encaja tecnológicamente en la convocatoria por su experiencia en innovación de procesos térmicos industriales (recuperación de calor, combustión, electrificación, tratamiento de emisiones) y su CNAE compatible con 'Industria Manufacturera'. La línea más aplicable es 'Proyectos de innovación en procesos', que no requiere consorcio obligatorio según los hechos disponibles, aunque esto debe confirmarse. OBSTÁCULO CRÍTICO: Kalfrisa reside en Zaragoza (Aragón), pero la convocatoria especifica elegibilidad en ES22 (Navarra). Debe verificarse urgentemente si esta restricción geográfica aplica a todas las líneas o solo a algunas, ya que podría hacer ineligible a Kalfrisa. PLAZO CRÍTICO: Solicitud cierra el 8 de septiembre de 2026 (7 días desde la referencia). Si se requiere consorcio, debe identificarse socio(s) inmediatamente. No constan TRL, tasa de financiación ni importe máximo de subvención.",
+        "accion": "Descartar por restricción regional expresa. Reconsiderar solo si unas bases futuras admiten ejecución en Aragón o participación financiada directa sin establecimiento previo en la región convocante.",
+        "tags": [],
+        "match_score": 72,
+        "priority": "low",
+        "descartada": true,
+        "motivo_descarte": "",
+        "trl_min": null,
+        "trl_max": null,
+        "socio_consorcio": "",
+        "recommended_partners": [],
+        "dimensiones": [
+          {
+            "name": "Alineación tecnológica",
+            "val": 75
+          },
+          {
+            "name": "Capacidad de consorcio",
+            "val": 72
+          },
+          {
+            "name": "Encaje TRL",
+            "val": 65
+          },
+          {
+            "name": "Encaje de rol",
+            "val": 68
+          },
+          {
+            "name": "Oportunidad estratégica",
+            "val": 70
+          }
+        ],
+        "call_facts": {
+          "call_status": "open",
+          "programme": "Convocatoria de 2026 de ayudas para la realización de proyectos de I+D+i",
+          "action_type": "Ayudas a la innovación en materia de procesos y organización",
+          "applicant_types": [
+            "PYME",
+            "Personas físicas que desarrollan actividad económica"
+          ],
+          "eligible_geographies": [
+            "ES22 - Comunidad Foral de Navarra"
+          ],
+          "eligible_entity_types": [
+            "PYME",
+            "Personas físicas que desarrollan actividad económica"
+          ],
+          "eligibility_evidence": [
+            "Metadatos SNPSAP: tipos_de_beneficiario incluyen PYME y personas físicas",
+            "Documento oficial: Base 2 establece requisitos de beneficiarios"
+          ],
+          "budget_total_eur": 1385000.0,
+          "funding_rate_percent": null,
+          "project_budget_eur": null,
+          "project_cost_min_eur": 850000.0,
+          "grant_max_eur": null,
+          "deadline_date": "2026-09-08",
+          "trl_min": null,
+          "trl_max": null,
+          "trl_source": null,
+          "consortium_required": true,
+          "consortium_evidence": "Base 3.1.1.c: proyectos estratégicos requieren consorcio de mínimo 3 entidades no vinculadas con participación obligatoria de al menos 2 empresas. Base 3.1.2.B: proyectos de colaboración entre empresas requieren mínimo 2 empresas. Base 3.1.2.C: proyectos de transferencia requieren mínimo 2 entidades.",
+          "required_topics": [],
+          "eligible_actions": [
+            "Investigación industrial",
+            "Desarrollo experimental",
+            "Innovación en procesos"
+          ],
+          "expected_outcomes": [],
+          "funding_lines": [
+            {
+              "name": "Proyectos estratégicos",
+              "scope": "Investigación industrial o desarrollo experimental",
+              "applicant_types": [
+                "PYME",
+                "Empresas"
+              ],
+              "eligible_entity_types": [
+                "Empresas",
+                "Agentes del SINAI"
+              ],
+              "eligible_cnae": [
+                "INDUSTRIA MANUFACTURERA"
+              ],
+              "eligible_actions": [
+                "Investigación industrial",
+                "Desarrollo experimental"
+              ],
+              "requirements": [
+                "Consorcio de mínimo 3 entidades no vinculadas",
+                "Participación obligatoria de al menos 2 empresas, una pyme",
+                "Presupuesto superior a 850.000 euros",
+                "Ninguna entidad asume más del 70% del presupuesto subvencionable",
+                "Cuando participen empresas con Agentes del SINAI, participación empresarial superior al 30%",
+                "Acuerdo de colaboración que designe coordinador",
+                "Colaboración efectiva según RGEC"
+              ],
+              "budget_total_eur": null,
+              "project_cost_min_eur": 850000.0,
+              "grant_max_eur": null,
+              "funding_rate_percent": null,
+              "deadline_date": "2026-09-08",
+              "consortium_required": true,
+              "evidence": [
+                "Base 3.1.1: definición y requisitos de proyectos estratégicos"
+              ]
+            },
+            {
+              "name": "Proyectos competitivos - Modalidad individual",
+              "scope": "Investigación industrial, desarrollo experimental o innovación",
+              "applicant_types": [
+                "Empresas"
+              ],
+              "eligible_entity_types": [
+                "Empresas"
+              ],
+              "eligible_cnae": [
+                "INDUSTRIA MANUFACTURERA"
+              ],
+              "eligible_actions": [
+                "Investigación industrial",
+                "Desarrollo experimental",
+                "Innovación"
+              ],
+              "requirements": [
+                "Desarrollada por una sola empresa"
+              ],
+              "budget_total_eur": null,
+              "project_cost_min_eur": null,
+              "grant_max_eur": null,
+              "funding_rate_percent": null,
+              "deadline_date": "2026-09-08",
+              "consortium_required": false,
+              "evidence": [
+                "Base 3.1.2.A: proyectos individuales desarrollados por una sola empresa"
+              ]
+            },
+            {
+              "name": "Proyectos competitivos - Colaboración entre empresas",
+              "scope": "Investigación industrial o desarrollo experimental",
+              "applicant_types": [
+                "PYME",
+                "Empresas"
+              ],
+              "eligible_entity_types": [
+                "Empresas"
+              ],
+              "eligible_cnae": [
+                "INDUSTRIA MANUFACTURERA"
+              ],
+              "eligible_actions": [
+                "Investigación industrial",
+                "Desarrollo experimental"
+              ],
+              "requirements": [
+                "Consorcio de mínimo 2 empresas no vinculadas",
+                "Una de las empresas debe ser pyme",
+                "Ninguna empresa asume más del 70% del presupuesto subvencionable",
+                "Pymes participan con al menos el 30% del presupuesto",
+                "Acuerdo de colaboración que designe coordinador",
+                "Colaboración efectiva según RGEC"
+              ],
+              "budget_total_eur": null,
+              "project_cost_min_eur": null,
+              "grant_max_eur": null,
+              "funding_rate_percent": null,
+              "deadline_date": "2026-09-08",
+              "consortium_required": true,
+              "evidence": [
+                "Base 3.1.2.B: requisitos de proyectos de colaboración entre empresas"
+              ]
+            },
+            {
+              "name": "Proyectos competitivos - Transferencia del conocimiento",
+              "scope": "Investigación industrial o desarrollo experimental",
+              "applicant_types": [
+                "PYME",
+                "Empresas"
+              ],
+              "eligible_entity_types": [
+                "Empresas",
+                "Agentes del SINAI"
+              ],
+              "eligible_cnae": [
+                "INDUSTRIA MANUFACTURERA"
+              ],
+              "eligible_actions": [
+                "Investigación industrial",
+                "Desarrollo experimental"
+              ],
+              "requirements": [
+                "Consorcio de mínimo 2 entidades",
+                "Participación obligatoria de una pyme y un agente del SINAI",
+                "Agentes del SINAI asumen participación mínima del 10% y máxima del 40% de costes subvencionables",
+                "Acuerdo de colaboración que designe coordinador",
+                "Colaboración efectiva según RGEC"
+              ],
+              "budget_total_eur": null,
+              "project_cost_min_eur": null,
+              "grant_max_eur": null,
+              "funding_rate_percent": null,
+              "deadline_date": "2026-09-08",
+              "consortium_required": true,
+              "evidence": [
+                "Base 3.1.2.C: requisitos de proyectos de transferencia del conocimiento"
+              ]
+            },
+            {
+              "name": "Proyectos de innovación en procesos",
+              "scope": "Innovación en procesos",
+              "applicant_types": [
+                "PYME",
+                "Empresas"
+              ],
+              "eligible_entity_types": [
+                "Empresas"
+              ],
+              "eligible_cnae": [
+                "INDUSTRIA MANUFACTURERA"
+              ],
+              "eligible_actions": [
+                "Innovación en procesos"
+              ],
+              "requirements": [
+                "Mejora de métodos de producción o suministro mediante aplicación o adaptación de técnicas, equipos o sistemas",
+                "Modificación significativa de operaciones productivas o de prestación de servicio",
+                "Mejoras objetivas y medibles en productividad, calidad, sostenibilidad, fiabilidad o reducción de costes"
+              ],
+              "budget_total_eur": null,
+              "project_cost_min_eur": null,
+              "grant_max_eur": null,
+              "funding_rate_percent": null,
+              "deadline_date": "2026-09-08",
+              "consortium_required": null,
+              "evidence": [
+                "Base 3.1.3.a: definición de proyectos de innovación en procesos"
+              ]
+            }
+          ],
+          "evidence": [
+            "Metadatos SNPSAP: beneficiarios, CNAE, regiones, instrumentos",
+            "Documento oficial BBRR IDi_2026_197E-2026.pdf: Bases reguladoras completas",
+            "Fecha de publicación: 2026-07-15",
+            "Fecha de inicio de solicitud: 2026-07-31",
+            "Presupuesto total: 1.385.000 euros",
+            "Modo de concesión: Concurrencia competitiva - canónica"
+          ],
+          "missing_fields": [
+            "funding_rate_percent",
+            "grant_max_eur",
+            "project_budget_eur",
+            "trl_min",
+            "trl_max",
+            "trl_source",
+            "eligible_actions (a nivel general)",
+            "expected_outcomes"
+          ]
+        },
+        "tech_tags": [],
+        "data_pending": false,
+        "data_gaps": [],
+        "monitoring_flags": [],
+        "review_required": false,
+        "review_reasons": [],
+        "token_usage": {
+          "extraction": {
+            "stage": "extracción factual",
+            "api_calls": 1,
+            "retry_api_calls": 0,
+            "input_tokens": 7646,
+            "output_tokens": 1981,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 0,
+            "total_tokens": 9627,
+            "estimated_cost_usd": 0.017551,
+            "attempts": [
+              {
+                "stage": "extracción factual",
+                "attempt": 1,
+                "valid_output": true,
+                "api_calls": 1,
+                "retry_api_calls": 0,
+                "input_tokens": 7646,
+                "output_tokens": 1981,
+                "cache_write_tokens": 0,
+                "cache_read_tokens": 0,
+                "total_tokens": 9627,
+                "estimated_cost_usd": 0.017551,
+                "max_tokens": 5000,
+                "service_tier": "standard"
+              }
+            ]
+          },
+          "evaluation": {
+            "stage": "evaluación de encaje",
+            "api_calls": 1,
+            "retry_api_calls": 0,
+            "input_tokens": 6238,
+            "output_tokens": 2341,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 0,
+            "total_tokens": 8579,
+            "estimated_cost_usd": 0.017943,
+            "attempts": [
+              {
+                "stage": "evaluación de encaje",
+                "attempt": 1,
+                "valid_output": true,
+                "api_calls": 1,
+                "retry_api_calls": 0,
+                "input_tokens": 6238,
+                "output_tokens": 2341,
+                "cache_write_tokens": 0,
+                "cache_read_tokens": 0,
+                "total_tokens": 8579,
+                "estimated_cost_usd": 0.017943,
+                "max_tokens": 3000,
+                "service_tier": "standard"
+              }
+            ]
+          },
+          "api_calls": 2,
+          "retry_api_calls": 0,
+          "input_tokens": 13884,
+          "output_tokens": 4322,
+          "cache_write_tokens": 0,
+          "cache_read_tokens": 0,
+          "total_tokens": 18206,
+          "estimated_cost_usd": 0.035494
+        }
+      },
+      "token_usage": {
+        "extraction": {
+          "stage": "extracción factual",
+          "api_calls": 1,
+          "retry_api_calls": 0,
+          "input_tokens": 7646,
+          "output_tokens": 1981,
+          "cache_write_tokens": 0,
+          "cache_read_tokens": 0,
+          "total_tokens": 9627,
+          "estimated_cost_usd": 0.017551,
+          "attempts": [
+            {
+              "stage": "extracción factual",
+              "attempt": 1,
+              "valid_output": true,
+              "api_calls": 1,
+              "retry_api_calls": 0,
+              "input_tokens": 7646,
+              "output_tokens": 1981,
+              "cache_write_tokens": 0,
+              "cache_read_tokens": 0,
+              "total_tokens": 9627,
+              "estimated_cost_usd": 0.017551,
+              "max_tokens": 5000,
+              "service_tier": "standard"
+            }
+          ]
+        },
+        "evaluation": {
+          "stage": "evaluación de encaje",
+          "api_calls": 1,
+          "retry_api_calls": 0,
+          "input_tokens": 6238,
+          "output_tokens": 2341,
+          "cache_write_tokens": 0,
+          "cache_read_tokens": 0,
+          "total_tokens": 8579,
+          "estimated_cost_usd": 0.017943,
+          "attempts": [
+            {
+              "stage": "evaluación de encaje",
+              "attempt": 1,
+              "valid_output": true,
+              "api_calls": 1,
+              "retry_api_calls": 0,
+              "input_tokens": 6238,
+              "output_tokens": 2341,
+              "cache_write_tokens": 0,
+              "cache_read_tokens": 0,
+              "total_tokens": 8579,
+              "estimated_cost_usd": 0.017943,
+              "max_tokens": 3000,
+              "service_tier": "standard"
+            }
+          ]
+        },
+        "api_calls": 2,
+        "retry_api_calls": 0,
+        "input_tokens": 13884,
+        "output_tokens": 4322,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 18206,
+        "estimated_cost_usd": 0.035494
+      },
+      "source_hash": "45756fdd31dbc6c55a906cfc2e4baace9137f630dda9bbf49f27c7426b522503",
+      "retrieved_at": "2026-09-01T07:22:58.762883+00:00",
+      "extractor_version": "facts-2026-08-v9-programme-annexes-and-budget",
+      "evaluator_version": "fit-2026-08-v8-no-presumption",
+      "profile_version": "kalfrisa-2026-08-v5-simulation-line",
+      "partner_catalog_version": "2026-07-v2",
+      "model_version": "claude-haiku-4-5",
+      "cached_at": "2026-09-01T07:36:17.993937+00:00"
     }
   }
 }

@@ -7,40 +7,55 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
-> ## PRÓXIMO PASO al cerrar el 01/09/2026: la ejecución completa, y ahora con fecha
+> ## PRIORIDAD, fijada por el usuario el 01/09/2026: depurar antes que publicar
 >
-> **1. La ejecución completa (~2,02 USD sobre 79 convocatorias), antes del
-> 08-10/09.** Requiere autorización expresa, como cualquier llamada a la API.
+> **La herramienta sigue en desarrollo. El foco es depurarla y minimizar
+> fallos, no encadenar análisis de pago.** Es una decisión explícita del
+> usuario y manda sobre cualquier cálculo de urgencia que haga una sesión.
 >
-> La fecha no es arbitraria y es lo primero que hay que decirle al usuario:
-> **tres topics de Horizon con el mayor encaje de todo el catálogo —fit 78, 75
-> y 75, los tres `eligible`— cierran el 15/09 y están publicados sin una sola
-> cifra de dinero**, cuando el arreglo que las completa está hecho desde el
-> 31/08 y validado el 01/09. Además, de las 77 fichas publicadas cuatro ya
-> tienen el plazo vencido y doce vencen en catorce días. Detalle en AGENTS.md
-> 54.2.
+> Conviene decir cuánto lleva el producto sin actualizarse —es información
+> útil y `--staleness-report` la da gratis— pero **decirlo no es lo mismo que
+> proponer pagar**. Una sesión anterior (esta misma, antes de la corrección)
+> convirtió el desfase en una fecha límite y empujó a publicar; el usuario lo
+> corrigió. **No conviertas el desfase en urgencia por tu cuenta.**
 >
-> **2. Opcionalmente antes, el único control que quedó sin ejercitar** (~0,03 USD):
+> El desfase, para informar sin empujar: producto del **21/08**, cuatro fichas
+> ya vencidas y doce que vencen en catorce días; entre ellas tres topics de
+> Horizon de máximo encaje que cierran el 15/09. Detalle en AGENTS.md 54.2.
+> Cuando el usuario decida publicar, cuesta **~2,02 USD sobre 79
+> convocatorias** y requiere autorización expresa.
 >
-> ```
-> poetry run python "Grant-Radar-prueba.py" --max-claude 1 --claude-match 919481
-> ```
+> ### Qué hacer mientras tanto: trabajo gratis que reduce fallos
 >
-> La BDNS 919481 (Navarra) debe salir **no elegible por territorio, sin pedir
-> confirmación**. La prueba dirigida del 01/09 no llegó a analizarla: el patrón
-> `"Proyectos de I+D"` coincidió con 7 convocatorias y `--max-claude 3` tomó
-> otras tres (AGENTS.md 54.5).
+> Todo esto no cuesta tokens y es lo que encaja con la prioridad fijada:
 >
-> **3. Después de publicar, `--gap-report`**, que ahora cuesta cero y es la
-> comprobación de regresión de todo lo hecho el 31/08 y el 01/09.
+> - `--gap-report` — qué campos faltan por fuente, leyendo el JSON publicado y
+>   la caché. Es la comprobación de regresión de todo lo hecho el 31/08 y el
+>   01/09 (AGENTS.md 54.3).
+> - `--source horizon|bdns|eccp|een|cdti|idae|boe|boa` — recopila una fuente en
+>   vez de las ocho: 13,7 s frente a 937 s. Exige `--no-claude` (54.6).
+> - `--staleness-report` — cuánto se desfasa lo publicado, sin red.
+> - El backlog de la **sección 36**, que tiene 29 puntos abiertos y casi todos
+>   son depuración pura: el punto 8 (extraer la matriz de reglas, que merece
+>   sesión propia), los huecos de cobertura de pruebas de 36.4, los catálogos
+>   curados que caducan en silencio (27 y 28), los umbrales de salud calibrados
+>   a ojo (30).
 >
 > ---
 >
-> **La prueba dirigida de pago ya se hizo (01/09, 0,0916 USD) y salió bien.**
-> `HORIZON-CL5-2026-09-D4-08` pasó de `unknown` con tres huecos a **`eligible`
-> con cero**: 18.000.000 € totales y 9.000.000 € por proyecto, coincidiendo con
-> el `budgetOverview` oficial, consorcio resuelto con cita literal del anexo, y
-> el encaje de 75 a 85. AGENTS.md 54.4.
+> **Estado del código a 01/09/2026:** 2.368 líneas en el script, 41 módulos,
+> **614 pruebas en verde**. Verificación `--no-claude` completa sin
+> desviaciones. Cifras de referencia en **AGENTS.md 54.7**.
+>
+> **Lo que se validó pagando el 01/09 (0,1271 USD en total, dos pruebas
+> dirigidas). Los tres controles de 53.2 están ejercitados y no queda
+> validación pendiente.** El territorial de Navarra (BDNS 919481) sale
+> `ineligible` con `review_required: False`, decidido sobre el campo oficial
+> `ES22` y no sobre la prosa del modelo, que sigue titubeando sin que eso
+> cambie nada (AGENTS.md 54.10). `HORIZON-CL5-2026-09-D4-08` pasó de `unknown` con tres huecos a
+> **`eligible` con cero**: 18.000.000 € totales y 9.000.000 € por proyecto,
+> coincidiendo con el `budgetOverview` oficial, consorcio resuelto con cita
+> literal del anexo, y el encaje de 75 a 85 (AGENTS.md 54.4).
 >
 > **Tres suposiciones nuestras que esa prueba corrigió** (AGENTS.md 54.5):
 >
@@ -48,7 +63,8 @@ desactualizado si no se mantiene junto a ellos.
 >    faltar. Solo dos podían: `budgetOverview` no trae `project_budget_eur` ni
 >    `funding_rate_percent`. Que sigan ausentes **no es un fallo** — es la misma
 >    distinción que se cerró con el TRL. El criterio correcto es dos de dos.
-> 2. Falta el control territorial de la BDNS 919481, por lo dicho arriba.
+> 2. `"Proyectos de I+D"` coincidió con 7 convocatorias, así que `--max-claude 3`
+>    dejó fuera la BDNS 919481. Se comprobó aparte (AGENTS.md 54.10).
 > 3. **La regla determinista de consorcio no debe escribirse.** Se iba a añadir
 >    una regla sobre `types_of_action` para tapar `consortium_requirement_missing`
 >    (21 de 77 fichas). La medición la desmiente: 3 de 3 análisis lo resolvieron
@@ -56,29 +72,14 @@ desactualizado si no se mantiene junto a ellos.
 >    fuente sería el anti-patrón que el proyecto descartó el 31/08. **Encargo
 >    cancelado por medición.**
 >
-> **Dos herramientas nuevas del 01/09, las dos gratis:**
->
-> - `--gap-report`: cuenta por fuente los campos ausentes, leyendo el JSON
->   publicado **y la caché de análisis**. Ese segundo origen es el que permite
->   comprobar una prueba `--max-claude` sin volver a pagarla (AGENTS.md 54.3).
-> - `--source horizon|bdns|eccp|een|cdti|idae|boe|boa`: recopila una fuente en
->   vez de las ocho. Medido: `--source boa` 13,7 s frente a 937 s (68×), y las
->   cuatro fuentes de HTTP puro ni siquiera arrancan Chromium. Exige
->   `--no-claude` (AGENTS.md 54.6).
->
 > **Arranque en frío: AGENTS.md sección 54**, que cierra la sesión del
-> 01/09/2026. Antes de ella, la 53 resume las cinco del 31/08 (48 a 52). **Cifras
-> de referencia en 54.7**; backlog abierto en la sección 36.
+> 01/09/2026. Antes de ella, la 53 resume las cinco del 31/08 (48 a 52).
+> Backlog abierto en la sección 36.
 >
-> **OJO CON EL COSTE:** la ejecución completa reanaliza **79 convocatorias:
-> ~2,02 USD** (baja de 82 porque las tres de la prueba del 01/09 ya están en
-> caché). No lances una ejecución completa sin recordarle ese importe al
-> usuario.
->
-> **Y OJO AL LANZARLA:** dura más de quince minutos. **No redirijas su salida a
-> un archivo propio.** El 01/09 se hizo con la prueba de pago y el usuario se
-> quedó diecisiete minutos sin ver nada, creyendo que no había proceso
-> (AGENTS.md 54.8).
+> **OJO AL LANZAR CUALQUIER EJECUCIÓN LARGA:** dura más de quince minutos. **No
+> redirijas su salida a un archivo propio.** El 01/09 se hizo con la primera
+> prueba de pago y el usuario se quedó diecisiete minutos sin ver nada,
+> creyendo que no había proceso (AGENTS.md 54.8).
 >
 > **Decisión cerrada sobre el TRL, para no volver a abrirla:** no hay que
 > perseguirlo. En Horizon, donde se anuncia de forma visible, se recoge; en

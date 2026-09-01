@@ -2464,7 +2464,7 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
 | 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
 | 34 | Programar la recopilación `--no-claude` diaria en el Programador de tareas de Windows | Sección 47.6 tiene el comando. **Es una acción del usuario en su equipo**, no del agente: queda anotada para no darla por hecha |
-| 37 | **Próximo paso**: la **ejecución completa**, ~2,02 USD sobre 79 convocatorias, **antes del 08-10/09**. Y antes, opcionalmente, el único control de 53.2 que quedó sin ejercitar: `--max-claude 1 --claude-match 919481` (~0,03 USD) para la elegibilidad territorial de Navarra | Sección **54.9**. La prueba dirigida de pago se hizo el 01/09 por 0,0916 USD y validó el presupuesto y la elegibilidad de Horizon (54.4), pero `"Proyectos de I+D"` coincidió con 7 convocatorias y 919481 se quedó fuera (54.5). La fecha límite no es arbitraria: tres topics de máximo encaje cierran el 15/09 publicados sin cifras (54.2). **Requiere autorización expresa** |
+| 37 | **La ejecución completa**, ~2,02 USD sobre 79 convocatorias, **cuando el usuario lo decida** | Sección **54.9**. Los tres controles de 53.2 ya están ejercitados: presupuesto y elegibilidad de Horizon el 01/09 (54.4) y el territorial de Navarra el mismo día (54.10), por 0,1271 USD en total. No queda validación pendiente; lo que falta es publicar, y **la prioridad fijada por el usuario es depurar antes que publicar**: informar del desfase sí, convertirlo en urgencia no. **Requiere autorización expresa** |
 
 El 429 del 19/08/2026 tuvo cooldown de minutos: una sonda de una sola petición,
 7 minutos después, devolvió la página completa. No impone restricción horaria,
@@ -4654,7 +4654,7 @@ se daba por supuesto.
 | Pruebas | 575 | **614** |
 | Puntos abiertos del backlog | 28 | **29** (cierra el 5, abre dos) |
 | Producto publicado | JSON del 21/08 | el mismo: **sigue sin publicarse** |
-| Gastado en API | — | **0,0916 USD** |
+| Gastado en API | — | **0,1271 USD** (dos pruebas dirigidas) |
 
 ### 54.2. El desfase ya no es teórico: tiene fecha
 
@@ -4734,9 +4734,11 @@ con el TRL. El criterio correcto es **dos de dos**, no cuatro de cuatro.
 **2. Falta un control por hacer.** El plan asumía tres patrones → tres
 convocatorias. Pero `"Proyectos de I+D"` es poco específico y **coincidió con
 7**; `--max-claude 3` tomó las tres primeras (1 Horizon + 2 CDTI) y dejó
-**919481 sin analizar**. El control territorial de Navarra —que debe salir «no
-elegible» sin pedir confirmación— **sigue sin ejercitarse**. Cuesta ~0,03 USD
-con `--max-claude 1 --claude-match 919481`, y requiere autorización expresa.
+**919481 sin analizar**. Se comprobó aparte, en la misma sesión y con
+autorización expresa: **pasa** (sección **54.10**, 0,0355 USD). La lección que
+queda es sobre el diseño de la prueba, no sobre el código: un `--claude-match`
+poco específico gasta el presupuesto de `--max-claude` en convocatorias que no
+son las que se querían mirar.
 
 **3. La regla determinista de consorcio que se iba a escribir no debe
 escribirse.** Era el tercer encargo de la sesión: `consortium_requirement_missing`
@@ -4805,15 +4807,80 @@ proceso estaba vivo y terminó bien, pero el usuario no tenía forma de saberlo.
 de donde el usuario la ve.** Vale doble para la ejecución completa, que dura más
 y además cuesta dinero.
 
-### 54.9. El próximo paso
+### 54.9. La prioridad, fijada por el usuario al cerrar el día
 
-**Sin cambios en el fondo respecto a 53.2, pero con fecha.**
+**Corrige lo que esta misma sección decía antes**, y conviene que quede escrito
+con el error incluido, porque es el tipo de deriva que una sesión repite:
 
-1. **La ejecución completa (~2,02 USD sobre 79 convocatorias), antes del
-   08-10/09**, por lo dicho en 54.2: tres topics de máximo encaje cierran el
-   15/09 y están publicados sin cifras. Requiere autorización expresa. Publica
-   de golpe todo lo acumulado el 31/08 y validado hoy.
-2. **Opcionalmente antes, el control que falta**: `--max-claude 1
-   --claude-match 919481`, ~0,03 USD, para la elegibilidad territorial.
+> «Ten en cuenta que la herramienta sigue en desarrollo, es importante recordar
+> cuánto lleva sin actualizarse las convocatorias **pero el foco actual es
+> depurar la herramienta y minimizar los fallos antes que hacer continuamente
+> análisis de pago**.» (usuario, 01/09/2026)
+
+La sesión había medido el desfase —cuatro fichas vencidas, tres topics de
+máximo encaje cerrando el 15/09 sin cifras— y **convirtió esa medición en una
+fecha límite**, empujando a publicar «antes del 08-10/09». La medición era
+correcta; la conclusión, no. En una herramienta en desarrollo, publicar un
+análisis de pago no es el objetivo: **es la recompensa de haberla depurado**.
+
+Regla práctica para las próximas sesiones: **informar del desfase sí, convertirlo
+en urgencia no.** `--staleness-report` lo da gratis y el panel ya lo enseña; con
+eso basta. La decisión de pagar es del usuario y no necesita que se la empuje.
+
+El próximo paso, en consecuencia:
+
+1. **Trabajo gratis que reduzca fallos**, que es casi todo lo que queda: los 29
+   puntos de la sección 36 —el 8 (extraer la matriz de reglas, sesión propia),
+   los huecos de cobertura de 36.4, los catálogos curados que caducan en
+   silencio (27 y 28), los umbrales de salud calibrados a ojo (30)— más
+   `--gap-report` y `--source`, que ahora abaratan justamente eso.
+2. **La ejecución completa (~2,02 USD sobre 79 convocatorias), cuando el usuario
+   lo decida.** Requiere autorización expresa. Publica de golpe todo lo
+   acumulado el 31/08 y validado el 01/09.
 3. **Después de publicar, `--gap-report` otra vez**: es la comprobación de
-   regresión de todo lo de hoy, y ahora cuesta cero.
+   regresión de todo lo de hoy, y cuesta cero.
+
+### 54.10. El control territorial que faltaba, ya hecho: 0,0355 USD
+
+Autorizado expresamente por el usuario después de 54.5. `--max-claude 1
+--claude-match 919481` — esta vez el patrón coincidió con **una sola**
+convocatoria, que era el problema de la prueba anterior.
+
+**Pasa, y limpiamente.** BDNS 919481, «Convocatoria de 2026 de ayudas para la
+realización de proyectos de I+D+i», Comunidad Foral de Navarra:
+
+| | |
+|---|---|
+| `eligibility` | **`ineligible`** |
+| `decision` | `discard_ineligible` |
+| **`review_required`** | **`False`** — no pide confirmación |
+| `eligible_geographies` | `['ES22 - Comunidad Foral de Navarra']` |
+
+Con esto, **los tres controles de 53.2 quedan ejercitados**, por 0,1271 USD en
+total entre las dos pruebas dirigidas del día.
+
+**Lo interesante está en el razonamiento, y confirma por qué la sección 49
+importaba.** El modelo concluyó `ineligible` por su cuenta, pero su prosa titubea
+de lo lindo:
+
+> «…la línea *Proyectos competitivos - Modalidad individual* no especifica
+> restricción geográfica explícita en los hechos extraídos, solo en metadatos
+> generales. **Debe verificarse** si la restricción a Navarra aplica a todas las
+> líneas o solo a algunas. […] Si la modalidad individual admite solicitantes de
+> otras regiones, Kalfrisa **sería elegible** bajo esa línea específica.»
+
+Ese «debe verificarse» es exactamente lo que la regla rota de antes del 31/08
+leía para pedir confirmación manual, y es la causa de que 25 de 31 convocatorias
+salieran «por confirmar» (sección 49). Ahora la regla decide sobre
+`eligible_geographies` —el campo oficial, `ES22`— y el titubeo del modelo ya no
+cambia nada: `review_required` sale `False`.
+
+Dicho de otro modo: **el modelo no ha dejado de dudar; lo que ha cambiado es que
+su duda ya no manda.** Conviene recordarlo antes de intentar «arreglar» el
+prompt para que deje de hedgear: no hace falta, porque la decisión no depende de
+cómo redacte.
+
+Nota menor: la ficha sale con `fit_score` 72 pese a estar descartada. No es un
+defecto — el encaje temático es real (proyectos de I+D+i industrial) y lo que
+falla es el territorio. `descartada: True` y `discard_ineligible` impiden que
+aparezca como oportunidad.

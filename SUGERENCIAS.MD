@@ -1256,9 +1256,20 @@ y lleva once días describiendo un mundo que ya no existe**. Ninguna de las
 mejoras de las últimas dos sesiones vale nada para el usuario final hasta que se
 publiquen.
 
-Estado tras la sesión: **614 pruebas** en verde (575 al empezar), 41 módulos,
-0,0916 USD gastados en la única llamada a la API del día, y una lista de
-pendientes que sigue cabiendo en una línea: **publicar**.
+Estado tras la sesión: **614 pruebas** en verde (575 al empezar), 41 módulos y
+**0,1271 USD** gastados en dos pruebas dirigidas, con las que los tres controles
+pendientes quedan ejercitados y **no queda validación por hacer**.
+
+**Una corrección del usuario cierra la sesión, y toca directamente a este
+documento.** La herramienta sigue en desarrollo: el foco es depurarla y
+minimizar fallos, no encadenar análisis de pago. Esta evaluación había
+convertido el desfase del producto en una fecha límite —y esa inferencia era
+mía, no suya—. La medición del desfase era correcta; la conclusión, no.
+**Informar del desfase sí; convertirlo en urgencia, no.** En una herramienta en
+desarrollo, publicar un análisis de pago no es el objetivo: es la recompensa de
+haberla depurado. Queda anotado porque el punto 2.4 de este documento invita
+justamente a leer cualquier señal como fragilidad, y no todas piden acción
+inmediata.
 
 ## Nota de alcance
 
