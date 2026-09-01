@@ -15,7 +15,7 @@
 #   detalle no trae la URL (AGENTS.md sección 13, piloto v3).
 #
 # La decisión de relevancia NO está aquí: la toma la matriz previa a Claude
-# (`_bdns_pre_claude_gate()`), que sigue en Grant-Radar-prueba.py. Este módulo
+# (`_bdns_pre_claude_gate()`), que vive en grant_radar/bdns_rules.py. Este módulo
 # solo lee la fuente. Las primitivas de campo que ambos comparten están en
 # `grant_radar/bdns_fields.py`.
 

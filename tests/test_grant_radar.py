@@ -39,6 +39,7 @@ from grant_radar import public_output as _public_output_module
 from grant_radar import analysis as _analysis_module
 from grant_radar import holds as _holds_module
 from grant_radar import profile_scope as _profile_scope_module
+from grant_radar import bdns_rules as _bdns_rules_module
 from grant_radar.sources import bdns as _bdns_module
 from grant_radar.sources import cdti as _cdti_module
 from grant_radar.sources import eccp as _eccp_module
@@ -48,13 +49,14 @@ from grant_radar.sources import idae as _idae_module
 for _module in (
     _cache_module, _rules_module, _public_output_module,
     _selection_module, _coverage_module, _usage_module, _quotes_module,
-    _analysis_module, _profile_scope_module, _holds_module,
+    _analysis_module, _profile_scope_module, _holds_module, _bdns_rules_module,
     _bdns_module, _cdti_module, _eccp_module, _een_module, _idae_module,
 ):
     for _name in dir(_module):
         if not _name.startswith("_") or _name.startswith("__"):
             continue
         APP.setdefault(_name, getattr(_module, _name))
+APP.setdefault("deterministic_prefilter", _bdns_rules_module.deterministic_prefilter)
 APP.setdefault("apply_current_deterministic_rules", _rules_module.apply_current_deterministic_rules)
 APP.setdefault("filter_usable_cache", _cache_module.filter_usable_cache)
 APP.setdefault("analysis_is_usable", _cache_module.analysis_is_usable)

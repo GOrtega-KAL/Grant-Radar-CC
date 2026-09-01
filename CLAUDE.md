@@ -36,10 +36,13 @@ desactualizado si no se mantiene junto a ellos.
 >   de las siete: `--source een` 81 s frente a 513-937 s. Exige `--no-claude`
 >   (54.6). El alias `boa` se retiró con su conector (56.1).
 > - `--staleness-report` — cuánto se desfasa lo publicado, sin red.
-> - El backlog de la **sección 36**, casi todo depuración pura: el punto 8
->   (extraer la matriz de reglas, que merece sesión propia), el 40 (el plural en
->   `_term_present()`, **ya medido y recomendado, sin implementar**: +1 de 368,
->   0 falsos positivos — 56.2) y los umbrales de salud calibrados a ojo (30).
+> - **TAREA APLAZADA por el usuario, lista para ejecutar: el punto 40**, aplicar
+>   el plural en `_term_present()`. Ya está medido (56.2) y **no hace falta
+>   volver a medirlo**: +1 texto de 368 pasa el prefiltro, 0 falsos positivos,
+>   ~0,03 USD por ejecución. Recupera «recuperación de calores residuales», que
+>   es el negocio central del cliente y hoy se pierde por una «s».
+> - El resto del backlog de la **sección 36**: el punto 8 (la matriz de reglas)
+>   y los umbrales de salud calibrados a ojo (30).
 >
 > ---
 >

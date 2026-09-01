@@ -5,7 +5,7 @@
 # con una incompatibilidad de entidad, o descartar una inversión propia solo
 # porque no tiene componente de I+D. No deciden si una convocatoria entra en
 # el pipeline (eso es `_bdns_pre_claude_gate()` y `deterministic_prefilter()`,
-# que siguen en Grant-Radar-prueba.py): actúan después, sobre hechos y
+# que viven en grant_radar/bdns_rules.py): actúan después, sobre hechos y
 # evaluación ya extraídos.
 #
 # Se extrajo junto con grant_radar/cache.py porque están acopladas:
@@ -26,7 +26,7 @@ from grant_radar.tech_taxonomy import _compat_tags_for, detect_tech_tags
 
 # Términos de inversión industrial propia (suelo, maquinaria, procesos...)
 # que _own_industrial_investment_evidence() busca en los hechos extraídos.
-# También la usa deterministic_prefilter() en Grant-Radar-prueba.py, antes
+# También la usa deterministic_prefilter() en grant_radar/bdns_rules.py, antes
 # de llegar a Claude; por eso vive aquí y se reimporta allí, en vez de
 # duplicarla.
 BDNS_DIRECT_OWN_INVESTMENT_TERMS = (

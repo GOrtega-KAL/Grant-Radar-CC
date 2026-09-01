@@ -15,7 +15,7 @@
 # necesita descartar páginas y muestras evidentemente irrelevantes, pero no
 # debe conocer las reglas de negocio: recibe un predicado
 # `conv -> {"decision": ...}` y el script principal le pasa
-# `deterministic_prefilter()`, que sigue viviendo allí junto al resto de la
+# `deterministic_prefilter()`, que vive en grant_radar/bdns_rules.py con el resto de la
 # matriz previa a Claude (AGENTS.md sección 4.1). Así este módulo se pudo
 # extraer sin mover ni una línea de esas reglas, y se puede probar con un
 # predicado de mentira. Si algún día la matriz se extrae a su propio módulo,

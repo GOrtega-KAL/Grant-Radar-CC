@@ -3,7 +3,7 @@
 # Decide qué filas de `convocatorias/ultimas` y `convocatorias/busqueda`
 # entran como candidatas al resto del embudo (detalle, bases, prefiltro
 # determinista, Claude). No es una decisión de relevancia final — eso lo hace
-# `_bdns_pre_claude_gate()`, que sigue en Grant-Radar-prueba.py — solo evita
+# `_bdns_pre_claude_gate()`, que vive en grant_radar/bdns_rules.py — solo evita
 # pedir el detalle de filas evidentemente irrelevantes. Sin estado, sin red,
 # sin caché, sin Claude.
 

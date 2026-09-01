@@ -21,10 +21,11 @@
 #
 # **La matriz de reglas se recibe como parámetro, no se importa.**
 # `intrinsic_exclusion` (`_bdns_intrinsic_exclusion`) y `prefilter`
-# (`deterministic_prefilter`) siguen en Grant-Radar-prueba.py por decisión
-# expresa (AGENTS.md 4.1): son la lógica más ajustada del proyecto y se mueven
-# en su propia sesión. Inyectarlas es lo que permitió extraer este módulo sin
-# tocarlas, igual que el conector ECCP recibe `is_relevant_enough`.
+# (`deterministic_prefilter`) viven en grant_radar/bdns_rules.py desde que la
+# matriz se extrajo en su propia sesión (AGENTS.md 57). Se siguen recibiendo
+# inyectadas y no importadas: era lo que permitía extraer este módulo sin
+# tocarlas, y es lo que después permitió extraer la matriz sin tocar este.
+# El conector ECCP recibe `is_relevant_enough` por la misma razón.
 #
 # Las rutas de sus artefactos se calculan aquí, como en hold_evidence.py y
 # documents.py, porque este módulo es su dueño. (audit.py y cache.py siguen el
