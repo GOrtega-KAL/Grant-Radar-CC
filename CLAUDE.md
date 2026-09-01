@@ -7,124 +7,85 @@ historial narrativo por secciones fechadas) y **`SUGERENCIAS.MD`**
 código; este archivo no los sustituye ni los duplica, y puede quedarse
 desactualizado si no se mantiene junto a ellos.
 
-> ## PRÓXIMO PASO, decidido con el usuario al cerrar el 31/08/2026
+> ## PRÓXIMO PASO al cerrar el 01/09/2026: la ejecución completa, y ahora con fecha
 >
-> **1. Una prueba dirigida de pago, ANTES de la ejecución completa.** Requiere
-> autorización expresa, como cualquier llamada a la API:
+> **1. La ejecución completa (~2,02 USD sobre 79 convocatorias), antes del
+> 08-10/09.** Requiere autorización expresa, como cualquier llamada a la API.
+>
+> La fecha no es arbitraria y es lo primero que hay que decirle al usuario:
+> **tres topics de Horizon con el mayor encaje de todo el catálogo —fit 78, 75
+> y 75, los tres `eligible`— cierran el 15/09 y están publicados sin una sola
+> cifra de dinero**, cuando el arreglo que las completa está hecho desde el
+> 31/08 y validado el 01/09. Además, de las 77 fichas publicadas cuatro ya
+> tienen el plazo vencido y doce vencen en catorce días. Detalle en AGENTS.md
+> 54.2.
+>
+> **2. Opcionalmente antes, el único control que quedó sin ejercitar** (~0,03 USD):
 >
 > ```
-> poetry run python "Grant-Radar-prueba.py" --max-claude 3 --claude-match HORIZON-CL5-2026-09-D4-08 --claude-match "Proyectos de I+D" --claude-match 919481
+> poetry run python "Grant-Radar-prueba.py" --max-claude 1 --claude-match 919481
 > ```
 >
-> Una convocatoria de cada tipo, elegidas porque cada una comprueba una cosa
-> distinta de lo que se hizo el 31/08:
+> La BDNS 919481 (Navarra) debe salir **no elegible por territorio, sin pedir
+> confirmación**. La prueba dirigida del 01/09 no llegó a analizarla: el patrón
+> `"Proyectos de I+D"` coincidió con 7 convocatorias y `--max-claude 3` tomó
+> otras tres (AGENTS.md 54.5).
 >
-> | Coincidencia | Qué se comprueba |
-> |---|---|
-> | `HORIZON-CL5-2026-09-D4-08` | Cifras económicas (9 M€/proyecto, 18 M€ totales) y condiciones del programa leídas de los Anexos Generales |
-> | `Proyectos de I+D` (CDTI, ventanilla abierta) | Que su ficha oficial adjunta —20.015 caracteres con «Entidades beneficiarias»— llega al análisis |
-> | `919481` (BDNS, Navarra) | Que sale **no elegible** por territorio, sin pedir confirmación |
+> **3. Después de publicar, `--gap-report`**, que ahora cuesta cero y es la
+> comprobación de regresión de todo lo hecho el 31/08 y el 01/09.
 >
-> `--max-claude` **no genera `convocatorias.json` ni publica**: guarda los
-> análisis en caché y termina, así que la prueba no toca el producto. No hace
-> falta `--force-reanalysis`: las versiones subieron, así que las tres cuentan
-> como nuevas. Coste de una prueba equivalente el 20/08: **0,09 USD**
-> (AGENTS.md 41). Es la única comprobación que falta, porque la ruta de análisis
-> solo se recorre pagando.
+> ---
 >
-> **2. Revisar en esa prueba que el presupuesto se extrae bien.** Es lo más
-> reciente y lo menos rodado: comprobar que `budget_total_eur`,
-> `grant_max_eur`, `project_budget_eur` y `funding_rate_percent` dejan de estar
-> en `missing_fields` para Horizon, y que las cifras del JSON coinciden con las
-> del `budgetOverview` oficial. Detalle en AGENTS.md 52.
+> **La prueba dirigida de pago ya se hizo (01/09, 0,0916 USD) y salió bien.**
+> `HORIZON-CL5-2026-09-D4-08` pasó de `unknown` con tres huecos a **`eligible`
+> con cero**: 18.000.000 € totales y 9.000.000 € por proyecto, coincidiendo con
+> el `budgetOverview` oficial, consorcio resuelto con cita literal del anexo, y
+> el encaje de 75 a 85. AGENTS.md 54.4.
 >
-> **3. Solo después, la ejecución completa** (~2,07 USD), que publica todo lo
-> acumulado el 31/08.
+> **Tres suposiciones nuestras que esa prueba corrigió** (AGENTS.md 54.5):
+>
+> 1. El criterio de 53.2 pedía que los **cuatro** campos económicos dejaran de
+>    faltar. Solo dos podían: `budgetOverview` no trae `project_budget_eur` ni
+>    `funding_rate_percent`. Que sigan ausentes **no es un fallo** — es la misma
+>    distinción que se cerró con el TRL. El criterio correcto es dos de dos.
+> 2. Falta el control territorial de la BDNS 919481, por lo dicho arriba.
+> 3. **La regla determinista de consorcio no debe escribirse.** Se iba a añadir
+>    una regla sobre `types_of_action` para tapar `consortium_requirement_missing`
+>    (21 de 77 fichas). La medición la desmiente: 3 de 3 análisis lo resolvieron
+>    bien leyendo el documento oficial. Codificar a mano lo que ya se lee de la
+>    fuente sería el anti-patrón que el proyecto descartó el 31/08. **Encargo
+>    cancelado por medición.**
+>
+> **Dos herramientas nuevas del 01/09, las dos gratis:**
+>
+> - `--gap-report`: cuenta por fuente los campos ausentes, leyendo el JSON
+>   publicado **y la caché de análisis**. Ese segundo origen es el que permite
+>   comprobar una prueba `--max-claude` sin volver a pagarla (AGENTS.md 54.3).
+> - `--source horizon|bdns|eccp|een|cdti|idae|boe|boa`: recopila una fuente en
+>   vez de las ocho. Medido: `--source boa` 13,7 s frente a 937 s (68×), y las
+>   cuatro fuentes de HTTP puro ni siquiera arrancan Chromium. Exige
+>   `--no-claude` (AGENTS.md 54.6).
+>
+> **Arranque en frío: AGENTS.md sección 54**, que cierra la sesión del
+> 01/09/2026. Antes de ella, la 53 resume las cinco del 31/08 (48 a 52). **Cifras
+> de referencia en 54.7**; backlog abierto en la sección 36.
+>
+> **OJO CON EL COSTE:** la ejecución completa reanaliza **79 convocatorias:
+> ~2,02 USD** (baja de 82 porque las tres de la prueba del 01/09 ya están en
+> caché). No lances una ejecución completa sin recordarle ese importe al
+> usuario.
+>
+> **Y OJO AL LANZARLA:** dura más de quince minutos. **No redirijas su salida a
+> un archivo propio.** El 01/09 se hizo con la prueba de pago y el usuario se
+> quedó diecisiete minutos sin ver nada, creyendo que no había proceso
+> (AGENTS.md 54.8).
 >
 > **Decisión cerrada sobre el TRL, para no volver a abrirla:** no hay que
 > perseguirlo. En Horizon, donde se anuncia de forma visible, se recoge; en
 > BDNS, donde no se anuncia, no se recoge. Es una ausencia real de la fuente, no
 > un fallo de extracción, y **no tiene importancia para el uso de la
-> herramienta**. Los 42/50 de BDNS sin `trl_source` no son un pendiente.
->
-> ---
->
-> **Arranque en frío: AGENTS.md sección 53**, que cierra la sesión del
-> 31/08/2026 y resume las cinco anteriores (48 a 52), todas del mismo día.
-> La 48 es la modularización, la 49 el producto, la 50 los Anexos Generales de
-> Horizon, la 51 la reutilización de lo leído y tres medidas (CDTI con sus
-> bases, humo por conector, vigilancia del producto) y la 52 el presupuesto de
-> Horizon. **Cifras de referencia en 53.4**; backlog abierto en la sección 36.
-> Las secciones 44 a 47 son la sesión del 21/08 y siguen vigentes como
-> antecedente.
->
-> **OJO CON EL COSTE:** la caché de análisis **está invalidada a propósito**
-> desde el 21/08 y el 31/08 se subieron cuatro veces más el evaluador, el prompt
-> y el extractor. La próxima ejecución completa reanaliza **las 81
-> convocatorias: ~2,07 USD**, no ~0,2. Decisión del usuario, vigente: dejar los
-> cambios listos y **no reanalizar hasta autorizarlo expresamente**. No lances
-> una ejecución completa sin recordarle ese importe.
->
-> **El producto está desfasado y conviene decirlo primero:**
-> `convocatorias.json` sigue siendo el del **21/08/2026 12:12 UTC** —77
-> convocatorias, versiones `fit-…v6` / prompt `v10` / perfil `v4`—. No incluye
-> el arreglo de PowerUp NetZero (sección 47) ni nada de la sección 48, y tres de
-> sus 77 fichas ya tienen el plazo vencido. Ponerlo al día es exactamente la
-> ejecución de pago del párrafo anterior.
->
-> **Último trabajo (31/08/2026, sección 52):** el presupuesto de Horizon
-> estaba en la respuesta de la API y se tiraba: `budgetOverview` trae el
-> importe por proyecto, el total y cuántos proyectos se financian, y el
-> conector lo reducía a «Presupuesto 2026». Las 19 convocatorias llegaban a
-> Haiku sin una sola cifra económica. Corregido y medido: **30 de 30 con
-> cifras**. El aviso de recopilación se movió al pie del panel, porque lo usa
-> quien mantiene la herramienta, no quien busca convocatorias.
->
-> **Antes (31/08/2026, sección 51):** el anexo de Horizon ya no se
-> reanaliza sin motivo: su huella entra en la clave de caché, así que se paga
-> por leerlo una vez y solo se vuelve a pagar si cambia; y se guarda en disco
-> como respaldo si el portal falla. Con ello, tres medidas más: CDTI ya trae
-> las bases oficiales de sus fichas de ventanilla abierta —3 de 4, con 20.015
-> caracteres de texto cada una—, hay prueba de humo
-> por conector (10 pruebas en 0,2 s frente a 11 minutos de recopilación) y
-> `product_watch.py` compara cada publicación con la anterior para avisar de
-> convocatorias que desaparecen sin vencer o campos que se vacían.
->
-> **Antes (31/08/2026, sección 50):** Horizon Europe ya llega con sus
-> condiciones de elegibilidad. No estaban en el topic —viven en los Anexos
-> Generales del programa— y en vez de teclearlas en un catálogo, el conector
-> **lee el documento oficial que el propio topic enlaza**: una descarga por
-> edición, tres extractos de 3.400 caracteres, ~850 tokens por convocatoria.
-> Verificado en vivo: 30 de 30 con condiciones y un solo documento leído. Si el
-> programa cambia, el enlace cambia con él y esto no necesita mantenimiento.
->
-> **Antes (31/08/2026, sección 49):** tres encargos mirando el
-> producto. La recopilación diaria ya se ve en el panel —publica
-> `estado_recopilacion.json` y el dashboard avisa de cuántas convocatorias
-> esperan análisis—; la elegibilidad dejó de imprimirse dos veces en cada
-> ficha; y se encontró por qué 25 de 31 convocatorias salían «por confirmar»:
-> una regla determinista decidía leyendo la prosa del modelo y disparaba en 1
-> de cada 12 casos reales. Corregida sobre el campo oficial de regiones, 8
-> convocatorias territoriales de otras comunidades dejan de pedir confirmación,
-> **sin coste**. De las 14 restantes, las de Horizon se resolvieron en la
-> sección 50; quedan las 3 de CDTI, que es el punto 36 del backlog.
->
-> **Y antes (31/08/2026, sección 48):** se terminó la modularización que
-> quedaba en el orden ya medido —auditoría, capa de análisis con Haiku y segunda
-> mitad del dominio de holds—, con lo que el script baja de 4.086 a **2.140
-> líneas** y el paquete pasa a **38 módulos**. En el script solo quedan la matriz
-> de reglas y `run_pipeline()`. De paso se cerraron cuatro puntos del backlog: el
-> 33 (el prompt de extracción ya es constante de módulo y tiene pruebas), el 24
-> (la instrucción de `objeto_y_actuaciones` prohíbe ahora las presunciones
-> declaradas), el 31 (una convocatoria publicaba una frase entera como URL) y el
-> 22 (el test de la ventana de BDNS fijaba una densidad optimista).
->
-> **Antecedente (21/08/2026, secciones 44 a 47):** dos avisos del usuario sobre
-> el producto, los dos ciertos —seis URLs muertas en el catálogo de CDTI y un
-> prefiltro que rechazaba 68 de las 71 fichas del IDAE—, el indicador de embudo
-> que había que apagar para que no molestara, la publicación del día y el falso
-> negativo de PowerUp NetZero, que costó un 35 % de encaje a una convocatoria a
-> la que la empresa se presenta.
+> herramienta**. `--gap-report` marca esos tres campos como «ausencia aceptada»
+> justamente para que nadie lo reabra.
 
 ## Qué es esto
 
@@ -158,18 +119,20 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   recopilación —cuántas convocatorias esperan análisis y cuánto costaría— para
   que el panel pueda avisar. No toca el producto ni la caché de análisis.
 - Después de cualquier cambio en `Grant-Radar-prueba.py` o `grant_radar/`,
-  en este orden (el detalle en AGENTS.md 43.3; las cifras, en **53.4**):
+  en este orden (el detalle en AGENTS.md 43.3; las cifras, en **54.7**):
   1. `poetry run python -m unittest tests.test_grant_radar_script_names`
      —un segundo, señala módulo y nombre exactos si falta un import. Desde el
      31/08 comprueba también cada módulo del paquete, no solo el script;
   2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`;
-  3. `poetry run python -m unittest discover -s tests` —**575 pruebas**. Una,
+  3. `poetry run python -m unittest discover -s tests` —**614 pruebas**. Una,
      `FrontendLayoutTests::test_consortium_role_is_visible...`, es intermitente
      bajo carga porque conduce Chromium de verdad: repetir antes de investigar
      (AGENTS.md 44.7, nota sobre pruebas intermitentes);
   4. `poetry run python "Grant-Radar-prueba.py" --no-claude` al cerrar la
-     ronda, comparando contra los números de referencia de AGENTS.md 53.4:
-     916 detectadas, **81 vigentes** (31/08/2026). Ojo: ese recuento **ya no es un invariante fijo**, la
+     ronda, comparando contra los números de referencia de AGENTS.md 54.7:
+     920 detectadas, **82 vigentes** (01/09/2026). Si el cambio solo toca un
+     conector, `--no-claude --source <alias>` recorre esa fuente sola: 13,7 s
+     en vez de 937 s. La ronda se cierra igualmente con la completa. Ojo: ese recuento **ya no es un invariante fijo**, la
      ventana deslizante de BDNS lo mueve por causas externas; ante un desvío,
      mirar salud de fuentes y registros de exclusión antes que el código.
 - Al extraer código a `grant_radar/`, comprobar que el script principal
@@ -208,17 +171,19 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   PowerShell: `$env:VIRTUAL_ENV = $null` primero, o `poetry` puede ejecutar
   silenciosamente contra el entorno equivocado.
 
-## Estructura actual (31/08/2026)
+## Estructura actual (01/09/2026)
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l` el 31/08/2026: **2.203 líneas en el
-script y 12.408 en los 40 módulos del paquete**. El script tenía 9.199 líneas
+`import`). Recuento verificado con `wc -l` el 01/09/2026: **2.368 líneas en el
+script y 12.708 en los 41 módulos del paquete**. El script tenía 9.199 líneas
 antes de las nueve rondas del 19/08/2026, 4.086 al empezar el 31/08, y hoy
 conserva **solo ocho funciones**: las seis de la matriz de reglas previa a
-Claude (526 líneas) y `run_pipeline()` con su `parse_args()` (912). (La cifra "8.835" de una nota anterior de
-este archivo estaba mal calculada — ver AGENTS.md sección 24, nota de
-discrepancia.)
+Claude (526 líneas) y `run_pipeline()` con su `parse_args()`. Subió 165 líneas
+el 01/09 al añadir `--gap-report` y `--source`, que es crecimiento en el punto
+de entrada —banderas y despacho—, no lógica de dominio. (La cifra "8.835" de una
+nota anterior de este archivo estaba mal calculada — ver AGENTS.md sección 24,
+nota de discrepancia.)
 Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 
 | Módulo | Contiene |
@@ -259,6 +224,7 @@ Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 | `publishing.py` | Subida a GitHub Pages (credenciales como parámetros, nunca leídas aquí) |
 | `claude_selection.py` | Qué se manda a Claude y la barrera de coste previa |
 | `staleness.py` | Cuánto se está desfasando lo publicado, leyendo solo la auditoría (`--staleness-report`). Sin red y sin coste |
+| `gap_report.py` | Qué campos faltan, por fuente, en lo ya analizado (`--gap-report`). Lee el JSON publicado **y la caché de análisis**: ese segundo origen es el que permite comprobar una prueba `--max-claude` sin volver a pagarla. Sin red y sin coste (AGENTS.md 54.3) |
 | `coverage_watch.py` | Vigilancia de programas recurrentes conocidos. `active_not_captured` es el único estado que significa avería: abierta en su landing y no encontrada (sección 46.4) |
 | `hold_quotes.py` | Validación de que una cita prueba la conclusión de un hold |
 | `claude_usage.py` | Recuento de tokens y coste, incluidos los intentos fallidos |

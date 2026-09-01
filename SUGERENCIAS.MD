@@ -1182,6 +1182,84 @@ sí estaba y se rescató; el TRL de BDNS no está y se deja—.
 
 ---
 
+
+---
+
+## 15. Estado a 01/09/2026: la medición como forma de cancelar trabajo
+
+La sesión anterior terminó diciendo que el recuento de campos ausentes por
+fuente «ha valido más que cualquier refactorización de hoy». Esta sesión toma
+esa frase en serio y la convierte en método: **medir primero, decidir después**.
+El resultado más útil del día no es lo que se construyó, sino **lo que se dejó
+de construir**.
+
+**Frente a 2.4 (fragilidad ante las fuentes) y 2.8 (cobertura): el recuento es
+ahora un comando.** `--gap-report` lee el JSON publicado y la caché de análisis
+y cuenta, por fuente, qué campos faltan. Sin red y sin coste. Lo relevante para
+esta evaluación es el segundo origen: una prueba de pago `--max-claude` guarda
+en caché y termina sin publicar, así que **sin leer la caché no había forma de
+comprobar el resultado de una prueba de pago sin pagar otra vez**. Un modo de
+verificación cuyo resultado no se puede inspeccionar es medio modo.
+
+Al construirlo aparecieron dos defectos de medición que conviene anotar porque
+son genéricos, no de este proyecto:
+
+1. **Denominadores que halagan.** Los huecos solo se declaran para
+   convocatorias no descartadas, así que dividir por el total hacía parecer sana
+   a BDNS, donde 33 de 46 fichas están descartadas. Una métrica con el
+   denominador equivocado es peor que ninguna: da confianza.
+2. **Contar apariciones en vez de sujetos.** La primera ejecución publicó
+   «20/19». Imposible, y por eso visible. Si el numerador hubiera sido 18 en vez
+   de 20, el error habría pasado inadvertido y habría informado una decisión.
+
+**Frente a 2.4, además: `--source`.** Punto 5 del backlog. Comprobar un cambio
+en un conector obligaba a recorrer los ocho —937 s— y ocho ejecuciones en un día
+bastaron el 19/08 para que `boe.es` respondiera 429. Ahora `--source boa` tarda
+13,7 s. Esta evaluación venía pidiendo vigilar las fuentes; esto abarata la
+vigilancia, que es la condición para que se haga.
+
+### La parte que corrige a esta evaluación
+
+**Un encargo se canceló porque la medición lo desmintió.** Se iba a escribir una
+regla determinista que dedujera el requisito de consorcio del tipo de acción de
+Horizon, para tapar un hueco que afectaba a 21 de las 77 fichas publicadas. La
+prueba de pago mostró que **3 de 3 análisis ya lo resolvían bien**, leyendo el
+documento oficial que la convocatoria enlaza. La regla habría codificado a mano
+un dato que ya se lee de la fuente: exactamente el anti-patrón que la sección 14
+identificó como el hallazgo más rentable del 31/08, aplicado al revés.
+
+Vale la pena decirlo sin adornos: **la propuesta era mía y estaba equivocada**,
+y solo se supo porque se midió antes de escribirla. El punto 2.3 de esta
+evaluación pide sacar las reglas de negocio del código; el corolario que faltaba
+es que **la mejor regla es la que no hace falta escribir porque el dato ya está
+en la fuente**.
+
+**Y un criterio de aceptación nuestro estaba mal formulado.** El plan pedía que
+los cuatro campos económicos de Horizon dejaran de faltar. Solo dos podían: la
+respuesta oficial trae el importe por proyecto y el total, pero no el coste del
+proyecto ni la tasa de financiación. Habíamos escrito un criterio que ninguna
+implementación correcta podía cumplir, y de haberlo aplicado literalmente
+habríamos dado por fallida una mejora que funciona. Es el mismo aprendizaje que
+el TRL en la sección 14 —distinguir el dato que la fuente no da del que no
+sabemos leer—, pero esta vez el error estaba en **nuestra propia definición de
+éxito**, no en la extracción.
+
+### Lo que esta evaluación debería vigilar a partir de ahora
+
+El producto lleva once días sin actualizarse y eso ya tiene consecuencias
+medibles, no hipotéticas: cuatro fichas publicadas con el plazo vencido, doce
+que vencen en catorce días, y **las tres de mayor encaje del catálogo publicadas
+sin una sola cifra de dinero a dos semanas de su cierre**. El punto 2.5 de este
+documento hablaba de artefactos generados mezclados con el código; el problema
+real de hoy es el contrario y más serio: **el artefacto generado es el producto,
+y lleva once días describiendo un mundo que ya no existe**. Ninguna de las
+mejoras de las últimas dos sesiones vale nada para el usuario final hasta que se
+publiquen.
+
+Estado tras la sesión: **614 pruebas** en verde (575 al empezar), 41 módulos,
+0,0916 USD gastados en la única llamada a la API del día, y una lista de
+pendientes que sigue cabiendo en una línea: **publicar**.
+
 ## Nota de alcance
 
 Este documento es una evaluación externa de solo lectura, ampliada con una

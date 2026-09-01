@@ -2454,7 +2454,8 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | # | Propuesta | Origen |
 |---|---|---|
 | 4 | Reintento con espera ante `HTTP 429` en `PlaywrightBrowser`, en vez de tratarlo como fuente caída | 35 |
-| 5 | Modo de verificación por fuente (algo como `--no-claude --source BOE`) para no recorrer las ocho cuando un cambio solo toca una | 35 |
+| 38 | `boletin.dpz.es` (Boletín Oficial de la **provincia de Zaragoza**) falla con `CERTIFICATE_VERIFY_FAILED` al descargar edictos: cadena de certificados incompleta en el servidor. Dos documentos afectados, reproducible en dos ejecuciones seguidas del 01/09, y **es el único host que falla** de toda la recopilación | Sección 54.7. No rompe nada —el pipeline sigue y solo degrada la evidencia de esas fichas—, pero es la provincia de la propia empresa. Arreglarlo obliga a elegir entre añadir un paquete de CA o relajar la verificación TLS, y lo segundo contradice `_is_safe_public_https_url()`: **es decisión del usuario**, no del agente |
+| 39 | `funding_rate_percent` de Horizon: `budgetOverview` no lo trae, pero los **Anexos Generales que ya descargamos** sí lo indican (una *Innovation Action* financia al 70 % a una empresa con ánimo de lucro, una *RIA* al 100 %) | Sería el quinto caso del patrón «el dato ya está en casa» (54.5). Importa comercialmente: 70 % frente a 100 % cambia el caso de negocio. Pendiente de decisión del usuario; conviene medirlo antes con `--gap-report` sobre la ejecución completa, no sobre tres análisis |
 | 6 | Instantánea de la estructura esperada de cada fuente, comparada en cada ejecución, con historial | `SUGERENCIAS.MD` 3.4 punto 2 |
 | 7 | Ejecución periódica automatizada en `--no-claude` solo para vigilar salud de fuentes | `SUGERENCIAS.MD` 3.4 punto 3 |
 | 27 | Los catálogos curados se teclean a mano y caducan en silencio: el 21/08, seis de las diez URLs del de CDTI eran 404 (sección 44.1). Las rutas correctas estaban en el calendario oficial que el conector ya recorre | Vale la pena estudiar si las entradas de ventanilla permanente pueden **derivarse** del listado oficial en vez de mantenerse a mano. `_drop_catalog_entries_with_dead_urls()` ya evita publicarlas rotas, pero no las repara |
@@ -2463,7 +2464,7 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
 | 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
 | 34 | Programar la recopilación `--no-claude` diaria en el Programador de tareas de Windows | Sección 47.6 tiene el comando. **Es una acción del usuario en su equipo**, no del agente: queda anotada para no darla por hecha |
-| 37 | **Próximo paso**: prueba dirigida de pago y, en ella, revisión de la extracción de presupuestos | Sección **53.2**, que trae el comando exacto, las tres convocatorias y qué mirar en cada una. Es la única prueba que falta, porque la ruta de análisis solo se recorre pagando; 0,09 USD en la prueba equivalente del 20/08. **Requiere autorización expresa** |
+| 37 | **Próximo paso**: la **ejecución completa**, ~2,02 USD sobre 79 convocatorias, **antes del 08-10/09**. Y antes, opcionalmente, el único control de 53.2 que quedó sin ejercitar: `--max-claude 1 --claude-match 919481` (~0,03 USD) para la elegibilidad territorial de Navarra | Sección **54.9**. La prueba dirigida de pago se hizo el 01/09 por 0,0916 USD y validó el presupuesto y la elegibilidad de Horizon (54.4), pero `"Proyectos de I+D"` coincidió con 7 convocatorias y 919481 se quedó fuera (54.5). La fecha límite no es arbitraria: tres topics de máximo encaje cierran el 15/09 publicados sin cifras (54.2). **Requiere autorización expresa** |
 
 El 429 del 19/08/2026 tuvo cooldown de minutos: una sonda de una sola petición,
 7 minutos después, devolvió la página completa. No impone restricción horaria,
@@ -2483,7 +2484,11 @@ rondas el mismo día.
 
 ### 36.4. Huecos de cobertura de pruebas, medidos
 
-Recuento sobre los 38 módulos del paquete a 31/08/2026:
+Recuento sobre los 38 módulos del paquete a 31/08/2026. Desde el 01/09 hay dos
+archivos de prueba más con import estándar, `tests/test_grant_radar_gap_report.py`
+(26) y `tests/test_grant_radar_source_selection.py` (13), que no tapan ninguno
+de los huecos de abajo pero sí marcan la forma preferida: import normal, sin
+`runpy`.
 
 | # | Qué | Detalle |
 |---|---|---|
@@ -2537,6 +2542,7 @@ frío. No hay que buscarlos en las tablas de arriba: ya no están.
 | 35 | La elegibilidad de Horizon no estaba en el topic que leemos | Sección 50: el conector lee los Anexos Generales que el propio topic enlaza, una vez por edición, y envía tres extractos de 3.400 caracteres. Sin catálogo que mantener |
 | 17 | Prueba de humo por conector | Sección 51.3: diez pruebas, 0,2 s, con la red y el navegador sustituidos. Una de ellas comprueba que el detector detecta, reproduciendo el `statistics` de la sección 35 |
 | 36 | CDTI llegaba sin bases: 300 caracteres tecleados y cero documentos | Sección 51.2: las fichas del catálogo curado se leen con el navegador que ya las visitaba y traen sus documentos oficiales, con el mismo extractor que el calendario |
+| 5 | Modo de verificación por fuente, para no recorrer las ocho cuando un cambio solo toca una | Sección 54.6: `--source`, con alias cortos. Medido contra los 937 s de una recopilación completa: `--source boa` 13,7 s (68×) y `--source een` 81,4 s (11×, sin arrancar Chromium). Exige `--no-claude` y apaga la vigilancia de recurrentes, que con fuentes sin consultar daría alarmas falsas seguras |
 
 ## 37. Decimotercera ronda a 19/08/2026: salida pública, publicación, selección y cobertura
 
@@ -4629,3 +4635,185 @@ Sigue vigente el orden de 43.3, con las cifras de hoy:
 Solo dos cosas, las dos por decisión: la **matriz de reglas** previa a Claude
 (526 líneas, punto 8 del backlog, sesión propia y no encadenada a otra tarea sin
 que el usuario lo pida) y **`run_pipeline()`**, que va el último por definición.
+
+## 54. Medir antes de arreglar, y la prueba de pago que corrigió su propio criterio, a 01/09/2026
+
+**Esta es la sección de arranque en frío vigente.** Sustituye a la 53.
+
+La sesión ejecuta el orden que fijó el usuario: `--gap-report`, prueba dirigida
+de pago, consorcio, `--source`. Dos de los cuatro puntos terminaron en un sitio
+distinto del previsto, y en los dos casos porque una medición contradijo lo que
+se daba por supuesto.
+
+### 54.1. Qué cambió hoy
+
+| | Al empezar el 01/09 | Al cerrar |
+|---|---|---|
+| `Grant-Radar-prueba.py` | 2.203 líneas | **2.368** |
+| Paquete `grant_radar/` | 40 módulos | **41 módulos** (12.708 líneas) |
+| Pruebas | 575 | **614** |
+| Puntos abiertos del backlog | 28 | **29** (cierra el 5, abre dos) |
+| Producto publicado | JSON del 21/08 | el mismo: **sigue sin publicarse** |
+| Gastado en API | — | **0,0916 USD** |
+
+### 54.2. El desfase ya no es teórico: tiene fecha
+
+Lo primero que se midió, y cambia la urgencia de todo lo demás. El producto
+publicado es del 21/08. A 01/09:
+
+- **cuatro fichas** ya tienen el plazo vencido (el 31/08 eran tres);
+- **doce** vencen en los siguientes catorce días;
+- y entre ellas están **las tres de mayor encaje del catálogo** —fit 78, 75 y
+  75, las tres `eligible`—, tres topics de Horizon que cierran el **15/09** y
+  se publicaron con `budget_missing`.
+
+Es decir: quien mira el panel ve las tres mejores oportunidades del año sin una
+sola cifra de dinero, a dos semanas del cierre, cuando el arreglo que las
+completa está hecho desde el 31/08 y sin publicar. **La ejecución completa deja
+de ser «cuando convenga» y pasa a tener una fecha límite real**, en torno al
+08-10/09, porque una propuesta de Horizon necesita margen.
+
+### 54.3. `--gap-report`: convertir un método en un comando
+
+`SUGERENCIAS.MD` 14 había dejado escrito que el recuento de campos ausentes por
+fuente «cuesta cinco minutos y ha valido más que cualquier refactorización de
+hoy». Seguía siendo un cálculo a mano. Ahora es `--gap-report`
+(`grant_radar/gap_report.py`), sin red y sin coste.
+
+Lee **dos orígenes**, y el segundo es el que hacía falta: el producto publicado
+y **la caché de análisis**. Una prueba `--max-claude` guarda en caché y termina
+sin publicar, así que sin leer la caché no había forma de comprobar una prueba
+de pago sin volver a pagarla. Eso es exactamente lo que se hizo hoy.
+
+Dos correcciones que el informe tuvo que aprender, ambas reales:
+
+1. **Los huecos de producto se cuentan solo sobre las convocatorias vivas.**
+   `_data_gap_reasons()` devuelve lista vacía en cuanto la decisión empieza por
+   `discard_`, así que usar el total como denominador hacía parecer sana a BDNS,
+   donde 33 de sus 46 fichas están descartadas.
+2. **Se cuentan convocatorias, no menciones.** La primera ejecución publicó
+   `funding_rate_percent 20/19` en Horizon —imposible—, porque el modelo repite
+   a veces un campo dentro del mismo `missing_fields`. Hay una prueba que exige
+   que ningún recuento supere jamás su denominador.
+
+Los tres campos de TRL salen marcados como **ausencia aceptada**, para que
+ningún recuento futuro reabra la decisión cerrada en 53.3.
+
+### 54.4. La prueba dirigida de pago: 0,0916 USD
+
+Autorizada expresamente por el usuario, con el comando de 53.2. Coste real
+0,0916 USD frente a los 0,09 previstos. La convocatoria de Horizon salió como
+debía, y es justamente una de las que cierran el 15/09:
+
+| `HORIZON-CL5-2026-09-D4-08` | Publicado (21/08) | Tras la prueba |
+|---|---|---|
+| `budget_total_eur` | ausente | **18.000.000 €** |
+| `grant_max_eur` | ausente | **9.000.000 €** |
+| Elegibilidad | `unknown` | **`eligible`** |
+| `consortium_required` | ausente | **`True`**, con cita literal |
+| `data_gaps` | 3 | **0** |
+| Encaje | 75 | **85** |
+
+Los tres controles del 53.2 sobre el presupuesto pasan: las cifras **coinciden
+con el `budgetOverview` oficial** (9 M€/proyecto, 18 M€ totales, 2 proyectos) y
+**no se coló el presupuesto de un topic hermano**. La elegibilidad viene del
+documento oficial, no de un catálogo tecleado; la cita que trajo el anexo fue
+«at least three independent legal entities from different countries».
+
+### 54.5. Lo que la prueba corrige de lo que dejamos escrito el 31/08
+
+Tres cosas, y conviene que consten porque las tres eran suposiciones nuestras:
+
+**1. El criterio de aceptación de 53.2 estaba mal formulado.** Pedía que los
+**cuatro** campos económicos dejaran de faltar. Solo dos podían: `budgetOverview`
+trae el importe por proyecto y el total, pero **no** trae `project_budget_eur`
+—que es el coste del proyecto, no la ayuda— ni `funding_rate_percent`. Que sigan
+ausentes **no es un fallo de extracción**: es la misma distinción que se cerró
+con el TRL. El criterio correcto es **dos de dos**, no cuatro de cuatro.
+
+**2. Falta un control por hacer.** El plan asumía tres patrones → tres
+convocatorias. Pero `"Proyectos de I+D"` es poco específico y **coincidió con
+7**; `--max-claude 3` tomó las tres primeras (1 Horizon + 2 CDTI) y dejó
+**919481 sin analizar**. El control territorial de Navarra —que debe salir «no
+elegible» sin pedir confirmación— **sigue sin ejercitarse**. Cuesta ~0,03 USD
+con `--max-claude 1 --claude-match 919481`, y requiere autorización expresa.
+
+**3. La regla determinista de consorcio que se iba a escribir no debe
+escribirse.** Era el tercer encargo de la sesión: `consortium_requirement_missing`
+afectaba a 21 de las 77 fichas publicadas y la idea era resolverlo con una regla
+sobre `types_of_action`. La medición lo desmiente: **3 de 3 análisis resolvieron
+`consortium_required` correctamente**, leyendo el documento oficial. Codificar a
+mano lo que ya se lee de la fuente sería el anti-patrón que este proyecto
+descartó el 31/08. **Encargo cancelado por medición, no por falta de tiempo.**
+Volver a medirlo con `--gap-report` tras la ejecución completa.
+
+### 54.6. `--source`: recopilar una fuente en vez de ocho
+
+Punto 5 del backlog, abierto desde la sección 35. Medido contra los 937 s de la
+recopilación completa de hoy:
+
+| | Tiempo | Ganancia |
+|---|---|---|
+| Recopilación completa | 937 s | — |
+| `--source een` | 81,4 s | 11× |
+| `--source boa` | 13,7 s | **68×** |
+
+Las cuatro fuentes de HTTP puro (Horizon, BDNS, ECCP, EEN) se piden fuera del
+bloque del navegador, así que verificar un cambio en ellas ya **no paga el
+arranque de Chromium**: la salida lo dice explícitamente.
+
+Dos salvaguardas, porque una selección parcial puede hacer daño callando:
+**exige `--no-claude`** (un catálogo incompleto que llegara al análisis
+publicaría un producto sin fuentes enteras) y **apaga la vigilancia de
+programas recurrentes**, que con fuentes sin consultar daría por desaparecido
+todo lo que vive en ellas. Además avisa en consola de que los recuentos no son
+comparables con las cifras de referencia.
+
+Las pruebas leen el propio script y comparan el mapa de alias con las fuentes
+que el pipeline consulta: el riesgo real no es que la selección falle, sino que
+un conector nuevo no aparezca en ella y nadie se entere.
+
+### 54.7. Cifras de referencia a 01/09/2026
+
+Sustituyen a las de 53.4. Verificación `--no-claude` completa, posterior a todos
+los cambios de hoy:
+
+> 920 detectadas · 34 duplicadas fusionadas · **82 vigentes** (BDNS 50,
+> Horizon 20, CDTI 5, ECCP 4, EEN 4, IDAE 1, BOE 1, BOA 0) · prefiltro común
+> `retain=34, ambiguous=7, hold_manual=75, reject=804` · previsión **79**
+> análisis, **2,0224 USD**.
+
+La previsión baja de 82 a 79 porque las tres de la prueba de pago ya están en
+caché: no se volverían a pagar. Recordatorio de 53.4, que sigue vigente: **este
+recuento no es un invariante fijo**; la ventana deslizante de BDNS lo mueve por
+causas externas.
+
+Orden de verificación, sin cambios respecto a 43.3:
+
+1. `poetry run python -m unittest tests.test_grant_radar_script_names`
+2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`
+3. `poetry run python -m unittest discover -s tests` — **614 pruebas**
+4. `poetry run python "Grant-Radar-prueba.py" --no-claude`
+
+### 54.8. Una lección de método sobre las ejecuciones en segundo plano
+
+Al lanzar la prueba de pago se redirigió toda la salida a un archivo propio
+(`> prueba_pago.log 2>&1`), con lo que la consola del usuario se quedó **sin
+ver nada durante diecisiete minutos** y pareció que el proceso no existía. El
+proceso estaba vivo y terminó bien, pero el usuario no tenía forma de saberlo.
+**Al lanzar una ejecución larga en segundo plano, no redirigir la salida fuera
+de donde el usuario la ve.** Vale doble para la ejecución completa, que dura más
+y además cuesta dinero.
+
+### 54.9. El próximo paso
+
+**Sin cambios en el fondo respecto a 53.2, pero con fecha.**
+
+1. **La ejecución completa (~2,02 USD sobre 79 convocatorias), antes del
+   08-10/09**, por lo dicho en 54.2: tres topics de máximo encaje cierran el
+   15/09 y están publicados sin cifras. Requiere autorización expresa. Publica
+   de golpe todo lo acumulado el 31/08 y validado hoy.
+2. **Opcionalmente antes, el control que falta**: `--max-claude 1
+   --claude-match 919481`, ~0,03 USD, para la elegibilidad territorial.
+3. **Después de publicar, `--gap-report` otra vez**: es la comprobación de
+   regresión de todo lo de hoy, y ahora cuesta cero.
