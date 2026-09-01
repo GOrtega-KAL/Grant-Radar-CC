@@ -175,6 +175,14 @@ from grant_radar.http_client import (
     _is_safe_public_https_url,
 )
 from grant_radar.browser import PlaywrightBrowser
+from grant_radar.gap_report import (
+    build_gap_report,
+    cache_version_state,
+    format_budget_watch,
+    format_gap_report,
+    gap_records_from_cache,
+    gap_records_from_product,
+)
 from grant_radar.staleness import (
     build_collection_state,
     build_staleness_report,
@@ -2117,6 +2125,16 @@ def parse_args():
         ),
     )
     parser.add_argument(
+        "--gap-report",
+        action="store_true",
+        help=(
+            "Cuenta por fuente los campos que faltan en lo ya analizado, "
+            "leyendo el JSON publicado y la cache de analisis. Sin red, sin "
+            "coste y sin recopilar. Es la forma de comprobar una prueba "
+            "--max-claude sin volver a pagarla."
+        ),
+    )
+    parser.add_argument(
         "--replay-hold-report",
         action="store_true",
         help=(
@@ -2151,9 +2169,17 @@ def parse_args():
     if args.staleness_report and (
         args.no_claude or args.max_claude is not None or args.hold_pilot is not None
         or args.replay_hold_report or args.claude_match or args.force_reanalysis
+        or args.gap_report
     ):
         parser.error(
             "--staleness-report no puede combinarse con otros modos de ejecución"
+        )
+    if args.gap_report and (
+        args.no_claude or args.max_claude is not None or args.hold_pilot is not None
+        or args.replay_hold_report or args.claude_match or args.force_reanalysis
+    ):
+        parser.error(
+            "--gap-report no puede combinarse con otros modos de ejecución"
         )
     if args.claude_match and args.max_claude is None:
         parser.error("--claude-match requiere utilizar también --max-claude")
@@ -2168,8 +2194,57 @@ def parse_args():
     return args
 
 
+def build_gap_reports() -> list:
+    """
+    Reúne los dos orígenes que este informe compara: lo publicado y lo pagado.
+
+    Se leen aquí, y no dentro de `grant_radar/gap_report.py`, por la misma
+    razón que la caché recibe su ruta como parámetro: el cálculo de rutas se
+    hace una sola vez, en el script, para no arriesgar leer de otro sitio.
+    Los dos archivos son opcionales; si falta alguno, su informe sale vacío en
+    vez de romper.
+    """
+    informes = []
+    try:
+        with open(OUTPUT_FILE, "r", encoding="utf-8") as f:
+            producto = json.load(f)
+    except Exception:
+        producto = {}
+    informes.append(build_gap_report(
+        gap_records_from_product(producto),
+        origin="Producto publicado (convocatorias.json)",
+        label=(
+            f"generado {str(producto.get('generated_at', ''))[:16].replace('T', ' ')}"
+            if producto.get("generated_at") else "sin JSON publicado"
+        ),
+    ))
+    try:
+        with open(CACHE_FILE, "r", encoding="utf-8") as f:
+            cache_payload = json.load(f)
+    except Exception:
+        cache_payload = {}
+    estado_versiones = cache_version_state(cache_payload)
+    informes.append(build_gap_report(
+        gap_records_from_cache(cache_payload),
+        origin="Caché de análisis (lo pagado, publicado o no)",
+        label=(
+            f"guardada {estado_versiones.get('saved_at', '')[:16].replace('T', ' ')}"
+            if estado_versiones.get("saved_at") else "sin caché en disco"
+        ),
+        version_state=estado_versiones,
+    ))
+    return informes
+
+
 if __name__ == "__main__":
     args = parse_args()
+    if args.gap_report:
+        reports = build_gap_reports()
+        print(format_gap_report(reports, datetime.now().date().isoformat()))
+        print()
+        print(format_budget_watch(reports))
+        print("\n  No se llamó a Claude ni se tocó la red: solo se leyeron archivos.")
+        sys.exit(0)
     if args.staleness_report:
         print(format_staleness_report(
             build_staleness_report(load_audit_runs(AUDIT_FILE))
