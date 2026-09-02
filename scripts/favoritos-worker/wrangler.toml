@@ -1,0 +1,15 @@
+name = "grant-radar-favoritos"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+# El identificador se rellena con lo que devuelva
+#   wrangler kv namespace create FAVORITOS
+# El binding se llama FAVORITOS porque es el nombre que worker.js espera en
+# `env.FAVORITOS`; si se cambia aquí, hay que cambiarlo allí.
+[[kv_namespaces]]
+binding = "FAVORITOS"
+id = "PENDIENTE_DE_RELLENAR"
+
+# No hay `vars` ni `secrets`, y no debe haberlos: este archivo va al
+# repositorio público. Lo único configurable del Worker —qué origen puede
+# llamarlo— está escrito en worker.js a la vista, que es donde se lee.

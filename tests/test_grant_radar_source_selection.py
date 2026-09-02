@@ -97,7 +97,7 @@ class SincroniaConElPipelineTests(unittest.TestCase):
 
 
 class SalvaguardasTests(unittest.TestCase):
-    """Las dos condiciones que impiden que una selección parcial haga daño."""
+    """Las tres condiciones que impiden que una selección parcial haga daño."""
 
     def _fuente_de(self, nombre: str) -> str:
         for node in ast.walk(TREE):
@@ -111,6 +111,24 @@ class SalvaguardasTests(unittest.TestCase):
         parse_args = self._fuente_de("parse_args")
         self.assertIn("args.source and not args.no_claude", parse_args)
         self.assertIn("--source exige --no-claude", parse_args)
+
+    def test_una_recopilacion_parcial_no_publica_el_estado_diario(self):
+        """La tercera salvaguarda, añadida el 02/09/2026.
+
+        `estado_recopilacion.json` va a GitHub Pages y el panel lo enseña como
+        el estado **del día**. Publicarlo desde una selección de una sola
+        fuente cambiaría «13 sin publicar» por «2» sin que nada lo dijera: el
+        mismo tipo de daño callado que ya evitan las otras dos, y por eso va
+        con ellas.
+        """
+        pipeline = self._fuente_de("run_pipeline")
+        self.assertIn("if partial:", pipeline)
+        self.assertIn("Estado de recopilación NO publicado", pipeline)
+        # La publicación tiene que quedar en la rama contraria, no suelta.
+        patron = re.compile(
+            r"if partial:.*?else:\s+publish_collection_state\(", re.DOTALL
+        )
+        self.assertRegex(pipeline, patron)
 
     def test_la_vigilancia_de_recurrentes_se_apaga_en_parcial(self):
         # Con fuentes sin consultar daría por desaparecido todo lo que vive en

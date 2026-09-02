@@ -5,18 +5,24 @@
 # versión anterior corrompía prosa española corriente; los casos de esta clase
 # son literales tomados del `convocatorias.json` publicado el 14/08/2026.
 
+import json
+import pathlib
 import unittest
 from unittest import mock
 
+from grant_radar.product_watch import stable_identity
 from grant_radar.public_output import (
     DEFAULT_KEYWORD_COLOR,
     ENTIDADES_CANONICAS,
     TECH_CATEGORY_COLORS,
     URL_CONTROL_INEXISTENTE,
+    _assemble_public_record,
     build_keywords,
     derive_eligible_actions,
     post_procesar_texto,
+    public_stable_key,
     verificar_urls,
+    warn_on_duplicate_stable_keys,
 )
 from grant_radar.runtime_state import RUN_DIAGNOSTICS
 from grant_radar.tech_taxonomy import TECH_TAGS
@@ -284,3 +290,104 @@ class KeywordPanelTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+
+def _registro_publicado(conv_extra=None, record_id=1):
+    """Un registro público real, con el mínimo que exige el ensamblador."""
+    conv = {
+        "source": "BDNS", "title": "Convocatoria de prueba",
+        "description": "Descripción", "url": "https://example.test/call",
+        "org": "Entidad convocante", "keywords_found": [], "source_type": "BDNS API",
+    }
+    conv.update(conv_extra or {})
+    return _assemble_public_record(record_id, conv, {})
+
+
+class StableKeyTests(unittest.TestCase):
+    """Que la clave publicada y la que se compara después sean la misma.
+
+    El `id` del JSON es un contador posicional (`len(enriched) + 1`), así que
+    el 42 de hoy y el 42 de la próxima publicación son convocatorias
+    distintas. `stable_key` es lo que permite que algo externo al archivo
+    —los favoritos del panel— señale una convocatoria y siga señalándola.
+    """
+
+    def test_every_published_record_carries_the_key(self):
+        self.assertTrue(_registro_publicado()["stable_key"])
+
+    def test_the_key_ignores_the_positional_id(self):
+        primera = _registro_publicado(record_id=1)
+        septuagesima = _registro_publicado(record_id=70)
+        self.assertNotEqual(primera["id"], septuagesima["id"])
+        self.assertEqual(primera["stable_key"], septuagesima["stable_key"])
+
+    def test_the_published_url_is_the_one_that_forms_the_key(self):
+        """El detalle que haría divergir las dos identidades sin avisar.
+
+        `_normalize_public_url()` añade el esquema a un dominio sin él, así
+        que la url del `conv` recopilado y la del JSON no son la misma
+        cadena. Diez de las 77 fichas publicadas el 21/08 resuelven su
+        identidad por url: calcular la clave sobre el `conv` crudo daría una
+        que no coincide con la que `compare_published_products()` calcula
+        después leyendo el archivo, y las dos parecerían iguales.
+        """
+        conv = {"url": "ejemplo.test/convocatoria"}
+        registro = _registro_publicado(conv)
+        self.assertEqual(registro["url"], "https://ejemplo.test/convocatoria")
+        self.assertEqual(registro["stable_key"], stable_identity(registro))
+        self.assertNotEqual(
+            registro["stable_key"],
+            stable_identity({"source": "BDNS", "url": "ejemplo.test/convocatoria"}),
+        )
+
+    def test_the_adapter_agrees_with_the_assembled_record(self):
+        for url in ("https://example.test/x", "ejemplo.test/y", "no es una url",
+                    "", "mailto:alguien@example.test"):
+            with self.subTest(url=url):
+                conv = {"url": url, "identifier": ""}
+                registro = _registro_publicado(conv)
+                self.assertEqual(
+                    public_stable_key(dict(
+                        source="BDNS", title="Convocatoria de prueba", url=url,
+                        identifier="",
+                    )),
+                    stable_identity(registro),
+                )
+
+    def test_the_published_product_has_no_collisions(self):
+        """Medido, no supuesto: 77 de 77 únicas el 02/09/2026.
+
+        Es la comprobación que autorizaba usar esta identidad para los
+        favoritos. Si alguna vez falla, no hay que relajar el test: hay dos
+        convocatorias que el producto no sabe distinguir.
+        """
+        archivo = ROOT / "convocatorias.json"
+        if not archivo.exists():
+            self.skipTest("sin convocatorias.json publicado en esta copia")
+        publicadas = json.loads(archivo.read_text(encoding="utf-8"))["convocatorias"]
+        claves = [stable_identity(registro) for registro in publicadas]
+        repetidas = sorted({clave for clave in claves if claves.count(clave) > 1})
+        self.assertEqual(repetidas, [])
+        self.assertEqual(len(claves), len(publicadas))
+
+    def test_a_collision_is_reported_instead_of_passing_unnoticed(self):
+        repetidas = warn_on_duplicate_stable_keys([
+            {"stable_key": "BDNS|identifier|A", "title": "Una"},
+            {"stable_key": "BDNS|identifier|A", "title": "Otra distinta"},
+            {"stable_key": "BDNS|identifier|B", "title": "Tercera"},
+        ])
+        self.assertEqual(len(repetidas), 1)
+        self.assertEqual(repetidas[0]["stable_key"], "BDNS|identifier|A")
+        self.assertEqual(RUN_DIAGNOSTICS["stable_key_collisions"]["distinct"], 2)
+
+    def test_a_clean_product_reports_nothing(self):
+        self.assertEqual(
+            warn_on_duplicate_stable_keys([
+                {"stable_key": "BDNS|identifier|A", "title": "Una"},
+                {"stable_key": "BDNS|identifier|B", "title": "Otra"},
+            ]),
+            [],
+        )

@@ -10,6 +10,9 @@
 #   han seleccionado más análisis de la cuenta o si el extremo superior
 #   estimado supera el límite en dólares. Es una barrera presupuestaria basada
 #   en la calibración observada, no una garantía sobre la factura real.
+# - `prioritize_claude_candidates()`: en qué orden, para que una ejecución
+#   parcial gaste el presupuesto en lo que más urge y no en lo que salió
+#   primero de las fuentes.
 # - `build_no_claude_candidate_inventory()`: el inventario compacto que
 #   `--no-claude` guarda en la auditoría, para poder explicar después qué
 #   habría costado la ejecución y por qué.
@@ -20,6 +23,7 @@ from collections import Counter
 
 from grant_radar.cache import cache_key, source_hash
 from grant_radar.parsing_helpers import _fold_text
+from grant_radar.product_watch import stable_identity
 
 log = logging.getLogger("grant_radar")
 
@@ -92,7 +96,12 @@ def build_claude_analysis_selection(
     new_items = [item for item in all_items if cache_key(item) not in cache]
     cached_items = [item for item in all_items if cache_key(item) in cache]
     pool = all_items if force_reanalysis else new_items
-    candidates = select_claude_candidates(pool, match_values)
+    # Ordenadas aquí y no en quien trunca: así el orden es el mismo lo mire
+    # quien lo mire — el pipeline al gastar, y `--no-claude` al enseñarlo
+    # gratis antes de gastar.
+    candidates = prioritize_claude_candidates(
+        select_claude_candidates(pool, match_values)
+    )
     forced_cached = [
         item for item in candidates if cache_key(item) in cache
     ] if force_reanalysis else []
@@ -104,6 +113,77 @@ def build_claude_analysis_selection(
         "forced_cached": forced_cached,
     }
 
+
+# Orden de precedencia del prefiltro. `retain` ha superado una regla positiva;
+# `ambiguous` solo ha sobrevivido a las negativas. Con presupuesto limitado, la
+# primera merece el dinero antes que la segunda.
+CLAUDE_PRIORITY_BY_DECISION = {"retain": 0, "ambiguous": 1}
+CLAUDE_PRIORITY_UNKNOWN_DECISION = 2
+
+# Sin fecha de cierre no se puede decir que urja. Va al final, no al principio.
+CLAUDE_PRIORITY_NO_DEADLINE = 9999
+
+
+def _claude_priority_key(conv: dict) -> tuple:
+    """Con qué se ordena una candidata **antes** de llamar a Claude.
+
+    La restricción que manda: aquí todavía no hay `fit_score`, ni `tech_tags`,
+    ni nada que salga del análisis — eso es precisamente lo que se está
+    decidiendo si pagar. Solo se puede usar lo que traen el conector y el
+    filtro determinista.
+    """
+    prefilter = conv.get("deterministic_prefilter")
+    if not isinstance(prefilter, dict):
+        prefilter = {}
+
+    decision = str(prefilter.get("decision", ""))
+    rank = CLAUDE_PRIORITY_BY_DECISION.get(decision, CLAUDE_PRIORITY_UNKNOWN_DECISION)
+
+    raw_deadline = conv.get("deadline_days")
+    try:
+        days = int(raw_deadline)
+    except (TypeError, ValueError):
+        days = CLAUDE_PRIORITY_NO_DEADLINE
+
+    keywords = conv.get("keywords_found")
+    keyword_count = len(keywords) if isinstance(keywords, (list, tuple, set)) else 0
+
+    try:
+        score = float(prefilter.get("score", 0) or 0)
+    except (TypeError, ValueError):
+        score = 0.0
+
+    # El desempate por identidad estable es lo que hace el orden reproducible
+    # entre ejecuciones: sin él, dos candidatas iguales en todo lo demás
+    # cambiarían de sitio según cómo las devolviera la fuente, y una prueba
+    # `--max-claude N` dejaría fuera una distinta cada vez.
+    return (rank, days, -keyword_count, -score, stable_identity(conv))
+
+
+def prioritize_claude_candidates(candidates: list[dict]) -> list[dict]:
+    """Ordena las candidatas por urgencia y encaje antes de gastar presupuesto.
+
+    Hasta el 02/09/2026, `--max-claude N` se quedaba con las N primeras **en
+    orden de recopilación**, que es el orden en que respondieron las fuentes.
+    El efecto se vio en una prueba de pago real: `--max-claude 3` con un patrón
+    poco específico gastó el presupuesto en tres convocatorias que no eran las
+    que se querían mirar y dejó fuera la que sí (AGENTS.md 54.5). Aquello se
+    anotó como lección sobre el diseño de la prueba; como comportamiento del
+    producto es otra cosa, porque hace que una ejecución parcial barata gaste
+    el dinero en lo que salió primero y no en lo que más urge.
+
+    Cuatro criterios y un desempate, todos con datos previos al análisis:
+
+    1. veredicto del prefiltro — `retain` antes que `ambiguous`;
+    2. días hasta el cierre, ascendente;
+    3. número de palabras clave encontradas, descendente;
+    4. puntuación del prefiltro, descendente;
+    5. identidad estable, para que el orden no dependa del azar.
+
+    No decide cuántas se analizan ni si se analizan: solo en qué orden. La
+    barrera de coste y `--max-claude` siguen mandando sobre eso.
+    """
+    return sorted(candidates, key=_claude_priority_key)
 
 def claude_safety_preflight(planned_analyses: int) -> dict:
     """Impide iniciar Claude cuando el volumen o el coste superior exceden límites."""

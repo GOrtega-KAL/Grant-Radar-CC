@@ -11,7 +11,9 @@ from grant_radar.claude_selection import (
     CLAUDE_MAX_ANALYSES_PER_RUN,
     CLAUDE_MAX_ESTIMATED_COST_USD,
     CLAUDE_OBSERVED_MEAN_USD_PER_ANALYSIS,
+    build_claude_analysis_selection,
     claude_safety_preflight,
+    prioritize_claude_candidates,
 )
 from grant_radar.publishing import github_token_format_is_valid
 
@@ -87,6 +89,133 @@ class GithubTokenFormatTests(unittest.TestCase):
     def test_a_well_formed_token_is_not_a_valid_one(self):
         # Solo comprueba forma: la validez real se conoce al autenticar.
         self.assertTrue(github_token_format_is_valid("ghp_" + "0" * 40))
+
+
+class ClaudePriorityTests(unittest.TestCase):
+    """En qué orden se gasta el presupuesto cuando no llega para todas.
+
+    Antes del 02/09/2026, `--max-claude N` se quedaba con las N primeras en
+    orden de recopilación, es decir, en el orden en que respondieron las
+    fuentes. Eso convertía una ejecución parcial barata en un sorteo.
+    """
+
+    def candidata(self, identifier, decision="ambiguous", days=100, keywords=0, score=0):
+        return {
+            "identifier": identifier,
+            "source": "BDNS",
+            "title": f"Convocatoria {identifier}",
+            "url": f"https://example.test/{identifier}",
+            "deadline_days": days,
+            "keywords_found": [f"kw{n}" for n in range(keywords)],
+            "deterministic_prefilter": {"decision": decision, "score": score},
+        }
+
+    def orden(self, candidatas):
+        return [c["identifier"] for c in prioritize_claude_candidates(candidatas)]
+
+    def test_retain_goes_before_ambiguous(self):
+        """`retain` superó una regla positiva; `ambiguous` solo sobrevivió."""
+        self.assertEqual(
+            self.orden([
+                self.candidata("dudosa", decision="ambiguous", days=5),
+                self.candidata("firme", decision="retain", days=90),
+            ]),
+            ["firme", "dudosa"],
+        )
+
+    def test_within_the_same_verdict_the_nearest_deadline_wins(self):
+        self.assertEqual(
+            self.orden([
+                self.candidata("lejana", decision="retain", days=200),
+                self.candidata("urgente", decision="retain", days=9),
+                self.candidata("media", decision="retain", days=45),
+            ]),
+            ["urgente", "media", "lejana"],
+        )
+
+    def test_more_keywords_break_a_deadline_tie(self):
+        self.assertEqual(
+            self.orden([
+                self.candidata("floja", decision="retain", days=30, keywords=1),
+                self.candidata("rica", decision="retain", days=30, keywords=4),
+            ]),
+            ["rica", "floja"],
+        )
+
+    def test_the_prefilter_score_breaks_the_next_tie(self):
+        self.assertEqual(
+            self.orden([
+                self.candidata("baja", decision="retain", days=30, keywords=2, score=3),
+                self.candidata("alta", decision="retain", days=30, keywords=2, score=11),
+            ]),
+            ["alta", "baja"],
+        )
+
+    def test_a_call_without_a_deadline_does_not_jump_the_queue(self):
+        """Sin fecha no se puede decir que urja: va al final, no al principio.
+
+        Es el error fácil aquí — tratar el hueco como un 0 y colocar delante
+        justamente lo que no se sabe cuándo cierra.
+        """
+        self.assertEqual(
+            self.orden([
+                self.candidata("sin-fecha", decision="retain", days=None),
+                self.candidata("con-fecha", decision="retain", days=300),
+            ]),
+            ["con-fecha", "sin-fecha"],
+        )
+
+    def test_an_unknown_verdict_goes_last_instead_of_first(self):
+        candidatas = [
+            {"identifier": "sin-prefiltro", "source": "BDNS", "title": "T",
+             "url": "https://example.test/s", "deadline_days": 1},
+            self.candidata("normal", decision="ambiguous", days=300),
+        ]
+        self.assertEqual(
+            [c["identifier"] for c in prioritize_claude_candidates(candidatas)],
+            ["normal", "sin-prefiltro"],
+        )
+
+    def test_the_order_is_reproducible_between_runs(self):
+        """El desempate por identidad estable.
+
+        Sin él, dos candidatas idénticas en todo lo demás cambiarían de sitio
+        según cómo las devolviera la fuente, y una prueba `--max-claude N`
+        dejaría fuera una distinta cada vez. Es exactamente el fallo que hace
+        irreproducible una medición.
+        """
+        candidatas = [self.candidata(str(n), decision="retain", days=30) for n in range(8)]
+        primera = self.orden(candidatas)
+        segunda = self.orden(list(reversed(candidatas)))
+        self.assertEqual(primera, segunda)
+
+    def test_nothing_is_added_or_lost_in_the_reordering(self):
+        candidatas = [self.candidata(str(n), days=n) for n in range(12)]
+        reordenadas = prioritize_claude_candidates(candidatas)
+        self.assertEqual(len(reordenadas), len(candidatas))
+        self.assertEqual(
+            {id(c) for c in reordenadas}, {id(c) for c in candidatas},
+            "reordenar no puede clonar ni descartar candidatas",
+        )
+
+    def test_the_selection_hands_over_candidates_already_ordered(self):
+        """Truncar en el pipeline debe bastar: el orden llega hecho.
+
+        Si la ordenación viviera en quien trunca, `--no-claude` enseñaría un
+        orden y la ejecución de pago usaría otro, que es la peor variante:
+        revisarlo gratis dejaría de significar nada.
+        """
+        seleccion = build_claude_analysis_selection(
+            [
+                self.candidata("tarde", decision="retain", days=250),
+                self.candidata("pronto", decision="retain", days=4),
+            ],
+            {},
+            None,
+        )
+        self.assertEqual(
+            [c["identifier"] for c in seleccion["candidates"]], ["pronto", "tarde"]
+        )
 
 
 if __name__ == "__main__":

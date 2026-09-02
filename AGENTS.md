@@ -2454,7 +2454,6 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | # | Propuesta | Origen |
 |---|---|---|
 | 4 | Reintento con espera ante `HTTP 429` en `PlaywrightBrowser`, en vez de tratarlo como fuente caída | 35 |
-| 38 | `boletin.dpz.es` (Boletín Oficial de la **provincia de Zaragoza**) falla con `CERTIFICATE_VERIFY_FAILED` al descargar edictos: cadena de certificados incompleta en el servidor. Dos documentos afectados, reproducible en dos ejecuciones seguidas del 01/09, y **es el único host que falla** de toda la recopilación | Sección 54.7. No rompe nada —el pipeline sigue y solo degrada la evidencia de esas fichas—, pero es la provincia de la propia empresa. Arreglarlo obliga a elegir entre añadir un paquete de CA o relajar la verificación TLS, y lo segundo contradice `_is_safe_public_https_url()`: **es decisión del usuario**, no del agente |
 | 6 | Instantánea de la estructura esperada de cada fuente, comparada en cada ejecución, con historial | `SUGERENCIAS.MD` 3.4 punto 2 |
 | 7 | Ejecución periódica automatizada en `--no-claude` solo para vigilar salud de fuentes | `SUGERENCIAS.MD` 3.4 punto 3 |
 | 27 | Los catálogos curados se teclean a mano y caducan en silencio: el 21/08, seis de las diez URLs del de CDTI eran 404 (sección 44.1). **Medido el 01/09 (sección 55.2): el catálogo de CDTI aporta 4 de sus 5 vigentes, el 80 %**, porque la ventanilla permanente no tiene fecha y el calendario oficial solo publica lo fechado. No es deuda que retirar: derivarlo del calendario probablemente no es posible, y lo que necesita es revisión periódica | Vale la pena estudiar si las entradas de ventanilla permanente pueden **derivarse** del listado oficial en vez de mantenerse a mano. `_drop_catalog_entries_with_dead_urls()` ya evita publicarlas rotas, pero no las repara |
@@ -2508,7 +2507,6 @@ solo detecta la ejecución real.
 
 | # | Qué | Origen |
 |---|---|---|
-| 11 | Cinco campos que el backend publica y el frontend no consume (`catalog_scope`, `catalog_category`, `catalog_ref`, `related_documents_count`, `bdns_url`) | `SUGERENCIAS.MD` 2.8 |
 | 12 | `requires-python = ">=3.11"` no se ha probado sobre un intérprete 3.11 real | `SUGERENCIAS.MD` 3.9 |
 | 13 | Limpieza de `Obsoleto/` y `Frontend alternativo/` ahora que hay historial de git | `SUGERENCIAS.MD` 3.10 punto 2 |
 | 14 | Rotación de credenciales si `API KEYs.txt` estuvo en copias compartidas fuera de control | `SUGERENCIAS.MD` 3.1 punto 4; solo el usuario puede confirmarlo |
@@ -2543,6 +2541,8 @@ frío. No hay que buscarlos en las tablas de arriba: ya no están.
 | 39 | La tasa de financiación de Horizon | Sección 59.5: leída de la sección G de los Anexos Generales. **La premisa de este punto era falsa**: no estaba en lo que ya descargábamos, sino en la página 32, más allá del corte de 48.000 caracteres. `max_chars` es ahora parámetro |
 | 19 | `build_keywords()` sin ninguna prueba | Sección 59.4: nueve pruebas, y tenía un fallo —cuatro de sus siete colores estaban muertos—. El color se deriva ahora de la categoría técnica |
 | 10 | Retirar el patrón `runpy` + fusión de `APP` | Sección 59.6: 81 de los 85 nombres ya eran importables; solo `run_pipeline` y `parse_args` obligan a mantener `runpy`. De 216 llamadas a `APP[...]` quedan 4 |
+| 38 | `boletin.dpz.es` fallaba con `CERTIFICATE_VERIFY_FAILED`: era el único host que fallaba de toda la recopilación | Sección 60.7: **había una tercera vía que este punto no recogía**. El servidor envía un solo certificado, sin el intermedio; OpenSSL no lo verifica y Chromium sí, porque va a buscarlo. Medido con `ignore_https_errors` a **False** y a True: HTTP 200 en los dos casos, así que **no se relaja nada**. `VerifyingDocumentBrowser` arranca solo si algún documento falla y verifica el TLS a propósito |
+| 11 | Cinco campos publicados que el frontend no consumía | Sección 60.9: entran `related_documents_count` y `bdns_url` en el detalle, porque ayudan a decidir y ya estaban en el JSON. Los otros tres son trazabilidad del pipeline y se quedan. De paso se retiró el «ID» posicional que el detalle enseñaba |
 | 5 | Modo de verificación por fuente, para no recorrer las ocho cuando un cambio solo toca una | Sección 54.6: `--source`, con alias cortos. Medido contra los 937 s de una recopilación completa: `--source boa` 13,7 s (68×) y `--source een` 81,4 s (11×, sin arrancar Chromium). Exige `--no-claude` y apaga la vigilancia de recurrentes, que con fuentes sin consultar daría alarmas falsas seguras |
 
 ## 37. Decimotercera ronda a 19/08/2026: salida pública, publicación, selección y cobertura
@@ -5396,3 +5396,341 @@ ejecución concreta, y el historial que importa vive en la auditoría.
 detectadas, **84 vigentes**, prefiltro `retain=38, ambiguous=5, hold_manual=75,
 reject=803`. Pendientes de analizar **81** (~2,07 USD). Coste de la sesión en
 API: **0 USD**.
+
+## 60. Una identidad que aguante, y lo que se pudo construir encima, a 02/09/2026 (tarde)
+
+Dos encargos del usuario —mejorar el backend y poner favoritos en el panel—
+que resultaron ser el mismo encargo, porque los dos tropezaban con una pieza
+que no existía. Sin coste: **no se llamó a la API**.
+
+### 60.1. Qué cambió hoy
+
+| | Al empezar | Al cerrar |
+|---|---|---|
+| Pruebas | 666 | **711** |
+| Paquete `grant_radar/` | 41 módulos | 41 (ninguno nuevo; crecen seis) |
+| Puntos abiertos del backlog | 29 | **27** (cierran el 11 y el 38) |
+| Producto publicado | JSON del 21/08 | el mismo: **no se ha pagado nada** |
+| Archivos nuevos | — | `scripts/favoritos-worker/` (3) |
+
+### 60.2. El `id` publicado era un contador posicional, y eso bloqueaba todo
+
+`_assemble_public_record()` recibía `len(enriched) + 1`, asignado **después** de
+ordenar por encaje. El id 42 de hoy y el 42 de la próxima publicación son
+convocatorias distintas. Consecuencias, y la primera es la que importa:
+
+- **unos favoritos guardados contra `id` habrían señalado, tras publicar, a la
+  convocatoria equivocada — y en silencio**, que es el tipo de fallo que este
+  proyecto persigue (36.5);
+- nada externo al JSON podía referirse a una convocatoria: ni un enlace
+  profundo, ni una nota, ni un «esto ya lo miramos».
+
+La identidad estable **ya estaba escrita** desde el 31/08: `_identity()`, en
+`product_watch.py`, que usaba la comparación de productos. Medida antes de
+usarla, sobre el `convocatorias.json` publicado: **77 de 77 únicas, cero
+colisiones** (67 resuelven por `identifier`, 10 caen a `url`). No había que
+inventar nada, había que exponerlo. Es ahora `stable_identity()`, pública, y
+cada ficha publica `stable_key` (esquema público **4**).
+
+**Una sola implementación en Python, a propósito.** Publicar la clave por un
+lado y compararla por otro invita a que las dos se separen sin que nadie lo
+note, que es justo el fallo que la función existe para evitar.
+
+### 60.3. Cuatro afirmaciones del plan que el código desmintió
+
+El plan se escribió leyendo la documentación. Verificarlo contra el código
+cambió cuatro cosas, y **las cuatro habrían fallado en silencio**.
+
+**1. `stable_identity(conv)` no da la clave publicada.** `conv["url"]` no es la
+url del JSON: `_normalize_public_url()` la reescribe —añade el esquema a un
+dominio que no lo trae— y puede vaciarla. Para las **diez** fichas que resuelven
+su identidad por url, calcular la clave sobre el `conv` crudo produciría una
+cadena que no coincide con la que `compare_published_products()` calcula después
+leyendo el archivo. De ahí `public_stable_key()`, en `public_output.py`: aplica
+la normalización y delega. Vive ahí y no en `product_watch` porque ese módulo es
+una hoja del grafo de imports, y meterle esta dependencia crearía un ciclo.
+
+**2. Los favoritos habrían nacido muertos.** `--no-claude` **no regenera**
+`convocatorias.json`, así que `stable_key` no llegaría al producto hasta la
+próxima ejecución de pago — y la prioridad fijada por el usuario es no pagar. El
+panel deriva la clave él mismo cuando falta (`deriveStableKey()`), con la misma
+regla. Así los favoritos funcionan **hoy**, contra el JSON del 21/08, y las
+claves coinciden exactamente cuando el backend empiece a publicarlas: el `url`
+del JSON ya viene normalizado, que es lo que hace `public_stable_key()`.
+
+Que haya dos implementaciones de una identidad es exactamente lo que 60.2 dice
+que hay que evitar. La red es una prueba de Playwright que ejecuta
+`deriveStableKey()` sobre el `convocatorias.json` real y compara los 77
+resultados con los de `stable_identity()`. **Es lo único que impide que se
+separen**, y por eso conviene no borrarla por lenta.
+
+**3. La fase del aviso diario no podía reutilizar `compare_published_products()`.**
+Calcula bien la diferencia de conjuntos, pero compara producto contra producto.
+Sobre la recopilación cruda —que no ha pasado por Haiku y no tiene `summary`, ni
+`objeto_y_actuaciones`, ni `eligible_actions`— habría marcado esos tres campos
+como «vaciados» en las **77** fichas, y el aviso diario abriría con una regresión
+inventada. Hay una prueba que lo demuestra en las dos direcciones: que la función
+nueva no lo hace y que la vieja sí lo haría.
+
+**4. La priorización ordenaba por un campo que todavía no existe.** `tech_tags`
+sale del análisis: antes de llamar a Claude no está. El equivalente disponible es
+`keywords_found`, que ponen los siete conectores.
+
+### 60.4. Los favoritos compartidos
+
+Estrella en cada tarjeta y en el detalle, chip `★ Favoritos (N)` junto a los de
+temática, nota por favorito y quién lo marcó. Endpoint propio en
+`scripts/favoritos-worker/` (Cloudflare Worker + KV), decidido con el usuario.
+
+**La decisión de diseño que importa: una clave de KV por favorito**, no un JSON
+único. Con un blob compartido, dos personas que marcan a la vez leen la misma
+lista, cada una añade lo suyo y la segunda escritura pisa a la primera: un
+favorito desaparece y nadie se entera. Con una clave por favorito, alta y baja
+son escrituras independientes y el conflicto no llega a existir.
+
+**La clave viaja en la query string, no en la ruta.** Las claves de las diez
+fichas que se identifican por url llevan `https://…` con barras dentro; un `%2F`
+en un path es terreno de normalización de proxies, y una query string no se
+normaliza nunca.
+
+**Sobre la seguridad, y conviene que quede escrito antes de que alguien la dé por
+segura:** la URL del Worker viaja en el código de una página pública, en un
+repositorio público. La comprobación de origen y los topes son **badenes contra
+el paso casual, no seguridad** — quien quiera saltárselos solo necesita `curl`.
+Para una lista interna de convocatorias sin datos personales es una compensación
+razonable. Si algún día hay que cerrarla de verdad, el sitio es el servidor
+propio previsto para dentro de unos meses (59.9), no este Worker.
+
+**Tres detalles que no son evidentes y conviene no deshacer:**
+
+1. `FAVORITES_ENDPOINT` vacío significa **modo local** (`localStorage`). No es
+   una alternativa descartada: es el respaldo al que el panel cae solo si el
+   Worker no responde, y el chip lo dice —«Favoritos (sin conexión)»— en vez de
+   aparentar normalidad. Un endpoint caído nunca rompe el panel.
+2. **Un favorito con el plazo vencido sigue viéndose** bajo el filtro de
+   favoritos, atenuado y con la etiqueta «Plazo vencido». `getFiltered()`
+   descarta todo lo vencido en cualquier otro caso; aquí la excepción es
+   deliberada, porque que una convocatoria marcada a mano desaparezca sin avisar
+   es peor que verla caducada.
+3. El chip **no pasa por `setFilter()`**, que es excluyente dentro de su grupo:
+   lleva su propio conmutador para poder combinarse con fuente, temática y
+   búsqueda a la vez.
+
+Gratis por arrastre: las descargas XLSX/CSV exportan `getFiltered()`, así que
+«filtrar por favoritos y descargar» funcionó sin tocar el exportador.
+
+**Cómo se comprobó que las pruebas no son decorativas.** Dos mutaciones
+deliberadas, revertidas después: cambiar `favorites.has(c.stable_key)` por
+`c.id` hace fallar la prueba del ciclo de marcado, y mover la clave de la query
+string a la ruta hace fallar la del camino compartido. Una prueba que no falla
+al romper lo que vigila no vigila nada.
+
+**Hueco declarado:** `worker.js` es JavaScript desplegado fuera del repositorio y
+**la suite de Python no lo ejecuta**. Se cubre con tres `curl` documentados en su
+`README.md`, más la prueba a dos navegadores. No se finge que haya regresión
+automática donde no la hay.
+
+### 60.5. El aviso diario ya dice qué ha cambiado, no solo cuánto costaría
+
+`compare_collection_against_product()`, en `product_watch.py`, y **una** cifra
+más en `estado_recopilacion.json` (esquema **2**): `new_since_publication`.
+
+Solo una, y esa restricción la puso una prueba. La primera versión metía además
+`expiring_soon`, `expired` y una muestra con el título y la fecha de tres
+convocatorias publicadas. `test_it_does_not_repeat_the_published_product` falló,
+y **tenía razón**: eso es el producto, y ese archivo existe justamente para no
+repetirlo. El panel ya tiene `convocatorias.json` cargado y deriva esas dos
+cifras por su cuenta. Subir el tope del guardián de 9 a 14 y seguir habría
+convertido la prueba en un trámite; subió a 10, por un solo campo, y ganó de paso
+una comprobación que no tenía —que ningún valor del estado sea una lista—.
+
+Las nuevas van etiquetadas **«detectadas, sin analizar»**, en consola y en el
+panel. Han pasado el filtro determinista, no el de Haiku, y confundir las dos
+cosas sería vender como oportunidad lo que aún no se ha evaluado.
+
+Medido en la ejecución de hoy: *13 sin publicar · 13 publicadas cierran en 14
+días o menos · 4 publicadas ya vencidas · la primera en 2 días.*
+
+### 60.6. `--max-claude` ya prioriza por urgencia, no por orden de llegada
+
+`prioritize_claude_candidates()`, en `claude_selection.py`. Antes, truncar se
+quedaba con las N primeras **en el orden en que respondieron las fuentes**. El
+efecto se vio el 01/09: `--max-claude 3` con un patrón poco específico gastó el
+presupuesto en tres convocatorias que no eran las que se querían mirar (54.5).
+Aquello se anotó como lección sobre el diseño de la prueba; como comportamiento
+del producto es otra cosa, porque convierte una ejecución parcial barata en un
+sorteo.
+
+Cuatro criterios previos al análisis y un desempate: veredicto del prefiltro
+(`retain` antes que `ambiguous`), cierre más próximo, más palabras clave, mayor
+puntuación, y **identidad estable** para que el orden sea reproducible. Sin ese
+último, dos candidatas iguales en lo demás cambiarían de sitio según cómo las
+devolviera la fuente, y una prueba `--max-claude N` dejaría fuera una distinta
+cada vez.
+
+Dos decisiones concretas: **sin fecha de cierre se va al final, no al principio**
+—no se puede decir que urja lo que no se sabe cuándo cierra—, y la ordenación
+vive en `build_claude_analysis_selection()`, no en quien trunca, para que
+`--no-claude` enseñe **el mismo orden** que usará la ejecución de pago. En sitios
+distintos, revisarlo gratis dejaría de significar nada.
+
+`--no-claude` imprime ahora las quince primeras con su veredicto, sus días y sus
+palabras clave. Es la revisión gratuita que exige 59.1: **medir sobre lo que el
+pipeline procesa de verdad**. Salida real de hoy, con las tres primeras:
+
+```
+   1. [retain   ] [   8 d] [ 0 kw] EEN            Eurostars Call 11 …
+   2. [retain   ] [  13 d] [ 4 kw] HORIZON EUROPE Full-scale demonstration of heat upgrade …
+   3. [retain   ] [  13 d] [ 2 kw] HORIZON EUROPE R&I in Support of the Clean Industrial Deal …
+```
+
+**Una observación honesta al verlo funcionar:** muchas candidatas salen con
+`0 kw`, así que en la práctica el tercer criterio desempata poco y **manda el
+plazo**. No es un fallo —el orden resultante es el que se quería—, pero conviene
+no vender `keywords_found` como si estuviera decidiendo.
+
+Lo que abre: análisis parciales con sentido. «Las 20 más urgentes» ≈ 0,51 USD
+frente a 2,12 USD por las 83.
+
+### 60.7. Punto 38: la tercera vía existía, y por poco se defiende mal
+
+`boletin.dpz.es` —el Boletín Oficial de la provincia de Zaragoza, la de la propia
+empresa— fallaba con `CERTIFICATE_VERIFY_FAILED` en dos edictos, y era **el único
+host que fallaba** de toda la recopilación. El backlog lo planteaba como una
+elección entre añadir un paquete de CA que hay que mantener y relajar la
+verificación TLS, que contradice `_is_safe_public_https_url()`.
+
+**Lo medido, en dos pasos, y el segundo casi no se da.**
+
+Primero: el servidor envía **un solo certificado**, el suyo, sin el intermedio
+que completa la cadena. OpenSSL —`requests`— no puede verificarlo. Chromium abre
+las dos URLs con **HTTP 200** y devuelve el texto oficial del edicto, con su
+identificador BDNS incluido.
+
+Y aquí estaba la trampa: `PlaywrightBrowser` arranca su contexto con
+`ignore_https_errors=True`. Con esa medición **no se puede distinguir «Chromium
+completa la cadena» de «Chromium ignora el error»**, y la diferencia lo es todo:
+si fuera lo segundo, el «tercer camino» sería la misma relajación de TLS que el
+backlog descarta, con otro nombre. Se volvió a medir forzando las dos
+configuraciones:
+
+```
+ignore_https_errors=False  ->  HTTP 200
+ignore_https_errors=True   ->  HTTP 200
+```
+
+**Que la primera línea diga 200 es todo el argumento**: Chromium verifica de
+verdad, porque va a buscar por su cuenta el certificado intermedio que el
+servidor omite —algo que OpenSSL no hace—. No se relaja nada; se usa un cliente
+que verifica mejor.
+
+Por eso `VerifyingDocumentBrowser` (en `browser.py`) **no reutiliza
+`PlaywrightBrowser`**: crea su propio contexto con `ignore_https_errors=False`.
+Reutilizar el otro habría dejado el código relajando la verificación aunque no le
+hiciera falta, y la frase anterior habría dejado de ser cierta.
+
+Cuatro decisiones más, todas por algo:
+
+- **Arranca perezosamente.** Si ningún documento falla —lo normal—, Chromium no
+  se inicia y no se paga nada. BDNS se recopila fuera del bloque del navegador y
+  el de las fuentes ya está cerrado cuando se descargan estos documentos.
+- **`status()` antes que `html()`.** `html()` devuelve algo tanto ante un 404
+  como ante un bloqueo de WAF; sin comprobar el código, la página de error de un
+  portal entraría en la evidencia oficial como si fuera el documento.
+- **Solo HTML.** Un PDF servido tras una cadena rota sigue perdiéndose. Hoy los
+  dos afectados son HTML; si mañana son PDF, esto no los salva, y hay que saberlo.
+- **Se inyecta**, como `intrinsic_exclusion` y `prefilter`, y el ciclo de vida se
+  queda en el orquestador. El piloto y el replay no lo reciben a propósito: son
+  herramientas de diagnóstico y no compensa que arranquen Chromium.
+
+`_html_to_text()` se separó de `_hold_document_text()` para que las dos rutas
+extraigan igual: un mismo documento no puede dar textos distintos según entre por
+`requests` o por el navegador, o la caché documental guardaría una cosa u otra
+según el día. Hay una prueba que compara las dos salidas.
+
+**Verificado de punta a punta** con `--no-claude --source bdns` contra el
+servidor real, no solo con dobles:
+
+```
+[WARNING] HTTP agotado para https://boletin.dpz.es/…idEdicto=894917…
+          [SSL: CERTIFICATE_VERIFY_FAILED] unable to get local issuer certificate
+[INFO]    Chromium arrancado para un segundo intento de descarga
+          (cadena de certificados incompleta en el origen)
+  Documentos recuperados con el navegador: 2
+```
+
+Chromium arrancó **en el momento del fallo**, no antes, que era el diseño. Los
+dos edictos están ahora en `bdns_document_cache.json` con `format:
+"html_browser"` (4.581 y 3.403 bytes) y traen el texto oficial completo, con su
+identificador BDNS —914771 y 908965— y su entidad publicadora. Cero caracteres
+perdidos y los acentos intactos, comprobado explícitamente: el navegador no pasa
+por el `errors="replace"` de la ruta de `requests`.
+
+### 60.8. Un fallo que no estaba en el plan: una recopilación parcial publicaba el estado del día
+
+Apareció al ir a verificar el punto 38 con `--source bdns`. El camino
+`--no-claude` llamaba a `publish_collection_state()` **incondicionalmente**, así
+que una selección de una sola fuente habría subido a GitHub Pages unas cifras que
+describen esa fuente y el panel las habría enseñado como el estado **del día**:
+«13 sin publicar» pasaría a «2» sin que nada lo dijera.
+
+Es el mismo daño callado que ya evitaban las otras dos salvaguardas de `--source`
+(54.6), y ahora son **tres**: exige `--no-claude`, apaga la vigilancia de
+recurrentes y **no publica el estado diario**. La tercera tiene su prueba junto a
+las otras dos.
+
+Conviene anotar cómo apareció: no lo encontró una prueba ni una revisión, sino
+**ir a ejecutar el comando de verificación y preguntarse qué escribía**.
+
+Y la misma ejecución enseña por qué importaba. Sus cifras parciales fueron *51
+pendientes · 1,3056 USD · 10 sin publicar* frente a las del día completo, *83 ·
+2,1248 · 13*. Publicarlas habría dejado el panel diciendo que falta la mitad de
+lo que falta, sin que nada lo indicara. La salida ahora dice:
+
+```
+  Estado de recopilación NO publicado: la selección es parcial (BDNS)
+  y sus cifras no describen el día.
+```
+
+### 60.9. Punto 11: dos campos que se publicaban y nadie leía
+
+`related_documents_count` (cuánta evidencia oficial respalda la ficha) y
+`bdns_url` (enlace al registro oficial) entran en el detalle: ayudan a decidir y
+ya estaban en el JSON, así que exponerlos no costó nada. Los otros tres
+(`catalog_scope`, `catalog_category`, `catalog_ref`) son trazabilidad del
+pipeline y se quedan donde están.
+
+De paso salió el «ID» que el detalle enseñaba: era el contador posicional, así
+que anotarlo no servía para volver a encontrar nada. Ahora enseña la identidad
+estable, que es la que sí aguanta entre publicaciones.
+
+### 60.10. Cifras de referencia a 02/09/2026 (tarde)
+
+Sustituyen a las de 59.8. Verificación `--no-claude` completa, posterior a todos
+los cambios:
+
+> **922 detectadas** · 33 duplicadas fusionadas · **86 vigentes** (BDNS 52,
+> Horizon 22, CDTI 5, ECCP 4, EEN 4, IDAE 1, BOE 1) · prefiltro común
+> `retain=38, ambiguous=5, hold_manual=77, reject=802` · pendientes de analizar
+> **83** (**2,1248 USD**).
+
+Sube de 84 a 86 respecto a 59.8 por BDNS (50 → 52): es la ventana deslizante
+moviéndose por causas externas, no una regresión (36.6, punto 26). Horizon se
+mantiene en 22, que es la cifra que dejó el plural con guardia de siglas.
+
+Orden de verificación, sin cambios respecto a 43.3:
+
+1. `poetry run python -m unittest tests.test_grant_radar_script_names`
+2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`
+3. `poetry run python -m unittest discover -s tests` — **711 pruebas**
+4. `poetry run python "Grant-Radar-prueba.py" --no-claude`
+
+### 60.11. Estado
+
+**711 pruebas** en verde (666 al empezar). 41 módulos. Coste de la sesión en
+API: **0 USD**. El producto publicado sigue siendo el del 21/08: **la decisión de
+pagar es del usuario y esta sesión no la ha empujado**.
+
+Queda una acción del usuario para que los favoritos sean de verdad compartidos:
+desplegar el Worker (`wrangler deploy`) y pegar su URL en `FAVORITES_ENDPOINT`.
+Hasta entonces funcionan en local, por navegador.

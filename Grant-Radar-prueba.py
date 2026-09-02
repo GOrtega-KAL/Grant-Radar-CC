@@ -174,7 +174,7 @@ from grant_radar.http_client import (
     _http_get,
     _is_safe_public_https_url,
 )
-from grant_radar.browser import PlaywrightBrowser
+from grant_radar.browser import PlaywrightBrowser, VerifyingDocumentBrowser
 # La matriz de reglas previa a Claude. El script solo necesita estas dos: el
 # resto de la matriz es interno, y `holds.py` y el conector ECCP las reciben
 # inyectadas desde aquí como parámetros, no importadas (AGENTS.md 57).
@@ -218,7 +218,9 @@ from grant_radar.documents import (
     enrich_with_official_documents,
 )
 from grant_radar.product_watch import (
+    compare_collection_against_product,
     compare_published_products,
+    summarize_collection_changes,
     summarize_product_changes,
 )
 from grant_radar.publishing import github_upload
@@ -249,7 +251,9 @@ from grant_radar.public_output import (
     build_stats,
     derive_eligible_actions,
     post_procesar_texto,
+    public_stable_key,
     verificar_urls,
+    warn_on_duplicate_stable_keys,
 )
 from grant_radar.dedup import (
     _deduplicate_raw_convocations,
@@ -337,7 +341,7 @@ GITHUB_BRANCH = "main"
 # PARTNER_CATALOG_VERSION, ANALYSIS_PROMPT_VERSION y CACHE_SCHEMA_VERSION
 # viven en grant_radar/versions.py. Subir cualquiera invalida de forma
 # intencionada los análisis anteriores.
-PUBLIC_SCHEMA_VERSION = 3
+PUBLIC_SCHEMA_VERSION = 4  # 4: cada ficha publica `stable_key` (AGENTS.md 60)
 
 # ── RUTAS DE ARCHIVOS (Windows local) ────────────────────────────────
 # El dashboard local y GitHub Pages consumen el mismo JSON junto a index.html.
@@ -452,7 +456,9 @@ print("✓ Función GitHub Pages cargada")
 # ─────────────────────────────────────────────────────────────────────
 
 
-def publish_collection_state(staleness: dict, detected: int, active: int) -> None:
+def publish_collection_state(
+    staleness: dict, detected: int, active: int, collection_changes: dict | None = None
+) -> None:
     """Deja a la vista del dashboard cuántas convocatorias esperan análisis.
 
     Es la pieza que faltaba del flujo acordado el 21/08/2026 (AGENTS.md 47.5):
@@ -470,6 +476,7 @@ def publish_collection_state(staleness: dict, detected: int, active: int) -> Non
         detected=detected,
         active=active,
         generated_at=datetime.now(timezone.utc).isoformat(),
+        collection_changes=collection_changes,
     )
     try:
         with open(COLLECTION_STATE_FILE, "w", encoding="utf-8") as handle:
@@ -881,11 +888,28 @@ def run_pipeline(
         return hold_report
 
     if deterministic_holds:
-        auto_resolution = resolve_bdns_holds_for_pipeline(
-            deterministic_holds,
-            _bdns_intrinsic_exclusion,
-            deterministic_prefilter,
-        )
+        # Segundo intento para los documentos que `requests` no puede traer
+        # porque el origen sirve la cadena de certificados incompleta. Arranca
+        # solo si de verdad falla alguno —lo normal es que no—, y verifica el
+        # TLS: no es relajar la comprobación, es usar un cliente que sabe ir a
+        # buscar el certificado intermedio que falta (AGENTS.md 60.7).
+        #
+        # El ciclo de vida vive aquí, en el orquestador, y no dentro de la
+        # capa de holds: ese módulo recibe inyectado todo lo que necesita
+        # —reglas, prefiltro y ahora el respaldo— y esa disciplina es lo que
+        # permitió extraerlo en su día sin tocar la matriz.
+        with VerifyingDocumentBrowser(headless=True) as document_fallback:
+            auto_resolution = resolve_bdns_holds_for_pipeline(
+                deterministic_holds,
+                _bdns_intrinsic_exclusion,
+                deterministic_prefilter,
+                browser_fallback=document_fallback,
+            )
+            if document_fallback.rescued:
+                print(
+                    f"  Documentos recuperados con el navegador: "
+                    f"{document_fallback.rescued} (cadena TLS incompleta en el origen)"
+                )
         all_raw.extend(auto_resolution["retained"])
         for conv, outcome in auto_resolution["rejected"]:
             deterministic_rejections.append((conv, outcome))
@@ -975,6 +999,23 @@ def run_pipeline(
                 )
                 print(f"    - [{deadline_label}] {item.get('title', '')}")
         print(f"  {'TOTAL':<18} {len(all_raw):>3} vigentes")
+        # El orden en que se gastaría el presupuesto, gratis y antes de gastarlo.
+        # Es la única forma de revisar la priorización sin pagarla, y AGENTS.md
+        # 59.1 dejó dicho por qué importa medir sobre lo que el pipeline
+        # procesa de verdad: Horizon no está en disco, se descarga en vivo, y
+        # es la fuente con más candidatas de cierre próximo.
+        orden = forecast_selection["candidates"]
+        if orden:
+            print(f"  Orden de análisis (las {min(len(orden), 15)} primeras de {len(orden)}):")
+            for posicion, conv in enumerate(orden[:15], start=1):
+                prefiltro = conv.get("deterministic_prefilter") or {}
+                dias = conv.get("deadline_days")
+                print(
+                    f"    {posicion:>2}. [{prefiltro.get('decision', '?'):<9}]"
+                    f" [{dias if isinstance(dias, int) else '?':>4} d]"
+                    f" [{len(conv.get('keywords_found') or []):>2} kw]"
+                    f" {conv.get('source', ''):<14} {str(conv.get('title', ''))[:60]}"
+                )
         print(
             f"  Previsión Claude: {forecast['new_or_changed']} nuevas/cambiadas, "
             f"{forecast['expected_api_calls']} llamadas, "
@@ -1008,7 +1049,40 @@ def run_pipeline(
         staleness = build_staleness_report(load_audit_runs(AUDIT_FILE))
         print("  " + summarize_staleness(staleness))
         print("  Detalle: --staleness-report")
-        publish_collection_state(staleness, detected_count, len(all_raw))
+        # Qué ha encontrado hoy la recopilación que el producto publicado no
+        # tiene, y cuánto de lo publicado se está caducando. Hasta ahora el
+        # estado diario solo decía CUÁNTAS esperaban análisis, así que nadie
+        # se enteraba de que habían aparecido cinco nuevas ni de cuál cerraba
+        # en doce días. Las claves se calculan con `public_stable_key()`: sobre
+        # el `conv` crudo, las convocatorias que se identifican por url darían
+        # una clave distinta de la publicada y saldrían como altas falsas.
+        try:
+            with open(OUTPUT_FILE, "r", encoding="utf-8") as previous_handle:
+                previously_published = json.load(previous_handle).get("convocatorias", [])
+        except (OSError, json.JSONDecodeError):
+            previously_published = []
+        collection_changes = compare_collection_against_product(
+            previously_published,
+            all_raw,
+            collected_keys=[public_stable_key(conv) for conv in all_raw],
+        )
+        RUN_DIAGNOSTICS["collection_changes"] = collection_changes
+        print("  " + summarize_collection_changes(collection_changes))
+        # Una recopilación parcial NO publica el estado diario. Sus cifras
+        # describen una fuente, no el día, y el panel las enseñaría como si
+        # fueran del día completo: «13 sin publicar» pasaría a «2» sin que
+        # nada lo dijera. Es la misma razón por la que `--source` apaga la
+        # vigilancia de recurrentes (AGENTS.md 54.6): una selección parcial
+        # hace daño callando, no fallando.
+        if partial:
+            print(
+                "  Estado de recopilación NO publicado: la selección es parcial "
+                f"({', '.join(raw_by_source)}) y sus cifras no describen el día."
+            )
+        else:
+            publish_collection_state(
+                staleness, detected_count, len(all_raw), collection_changes
+            )
         print("=" * 60)
         return all_raw
 
@@ -1026,6 +1100,10 @@ def run_pipeline(
     normalized_matches = [
         _fold_text(value) for value in (claude_matches or []) if value.strip()
     ]
+    # Ya vienen ordenadas por `prioritize_claude_candidates()`: veredicto del
+    # prefiltro, cierre más próximo, palabras clave y puntuación. Truncar aquí
+    # se queda por tanto con las que más urgen, no con las que respondieron
+    # primero — que es lo que hacía antes del 02/09/2026.
     analysis_candidates = selection["candidates"]
     analysis_target = (
         analysis_candidates[:max_claude]
@@ -1232,6 +1310,12 @@ def run_pipeline(
 
     # 3 ── ORDENAR por match score
     enriched.sort(key=lambda x: x["match"], reverse=True)
+
+    # La ordenación acaba de mover los `id`, que son posicionales: es el sitio
+    # exacto donde se ve por qué hacía falta `stable_key`. Una colisión no
+    # bloquea nada, pero confundiría dos convocatorias para quien las
+    # referencie desde fuera del JSON.
+    warn_on_duplicate_stable_keys(enriched)
 
     # 3B ── VERIFICACIÓN TÉCNICA DE URLs (antes de publicar)
     verificar_urls(enriched)

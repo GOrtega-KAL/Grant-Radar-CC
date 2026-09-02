@@ -55,6 +55,59 @@ BDNS_HOLD_MAX_DOCUMENT_BYTES = 5 * 1024 * 1024
 BDNS_HOLD_MAX_EVIDENCE_CHARS = 48_000
 
 
+def _html_to_text(html: str, max_chars: int) -> str:
+    """El texto legible de un documento HTML, sin navegación ni scripts.
+
+    Se separó de `_hold_document_text()` el 02/09/2026 porque hay dos formas de
+    llegar al mismo HTML: la normal, con `requests`, y el segundo intento con
+    Chromium para hosts cuya cadena de certificados está incompleta
+    (`browser_document_text()`). Las dos tienen que extraer igual, o el mismo
+    documento daría textos distintos según por dónde entrara.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    for node in soup(["script", "style", "noscript", "svg"]):
+        node.decompose()
+    main = soup.find("main") or soup.find("article") or soup.body or soup
+    return " ".join(main.get_text(" ", strip=True).split())[:max_chars]
+
+
+def browser_document_text(browser, url: str, max_chars: int) -> str:
+    """Segundo intento con Chromium cuando `requests` no puede verificar el TLS.
+
+    **Qué problema resuelve, medido el 02/09/2026** (punto 38 del backlog):
+    `boletin.dpz.es` —el Boletín Oficial de la provincia de Zaragoza, la de la
+    propia empresa— envía **un solo certificado**, el suyo, sin el intermedio
+    que completa la cadena. `requests` no puede verificarlo y descarta el
+    documento; Chromium, que lleva su propio almacén y sabe completar cadenas
+    incompletas, abre las mismas dos URLs con **HTTP 200** y devuelve el texto
+    oficial del edicto.
+
+    El backlog planteaba esto como una elección entre añadir un paquete de CA
+    —que hay que mantener— y relajar la verificación TLS —que contradice
+    `_is_safe_public_https_url()` y es la peor idea de las dos—. La medición
+    enseña una tercera vía que no exige ninguna de las dos cosas: **no se
+    relaja nada**, se usa un cliente que verifica mejor.
+
+    Dos límites, deliberados:
+
+    - **`status()` antes que `html()`.** `html()` devuelve "" tanto ante un 404
+      como ante un bloqueo, así que sin comprobar el código se colaría la
+      página de error de un portal como si fuera evidencia oficial.
+    - **Solo HTML.** Un PDF no se puede recuperar así, y un PDF servido tras
+      una cadena rota sigue perdiéndose. Hoy los dos documentos afectados son
+      HTML; si algún día son PDF, esto no los salva y hay que saberlo.
+    """
+    if browser is None:
+        return ""
+    try:
+        if browser.status(url) != 200:
+            return ""
+        return _html_to_text(browser.html(url), max_chars)
+    except Exception as exc:
+        log.warning(f"Segundo intento con navegador fallido para {url}: {exc}")
+        return ""
+
+
 def _hold_document_text(
     response: requests.Response,
     url: str,
@@ -92,12 +145,7 @@ def _hold_document_text(
             return "", "pdf_error"
     if "html" in content_type or b"<html" in content[:500].lower():
         encoding = response.encoding or "utf-8"
-        html = content.decode(encoding, errors="replace")
-        soup = BeautifulSoup(html, "html.parser")
-        for node in soup(["script", "style", "noscript", "svg"]):
-            node.decompose()
-        main = soup.find("main") or soup.find("article") or soup.body or soup
-        return " ".join(main.get_text(" ", strip=True).split())[:max_chars], "html"
+        return _html_to_text(content.decode(encoding, errors="replace"), max_chars), "html"
     if "text" in content_type or "json" in content_type or "xml" in content_type:
         return " ".join(response.text.split())[:max_chars], "text"
     return "", "unsupported"

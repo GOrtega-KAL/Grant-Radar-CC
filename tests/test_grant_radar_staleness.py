@@ -183,12 +183,23 @@ class CollectionStateTests(unittest.TestCase):
         self.assertEqual(estado["collected_on"], "2026-08-31")
 
     def test_it_does_not_repeat_the_published_product(self):
-        """Describe la recopilación, no las convocatorias: si crece, se acopla."""
+        """Describe la recopilación, no las convocatorias: si crece, se acopla.
+
+        El tope subió de 9 a 10 el 02/09/2026, por un solo campo:
+        `new_since_publication`. La primera versión del cambio metía además
+        `expiring_soon`, `expired` y una muestra con el título y la fecha de
+        tres convocatorias publicadas — y esta prueba la paró. Tenía razón:
+        eso es el producto, el panel ya lo tiene cargado y puede derivarlo.
+        Subir el número sin más habría convertido el guardián en un trámite.
+        """
         estado = build_collection_state(
             self.informe(), detected=1, active=1, generated_at="2026-08-31T07:00:00+00:00"
         )
         self.assertNotIn("convocatorias", estado)
-        self.assertLessEqual(len(estado), 9)
+        self.assertLessEqual(len(estado), 10)
+        # Ningún valor del estado puede ser una lista de fichas.
+        for clave, valor in estado.items():
+            self.assertNotIsInstance(valor, list, f"{clave} repite el producto")
 
     def test_nothing_pending_is_a_valid_state_not_an_absence(self):
         estado = build_collection_state(

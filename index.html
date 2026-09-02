@@ -852,6 +852,51 @@
     cursor: pointer; transition: .15s ease;
   }
   .card-external-link:hover { background: var(--brand-soft); border-color: rgba(21, 86, 168, .38); }
+
+  /* Favorito. Redondo, frente al cuadrado redondeado del enlace externo: la
+     diferencia de forma distingue un interruptor de estado de una acción de
+     navegación, y se lee antes que el color. Mismo hueco de 27 px para no
+     descuadrar la columna. */
+  .card-favorite {
+    display: inline-grid; place-items: center; flex: 0 0 auto;
+    width: 27px; height: 27px; border: 1px solid var(--border);
+    border-radius: 999px; background: var(--surface-2); color: var(--text-3);
+    cursor: pointer; transition: .15s ease;
+  }
+  .card-favorite svg { fill: none; }
+  .card-favorite:hover { border-color: var(--warning); color: var(--warning); }
+  .card-favorite.is-favorite {
+    border-color: var(--warning); background: var(--warning-soft); color: var(--warning);
+  }
+  .card-favorite.is-favorite svg { fill: currentColor; }
+
+  .collection-state-changes { margin-top: 5px; font-weight: 700; }
+  .collection-state-sample { margin-top: 3px; opacity: .82; font-weight: 600; }
+
+  .favorites-chip { display: inline-flex; align-items: center; gap: 5px; }
+  .favorites-chip .favorites-star { color: var(--warning); }
+  .favorites-chip.active { border-color: var(--warning); background: var(--warning); color: #fff; }
+  .favorites-chip.active .favorites-star { color: #fff; }
+  .favorites-chip.is-offline { border-style: dashed; }
+
+  /* Un favorito con el plazo vencido sí se muestra bajo el filtro de
+     favoritos: que una convocatoria marcada a mano desaparezca sin avisar es
+     peor que verla caducada. Atenuada, para que no se confunda con las vivas. */
+  .conv-item.expired-favorite { opacity: .62; }
+
+  .favorite-block {
+    display: none; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 10px 12px; border: 1px solid var(--warning);
+    border-radius: 10px; background: var(--warning-soft);
+    font-size: 12px; color: var(--text-2);
+  }
+  .favorite-block.visible { display: flex; }
+  .favorite-block input {
+    flex: 1 1 220px; min-width: 0; padding: 6px 9px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); color: var(--text); font: inherit;
+  }
+  .favorite-block .favorite-meta { flex: 0 0 auto; color: var(--text-3); font-size: 11px; }
   .score-value { color: var(--brand); font-size: 25px; line-height: 1; font-weight: 850; letter-spacing: -1px; }
   .score-label { margin-top: 3px; color: var(--text-3); font-size: 9px; text-transform: uppercase; letter-spacing: .65px; font-weight: 800; }
   .deadline-value { color: var(--text-2); font-size: 12px; font-weight: 780; }
@@ -1307,8 +1352,12 @@
 
     .sidebar { grid-template-columns: 1fr; }
     .analytics-grid { grid-template-columns: 1fr; }
-    .conv-item { padding: 12px; grid-template-columns: minmax(0, 1fr) 82px; }
-    .conv-side { min-width: 82px; }
+    /* 104 y no 82: en la columna derecha caben ahora dos botones de 27 px
+       (favorito y enlace) más el porcentaje de encaje. Los 22 px salen del
+       ancho del título, y el test de desbordamiento a 390 px lo vigila. */
+    .conv-item { padding: 12px; grid-template-columns: minmax(0, 1fr) 104px; }
+    .conv-side { min-width: 104px; }
+    .score-line { gap: 5px; }
     .conv-org { max-width: 100%; }
 
     .decision-strip { grid-template-columns: 1fr 1fr; }
@@ -1477,6 +1526,19 @@
           <button class="filter-chip" type="button" onclick="setFilter('tag','emis',this)">Emisiones</button>
         </div>
       </div>
+      <div class="filter-cluster">
+        <span class="filter-caption">Selección</span>
+        <div class="chip-scroll">
+          <!-- No pasa por setFilter(), que es excluyente dentro de su grupo:
+               este filtro tiene que poder combinarse con fuente, temática y
+               búsqueda a la vez. -->
+          <button class="filter-chip favorites-chip" type="button" id="favorites-chip"
+                  aria-pressed="false" onclick="toggleFavoritesFilter()">
+            <svg class="favorites-star" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 3.6 2.6 5.27 5.82.85-4.21 4.1.99 5.79L12 16.88l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85z"/></svg>
+            <span id="favorites-chip-label">Favoritos</span>
+          </button>
+        </div>
+      </div>
       <div class="filter-cluster" style="display:none" id="mobile-extra-controls">
         <span class="filter-caption">Visibilidad</span>
         <div class="chip-scroll">
@@ -1631,6 +1693,11 @@
         <h2 class="modal-title" id="ov-title">—</h2>
       </div>
       <div class="modal-actions">
+        <button class="card-favorite" type="button" id="ov-favorite" aria-pressed="false"
+                aria-label="Marcar como favorita" title="Marcar como favorita"
+                onclick="toggleCurrentFavorite()">
+          <svg width="15" height="15" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="m12 3.6 2.6 5.27 5.82.85-4.21 4.1.99 5.79L12 16.88l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85z"/></svg>
+        </button>
         <button class="primary-btn" type="button" id="ov-open-link" onclick="openCurrentConvUrl()">Abrir convocatoria ↗</button>
         <button class="ghost-btn" type="button" onclick="closeOverlay()" id="close-modal-btn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
@@ -1641,6 +1708,14 @@
 
     <div class="modal-body">
       <div class="meta-row" id="ov-meta-row"></div>
+      <!-- Solo visible cuando la convocatoria está marcada. La nota es lo que
+           convierte una lista de estrellas en algo que otra persona entiende
+           sin preguntar. -->
+      <div class="favorite-block" id="ov-favorite-block">
+        <span class="favorite-meta" id="ov-favorite-meta"></span>
+        <input type="text" id="ov-favorite-note" maxlength="200" placeholder="Nota para el equipo (opcional)"
+               aria-label="Nota sobre esta convocatoria favorita">
+      </div>
       <div class="notice warning" id="ov-review-block"></div>
       <div class="notice warning" id="ov-url-generica-block">Página general del programa: la convocatoria específica puede requerir navegación adicional.</div>
       <div class="notice danger" id="ov-url-rota-block">El enlace no respondió correctamente en la última comprobación automática. Verificar manualmente.</div>
@@ -1763,7 +1838,7 @@
     analysis_pending: 'análisis pendiente'
   };
 
-  const filterState = { source: 'all', tag: 'all', query: '', showDiscarded: false, onlyReview: false };
+  const filterState = { source: 'all', tag: 'all', query: '', showDiscarded: false, onlyReview: false, onlyFavorites: false };
   const sortState = { key: 'match', dir: 'desc' };
   const sortHelpText = {
     match: 'Compatibilidad: grado de alineación tecnológica y estratégica con las capacidades conocidas de Kalfrisa.',
@@ -1852,6 +1927,26 @@
     return { actions: [], basis: 'unavailable' };
   }
 
+  // Cómo se reconoce una convocatoria entre publicaciones. Es el gemelo de
+  // `stable_identity()` (grant_radar/product_watch.py) y debe dar la MISMA
+  // cadena: hay una prueba que compara las dos sobre el convocatorias.json
+  // real, porque dos implementaciones de una identidad se separan solas.
+  //
+  // Por qué el panel la deriva en vez de leer `stable_key` y ya está: el
+  // backend solo escribe convocatorias.json en una ejecución con Claude, que
+  // cuesta dinero. Sin esta caída, los favoritos no funcionarían hasta la
+  // próxima publicación de pago. Y coinciden: el `url` del JSON ya viene
+  // normalizado, que es justo lo que hace `public_stable_key()` al publicar.
+  function deriveStableKey(raw) {
+    const source = raw.source == null ? '' : String(raw.source);
+    for (const key of ['identifier', 'bdns_id', 'url']) {
+      const value = raw[key] ? String(raw[key]).trim() : '';
+      if (value) return `${source}|${key}|${value}`;
+    }
+    const title = (raw.title ? String(raw.title) : '').trim().slice(0, 120);
+    return `${source}|title|${title}`;
+  }
+
   function normalizeConv(raw) {
     const match = Number.isFinite(Number(raw.fit_score)) ? Number(raw.fit_score) : Number(raw.match ?? 0);
     const actionability = Number.isFinite(Number(raw.actionability_score)) ? Number(raw.actionability_score) : match;
@@ -1880,6 +1975,7 @@
     return {
       ...raw,
       id: raw.id,
+      stable_key: raw.stable_key || deriveStableKey(raw),
       deadline: raw.deadline === null || raw.deadline === undefined || raw.deadline === ''
         ? null : (Number.isFinite(Number(raw.deadline)) ? Number(raw.deadline) : null),
       match,
@@ -1955,7 +2051,12 @@
   }
 
   function deadlineText(days, suffix = ' días') {
-    return Number.isFinite(days) ? `${days}${suffix}` : 'Sin fecha';
+    if (!Number.isFinite(days)) return 'Sin fecha';
+    // Un plazo negativo solo llega a la vista con el filtro de favoritos
+    // activo, que es el único sitio donde una convocatoria vencida se sigue
+    // mostrando. «-3 días» no dice nada; «Plazo vencido» sí.
+    if (days < 0) return 'Plazo vencido';
+    return `${days}${suffix}`;
   }
 
   function formatDeadlineDate(dateStr) {
@@ -2113,7 +2214,7 @@
   }
 
   function updateMobileFilterCount() {
-    const count = [filterState.source !== 'all', filterState.tag !== 'all', Boolean(filterState.query), filterState.showDiscarded, filterState.onlyReview].filter(Boolean).length;
+    const count = [filterState.source !== 'all', filterState.tag !== 'all', Boolean(filterState.query), filterState.showDiscarded, filterState.onlyReview, filterState.onlyFavorites].filter(Boolean).length;
     document.getElementById('mobile-filter-count').textContent = count ? `(${count})` : '';
   }
 
@@ -2124,9 +2225,212 @@
     extras.style.display = visible ? 'flex' : 'none';
   }
 
+
+  // ── FAVORITOS ────────────────────────────────────────────────────────────
+  //
+  // Rellenar con la URL del Worker desplegado (scripts/favoritos-worker/).
+  // Vacía significa MODO LOCAL: los favoritos viven en el localStorage de cada
+  // navegador y no se comparten. Ese modo no es una alternativa descartada,
+  // es el respaldo: si el Worker no responde, el panel cae a él solo. Y el día
+  // que la herramienta viva en el servidor propio, migrar es cambiar esta
+  // línea.
+  // Se puede fijar también desde fuera —un `<script>` de despliegue, o la
+  // prueba que ejercita el camino compartido— sin tocar este archivo.
+  const FAVORITES_ENDPOINT = window.GRANT_RADAR_FAVORITES_ENDPOINT || '';
+
+  const FAVORITES_LOCAL_KEY = 'grant-radar-favoritos';
+  const FAVORITES_NAME_KEY = 'grant-radar-nombre';
+
+  // Clave estable → registro. La clave NUNCA es el `id` del JSON: ese es un
+  // contador posicional que cambia en cada publicación, así que un favorito
+  // guardado contra él señalaría mañana otra convocatoria, en silencio.
+  let favorites = new Map();
+  let favoritesOffline = false;
+
+  function localGet(key, fallback) {
+    try { return window.localStorage.getItem(key) ?? fallback; }
+    catch (error) { return fallback; }
+  }
+
+  function localSet(key, value) {
+    try { window.localStorage.setItem(key, value); } catch (error) { /* modo privado */ }
+  }
+
+  function favoritesLocalRead() {
+    try {
+      const parsed = JSON.parse(localGet(FAVORITES_LOCAL_KEY, '[]'));
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) { return []; }
+  }
+
+  function favoritesLocalWrite() {
+    localSet(FAVORITES_LOCAL_KEY, JSON.stringify([...favorites.values()]));
+  }
+
+  // El nombre se pide UNA vez y se recuerda. Identifica al navegador, no a la
+  // lista: es una preferencia local legítima, a diferencia de los favoritos.
+  // Si el navegador descarta el diálogo —lo hacen los tests— se queda vacío y
+  // el favorito sale sin dueño, en vez de bloquear nada.
+  function favoriteAuthor() {
+    let name = localGet(FAVORITES_NAME_KEY, '');
+    if (name) return name;
+    name = (window.prompt('¿Quién marca este favorito? (se muestra al resto del equipo)') || '').trim().slice(0, 40);
+    if (name) localSet(FAVORITES_NAME_KEY, name);
+    return name;
+  }
+
+  async function favoritesRequest(method, key, body) {
+    if (!FAVORITES_ENDPOINT) return null;
+    // La clave va en la query string y no en la ruta: las de las convocatorias
+    // que se identifican por url llevan barras dentro, y un %2F en un path es
+    // terreno de normalización de proxies.
+    const url = key
+      ? `${FAVORITES_ENDPOINT}?key=${encodeURIComponent(key)}`
+      : FAVORITES_ENDPOINT;
+    const response = await fetch(url, {
+      method,
+      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (!response.ok) throw new Error(`favoritos: HTTP ${response.status}`);
+    return response.json();
+  }
+
+  async function loadFavorites() {
+    if (!FAVORITES_ENDPOINT) {
+      favorites = new Map(favoritesLocalRead().map(item => [item.key, item]));
+      favoritesOffline = false;
+      renderFavoritesChip();
+      return;
+    }
+    try {
+      const data = await favoritesRequest('GET');
+      favorites = new Map((data.items || []).map(item => [item.key, item]));
+      favoritesOffline = false;
+    } catch (error) {
+      // Un endpoint caído no puede romper el panel: se sigue con lo último que
+      // este navegador sabía, y el chip lo dice en vez de fingir que está al día.
+      console.warn('Favoritos compartidos no disponibles, usando copia local:', error);
+      favorites = new Map(favoritesLocalRead().map(item => [item.key, item]));
+      favoritesOffline = true;
+    }
+    renderFavoritesChip();
+  }
+
+  function favoriteRecordFor(c) {
+    return {
+      key: c.stable_key,
+      title: String(c.title || '').slice(0, 300),
+      source: String(c.source || ''),
+      url: String(c.url || ''),
+      added_by: favoriteAuthor(),
+      added_at: new Date().toISOString(),
+      note: ''
+    };
+  }
+
+  // Escritura optimista: se pinta primero y se envía después. Si el envío
+  // falla se revierte y el chip pasa a «sin conexión», de modo que lo que se
+  // ve en pantalla nunca miente sobre lo que hay guardado al otro lado.
+  async function persistFavorite(method, key, record, undo) {
+    favoritesLocalWrite();
+    if (!FAVORITES_ENDPOINT) return;
+    try {
+      await favoritesRequest(method, key, record);
+      favoritesOffline = false;
+    } catch (error) {
+      console.warn('No se pudo guardar el favorito:', error);
+      undo();
+      favoritesOffline = true;
+      favoritesLocalWrite();
+      renderConvs();
+      updateOverlayFavorite();
+    }
+    renderFavoritesChip();
+  }
+
+  function toggleFavorite(id) {
+    const c = convocatorias.find(item => item.id === id);
+    if (!c || !c.stable_key) return;
+    const key = c.stable_key;
+    if (favorites.has(key)) {
+      const previo = favorites.get(key);
+      favorites.delete(key);
+      renderConvs();
+      renderFavoritesChip();
+      updateOverlayFavorite();
+      persistFavorite('DELETE', key, null, () => favorites.set(key, previo));
+    } else {
+      const record = favoriteRecordFor(c);
+      favorites.set(key, record);
+      renderConvs();
+      renderFavoritesChip();
+      updateOverlayFavorite();
+      persistFavorite('PUT', key, record, () => favorites.delete(key));
+    }
+  }
+
+  function toggleCurrentFavorite() {
+    if (currentOverlayId !== null) toggleFavorite(currentOverlayId);
+  }
+
+  function saveFavoriteNote() {
+    const c = convocatorias.find(item => item.id === currentOverlayId);
+    const record = c && favorites.get(c.stable_key);
+    if (!record) return;
+    const nota = document.getElementById('ov-favorite-note').value.slice(0, 200);
+    if (nota === record.note) return;
+    const previo = record.note;
+    record.note = nota;
+    persistFavorite('PUT', record.key, record, () => { record.note = previo; });
+  }
+
+  function updateOverlayFavorite() {
+    const button = document.getElementById('ov-favorite');
+    const block = document.getElementById('ov-favorite-block');
+    if (!button || !block) return;
+    const c = convocatorias.find(item => item.id === currentOverlayId);
+    const record = c && favorites.get(c.stable_key);
+    button.classList.toggle('is-favorite', Boolean(record));
+    button.setAttribute('aria-pressed', String(Boolean(record)));
+    button.setAttribute('aria-label', record ? 'Quitar de favoritos' : 'Marcar como favorita');
+    button.title = record ? 'Quitar de favoritos' : 'Marcar como favorita';
+    block.classList.toggle('visible', Boolean(record));
+    if (!record) return;
+    const cuando = new Date(record.added_at);
+    const fecha = Number.isNaN(cuando.getTime())
+      ? '' : ` el ${cuando.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}`;
+    document.getElementById('ov-favorite-meta').textContent =
+      `Añadida por ${record.added_by || 'alguien'}${fecha}`;
+    document.getElementById('ov-favorite-note').value = record.note || '';
+  }
+
+  function renderFavoritesChip() {
+    const chip = document.getElementById('favorites-chip');
+    const label = document.getElementById('favorites-chip-label');
+    if (!chip || !label) return;
+    label.textContent = favoritesOffline
+      ? 'Favoritos (sin conexión)'
+      : `Favoritos${favorites.size ? ` (${favorites.size})` : ''}`;
+    chip.classList.toggle('active', filterState.onlyFavorites);
+    chip.classList.toggle('is-offline', favoritesOffline);
+    chip.setAttribute('aria-pressed', String(filterState.onlyFavorites));
+  }
+
+  function toggleFavoritesFilter() {
+    filterState.onlyFavorites = !filterState.onlyFavorites;
+    renderFavoritesChip();
+    updateMobileFilterCount();
+    renderConvs();
+  }
+
   function getFiltered() {
     let list = convocatorias.filter(c => {
-      if ((c.deadline ?? 1) <= 0) return false;
+      if (filterState.onlyFavorites && !favorites.has(c.stable_key)) return false;
+      // Excepción deliberada: bajo el filtro de favoritos, uno vencido SÍ se
+      // muestra. Que una convocatoria marcada a mano desaparezca sin avisar es
+      // peor que verla caducada; la tarjeta la atenúa y la etiqueta.
+      if ((c.deadline ?? 1) <= 0 && !filterState.onlyFavorites) return false;
       if (c.descartada && !filterState.showDiscarded) return false;
       if (filterState.onlyReview && !c.data_pending && !c.review_required) return false;
       if (filterState.source !== 'all' && !convHasSource(c, filterState.source)) return false;
@@ -2447,6 +2751,10 @@
       renderAll();
     }
     loadCollectionState();
+    // Después de pintar, no antes: la lista de favoritos es opcional y su
+    // demora no debe retrasar lo que el usuario ha venido a ver.
+    await loadFavorites();
+    renderConvs();
   }
 
   // Estado de la última recopilación diaria. Es un archivo aparte y opcional:
@@ -2476,11 +2784,52 @@
           ? `lo publicado tiene ${days} día${days === 1 ? '' : 's'}`
           : ''
       ].filter(Boolean);
-      banner.innerHTML = partes.join(' · ');
+      banner.innerHTML = partes.join(' · ') + collectionChangesHtml(state);
       banner.style.display = 'block';
     } catch (error) {
       banner.style.display = 'none';
     }
+  }
+
+  // La segunda línea del aviso diario: qué se está caducando de lo publicado y
+  // qué ha encontrado hoy la recopilación que no está en ello.
+  //
+  // Solo UNA de las tres cifras viene del archivo de estado
+  // (`new_since_publication`), porque es la única que el panel no puede saber:
+  // exige la recopilación de hoy. Las otras dos se derivan de las
+  // convocatorias ya cargadas — meterlas en el archivo habría sido repetir el
+  // producto en un archivo que existe justamente para no hacerlo.
+  //
+  // «detectadas, sin analizar» es literal y no es adorno: esas convocatorias
+  // han pasado el filtro determinista, no el de Haiku. Presentarlas como
+  // oportunidades sería contar como encontrado lo que aún no se ha evaluado.
+  const COLLECTION_SOON_DAYS = 14;
+
+  function collectionChangesHtml(state) {
+    const nuevas = Number(state.new_since_publication);
+    const vivas = convocatorias.filter(c => Number.isFinite(Number(c.deadline)));
+    const proximas = vivas.filter(c => c.deadline >= 0 && c.deadline <= COLLECTION_SOON_DAYS);
+    const vencidas = vivas.filter(c => c.deadline < 0).length;
+
+    const partes = [];
+    if (Number.isFinite(nuevas) && nuevas > 0) {
+      partes.push(`<strong>${nuevas} sin publicar</strong> (detectadas, sin analizar)`);
+    }
+    if (proximas.length) {
+      partes.push(`${proximas.length} publicada${proximas.length === 1 ? '' : 's'} cierra${proximas.length === 1 ? '' : 'n'} en ${COLLECTION_SOON_DAYS} días o menos`);
+    }
+    if (vencidas) {
+      partes.push(`${vencidas} ya vencida${vencidas === 1 ? '' : 's'}`);
+    }
+    if (!partes.length) return '';
+
+    const muestra = [...proximas].sort((a, b) => a.deadline - b.deadline).slice(0, 3);
+    const detalle = muestra.length
+      ? `<div class="collection-state-sample">${muestra.map(c =>
+          `${escapeHtml(c.title)} — ${c.deadline} día${c.deadline === 1 ? '' : 's'}`
+        ).join(' · ')}</div>`
+      : '';
+    return `<div class="collection-state-changes">${partes.join(' · ')}</div>${detalle}`;
   }
 
   function formatShortDate(value) {
@@ -2631,9 +2980,13 @@
       const deadlineCls = deadlineClass(c.deadline);
       const progressColor = c.fecha_prevista ? 'var(--warning)' : c.fecha_sin_confirmar ? 'var(--neutral)' : deadlineColor(c.deadline);
       const title = escapeHtml(c.title);
+      const isFavorite = favorites.has(c.stable_key);
+      // Un favorito vencido solo llega hasta aquí con el filtro de favoritos
+      // activo; getFiltered() lo descarta en cualquier otro caso.
+      const expiredFavorite = isFavorite && (c.deadline ?? 1) <= 0;
 
       return `
-        <article class="conv-item ${priorityClass}${c.descartada ? ' descartada' : ''}" tabindex="0" role="button" aria-label="Abrir detalle de ${title}" onclick="openOverlay(${Number(c.id)})" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openOverlay(${Number(c.id)})}">
+        <article class="conv-item ${priorityClass}${c.descartada ? ' descartada' : ''}${expiredFavorite ? ' expired-favorite' : ''}" tabindex="0" role="button" aria-label="Abrir detalle de ${title}" onclick="openOverlay(${Number(c.id)})" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();openOverlay(${Number(c.id)})}">
           <div class="conv-main">
             <div class="conv-eyebrow">
               <span class="conv-source">${escapeHtml(c.source)}</span>
@@ -2655,6 +3008,9 @@
           <div class="conv-side">
             <div class="score-block">
               <div class="score-line">
+                <button class="card-favorite ${isFavorite ? 'is-favorite' : ''}" type="button" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Quitar de favoritos' : 'Marcar como favorita'}: ${title}" title="${isFavorite ? 'Quitar de favoritos' : 'Marcar como favorita'}" onclick="event.stopPropagation();toggleFavorite(${Number(c.id)})">
+                  <svg width="15" height="15" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="m12 3.6 2.6 5.27 5.82.85-4.21 4.1.99 5.79L12 16.88l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85z"/></svg>
+                </button>
                 <button class="card-external-link" type="button" aria-label="Abrir convocatoria oficial: ${title}" title="Abrir convocatoria" onclick="event.stopPropagation();openConvUrl(${Number(c.id)})">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 5h6v6M19 5l-9 9M10 7H5v12h12v-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
@@ -2835,6 +3191,7 @@
     }
     document.getElementById('ov-action').textContent = c.action || 'No se ha definido una acción.';
     document.getElementById('ov-open-link').style.display = safeExternalUrl(c.url) ? 'inline-flex' : 'none';
+    updateOverlayFavorite();
 
     const trlString = c.trl_min || c.trl_max ? `TRL ${c.trl_min || '?'}–${c.trl_max || '?'}` : null;
     const consortium = c.socio_consorcio && c.socio_consorcio !== 'N/A' ? c.socio_consorcio : null;
@@ -2916,10 +3273,23 @@
     document.getElementById('ov-model-usage').innerHTML = `
       <p><strong>Tokens:</strong> ${c.token_usage?.total_tokens == null ? 'N/D' : Number(c.token_usage.total_tokens).toLocaleString('es-ES')}</p>
       <p><strong>Coste estimado:</strong> ${c.token_usage?.estimated_cost_usd == null ? 'N/D' : `$${Number(c.token_usage.estimated_cost_usd).toFixed(4)}`}</p>`;
+    // Dos campos que el backend publicaba desde hace tiempo y nadie leía
+    // (punto 11 del backlog): cuánta evidencia oficial respalda la ficha, y el
+    // enlace al registro oficial cuando lo hay.
+    //
+    // El «ID» que salía aquí era el contador posicional del JSON: cambia en
+    // cada publicación, así que anotarlo no servía para volver a encontrar
+    // nada. Se sustituye por la identidad estable, que es la que sí aguanta.
+    const documentos = Number(c.related_documents_count);
+    const registroBdns = safeExternalUrl(c.bdns_url);
     document.getElementById('ov-technical-meta').innerHTML = `
       <p><strong>Fuente:</strong> ${escapeHtml(c.source)}</p>
       <p><strong>Calidad de evidencia:</strong> ${escapeHtml(c.evidence_quality)}</p>
-      <p><strong>ID:</strong> ${escapeHtml(c.id)}</p>`;
+      ${Number.isFinite(documentos) && documentos > 0
+        ? `<p><strong>Documentos oficiales leídos:</strong> ${documentos}</p>` : ''}
+      ${registroBdns
+        ? `<p><strong>Registro oficial:</strong> <a href="${escapeHtml(registroBdns)}" target="_blank" rel="noopener noreferrer">ficha en la BDNS ↗</a></p>` : ''}
+      <p><strong>Identidad:</strong> <code>${escapeHtml(c.stable_key || '')}</code></p>`;
 
     const discardBlock = document.getElementById('ov-descarte-block');
     if (c.descartada && c.motivo_descarte) {
@@ -3042,6 +3412,19 @@
   document.getElementById('urgent-card').addEventListener('click', () => { if (urgentConvId !== null) openOverlay(urgentConvId); });
   document.getElementById('urgent-card').addEventListener('keydown', event => {
     if ((event.key === 'Enter' || event.key === ' ') && urgentConvId !== null) { event.preventDefault(); openOverlay(urgentConvId); }
+  });
+
+  // La nota se guarda al salir del campo, no en cada tecla: son 200
+  // caracteres y una escritura por pulsación llenaría el Worker de ruido.
+  document.getElementById('ov-favorite-note').addEventListener('change', saveFavoriteNote);
+  document.getElementById('ov-favorite-note').addEventListener('blur', saveFavoriteNote);
+
+  // Lo que marque un compañero aparece al volver a esta pestaña, sin recargar.
+  // Solo tiene sentido con endpoint: en modo local no hay nadie más que pueda
+  // haber cambiado nada.
+  window.addEventListener('focus', () => {
+    if (!FAVORITES_ENDPOINT) return;
+    loadFavorites().then(renderConvs);
   });
 
   updateSortDirectionButton();

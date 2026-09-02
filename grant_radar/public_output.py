@@ -27,6 +27,7 @@ from bs4 import BeautifulSoup
 
 from grant_radar.http_client import HTTP_USER_AGENT
 from grant_radar.parsing_helpers import _fold_text, _levenshtein, _web_url_or_empty
+from grant_radar.product_watch import stable_identity
 from grant_radar.runtime_state import RUN_DIAGNOSTICS, SOURCE_RUNTIME_METADATA
 from grant_radar.tech_taxonomy import TECH_TAGS, _compat_tags_for
 
@@ -408,6 +409,60 @@ def _normalize_public_url(url: str) -> str:
     return value
 
 
+def public_stable_key(conv: dict) -> str:
+    """La clave con la que una convocatoria se reconoce entre publicaciones.
+
+    Adaptador de una línea, y existe por un detalle que costaría caro
+    descubrir sobre la marcha: `stable_identity()` cae al `url` cuando no hay
+    `identifier` ni `bdns_id` —10 de las 77 fichas del producto del 21/08 lo
+    hacen—, y el `url` que se publica no es el que trae la convocatoria
+    recopilada, sino el que sale de `_normalize_public_url()`. Calcular la
+    clave sobre el `conv` crudo produciría una cadena que no coincide con la
+    que `compare_published_products()` calcula después leyendo el JSON, y las
+    dos parecerían la misma hasta que alguien comparase.
+
+    Por eso la normalización va aquí y no dentro de `stable_identity()`:
+    `product_watch` es una hoja del grafo de imports y meterle una dependencia
+    de este módulo crearía un ciclo.
+    """
+    return stable_identity({**conv, "url": _normalize_public_url(conv.get("url", ""))})
+
+
+def warn_on_duplicate_stable_keys(records: list) -> list:
+    """Avisa si dos fichas publicadas comparten `stable_key`.
+
+    Hoy no pasa —77 de 77 únicas al medirlo—, pero la clave es la referencia
+    de todo lo que vive fuera del JSON, así que una colisión silenciosa haría
+    que dos convocatorias se confundieran para siempre. Solo avisa: no decide
+    ni bloquea, como el resto de la vigilancia del producto.
+    """
+    vistas = {}
+    repetidas = []
+    for record in records:
+        clave = str(record.get("stable_key", ""))
+        if not clave:
+            continue
+        if clave in vistas:
+            repetidas.append({
+                "stable_key": clave,
+                "titles": [vistas[clave], str(record.get("title", ""))[:120]],
+            })
+        else:
+            vistas[clave] = str(record.get("title", ""))[:120]
+    RUN_DIAGNOSTICS["stable_key_collisions"] = {
+        "checked": len(records),
+        "distinct": len(vistas),
+        "collisions": repetidas[:10],
+    }
+    if repetidas:
+        log.warning(
+            f"  ⚠ {len(repetidas)} colisión(es) de stable_key: dos convocatorias "
+            f"comparten identidad y quien las referencie desde fuera del JSON "
+            f"—favoritos, enlaces— las confundirá"
+        )
+    return repetidas
+
+
 # Ruta que no puede existir en ningún portal real. Sirve como control: si un
 # host responde "correctamente" a esto, sus códigos HTTP no distinguen una URL
 # válida de una inventada, y verificar por código es engañarse.
@@ -541,6 +596,10 @@ def _assemble_public_record(record_id: int, conv: dict, analysis: dict) -> dict:
     )
     return {
         "id":                  record_id,
+        # El `id` es posicional y cambia entre publicaciones; `stable_key` no.
+        # Lo que vive fuera del JSON —favoritos, enlaces, notas— se referencia
+        # por esta, nunca por el id (AGENTS.md 60).
+        "stable_key":          public_stable_key(conv),
         "source":              conv["source"],
         "identifier":          conv.get("identifier", ""),
         "discovery_sources":   conv.get("discovery_sources", [conv["source"]]),

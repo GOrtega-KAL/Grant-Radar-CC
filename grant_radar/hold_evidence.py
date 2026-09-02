@@ -35,6 +35,7 @@ from grant_radar.documents import (
     BDNS_HOLD_MAX_DOCUMENT_BYTES,
     BDNS_HOLD_MAX_EVIDENCE_CHARS,
     _hold_document_text,
+    browser_document_text,
 )
 from grant_radar.http_client import _http_get, _is_safe_public_https_url
 from grant_radar.parsing_helpers import _fold_text, select_evidence_excerpt
@@ -113,8 +114,21 @@ def retrieve_bdns_hold_evidence(
     session: requests.Session | None = None,
     *,
     intrinsic_exclusion,
+    browser_fallback=None,
 ) -> dict:
-    """Recupera evidencia oficial acotada para una causa BDNS en espera."""
+    """Recupera evidencia oficial acotada para una causa BDNS en espera.
+
+    `browser_fallback` es un segundo intento opcional para los documentos que
+    `requests` no consigue traer: recibe la url y devuelve texto, o "" si
+    tampoco puede. Existe por `boletin.dpz.es`, que sirve la cadena de
+    certificados incompleta y era el único host que fallaba de toda la
+    recopilación (punto 38 del backlog, medido el 02/09/2026). Si nadie lo
+    inyecta, el comportamiento es exactamente el de antes.
+
+    Lo inyecta solo `resolve_bdns_holds_for_pipeline()`, que es el camino
+    diario. El piloto y el replay siguen sin él a propósito: son herramientas
+    de diagnóstico que se lanzan a mano, y no compensa que arranquen Chromium.
+    """
     client = session or requests.Session()
     documents = []
     structured_metadata = {
@@ -186,6 +200,10 @@ def retrieve_bdns_hold_evidence(
     source_bytes = 0
     cache_hits = 0
     cache_misses = 0
+    # Documentos que `requests` no pudo traer y el navegador sí. Va a métricas
+    # para que quede rastro en la auditoría: si un día sube, es que otra fuente
+    # ha empezado a servir mal sus certificados.
+    browser_rescues = 0
     document_cache = _load_bdns_document_cache()
     cache_changed = False
     for candidate in candidates:
@@ -233,7 +251,44 @@ def retrieve_bdns_hold_evidence(
         )
         fetched += 1
         if response is None:
-            errors += 1
+            # Segundo intento con el navegador, solo si alguien lo ha
+            # inyectado. Es lo que rescata los edictos de `boletin.dpz.es`:
+            # su cadena de certificados está incompleta —el servidor manda un
+            # único certificado— y Chromium la completa. No se relaja ninguna
+            # verificación: se usa un cliente que verifica mejor.
+            texto_navegador = (
+                browser_document_text(
+                    browser_fallback, url, BDNS_HOLD_MAX_EVIDENCE_CHARS
+                )
+                if callable(browser_fallback) or browser_fallback is not None
+                else ""
+            )
+            if len(texto_navegador) < 80:
+                errors += 1
+                continue
+            browser_rescues += 1
+            documento_bytes = len(texto_navegador.encode("utf-8"))
+            source_bytes += documento_bytes
+            total_bytes += documento_bytes
+            documents.append({
+                "title": candidate.get("title", "Documento oficial"),
+                "url": url,
+                "kind": candidate.get("kind", "document"),
+                "format": "html_browser",
+                "text": texto_navegador,
+                "bytes": documento_bytes,
+            })
+            if cacheable:
+                document_cache[cache_key] = {
+                    "url": url,
+                    "published_date": candidate.get("published_date", ""),
+                    "kind": candidate.get("kind", "document"),
+                    "format": "html_browser",
+                    "bytes": documento_bytes,
+                    "text": texto_navegador,
+                    "cached_at": datetime.now(timezone.utc).isoformat(),
+                }
+                cache_changed = True
             continue
         if not _is_safe_public_https_url(str(response.url)):
             errors += 1
@@ -310,6 +365,7 @@ def retrieve_bdns_hold_evidence(
             "cache_hits": cache_hits,
             "cache_misses": cache_misses,
             "errors": errors,
+            "browser_rescues": browser_rescues,
             "bytes": total_bytes,
             "source_bytes": source_bytes,
             "documents_with_text": len(prompt_documents),

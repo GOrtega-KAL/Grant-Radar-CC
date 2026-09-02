@@ -900,8 +900,16 @@ def resolve_bdns_holds_for_pipeline(
     intrinsic_exclusion,
     prefilter,
     session: requests.Session | None = None,
+    browser_fallback=None,
 ) -> dict:
-    """Elimina la revisión humana: regla local primero y Haiku general después."""
+    """Elimina la revisión humana: regla local primero y Haiku general después.
+
+    `browser_fallback` se limita a viajar hasta `retrieve_bdns_hold_evidence()`,
+    que lo usa como segundo intento para los documentos que `requests` no puede
+    traer porque el host sirve mal su cadena de certificados. Se inyecta igual
+    que `intrinsic_exclusion` y `prefilter`, por la misma razón de siempre: que
+    este módulo no dependa de quién decide ni de quién navega.
+    """
     client = session or requests.Session()
     retained = []
     rejected = []
@@ -916,6 +924,7 @@ def resolve_bdns_holds_for_pipeline(
         evidence = retrieve_bdns_hold_evidence(
             conv, session=client,
             intrinsic_exclusion=intrinsic_exclusion,
+            browser_fallback=browser_fallback,
         )
         for key, value in evidence.get("metrics", {}).items():
             if isinstance(value, (int, float)):

@@ -161,7 +161,17 @@ def summarize_staleness(report: dict) -> str:
 
 # Versión del archivo de estado que publica cada recopilación diaria. El
 # dashboard lo lee aparte de convocatorias.json y tolera que no exista.
-COLLECTION_STATE_SCHEMA_VERSION = 1
+# 2 (02/09/2026): una cifra más, `new_since_publication` — cuántas ha
+# encontrado hoy la recopilación que el producto publicado no tiene.
+#
+# **Solo esa.** «Cuántas publicadas cierran pronto» y «cuántas ya vencieron»
+# se calculan también, y se imprimen en consola, pero NO viajan aquí: el panel
+# ya tiene `convocatorias.json` cargado y las deriva por su cuenta. Meterlas
+# en este archivo habría sido repetir el producto, que es exactamente lo que
+# este archivo existe para no hacer. El aviso lo cazó una prueba.
+#
+# Un archivo v1 sigue valiendo: el campo nuevo simplemente no aparece.
+COLLECTION_STATE_SCHEMA_VERSION = 2
 
 
 def build_collection_state(
@@ -170,6 +180,7 @@ def build_collection_state(
     detected: int,
     active: int,
     generated_at: str,
+    collection_changes: dict | None = None,
 ) -> dict:
     """Estado que publica una recopilación `--no-claude` para el dashboard.
 
@@ -178,9 +189,18 @@ def build_collection_state(
     Hasta ahora ese dato solo se veía en consola, así que quien mira el panel
     no tenía forma de saber si lo publicado seguía al día.
 
-    Es deliberadamente pequeño —seis cifras y dos fechas— y no repite nada de
-    `convocatorias.json`: describe la ÚLTIMA RECOPILACIÓN, no el producto.
+    Sigue siendo deliberadamente pequeño y no repite nada de
+    `convocatorias.json`: describe la ÚLTIMA RECOPILACIÓN y el desfase de lo
+    publicado, no el producto.
+
+    `collection_changes` es lo que devuelve
+    `compare_collection_against_product()`. Va aparte y es opcional porque una
+    recopilación sin producto anterior con el que comparar —la primera, o una
+    copia recién clonada— tiene que poder publicar su estado igualmente. De
+    todo lo que trae, aquí solo se copia una cifra: el resto describe el
+    producto publicado y el panel lo deriva de él.
     """
+    cambios = collection_changes if isinstance(collection_changes, dict) else {}
     return {
         "schema_version": COLLECTION_STATE_SCHEMA_VERSION,
         "generated_at": generated_at,
@@ -191,4 +211,10 @@ def build_collection_state(
         "estimated_cost_usd": report.get("estimated_cost_usd"),
         "last_publication": report.get("last_publication", ""),
         "days_since_publication": report.get("days_since_publication"),
+        # Detectadas, NO analizadas: han pasado el filtro determinista y no el
+        # de Haiku. La distinción viaja hasta el texto del panel a propósito.
+        # Es lo único que el panel no puede saber por su cuenta, porque exige
+        # la recopilación de hoy y el producto solo tiene la del día que se
+        # publicó.
+        "new_since_publication": cambios.get("new_since_publication"),
     }

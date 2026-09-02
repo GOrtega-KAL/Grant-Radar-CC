@@ -1511,6 +1511,81 @@ medición, y sobrevivió varias sesiones porque sonaba razonable.
 Estado: **666 pruebas** en verde, 41 módulos, **0 USD** gastados en API en toda
 la sesión.
 
+## 20. Estado a 02/09/2026 (tarde): la pieza que faltaba estaba escrita
+
+Dos encargos que parecían independientes —mejorar el backend, poner favoritos en
+el panel— resultaron bloqueados por lo mismo: **una convocatoria no tenía nombre
+propio**. El `id` que el JSON publicaba era `len(enriched) + 1`, un contador
+posicional asignado después de reordenar por encaje. Nada de fuera del archivo
+podía señalar una convocatoria y seguir señalándola.
+
+Lo interesante para esta evaluación es que **la identidad estable ya existía**,
+escrita el 31/08 como función privada de `product_watch.py` para comparar dos
+publicaciones. Llevaba semanas resolviendo exactamente el problema, un nivel más
+abajo, sin que nadie viera que servía para esto. Medida antes de usarla: **77 de
+77 claves únicas** sobre el producto publicado.
+
+Frente al punto **2.5** —código que crece sin que nadie sepa qué hay dentro—,
+esto añade un matiz al revés del habitual: no sobraba código, **faltaba un
+nombre**. Una función privada con un nombre genérico (`_identity`) no se
+encuentra buscando «cómo identifico una convocatoria». Hacerla pública y
+llamarla `stable_identity()` fue la mitad del trabajo.
+
+### El plan se escribió leyendo documentación, y cuatro de sus afirmaciones eran falsas
+
+Ninguna era una errata: las cuatro sonaban razonables y **habrían fallado en
+silencio**, que es la categoría de fallo que este proyecto persigue.
+
+| Lo que decía el plan | Lo que dice el código |
+|---|---|
+| Calcular la clave sobre la convocatoria recopilada | El `url` publicado pasa antes por `_normalize_public_url()`; **10 de las 77** fichas resuelven por url y habrían recibido una clave que no coincide con la que se compara después |
+| Los favoritos leen `stable_key` del JSON | `--no-claude` no reescribe `convocatorias.json`: el campo no llegaría al producto hasta una ejecución **de pago**, y la prioridad es no pagar |
+| Reutilizar `compare_published_products()` para el aviso diario | Compara producto contra producto: sobre la recopilación cruda marcaría tres campos como «vaciados» en las 77 fichas, e inventaría una regresión |
+| Ordenar las candidatas por `len(tech_tags)` | `tech_tags` sale del análisis. Antes de llamar a Claude no existe |
+
+La lección es la de la sección 19 con otra cara: **allí se midió sobre el corpus
+cómodo; aquí se planificó sobre la documentación cómoda.** Los dos atajos
+producen la misma sensación de rigor. Verificar cada afirmación contra el código
+antes de empezar costó media hora y evitó cuatro fallos silenciosos.
+
+### Una prueba que impidió acoplar dos cosas que deben estar separadas
+
+`estado_recopilacion.json` describe la recopilación diaria, no el producto, y
+tiene una prueba que lo vigila: `test_it_does_not_repeat_the_published_product`.
+La primera versión del aviso ampliado metía ahí tres convocatorias publicadas
+con su título y su fecha. **La prueba falló, y tenía razón.**
+
+Lo tentador era subir el tope de nueve claves a catorce y seguir. Lo correcto
+era preguntarse por qué existía el tope: el panel **ya tiene el producto
+cargado** y puede derivar esas cifras solo. El archivo se quedó en una cifra
+nueva, la única que el panel no puede saber por su cuenta, y el guardián ganó
+además una comprobación que antes no tenía —que ningún valor sea una lista de
+fichas—.
+
+Frente al punto **2.6**: una prueba que solo se relaja cuando estorba no es una
+red, es un trámite. Esta se endureció al fallar.
+
+### El hueco que se declara en vez de taparse
+
+El endpoint de favoritos (`scripts/favoritos-worker/worker.js`) es JavaScript
+desplegado en Cloudflare, fuera del repositorio. **La suite de Python no lo
+ejecuta y no va a ejecutarlo.** Se documentan tres `curl` en su `README.md` y una
+prueba manual a dos navegadores.
+
+Es preferible a la alternativa habitual —una prueba que instancia un doble del
+Worker en Python y demuestra que el doble funciona—. Frente al punto **2.7**:
+una cobertura que mide lo que no se despliega es peor que un hueco anotado,
+porque el hueco al menos se ve.
+
+Sí se cubre el lado que sí es del repositorio: hay una prueba de Playwright que
+ejecuta `deriveStableKey()` del panel sobre el `convocatorias.json` real y
+compara sus 77 resultados con los de `stable_identity()` en Python. Hay dos
+implementaciones de la identidad porque tiene que haberlas —el panel deriva la
+clave cuando el JSON aún no la trae—, y **esa prueba es lo único que impide que
+se separen**.
+
+Estado: **711 pruebas** en verde, 41 módulos, **0 USD** gastados en API.
+
 ## Nota de alcance
 
 Este documento es una evaluación externa de solo lectura, ampliada con una

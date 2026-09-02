@@ -2074,6 +2074,36 @@ class FrontendContractTests(unittest.TestCase):
         for campo in ("applicant_types", "eligible_geographies", "eligibility_evidence"):
             self.assertIn(campo, self.html)
 
+    def test_the_favorites_controls_are_present(self):
+        """Marcadores del contrato de favoritos, por si un refactor los borra.
+
+        El adaptador (`FAVORITES_ENDPOINT`) es el que permite mudar la lista al
+        servidor propio cambiando una línea, y `deriveStableKey` es lo que hace
+        que los favoritos funcionen contra el JSON ya publicado, sin pagar una
+        ejecución nueva. Los dos son fáciles de dar por accesorios al leerlos.
+        """
+        for marker in (
+            'id="favorites-chip"', 'class="card-favorite', 'FAVORITES_ENDPOINT',
+            'deriveStableKey', 'stable_key', 'id="ov-favorite-note"',
+            'toggleFavoritesFilter', 'onlyFavorites',
+        ):
+            self.assertIn(marker, self.html)
+
+    def test_the_star_does_not_open_the_card(self):
+        """La tarjeta entera es un botón: sin esto, marcar abriría el detalle."""
+        self.assertIn(
+            "event.stopPropagation();toggleFavorite(", self.html
+        )
+
+    def test_the_favorites_filter_does_not_go_through_setFilter(self):
+        """`setFilter()` es excluyente dentro de su grupo.
+
+        Si el chip de favoritos pasara por ahí, activarlo apagaría el filtro de
+        temática, y el encargo era justamente que se combinaran.
+        """
+        self.assertNotIn("setFilter('favorites'", self.html)
+        self.assertIn("onclick=\"toggleFavoritesFilter()\"", self.html)
+
     def test_all_four_sort_explanations_are_present(self):
         for term in ("Compatibilidad", "Accionabilidad", "Tiempo restante", "Confianza"):
             self.assertIn(term, self.html)
@@ -2099,10 +2129,18 @@ class FrontendContractTests(unittest.TestCase):
         self.assertNotIn("'Tokens entrada'", self.html)
 
     def test_unknown_deadlines_are_rendered_without_a_fake_day_count(self):
+        """Un plazo desconocido se dice, no se inventa.
+
+        La versión anterior de esta prueba fijaba el cuerpo literal de
+        `deadlineText()`, así que al añadir «Plazo vencido» para los favoritos
+        caducados falló sin que el invariante se hubiera roto. Ahora comprueba
+        las dos ramas que importan y deja la comprobación real de la salida a
+        `FrontendLayoutTests`, que ejecuta la función de verdad.
+        """
         for marker in (
             "? null : (Number.isFinite(Number(raw.deadline))",
             "function deadlineText(days",
-            "return Number.isFinite(days) ? `${days}${suffix}` : 'Sin fecha'",
+            "if (!Number.isFinite(days)) return 'Sin fecha';",
         ):
             self.assertIn(marker, self.html)
 
@@ -2159,12 +2197,16 @@ class FrontendContractTests(unittest.TestCase):
             "dimensiones": [{"name": "Alineación tecnológica", "val": 80}],
         }
         # Campos de trazabilidad interna que el backend publica pero el
-        # frontend, de forma deliberada, no muestra hoy (procedencia de
-        # catálogos estáticos y URL alternativa BDNS): quedan fuera del
-        # contrato hasta que se decida exponerlos.
+        # frontend, de forma deliberada, no muestra: de dónde salió una entrada
+        # de catálogo curado. Es información para diagnosticar el pipeline, no
+        # para decidir sobre una convocatoria.
+        #
+        # `related_documents_count` y `bdns_url` salieron de esta lista el
+        # 02/09/2026 (punto 11 del backlog): los dos ayudan a decidir —cuánta
+        # evidencia oficial respalda la ficha, y dónde está el registro
+        # oficial— y ya estaban en el JSON, así que exponerlos no costó nada.
         backend_only_fields = {
             "catalog_scope", "catalog_category", "catalog_ref",
-            "related_documents_count", "bdns_url",
         }
         record = _assemble_public_record(1, conv, analysis)
         missing = [
@@ -2799,6 +2841,189 @@ class FrontendLayoutTests(unittest.TestCase):
             texto = banner.inner_text()
             self.assertIn(str(estado["pending_analyses"]), texto)
             self.assertIn("espera", texto)
+        page.close()
+
+    def test_the_two_implementations_of_the_stable_key_agree(self):
+        """Python y JavaScript calculan la MISMA identidad, sobre el JSON real.
+
+        Hay dos porque tiene que haberlas: el backend la publica
+        (`public_stable_key()`) y el panel la deriva cuando falta
+        (`deriveStableKey()`), porque `--no-claude` no reescribe
+        `convocatorias.json` y sin esa caída los favoritos no funcionarían
+        hasta la próxima ejecución de pago. Dos implementaciones de una
+        identidad se separan solas, y separarse aquí significa que un
+        favorito marcado hoy señalaría mañana otra convocatoria, en silencio.
+        Esta prueba es lo único que lo impide.
+        """
+        from grant_radar.product_watch import stable_identity
+
+        archivo = ROOT / "convocatorias.json"
+        if not archivo.exists():
+            self.skipTest("sin convocatorias.json publicado en esta copia")
+        publicadas = json.loads(archivo.read_text(encoding="utf-8"))["convocatorias"]
+        self.assertTrue(publicadas, "el producto publicado está vacío")
+
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        page.goto(self.url, wait_until="networkidle")
+        del_navegador = page.evaluate(
+            "registros => registros.map(deriveStableKey)", publicadas
+        )
+        page.close()
+
+        de_python = [stable_identity(registro) for registro in publicadas]
+        self.assertEqual(del_navegador, de_python)
+        self.assertEqual(len(set(de_python)), len(de_python), "hay claves repetidas")
+
+    def test_marking_a_favorite_filters_and_survives_unmarking(self):
+        """El ciclo entero, en modo local: marcar, filtrar, desmarcar.
+
+        Lo que comprueba de fondo es que el favorito se guarda contra
+        `stable_key` y no contra el `id`: la lista se reordena por encaje en
+        cada render y el `id` publicado es un contador posicional.
+        """
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        page.goto(self.url, wait_until="networkidle")
+        page.evaluate("() => { try { localStorage.clear(); } catch (e) {} }")
+
+        total = page.locator(".conv-item").count()
+        self.assertGreater(total, 1, "hacen falta varias fichas para que filtrar signifique algo")
+
+        clave = page.evaluate("() => getFiltered()[0].stable_key")
+        self.assertTrue(clave)
+
+        page.locator(".conv-item .card-favorite").first.click()
+        self.assertEqual(page.evaluate("() => favorites.size"), 1)
+        self.assertIn("Favoritos (1)", page.locator("#favorites-chip").inner_text())
+
+        page.click("#favorites-chip")
+        self.assertEqual(page.locator(".conv-item").count(), 1)
+        self.assertEqual(page.evaluate("() => getFiltered()[0].stable_key"), clave)
+        # Se combina con los demás filtros en vez de sustituirlos.
+        self.assertEqual(page.evaluate("() => filterState.tag"), "all")
+
+        page.locator(".conv-item .card-favorite").first.click()
+        self.assertEqual(page.evaluate("() => favorites.size"), 0)
+        self.assertEqual(page.locator(".conv-item").count(), 0)
+        page.click("#favorites-chip")
+        self.assertEqual(page.locator(".conv-item").count(), total)
+        page.close()
+
+    def test_an_expired_favorite_is_still_visible_under_the_filter(self):
+        """La excepción deliberada de `getFiltered()`.
+
+        Fuera del filtro, todo lo que tiene el plazo vencido se descarta. Un
+        favorito, no: que una convocatoria marcada a mano desaparezca sin
+        avisar es peor que verla caducada.
+        """
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        page.goto(self.url, wait_until="networkidle")
+        page.evaluate("() => { try { localStorage.clear(); } catch (e) {} }")
+
+        # Se vence la primera ficha a mano y se marca por su clave estable.
+        clave = page.evaluate("""() => {
+            const c = getFiltered()[0];
+            c.deadline = -3;
+            favorites.set(c.stable_key, {
+                key: c.stable_key, title: c.title, source: c.source, url: c.url,
+                added_by: 'Prueba', added_at: new Date().toISOString(), note: ''
+            });
+            renderFavoritesChip();
+            renderConvs();
+            return c.stable_key;
+        }""")
+
+        visibles = page.evaluate("() => getFiltered().map(c => c.stable_key)")
+        self.assertNotIn(clave, visibles, "sin el filtro, una vencida no se lista")
+
+        page.click("#favorites-chip")
+        self.assertEqual(page.evaluate("() => getFiltered().map(c => c.stable_key)"), [clave])
+        self.assertEqual(page.locator(".conv-item.expired-favorite").count(), 1)
+        # Y se dice, no se insinúa: «-3 días» no es una fecha, es un descuido.
+        self.assertIn("Plazo vencido", page.locator(".conv-item").first.inner_text())
+        page.close()
+
+    def test_the_shared_list_is_read_and_written_through_the_endpoint(self):
+        """El camino compartido, con el Worker sustituido por un doble.
+
+        Sin esto, todo lo que distingue una lista compartida de unos favoritos
+        locales quedaría sin ejercitar hasta desplegar el Worker, y la suite de
+        Python no ejecuta `worker.js`.
+
+        Lo que fija: que al cargar se pide la lista, que marcar manda un `PUT`,
+        y que **la clave viaja codificada en la query string**. Las claves de
+        las convocatorias que se identifican por url llevan barras dentro; como
+        tramo de ruta romperían el enrutado, y un `%2F` en un path lo normaliza
+        cualquier proxy por el camino.
+        """
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        recibido = []
+
+        def responder(route, request):
+            recibido.append((request.method, request.url))
+            route.fulfill(
+                status=200,
+                content_type="application/json",
+                body='{"items": [], "count": 0, "limit": 200}',
+            )
+
+        page.route("**/favoritos*", responder)
+        page.add_init_script(
+            "window.GRANT_RADAR_FAVORITES_ENDPOINT = 'https://doble.test/favoritos';"
+            " try { localStorage.clear(); } catch (e) {}"
+        )
+        page.goto(self.url, wait_until="networkidle")
+
+        self.assertIn("GET", [metodo for metodo, _ in recibido],
+                      "al cargar hay que traerse lo que hayan marcado los demás")
+
+        clave = page.evaluate("() => getFiltered()[0].stable_key")
+        page.locator(".conv-item .card-favorite").first.click()
+        page.wait_for_function("() => favorites.size === 1")
+
+        escrituras = [url for metodo, url in recibido if metodo == "PUT"]
+        self.assertEqual(len(escrituras), 1)
+        from urllib.parse import parse_qs, urlparse
+        consulta = parse_qs(urlparse(escrituras[0]).query)
+        self.assertEqual(consulta["key"], [clave])
+        self.assertEqual(urlparse(escrituras[0]).path, "/favoritos")
+
+        # Y el chip no se declara «sin conexión» cuando el endpoint responde.
+        self.assertNotIn("sin conexión", page.locator("#favorites-chip").inner_text())
+        page.close()
+
+    def test_a_dead_endpoint_never_breaks_the_panel(self):
+        """Un Worker caído degrada, no rompe.
+
+        El panel sigue pintando, el favorito se revierte para no mentir sobre
+        lo que hay guardado, y el chip lo dice en vez de aparentar normalidad.
+        """
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        page.route("**/favoritos*", lambda route, request: route.abort())
+        page.add_init_script(
+            "window.GRANT_RADAR_FAVORITES_ENDPOINT = 'https://caido.test/favoritos';"
+            " try { localStorage.clear(); } catch (e) {}"
+        )
+        page.goto(self.url, wait_until="networkidle")
+
+        self.assertGreater(page.locator(".conv-item").count(), 0, "el panel sigue en pie")
+        page.wait_for_function(
+            "() => document.getElementById('favorites-chip').innerText.includes('sin conexión')"
+        )
+
+        page.locator(".conv-item .card-favorite").first.click()
+        page.wait_for_function("() => favorites.size === 0")
+        self.assertEqual(page.locator(".conv-item .card-favorite.is-favorite").count(), 0)
+        page.close()
+
+    def test_deadline_text_says_what_it_knows_and_nothing_more(self):
+        """Las tres ramas, ejecutando la función en vez de leer su código."""
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        page.goto(self.url, wait_until="networkidle")
+        self.assertEqual(page.evaluate("() => deadlineText(12)"), "12 días")
+        self.assertEqual(page.evaluate("() => deadlineText(null)"), "Sin fecha")
+        self.assertEqual(page.evaluate("() => deadlineText(undefined)"), "Sin fecha")
+        # Un plazo negativo no es «-3 días», es un plazo que ya pasó.
+        self.assertEqual(page.evaluate("() => deadlineText(-3)"), "Plazo vencido")
         page.close()
 
     def test_requested_viewports_have_no_horizontal_overflow(self):

@@ -36,6 +36,12 @@ desactualizado si no se mantiene junto a ellos.
 >   de las siete: `--source een` 81 s frente a 513-937 s. Exige `--no-claude`
 >   (54.6). El alias `boa` se retiró con su conector (56.1).
 > - `--staleness-report` — cuánto se desfasa lo publicado, sin red.
+> - **`--no-claude` imprime desde el 02/09 el orden en que se analizarían las
+>   candidatas** (AGENTS.md 60.6): veredicto del prefiltro, días al cierre y
+>   palabras clave, las quince primeras. Es la forma de revisar gratis en qué se
+>   gastaría el dinero **antes** de gastarlo, y es el mismo orden que usaría la
+>   ejecución de pago. También dice qué ha encontrado hoy que el producto no
+>   tiene, etiquetado «detectadas, sin analizar» (60.5).
 > - **La recopilación diaria: doble clic en `scripts/Grant-Radar diario.bat`.**
 >   Abre VS Code con el proyecto y lanza `--no-claude` en la misma ventana.
 >   Admite `/q` (sin VS Code, para el Programador de tareas) y `/log` (guarda
@@ -44,16 +50,28 @@ desactualizado si no se mantiene junto a ellos.
 >   análisis con Claude sigue siendo manual y discrecional: ningún script lo
 >   lanza. Existe también `scripts/Recopilacion diaria.ps1`, equivalente en
 >   PowerShell y sin VS Code, si algún día se programa la tarea.
-> - El backlog de la **sección 36**. Los puntos 8, 10, 19, 27, 28, 39 y 40 se
->   cerraron el 01-02/09; queda sobre todo vigilancia de fuentes (4, 6, 7, 29,
->   30, 32, 38) y tres reglas de negocio que exigen decisión (1, 2, 3).
+> - El backlog de la **sección 36**. Los puntos 8, 10, 11, 19, 27, 28, 38, 39 y
+>   40 se cerraron el 01-02/09; queda sobre todo vigilancia de fuentes (4, 6, 7,
+>   29, 30, 32) y tres reglas de negocio que exigen decisión (1, 2, 3).
 >
 > ---
 >
-> **Estado del código a 02/09/2026:** 41 módulos, **666 pruebas en verde**.
-> Verificación `--no-claude` completa: 921 detectadas, **84 vigentes**,
-> prefiltro `retain=38, ambiguous=5, hold_manual=75, reject=803`. Pendientes de
-> analizar **81** (~2,07 USD). Cifras de referencia en **AGENTS.md 59.8**.
+> **Estado del código a 02/09/2026 (tarde):** 41 módulos, **711 pruebas en
+> verde**. Verificación `--no-claude` completa: 922 detectadas, **86 vigentes**,
+> prefiltro `retain=38, ambiguous=5, hold_manual=77, reject=802`. Pendientes de
+> analizar **83** (~2,12 USD). Cifras de referencia en **AGENTS.md 60.10**.
+>
+> **Cada ficha publicada lleva ahora `stable_key`** (AGENTS.md 60.2), y es lo
+> que hay que usar para referirse a una convocatoria desde fuera del JSON. El
+> `id` es un contador posicional asignado después de ordenar por encaje: el 42
+> de hoy y el 42 de mañana son convocatorias distintas. Los favoritos del panel
+> se guardan contra `stable_key`; usar el `id` habría sido un fallo silencioso.
+>
+> **Los favoritos son compartidos en cuanto despliegues el Worker.** Está
+> escrito en `scripts/favoritos-worker/` con sus pasos; hasta que hagas
+> `wrangler deploy` y pegues la URL en `FAVORITES_ENDPOINT` (index.html), el
+> panel los guarda en el `localStorage` de cada navegador. **Es una acción
+> tuya, no del agente.**
 >
 > **Un aviso de método que costó caro y no conviene reaprender** (AGENTS.md
 > 59.1): al medir el impacto del plural se usó el corpus que había en disco
@@ -63,6 +81,12 @@ desactualizado si no se mantiene junto a ellos.
 > en el vocabulario del cliente y otra en la letra pequeña de Horizon. **Un
 > cambio que toca la clasificación se mide llamando al conector, no sobre la
 > muestra cómoda.**
+>
+> **Y su hermano, del 02/09 por la tarde (AGENTS.md 60.3):** un plan escrito
+> leyendo solo la documentación tiene el mismo problema. Cuatro de sus
+> afirmaciones eran falsas al contrastarlas con el código, y las cuatro habrían
+> fallado en silencio. **Verifica contra el código antes de empezar**, no
+> después. Media hora, cuatro fallos evitados.
 >
 > **El conector BOA se retiró el 01/09 (AGENTS.md 56.1), así que las fuentes son
 > SIETE, no ocho.** Se comprobó antes lo que el usuario pidió: BDNS encuentra el
@@ -114,7 +138,8 @@ desactualizado si no se mantiene junto a ellos.
 > No queda orden de extracción pendiente. Si una sesión futura busca «lo
 > siguiente de la modularización», la respuesta es que no hay.
 >
-> **Arranque en frío: AGENTS.md secciones 54 a 59**, que cierran el 01-02/09/2026.
+> **Arranque en frío: AGENTS.md secciones 54 a 60**, que cierran el 01-02/09/2026.
+> La **60** es la última y la más reciente.
 > Antes de ellas, la 53 resume las cinco del 31/08 (48 a 52). Backlog abierto
 > en la sección 36.
 >
@@ -158,9 +183,13 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   publicar `convocatorias.json`. Es el modo de validación por defecto tras un
   cambio de código: `poetry run python "Grant-Radar-prueba.py" --no-claude`.
   **Matiz desde el 31/08/2026 (AGENTS.md 49.5):** sí escribe y publica
-  `estado_recopilacion.json`, un archivo aparte de ocho cifras que describe la
-  recopilación —cuántas convocatorias esperan análisis y cuánto costaría— para
-  que el panel pueda avisar. No toca el producto ni la caché de análisis.
+  `estado_recopilacion.json`, un archivo aparte de nueve cifras que describe la
+  recopilación —cuántas convocatorias esperan análisis, cuánto costaría y
+  cuántas ha encontrado hoy que el producto no tiene— para que el panel pueda
+  avisar. No toca el producto ni la caché de análisis.
+  **Y desde el 02/09 (AGENTS.md 60.8): con `--source` NO lo publica.** Las
+  cifras de una fuente no describen el día, y el panel las enseñaría como si lo
+  hicieran.
 - Después de cualquier cambio en `Grant-Radar-prueba.py` o `grant_radar/`,
   en este orden (el detalle en AGENTS.md 43.3; las cifras, en **54.7**):
   1. `poetry run python -m unittest tests.test_grant_radar_script_names`
@@ -242,7 +271,7 @@ Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 | `audit.py` | `DISCOVERY_AUDIT` y `audit_exclusion()` (usado por las 8 fuentes) **y el histórico en disco**: `save_discovery_audit()` / `load_audit_runs()`, que reciben la ruta como parámetro |
 | `analysis.py` | **La capa de análisis con Haiku**: las dos etapas (extracción factual y evaluación de encaje), sus dos prompts de sistema como constantes de módulo, el presupuesto de evidencia y la llamada estructurada con reintentos. Recibe la clave de API como parámetro; no lee el entorno |
 | `programme_annexes.py` | Las condiciones generales del programa, leídas del documento oficial que **la propia convocatoria enlaza**: un topic de Horizon no dice quién puede solicitar, y esto lo saca de sus Anexos Generales sin catálogo que mantener (AGENTS.md 50) |
-| `product_watch.py` | Qué cambia en el JSON publicado respecto a la versión anterior: convocatorias que desaparecen sin vencer su plazo, elegibilidades que se mueven en bloque y campos que se vacían (AGENTS.md 51.4) |
+| `product_watch.py` | **La identidad estable de una convocatoria** (`stable_identity()`, publicada como `stable_key`) y las dos comparaciones que la usan: producto contra producto (51.4) y **recopilación diaria contra producto** (60.5). Las dos son distintas a propósito y no se pueden intercambiar |
 | `profile_scope.py` | Exclusiones de ámbito del perfil (`_hard_out_of_scope()`, `_explicit_profile_incompatibility()`). Viven aparte porque las usan **los dos lados**: la matriz de reglas antes de Claude y `_build_compatible_analysis()` después |
 | `holds.py` | Segunda mitad del dominio de holds: resolución determinista, validación de citas, piloto, replay y reincorporación al pipeline. **Recibe la matriz de reglas inyectada** (`intrinsic_exclusion`, `prefilter`), que es lo que permitió extraerlo sin tocarla |
 | `bdns_scope.py` | Filtro de candidatas BDNS: palabras clave + administración autonómica de Aragón |
@@ -252,19 +281,19 @@ Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 | `call_text.py` | Texto de convocatoria compartido: mecanismo, identificador oficial, deadline, presupuesto, enlaces externos |
 | `sources/horizon_europe.py` | Conector Horizon Europe (SEDIA Search API) |
 | `sources/een.py` | Conector EEN: noticias de financiación y perfiles I+D con call verificable |
-| `browser.py` | `PlaywrightBrowser`: sesión Chromium única de las fuentes sin API. `status()` devuelve el código HTTP, que `html()` no puede distinguir de un bloqueo |
+| `browser.py` | `PlaywrightBrowser`: sesión Chromium única de las fuentes sin API. `status()` devuelve el código HTTP, que `html()` no puede distinguir de un bloqueo. Y `VerifyingDocumentBrowser`, que **verifica** el TLS (`ignore_https_errors=False`, deliberado) y arranca solo si un documento falla por cadena de certificados incompleta (60.7) |
 | `dedup.py` | Identidad de programa, rol documental y consolidación de duplicados |
 | `sources/idae.py` | Conector IDAE: fichas de ayudas y catálogo por ámbito |
 | `sources/boe_miteco.py` | Conector BOE/MITECO: extractos de convocatoria en ayudas.php. Quién entra lo decide `BOE_TRACKED_AUTHORITIES`, no la taxonomía: el listado son citas legales sin materia (sección 45.2) |
 | `bdns_fields.py` | Lectura de campos de la API BDNS, compartida con la matriz de reglas |
 | `sources/bdns.py` | Conector BDNS/SNPSAP: inventario transversal y detalle de convocatorias |
-| `documents.py` | Documentos oficiales: descarga, extracción de texto y su caché |
+| `documents.py` | Documentos oficiales: descarga, extracción de texto y su caché. `_html_to_text()` es común a las dos rutas —`requests` y navegador— para que el mismo documento no dé textos distintos según por dónde entre |
 | `sources/cdti.py` | Conector CDTI: calendario oficial con Chromium + catálogo curado, cuyas URLs se comprueban en cada ejecución (404/410 se apartan) |
 | `sources/eccp.py` | Conector ECCP: calls y rastreo acotado de webs de proyectos |
-| `public_output.py` | Registro público del dashboard, estadísticas, estado por fuente y URLs. Publica `objeto_y_actuaciones`; `post_procesar_texto()` ya solo corrige acrónimos (antes corrompía palabras comunes: «cierre» → «CIRCE») |
+| `public_output.py` | Registro público del dashboard, estadísticas, estado por fuente y URLs. `public_stable_key()` normaliza la url **antes** de calcular la identidad, que es lo que hace que la clave publicada y la que se compara después sean la misma cadena. `post_procesar_texto()` ya solo corrige acrónimos (antes corrompía palabras comunes: «cierre» → «CIRCE») |
 | `publishing.py` | Subida a GitHub Pages (credenciales como parámetros, nunca leídas aquí) |
-| `claude_selection.py` | Qué se manda a Claude y la barrera de coste previa |
-| `staleness.py` | Cuánto se está desfasando lo publicado, leyendo solo la auditoría (`--staleness-report`). Sin red y sin coste |
+| `claude_selection.py` | Qué se manda a Claude, **en qué orden** (`prioritize_claude_candidates()`, 60.6) y la barrera de coste previa |
+| `staleness.py` | Cuánto se está desfasando lo publicado, leyendo solo la auditoría (`--staleness-report`). Sin red y sin coste. Construye también `estado_recopilacion.json`, que **no repite el producto**: hay una prueba que lo vigila y ya paró un intento (60.5) |
 | `bdns_rules.py` | **La matriz de reglas previa a Claude**: siete niveles de precedencia que deciden qué convocatorias llegan a Haiku y, con ello, el coste. Fue lo último en salir del script (AGENTS.md 57). Para tocar cualquier condición de aquí, ampliar antes `tests/fixtures/bdns_filter_cases.json` |
 | `gap_report.py` | Qué campos faltan, por fuente, en lo ya analizado (`--gap-report`). Lee el JSON publicado **y la caché de análisis**: ese segundo origen es el que permite comprobar una prueba `--max-claude` sin volver a pagarla. Sin red y sin coste (AGENTS.md 54.3) |
 | `coverage_watch.py` | Vigilancia de programas recurrentes conocidos. `active_not_captured` es el único estado que significa avería: abierta en su landing y no encontrada (sección 46.4) |
