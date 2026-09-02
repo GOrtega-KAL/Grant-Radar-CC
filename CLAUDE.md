@@ -56,7 +56,7 @@ desactualizado si no se mantiene junto a ellos.
 >
 > ---
 >
-> **Estado del código a 02/09/2026 (tarde):** 41 módulos, **716 pruebas en
+> **Estado del código a 02/09/2026 (tarde):** 41 módulos, **719 pruebas en
 > verde**. Verificación `--no-claude` completa: 922 detectadas, **86 vigentes**,
 > prefiltro `retain=38, ambiguous=5, hold_manual=77, reject=802`. Pendientes de
 > analizar **83** (~2,12 USD). Cifras de referencia en **AGENTS.md 60.10**.
@@ -71,7 +71,15 @@ desactualizado si no se mantiene junto a ellos.
 > `grant-radar-favoritos.favoritos-worker.workers.dev`. La URL y el id del
 > namespace KV van versionados y no son secretos.
 >
-> **Dos cosas que no hay que romper.** `FAVORITES_ENDPOINT` usa `??` y no `||`
+> **El panel RECALCULA el plazo, no lo lee** (AGENTS.md 60.14). El backend
+> publica `deadline` como los días que quedaban **el día de la recopilación**,
+> y eso es correcto; leerlo como si fuera de hoy no lo era. Con el producto del
+> 21/08 leído el 02/09, las 73 fichas con fecha iban doce días optimistas y
+> **cuatro convocatorias ya vencidas se ofrecían como vivas**. `deadlineDays()`
+> lo deriva de `deadline_date`. **No lo simplifiques** volviendo a leer
+> `raw.deadline`.
+>
+> **Dos cosas más que no hay que romper.** `FAVORITES_ENDPOINT` usa `??` y no `||`
 > a propósito: con `||`, una prueba que fuerce la cadena vacía caería a
 > producción y la suite escribiría favoritos de verdad en cada ejecución.
 > Y el panel **reconcilia** en vez de sustituir la lista, porque el `list()` de

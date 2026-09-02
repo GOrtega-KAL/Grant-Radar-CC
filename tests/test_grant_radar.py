@@ -1,5 +1,6 @@
 import io
 import json
+from datetime import date
 import runpy
 import tempfile
 import unittest
@@ -3309,6 +3310,126 @@ class FrontendLayoutTests(unittest.TestCase):
             descuidadas, [],
             "estas pruebas tocan favoritos sin neutralizar el endpoint real",
         )
+
+    def test_the_deadline_is_recomputed_against_today_not_read_frozen(self):
+        """El plazo publicado está congelado; el panel tiene que refrescarlo.
+
+        El backend publica `deadline` como los días que quedaban **el día de la
+        recopilación**, y eso es correcto para la auditoría. Leerlo como si
+        fuera de hoy no lo es: medido el 02/09/2026 sobre el producto del
+        21/08, las **73** fichas con fecha daban un plazo doce días optimista y
+        **cuatro convocatorias ya vencidas seguían apareciendo como vivas**,
+        una de ellas sin descartar y anunciando «5 días» cuando había cerrado
+        hacía siete.
+
+        `deadline_date` viaja en el mismo JSON desde siempre.
+        """
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        page.goto(self.url, wait_until="networkidle")
+        page.wait_for_selector(".conv-item")
+
+        publicadas = json.loads(
+            (ROOT / "convocatorias.json").read_text(encoding="utf-8")
+        )["convocatorias"]
+        con_fecha = [c for c in publicadas if str(c.get("deadline_date") or "")[:10]]
+        self.assertTrue(con_fecha, "el producto no trae fechas con las que comparar")
+
+        # Las dos partes se indexan por la MISMA identidad. El producto del
+        # 21/08 es anterior a `stable_key`, así que el panel la deriva; usar
+        # aquí el título emparejaría mal y la prueba mentiría.
+        from grant_radar.product_watch import stable_identity
+
+        hoy = date.today()
+        esperado = {}
+        for registro in con_fecha:
+            try:
+                dias = (date.fromisoformat(str(registro["deadline_date"])[:10]) - hoy).days
+            except ValueError:
+                continue
+            esperado[stable_identity(registro)] = dias
+
+        obtenido = page.evaluate("""() => Object.fromEntries(
+            convocatorias
+              .filter(c => String(c.deadline_date || '').slice(0, 10))
+              .map(c => [c.stable_key, c.deadline])
+        )""")
+        for clave, dias in esperado.items():
+            with self.subTest(clave=clave[:40]):
+                self.assertEqual(obtenido.get(clave), dias)
+
+        # Y la consecuencia que de verdad importa: nada vencido se ofrece.
+        vivas = page.evaluate("() => getFiltered().map(c => c.deadline)")
+        self.assertTrue(all(d is None or d > 0 for d in vivas),
+                        "el listado no puede ofrecer convocatorias ya cerradas")
+        page.close()
+
+    def test_a_call_without_a_date_is_aged_instead_of_frozen(self):
+        """Sin fecha no hay dato mejor, pero envejecerlo es más cierto.
+
+        Tres fichas del producto traen días publicados y ninguna fecha. Dejar
+        su número intacto mientras el resto avanza haría que, con el tiempo,
+        fueran siempre las más urgentes del panel sin serlo.
+        """
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        page.goto(self.url, wait_until="networkidle")
+        page.wait_for_selector(".conv-item")
+
+        resultado = page.evaluate("""() => {
+            const antes = dashboardMeta.generated_at;
+            const hace10 = new Date(Date.now() - 10 * 86400000).toISOString();
+            dashboardMeta = { ...dashboardMeta, generated_at: hace10 };
+            const sinFecha = normalizeConv({ deadline: 30, deadline_date: '', title: 't', source: 'BDNS' });
+            const conFecha = normalizeConv({
+                deadline: 30, title: 't', source: 'BDNS',
+                deadline_date: new Date(Date.now() + 5 * 86400000).toISOString().slice(0, 10)
+            });
+            dashboardMeta = { ...dashboardMeta, generated_at: antes };
+            return { sinFecha: sinFecha.deadline, conFecha: conFecha.deadline };
+        }""")
+        self.assertEqual(resultado["sinFecha"], 20, "30 publicados hace 10 días son 20")
+        self.assertEqual(resultado["conFecha"], 5, "con fecha manda la fecha, no el número")
+        page.close()
+
+    def test_the_collection_banner_shows_no_call_text(self):
+        """El aviso describe la recopilación, no el catálogo.
+
+        Llegó a listar tres convocatorias con su título, lo que mezclaba las
+        dos cosas y convertía un aviso de una línea en un párrafo. Es la misma
+        frontera que el backend ya respeta en `estado_recopilacion.json`.
+
+        Y de paso: `Number(null)` es 0, así que una ficha sin plazo se colaba
+        en el recuento como si cerrara hoy y el aviso llegó a decir «null días».
+        """
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        page.goto(self.url, wait_until="networkidle")
+        page.wait_for_selector(".conv-item")
+
+        banner = page.locator("#collection-state")
+        if not banner.is_visible():
+            self.skipTest("sin analisis pendientes no hay aviso que comprobar")
+        texto = banner.inner_text()
+
+        self.assertNotIn("null", texto)
+        self.assertNotIn("undefined", texto)
+        self.assertNotIn("NaN", texto)
+        # Ningún título de convocatoria puede aparecer en el aviso.
+        titulos = page.evaluate("() => convocatorias.map(c => c.title).filter(t => t && t.length > 25)")
+        for titulo in titulos:
+            self.assertNotIn(titulo[:25], texto,
+                             f"el aviso está enseñando una convocatoria: {titulo[:40]}")
+        # Y una ficha sin plazo no puede contarse como que cierra pronto.
+        self.assertEqual(
+            page.evaluate("""() => {
+                const previo = convocatorias.slice();
+                convocatorias = [{ deadline: null, title: 'sin plazo', stable_key: 'x' }];
+                const html = collectionChangesHtml({ new_since_publication: 0 });
+                convocatorias = previo;
+                return html;
+            }"""),
+            "",
+            "una ficha sin plazo no cierra en 14 días ni ha vencido",
+        )
+        page.close()
 
     def test_deadline_text_says_what_it_knows_and_nothing_more(self):
         """Las tres ramas, ejecutando la función en vez de leer su código."""

@@ -871,7 +871,6 @@
   .card-favorite.is-favorite svg { fill: currentColor; }
 
   .collection-state-changes { margin-top: 5px; font-weight: 700; }
-  .collection-state-sample { margin-top: 3px; opacity: .82; font-weight: 600; }
 
   .favorites-chip { display: inline-flex; align-items: center; gap: 5px; }
   .favorites-chip .favorites-star { color: var(--warning); }
@@ -1947,6 +1946,47 @@
     return `${source}|title|${title}`;
   }
 
+  // ── EL PLAZO SE RECALCULA, NO SE LEE ─────────────────────────────────────
+  //
+  // El backend publica `deadline` como los días que quedaban **el día de la
+  // recopilación**, y ese número se queda congelado en el JSON. Con el
+  // producto del 21/08 leído el 02/09, las **73** fichas con fecha publicaban
+  // un plazo doce días optimista, y —lo grave— **cuatro convocatorias ya
+  // vencidas seguían apareciendo como vivas**, una de ellas sin descartar, con
+  // un alegre «5 días» cuando había cerrado hacía siete.
+  //
+  // No es un fallo del backend: publicar el recuento del día de la
+  // recopilación es correcto para la auditoría. El fallo era leerlo como si
+  // fuera de hoy. `deadline_date` viaja en el mismo JSON desde siempre.
+  //
+  // Todo lo que decide por plazo pasa por aquí —tarjetas, orden, colores de
+  // urgencia, «Próximos cierres», el filtro de vencidas y las descargas—, así
+  // que arreglarlo en un sitio los arregla todos.
+  function deadlineDays(raw) {
+    const fecha = String(raw.deadline_date || '').slice(0, 10);
+    if (fecha) {
+      const cierre = new Date(`${fecha}T00:00:00Z`);
+      if (!Number.isNaN(cierre.getTime())) {
+        const hoy = new Date();
+        const hoyUTC = Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth(), hoy.getUTCDate());
+        return Math.round((cierre.getTime() - hoyUTC) / 86400000);
+      }
+    }
+    // Sin fecha no hay nada mejor que el número publicado, pero envejecerlo
+    // con los días transcurridos es más cierto que dejarlo intacto. Son tres
+    // fichas hoy, todas con la fecha sin confirmar.
+    const publicado = raw.deadline === null || raw.deadline === undefined || raw.deadline === ''
+      ? null : (Number.isFinite(Number(raw.deadline)) ? Number(raw.deadline) : null);
+    if (publicado === null) return null;
+    return publicado - daysSinceGeneration();
+  }
+
+  function daysSinceGeneration() {
+    const generado = new Date(dashboardMeta?.generated_at || NaN);
+    if (Number.isNaN(generado.getTime())) return 0;
+    return Math.max(0, Math.round((Date.now() - generado.getTime()) / 86400000));
+  }
+
   function normalizeConv(raw) {
     const match = Number.isFinite(Number(raw.fit_score)) ? Number(raw.fit_score) : Number(raw.match ?? 0);
     const actionability = Number.isFinite(Number(raw.actionability_score)) ? Number(raw.actionability_score) : match;
@@ -1976,8 +2016,7 @@
       ...raw,
       id: raw.id,
       stable_key: raw.stable_key || deriveStableKey(raw),
-      deadline: raw.deadline === null || raw.deadline === undefined || raw.deadline === ''
-        ? null : (Number.isFinite(Number(raw.deadline)) ? Number(raw.deadline) : null),
+      deadline: deadlineDays(raw),
       match,
       fit_score: match,
       actionability_score: actionability,
@@ -2838,9 +2877,8 @@
       const response = await fetch('convocatorias.json?_=' + Date.now());
       if (!response.ok) throw new Error('JSON no disponible');
       const data = await response.json();
-      convocatorias = (data.convocatorias || []).map(normalizeConv);
-      keywords = data.keywords || [];
-      reviewQueue = data.review_queue || [];
+      // `dashboardMeta` ANTES de normalizar: `deadlineDays()` necesita saber
+      // de cuándo es el JSON para envejecer las fichas que no traen fecha.
       dashboardMeta = {
         schema_version: data.schema_version || 1,
         versions: data.versions || {},
@@ -2849,6 +2887,9 @@
         coverage_watch: Array.isArray(data.coverage_watch) ? data.coverage_watch : [],
         generated_at: data.generated_at || data.last_updated || null
       };
+      convocatorias = (data.convocatorias || []).map(normalizeConv);
+      keywords = data.keywords || [];
+      reviewQueue = data.review_queue || [];
       sources = (data.sources || []).map(source => ({
         ...source,
         raw_count: Number(source.raw_count ?? source.count ?? 0),
@@ -2923,29 +2964,31 @@
 
   function collectionChangesHtml(state) {
     const nuevas = Number(state.new_since_publication);
-    const vivas = convocatorias.filter(c => Number.isFinite(Number(c.deadline)));
-    const proximas = vivas.filter(c => c.deadline >= 0 && c.deadline <= COLLECTION_SOON_DAYS);
-    const vencidas = vivas.filter(c => c.deadline < 0).length;
+    // `Number(null)` es 0, así que `Number.isFinite(Number(c.deadline))` daba
+    // `true` para una ficha SIN plazo y la contaba como si cerrara hoy: de ahí
+    // salía el «null días» del aviso. Se comprueba el valor, no su conversión.
+    const conPlazo = convocatorias.filter(c => typeof c.deadline === 'number' && Number.isFinite(c.deadline));
+    const proximas = conPlazo.filter(c => c.deadline >= 0 && c.deadline <= COLLECTION_SOON_DAYS).length;
+    const vencidas = conPlazo.filter(c => c.deadline < 0).length;
 
     const partes = [];
     if (Number.isFinite(nuevas) && nuevas > 0) {
       partes.push(`<strong>${nuevas} sin publicar</strong> (detectadas, sin analizar)`);
     }
-    if (proximas.length) {
-      partes.push(`${proximas.length} publicada${proximas.length === 1 ? '' : 's'} cierra${proximas.length === 1 ? '' : 'n'} en ${COLLECTION_SOON_DAYS} días o menos`);
+    if (proximas) {
+      partes.push(`${proximas} publicada${proximas === 1 ? '' : 's'} cierra${proximas === 1 ? '' : 'n'} en ${COLLECTION_SOON_DAYS} días o menos`);
     }
     if (vencidas) {
       partes.push(`${vencidas} ya vencida${vencidas === 1 ? '' : 's'}`);
     }
     if (!partes.length) return '';
 
-    const muestra = [...proximas].sort((a, b) => a.deadline - b.deadline).slice(0, 3);
-    const detalle = muestra.length
-      ? `<div class="collection-state-sample">${muestra.map(c =>
-          `${escapeHtml(c.title)} — ${c.deadline} día${c.deadline === 1 ? '' : 's'}`
-        ).join(' · ')}</div>`
-      : '';
-    return `<div class="collection-state-changes">${partes.join(' · ')}</div>${detalle}`;
+    // Sin títulos de convocatoria: este recuadro describe el ESTADO de la
+    // recopilación, no el catálogo. Enseñar aquí tres fichas mezclaba las dos
+    // cosas y además convertía un aviso de una línea en un párrafo. Es la
+    // misma frontera que el backend ya respeta en `estado_recopilacion.json`,
+    // donde una prueba impide meter convocatorias (AGENTS.md 60.5).
+    return `<div class="collection-state-changes">${partes.join(' · ')}</div>`;
   }
 
   function formatShortDate(value) {

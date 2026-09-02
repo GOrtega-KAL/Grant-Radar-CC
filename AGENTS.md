@@ -5861,9 +5861,80 @@ caza un descuido real introducido a propósito.
 Verificado además de la forma más simple: la lista del Worker tenía cero
 elementos antes de la suite y cero después.
 
+### 60.14. El plazo estaba congelado, y eso ofrecía convocatorias cerradas (02/09/2026)
+
+Lo encontró el usuario mirando el aviso de la recopilación: decía «— null días»
+y listaba tres convocatorias con su título. Pidió buscar la causa «por si viene
+de algún otro fallo mayor». **Venía.**
+
+#### Lo que se veía: dos defectos del aviso
+
+1. **`null días`.** `Number(null)` es `0`, así que
+   `Number.isFinite(Number(c.deadline))` daba `true` para una ficha **sin
+   plazo**, la colaba en el recuento como si cerrara hoy y la imprimía. Se
+   comprueba el valor (`typeof c.deadline === 'number'`), no su conversión.
+2. **Títulos de convocatoria en el aviso.** Se retiran. Ese recuadro describe el
+   **estado de la recopilación**, no el catálogo, y es exactamente la frontera
+   que el backend ya respeta en `estado_recopilacion.json`, donde una prueba
+   impide meter convocatorias (60.5). El frontend la estaba cruzando por su
+   cuenta.
+
+#### Lo que había debajo, que era lo grave
+
+El backend publica `deadline` como **los días que quedaban el día de la
+recopilación**. Eso es correcto para la auditoría. El panel lo leía como si
+fuera de hoy, y el número se queda congelado en el JSON.
+
+Medido sobre el producto del 21/08 leído el 02/09, con doce días de desfase:
+
+| | |
+|---|---|
+| Fichas con fecha de cierre | 73 |
+| De ellas, con el plazo desviado | **73, todas** |
+| Desviación | exactamente los 12 días de desfase |
+| **Convocatorias ya vencidas presentadas como vivas** | **4** |
+
+Una de esas cuatro **no estaba descartada**: se ofrecía como oportunidad
+anunciando «5 días» cuando había cerrado hacía siete.
+
+Y contaminaba todo lo que decide por plazo, no solo el aviso: el orden por
+cierre, los colores de urgencia, «Próximos cierres», el filtro que descarta lo
+vencido y las descargas XLSX/CSV.
+
+**Arreglo:** `deadlineDays()` en `normalizeConv()` recalcula contra hoy desde
+`deadline_date`, que viaja en el mismo JSON **desde siempre**. Todo lo demás lee
+`c.deadline`, así que arreglarlo en un sitio los arregla todos. Las tres fichas
+que traen días sin fecha se **envejecen** con los días transcurridos desde
+`generated_at`: no hay dato mejor, pero dejar su número intacto mientras el resto
+avanza las habría convertido en las más urgentes del panel sin serlo. Para eso
+`dashboardMeta` pasa a asignarse **antes** de normalizar.
+
+**La confirmación de que el arreglo es correcto no es una prueba, es una
+coincidencia**: el aviso pasó a decir *13 publicadas cierran en 14 días o menos ·
+4 ya vencidas*, exactamente las cifras que el backend había calculado por su
+cuenta desde `deadline_date`. Antes decía 6 y ninguna. Dos caminos
+independientes que ahora dan el mismo número.
+
+La mutación de volver a leer el plazo congelado hace fallar la prueba **73
+veces**, una por ficha con fecha.
+
+#### La lección, que no es sobre fechas
+
+El backend hacía lo correcto y el frontend hacía lo correcto **con un dato cuyo
+significado no era el que suponía**. `deadline` no miente: dice los días que
+quedaban cuando se recopiló. Nadie lo escribió mal; alguien lo leyó como si
+fuera de hoy, y el JSON no tiene forma de avisar de eso.
+
+Un dato **relativo a un instante** publicado junto al instante en que se calculó
+es una trampa que solo se dispara cuando el consumo se separa en el tiempo de la
+producción — y este producto lleva doce días publicado justamente porque la
+prioridad es depurar antes que pagar. **El defecto lo creó la pausa, no el
+código.** Conviene mirar con esa lente cualquier otro campo que sea un «cuánto
+falta» y no un «cuándo».
+
 ### 60.11. Estado
 
-**716 pruebas** en verde (666 al empezar). 41 módulos. Coste de la sesión en
+**719 pruebas** en verde (666 al empezar). 41 módulos. Coste de la sesión en
 API: **0 USD**. El producto publicado sigue siendo el del 21/08: **la decisión de
 pagar es del usuario y esta sesión no la ha empujado**.
 
