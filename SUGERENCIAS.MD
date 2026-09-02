@@ -1603,7 +1603,32 @@ el análisis descartara después desaparecía de la lista salvo que se encendier
 «Descartadas» — el mismo fallo ya corregido para los de plazo vencido, entrando
 por otra puerta. Lo arregló la misma línea que simplificaba el filtro.
 
-Estado: **713 pruebas** en verde, 41 módulos, **0 USD** gastados en API.
+### Lo que ninguna revisión de código podía encontrar
+
+El perfil de cliente listaba diez proyectos de I+D como **siglas desnudas**
+—`EDPIC`, `IGNITE`, `DT4RAF`…—. Ningún test lo señalaba, ningún informe de
+huecos lo contaba y `--gap-report` lo daba por bueno, porque no falta ningún
+campo: el campo está y tiene contenido. Lo que faltaba era **significado**.
+
+La consecuencia se midió: el modelo escribió que Kalfrisa no encaja en «residuos
+de paneles y baterías» cuando EDPIC es exactamente eso por vía térmica, y no
+cruzó su línea de simulación con el tema de soluciones digitales pese a que
+IGNITE es HPC y gemelos digitales. Dos falsos negativos causados por una lista
+de acrónimos.
+
+Frente al punto **2.9**: hay una tercera clase de defecto, además de los de
+lógica y los de cobertura. **El dato que está presente, es correcto y no
+significa nada para quien lo lee.** No lo encuentra una prueba ni una
+refactorización; lo encuentra preguntarle al cliente qué quiso decir.
+
+De ahí que la sesión terminara con quince preguntas al usuario en vez de con
+más código, y que la mayor parte de la respuesta —qué aporta como socio
+industrial, que lo que decide el interés es la ayuda a fondo perdido y no el
+presupuesto, que las convocatorias en cascada son objetivo habitual— fuera
+conocimiento del negocio que **nunca había estado escrito en ninguna parte**.
+
+Estado: **720 pruebas** en verde, 41 módulos, **0,0280 USD** gastados en API.
+
 
 ## Nota de alcance
 

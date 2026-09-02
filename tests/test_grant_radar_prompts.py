@@ -224,13 +224,14 @@ class VersionBumpTests(unittest.TestCase):
     """Cambiar prompt o perfil sin subir versión deja la caché sirviendo lo viejo."""
 
     def test_the_versions_reflect_this_round(self):
-        self.assertEqual(PROFILE_VERSION, "kalfrisa-2026-08-v5-simulation-line")
-        # Subidas el 31/08/2026 al endurecer objeto_y_actuaciones contra las
-        # presunciones declaradas (punto 24). El perfil no cambió, así que su
-        # versión se queda: subirla sin motivo también cuesta dinero.
-        self.assertEqual(EVALUATOR_VERSION, "fit-2026-08-v8-no-presumption")
+        # Las tres suben el 02/09/2026 con las respuestas del usuario sobre su
+        # propio criterio: PYME afirmada, proyectos de I+D descritos uno a uno,
+        # papel de socio industrial, y qué convocatorias interesan de verdad
+        # (AGENTS.md 60.16).
+        self.assertEqual(PROFILE_VERSION, "kalfrisa-2026-09-v6-projects-and-sme")
+        self.assertEqual(EVALUATOR_VERSION, "fit-2026-09-v9-topic-crossing")
         self.assertEqual(
-            ANALYSIS_PROMPT_VERSION, "2026-08-v14-programme-annexes-and-budget"
+            ANALYSIS_PROMPT_VERSION, "2026-09-v15-topic-crossing-and-recall"
         )
         # El extractor entra en esta comprobación ahora que su prompt se puede
         # leer y editar: cambiar el texto sin subir la versión dejaría la caché

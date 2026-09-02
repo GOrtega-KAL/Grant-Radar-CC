@@ -16,9 +16,16 @@ class KalfrisaProfileTests(unittest.TestCase):
         self.assertTrue(KALFRISA_PROFILE.startswith("\nIDENTIDAD:"))
 
     def test_profile_contains_identity_and_scope_sections(self):
+        # «PROGRAMAS Y SECTORES» se partió en dos el 02/09 y «EXPERIENCIA I+D»
+        # ganó un paréntesis, al describir cada proyecto en vez de nombrarlo
+        # (AGENTS.md 60.16). Las secciones nuevas entran aquí para que no se
+        # puedan perder en una edición futura sin que nadie lo note.
         for section in (
             "IDENTIDAD:", "CAPACIDADES Y ACTIVOS TECNOLÓGICOS:",
-            "EXPERIENCIA I+D RELEVANTE:", "PROGRAMAS Y SECTORES:",
+            "SIMULACIÓN Y GEMELOS DIGITALES",
+            "QUÉ APORTA KALFRISA COMO SOCIO INDUSTRIAL DE UN CONSORCIO:",
+            "EXPERIENCIA I+D RELEVANTE",
+            "QUÉ TIPO DE CONVOCATORIA INTERESA:", "SECTORES:",
             "FUERA DE FOCO SALVO CONEXIÓN INDUSTRIAL TÉRMICA EXPLÍCITA:",
         ):
             self.assertIn(section, KALFRISA_PROFILE)

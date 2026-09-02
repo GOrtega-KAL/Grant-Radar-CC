@@ -3,11 +3,18 @@ IDENTIDAD:
 - Sede: Polígono Industrial Malpica, calle D, nº 65, 50016 Zaragoza (España).
 - NIF: A50013465.
 - CNAE principal declarado para el radar: 2899. CNAE accesorio: 7112.
-- No equiparar automáticamente «empresa mediana» con la condición jurídica de
-  PYME de una convocatoria: verificar sus umbrales, empresas vinculadas/asociadas
-  y demás requisitos aplicables antes de afirmar la elegibilidad.
-- La elegibilidad por CNAE, tamaño, ubicación y tipo de entidad debe comprobarse
-  convocatoria por convocatoria; nunca se dará por supuesta.
+- Kalfrisa ES UNA PYME a efectos de la Recomendación 2003/361/CE y del Anexo I
+  del Reglamento (UE) 651/2014. «Mediana» es una subcategoría DE PYME, no una
+  categoría distinta ni superior: una convocatoria dirigida a PYMEs NO la
+  excluye por tamaño. Su socio único es la sociedad holding familiar
+  Inversiones Zarebro S.A., dedicada a la gestión de su propia cartera y
+  patrimonios vinculados; el cómputo consolidado no altera esa condición.
+  En consecuencia: NO pidas verificar la condición de PYME ni la presentes como
+  dato pendiente. Solo procede analizar el tamaño si la convocatoria se
+  restringe además a pequeña o microempresa, o si excluye expresamente a las
+  medianas.
+- Lo que sí debe comprobarse convocatoria por convocatoria es la elegibilidad
+  por CNAE, por ubicación y por tipo de entidad; nunca se dará por supuesta.
 
 CAPACIDADES Y ACTIVOS TECNOLÓGICOS:
 - Recuperación y valorización de calor residual; recuperadores convectivos y de
@@ -23,26 +30,76 @@ CAPACIDADES Y ACTIVOS TECNOLÓGICOS:
 
 SIMULACIÓN Y GEMELOS DIGITALES (línea propia, no subordinada a la térmica):
 - CFD/HPC, modelización, gemelos digitales y validación experimental de
-  simulaciones, desarrollados en proyectos de I+D en consorcio (EHAT, DT4RAF).
-- Es una capacidad autónoma: Kalfrisa puede participar como socio de simulación,
-  modelización o validación en un consorcio aunque el paraguas de la
-  convocatoria no sea térmico, siempre que el proyecto tenga un caso de uso
-  industrial o energético identificable.
+  simulaciones, desarrollados en proyectos de I+D en consorcio.
+- Es una capacidad autónoma: Kalfrisa puede entrar en un consorcio como socio de
+  simulación o de validación aunque el paraguas de la convocatoria no sea
+  térmico. Matiz: los casos de uso que hoy modela y valida son TÉRMICOS, así que
+  el paraguas puede no serlo pero el caso de uso concreto sí lo es.
+- Las herramientas de cálculo propias son de uso INTERNO: Kalfrisa no vende
+  software de diseño. El negocio asociado es vender servicios de optimización de
+  sus propios equipos.
+- Línea de desarrollo declarada hacia la que la empresa quiere avanzar:
+  mantenimiento predictivo y monitorización.
 
-EXPERIENCIA I+D RELEVANTE:
-- HIGH2-FURNACES, DESCARB-e, EDPIC, LIFE ABATE, e-RTO, RAFeRTO, DT4RAF, EHAT
-  e IGNITE.
+QUÉ APORTA KALFRISA COMO SOCIO INDUSTRIAL DE UN CONSORCIO:
+- Ingeniería de proyecto.
+- Datos propios de instalaciones piloto o en funcionamiento, con consentimiento
+  de su titular.
+- La medición de esos datos: servicio de asistencia técnica (SAT) e IIoT
+  propios, que Kalfrisa integra, instala y configura.
+- Nave piloto en Zaragoza donde pueden ensayarse equipos a escala piloto.
+- Es habitual que Kalfrisa aporte el CASO DE USO REAL y la VALIDACIÓN mientras
+  otro socio aporta la modelización. Que el modelo lo desarrolle otro NO reduce
+  el encaje: es el reparto de papeles normal en estos consorcios.
+
+EXPERIENCIA I+D RELEVANTE (con su contenido, para poder cruzarla con los temas
+admisibles de una convocatoria):
+- IGNITE — FORTISSIMO PLUS, Kalfrisa como líder, con BIFI-Universidad de
+  Zaragoza y NABLADOT: optimización de precalentadores industriales mediante
+  HPC, simulación CFD avanzada y gemelos digitales.
+- DT4RAF — gemelo digital para optimizar recuperadores de alta eficiencia
+  mediante simulación y monitorización.
+- EHAT — proyecto de I+D en consorcio de mayor duración, en la línea de
+  simulación y validación experimental.
+- RAFeRTO — tecnologías digitales y técnicas predictivas en oxidadores térmicos
+  regenerativos y recuperadores de calor.
+- e-RTO — modelo digital para electrificación y control avanzado del oxidador
+  térmico regenerativo.
+- HIGH2-FURNACES — hornos híbridos con sustitución de hasta 80-100 % de
+  hidrógeno en combustión industrial.
+- 3H2 — mezclas de hidrógeno y gas natural en quemadores industriales.
+- EDPIC — postcombustor eléctrico para depuración de gases en RECICLAJE DE
+  PANELES FOTOVOLTAICOS mediante pirólisis, con gemelo digital.
+- DESCARB-e — descarbonización mediante electrificación de hornos.
+- LIFE ABATE — reducción de COV y CO2 en plantas de tratamiento mecánico
+  biológico mediante rotoconcentrador y degradación térmica.
 - Experiencia acreditada de participación en consorcios de I+D: la ausencia de
   socios preidentificados en el radar no es un obstáculo para Kalfrisa ni un
   motivo para rebajar el encaje de una convocatoria.
-- Desarrollo de recuperadores de radiación y demostración industrial.
 - TRL preferente 4-7, sin excluir TRL superiores cuando exista demostración,
   primera aplicación industrial o escalado.
 - Puede actuar como líder tecnológico, fabricante/demostrador o socio industrial.
 
-PROGRAMAS Y SECTORES:
+QUÉ TIPO DE CONVOCATORIA INTERESA:
 - I+D industrial, pilotos y demostración: Horizon Europe, LIFE, Innovation Fund,
   Interreg, CDTI, IDAE y programas autonómicos.
+- Las CONVOCATORIAS EN CASCADA y las open calls de programas europeos son un
+  objetivo HABITUAL, no oportunista: exigen menos esfuerzo de tramitación,
+  tienen alta intensidad de financiación y su TRL está cerca del industrial.
+  Complementan a los proyectos largos y grandes.
+- Las convocatorias de INVERSIÓN interesan cuando la ayuda se justifica por una
+  mejora de eficiencia energética del propio proceso.
+- Lo que decide el interés económico NO es el tamaño del presupuesto del
+  proyecto, sino la AYUDA A FONDO PERDIDO y su intensidad: 90.000 € al 80 %
+  interesa más que 200.000 € al 25 %. Un importe pequeño no resta encaje si el
+  esfuerzo de tramitación es proporcionado.
+- El plazo que hace falta depende del tipo de convocatoria: una en cascada que
+  se rellena casi como un formulario se prepara en 2-3 semanas; un Horizon en el
+  que haya que buscar un centro tecnológico que lidere necesita 2-4 meses.
+- La duración del proyecto no es criterio de selección: interesa mantener en
+  cartera duraciones variadas.
+
+SECTORES:
 - Cerámica, siderurgia, metalurgia, vidrio, refractarios, química, petroquímica,
   cemento, cal, fundición, tratamiento térmico, alimentación, farmacia, papel,
   residuos y otros sectores si existe un proceso térmico o de emisiones aplicable.
@@ -55,6 +112,10 @@ FUERA DE FOCO SALVO CONEXIÓN INDUSTRIAL TÉRMICA EXPLÍCITA:
   se juzga es el tema concreto al que se presentaría, no la portada del programa.
 - Edificios residenciales/terciarios y transporte.
 - Solar fotovoltaica, eólica o hidrógeno genérico sin uso térmico industrial.
+- Reciclaje de paneles fotovoltaicos: encaja SOLO por la vía TÉRMICA —pirólisis,
+  depuración de gases de proceso—, que es la de EDPIC. El estado del arte
+  industrial de ese reciclaje es el tratamiento MECÁNICO, y eso no encaja. No
+  descartes el tema sin mirar antes por qué vía lo plantea la convocatoria.
 - Software o IA genéricos sin integración con equipos/procesos térmicos ni con
   la línea de simulación y gemelos digitales descrita arriba.
 - Investigación básica TRL 1-3 sin ruta industrial.
@@ -63,4 +124,5 @@ FUERA DE FOCO SALVO CONEXIÓN INDUSTRIAL TÉRMICA EXPLÍCITA:
 
 No atribuyas a Kalfrisa capacidades no incluidas aquí. En particular, no des por
 propios SCR, filtros de mangas u oxidación catalítica si la convocatoria no aporta
-evidencia adicional.
+evidencia adicional. «Modelos de orden reducido» (ROM) es vocabulario de socios
+de simulación, no una capacidad que Kalfrisa declare como propia.

@@ -5395,7 +5395,7 @@ ejecución concreta, y el historial que importa vive en la auditoría.
 **666 pruebas** en verde (646 al empezar). Verificación `--no-claude`: 921
 detectadas, **84 vigentes**, prefiltro `retain=38, ambiguous=5, hold_manual=75,
 reject=803`. Pendientes de analizar **81** (~2,07 USD). Coste de la sesión en
-API: **0,0280 USD** (una prueba dirigida, autorizada, 60.15).
+API: **0,1524 USD** (dos pruebas dirigidas, autorizadas: 60.15 y 60.16).
 
 ## 60. Una identidad que aguante, y lo que se pudo construir encima, a 02/09/2026 (tarde)
 
@@ -6018,6 +6018,165 @@ no hecho, y es **decisión del usuario** porque el criterio de encaje es suyo:
 **No se toca la taxonomía**: 47.3 ya midió que forzar `tech_tags` aquí sería la
 regla ad-hoc para una convocatoria concreta que la sección 1 prohíbe. Sigue
 valiendo.
+
+### 60.16. El perfil deja de ser una lista de siglas: el criterio, dicho por el cliente (02/09/2026, cierre)
+
+El usuario respondió las quince preguntas de calibración (60.15). La mayor parte
+de lo que faltaba **no era código: era conocimiento del negocio que nunca se
+había escrito**. Esta sección lo deja registrado, porque es la fuente de la que
+sale el criterio y ninguna sesión futura puede deducirlo leyendo el pipeline.
+
+#### Lo que cambia en el perfil, y de qué respuesta sale cada cosa
+
+| Cambio | Respuesta que lo justifica |
+|---|---|
+| **Kalfrisa ES una PYME**, afirmado en vez de dudado | A1/A2. Su socio único es la holding familiar Inversiones Zarebro S.A., y el cómputo consolidado no altera la condición. Se retira la cautela que generaba una bandera irresoluble en cinco fichas |
+| **Los diez proyectos de I+D, con una línea de contenido cada uno** | Era el hallazgo de 60.15: el perfil los listaba como siglas desnudas y el modelo no podía cruzarlos con nada |
+| Sección nueva: **qué aporta Kalfrisa como socio industrial** | B2. Ingeniería, datos propios de instalaciones con consentimiento, medición con SAT e IIoT propios, y una **nave piloto** en Zaragoza. Nada de esto estaba escrito |
+| «Que el modelo lo desarrolle otro **no reduce el encaje**» | B2. Es el reparto de papeles normal: Kalfrisa aporta el caso de uso y la validación |
+| Los casos de uso de la línea de simulación **son térmicos** | B1. Acota una ambigüedad que estaba abierta en las dos direcciones |
+| Las herramientas de cálculo son **internas**; el negocio es vender servicios de optimización | B3. Kalfrisa no es proveedora de software de diseño, y eso cambia el papel recomendado |
+| **ROM es vocabulario del socio**, no capacidad propia | B4. Se dice expresamente para que nadie lo meta en la taxonomía |
+| Sección nueva: **qué tipo de convocatoria interesa** | C1-C4 y D4 |
+| Las **convocatorias en cascada son objetivo habitual**, no oportunista | C1. Menos tramitación, alta intensidad de financiación, TRL cerca del industrial |
+| **Lo que decide el interés no es el presupuesto, es la ayuda a fondo perdido y su intensidad**: 90.000 € al 80 % interesa más que 200.000 € al 25 % | C2. Es el criterio económico real, y el radar no lo tenía en ninguna parte |
+| El plazo necesario **depende del tipo**: 2-3 semanas una cascada, 2-4 meses un Horizon donde haya que buscar quien lidere | C3 |
+| La duración **no es criterio de selección** | C4 |
+| Las convocatorias de **inversión** interesan cuando la ayuda se justifica por mejora de eficiencia energética | D4 |
+| Reciclaje de paneles fotovoltaicos: encaja **solo por la vía térmica** | D2/D3. Matiz del usuario que evita el error contrario: el estado del arte industrial es el tratamiento MECÁNICO, y eso no encaja |
+
+Versiones subidas: perfil a `kalfrisa-2026-09-v6-projects-and-sme`, evaluador a
+`fit-2026-09-v9-topic-crossing`, prompt a `2026-09-v15-topic-crossing-and-recall`.
+
+#### Dos cambios en el prompt, los dos con su medición detrás
+
+1. **Cruzar cada tema con todas las secciones del perfil**, no solo con la
+   capacidad más evidente. Enumerar los temas no bastaba: el 02/09 el modelo
+   listó los siete de PowerUp y solo cruzó dos, los térmicos.
+2. **La separación encaje / accionabilidad, repetida como enumeración
+   explícita.** Se enunciaba una vez y el modelo la incumplió tres veces en un
+   solo análisis. Y **ante la duda, vigilar en vez de descartar**, que es la
+   preferencia expresa del usuario (E3): prefiere revisar alguna irrelevante a
+   perderse una buena.
+
+#### El criterio de aceptación, y una instrucción del usuario que lo limita
+
+El usuario dio referencias, pero **con una condición explícita que conviene
+respetar**:
+
+> «No quiero que los criterios se deformen para alcanzar dicha cifra
+> artificialmente, prefiero que el prompt no se base en esa puntuación, sino que
+> vayamos afinando de manera generalista y natural y veamos cuánto se va
+> acercando.» (usuario, 02/09/2026)
+
+Es decir: las cifras de abajo son **termómetro, no objetivo**. Optimizar contra
+ellas sería exactamente el anti-patrón que el proyecto lleva evitando.
+
+| Convocatoria | Antes | Referencia del usuario |
+|---|---|---|
+| PowerUp NetZero | 45 | «muy alto», 75-85, **yendo en consorcio** |
+| Programa INNOVAE | 45 | 65-75 |
+| PYME INNOVA 2026 (Cámara de Granada) | 45 | baja: espera que el territorio la penalice |
+
+**La señal más útil no es ninguna de las tres cifras, sino que las tres estaban
+en 45.** Una convocatoria a la que la empresa se presenta y otra excluida por
+territorio puntuaban igual. La distancia entre ellas es un criterio mejor que
+cualquier valor absoluto, y no se puede falsear ajustando un número.
+
+Y una respuesta que corrige nuestra pregunta: PowerUp no se presenta al tema de
+soluciones digitales, que era la hipótesis de 60.15, **sino al 5, «Value chain
+efficiency»** — que el evaluador tampoco había mirado. El fallo era el mismo; el
+tema, otro.
+
+
+#### La medición: un acierto claro, y un hallazgo que abre mañana
+
+Ejecutado al cerrar el día, **0,1244 USD** sobre las tres (más de lo estimado:
+el perfil creció y con él los tokens de entrada).
+
+| | Publicado | Remedido 60.15 | Con el perfil nuevo | Referencia |
+|---|---|---|---|---|
+| PowerUp NetZero | 35 | 45 | **45** | 75-85 |
+| Programa INNOVAE | 45 | — | **45** | 65-75 |
+| PYME INNOVA Granada | 45 | — | **35, `discard_ineligible`** | baja |
+
+**Lo que sí funcionó, y es lo que se pedía:** PYME INNOVA pasa a `ineligible` y
+se descarta por territorio. Antes empataba a 45 con una convocatoria a la que la
+empresa se presenta. **La distancia entre las dos ya existe**, y era el criterio
+que se dijo que valía más que cualquier cifra absoluta.
+
+**Lo que no se movió:** ni PowerUp ni INNOVAE suben. Y aquí está el hallazgo,
+porque el perfil sí surtió efecto **por debajo**:
+
+| Sub-puntuación de PowerUp | 60.15 | Perfil nuevo |
+|---|---|---|
+| Alineación tecnológica | 25 | **50** |
+| Oportunidad estratégica | 30 | **45** |
+| Encaje de rol | 40 | **55** |
+| Capacidad de consorcio | 50 | 40 |
+| **`fit_score`** | **45** | **45** |
+
+Tres de las cinco suben con fuerza —la tecnológica se **dobla**, que es
+exactamente lo que describir EDPIC e IGNITE tenía que producir— y el
+`fit_score` **no se entera**.
+
+La causa es estructural y conviene tenerla clara antes de seguir tocando el
+prompt: **`fit_score` y `scores` son campos independientes del esquema**
+(`CallEvaluation`), los dos los rellena el modelo. El encaje **no se deriva** de
+las cinco dimensiones. Así que se puede mejorar todo lo que las alimenta y ver
+cómo el número global se queda donde estaba.
+
+**Eso es lo primero que hay que mirar mañana**, y no es «afinar más el prompt»:
+o el encaje se deriva de las dimensiones de forma determinista —con el reparto
+de pesos que decida el usuario—, o hay que decirle al modelo explícitamente que
+sea coherente con las puntuaciones que él mismo ha dado. La primera opción es
+auditable y no cuesta llamadas; la segunda mantiene el juicio en el modelo.
+**Es una decisión de diseño del usuario**, y las dos son compatibles con su
+condición de no deformar los criterios para alcanzar una cifra.
+
+Nota menor y honesta: la capacidad de consorcio **baja** de 50 a 40 en PowerUp
+sin causa aparente en el cambio. Con una sola medición no se puede distinguir
+una regresión real del ruido normal del modelo entre ejecuciones.
+
+#### Procesamiento por lotes: explorado, no implementado
+
+Encargo expreso del usuario, sin tocar código. La Batches API procesa de forma
+asíncrona **al 50 % del precio**: la ejecución completa pasaría de ~2,12 a
+**~1,06 USD**. Soporta todo lo que este pipeline usa —salidas estructuradas con
+esquema JSON, `temperature: 0`, prompt caching—, admite hasta 100.000 peticiones
+por lote (mandaríamos 83) y termina casi siempre en menos de una hora, con un
+máximo de 24. El usuario ya ha dicho que ese margen le sobra.
+
+**El cambio estructural no es el transporte, es el bucle.** Hoy hay **dos
+llamadas encadenadas por convocatoria** —extracción y luego evaluación, y la
+segunda se construye con el resultado de la primera—, así que no caben en el
+mismo lote. El modo por lotes invierte el recorrido: un lote con las 83
+extracciones, esperar, y un segundo lote con las 83 evaluaciones. Eso arrastra
+cuatro cosas, ninguna imposible y ninguna gratis:
+
+- partir `analyze_with_claude()` en construir-petición y ensamblar-resultado —
+  las salvaguardas deterministas y el formato de caché **no se tocan**;
+- **estado persistente entre pasadas**, para no tener el proceso abierto una hora;
+- **los reintentos cambian de naturaleza**: hoy un JSON que no valida se
+  reintenta al vuelo con más tokens, y en un lote eso no existe;
+- la contabilidad de coste tiene que saber en qué modo está, porque las tarifas
+  son la mitad.
+
+**Los dos modos pueden convivir**, y es la forma correcta: todas las llamadas
+pasan ya por `_structured_claude_call()`, así que hay un único punto de entrada.
+Lotes para la recopilación periódica, síncrono para una prueba dirigida como las
+de hoy, donde el resultado se quiere en dos minutos.
+
+**Ganancia gratis que va antes, y se combina:** el *prompt caching* **no está
+puesto** —no hay un solo `cache_control` en el módulo—, así que el prompt de
+sistema y el perfil se pagan enteros en cada una de las 83 llamadas. Cachearlos
+ahorra menos (~0,17 USD por ejecución frente a ~1,06 del lote) pero es mucho más
+barato de implementar.
+
+Dicho sin adornos: **el ahorro absoluto es de un euro por ejecución completa**,
+y la complejidad que introduce es permanente. El razonamiento del usuario —no
+corre prisa, y el 50 % no caduca— es sólido; conviene decidirlo sabiendo que es
+una sesión dedicada, no un rato.
 
 ### 60.11. Estado
 

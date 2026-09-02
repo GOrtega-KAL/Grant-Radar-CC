@@ -56,7 +56,7 @@ desactualizado si no se mantiene junto a ellos.
 >
 > ---
 >
-> **Estado del código a 02/09/2026 (tarde):** 41 módulos, **720 pruebas en
+> **Estado del código al cerrar el 02/09/2026:** 41 módulos, **720 pruebas en
 > verde**. Verificación `--no-claude` completa: 922 detectadas, **86 vigentes**,
 > prefiltro `retain=38, ambiguous=5, hold_manual=77, reject=802`. Pendientes de
 > analizar **83** (~2,12 USD). Cifras de referencia en **AGENTS.md 60.10**.
@@ -71,16 +71,46 @@ desactualizado si no se mantiene junto a ellos.
 > `grant-radar-favoritos.favoritos-worker.workers.dev`. La URL y el id del
 > namespace KV van versionados y no son secretos.
 >
-> **PowerUp NetZero sigue siendo un falso negativo, a medias** (AGENTS.md
-> 60.15). Remedido el 02/09 por 0,0280 USD: sube de 35 a 45 y **deja de
-> descartarse**, así que el arreglo de la sección 47 funciona en parte. Pero el
-> evaluador **enumera los ocho temas admisibles y solo cruza dos** con el
-> perfil; nunca contrasta la línea de simulación y gemelos digitales contra
-> «Digital solutions», que es justo el encaje para el que se creó esa línea.
-> Y de sus cinco riesgos, **tres son los que el prompt le prohíbe usar** para
-> rebajar el encaje (presupuesto, plazo, falta de socios). La corrección toca
-> la clasificación, así que **cuesta una prueba de pago por iteración y es
-> decisión del usuario**: no la emprendas por tu cuenta.
+> ## POR DÓNDE SEGUIR, al cerrar el 02/09/2026
+>
+> **El perfil se reescribió con el criterio que dio el usuario** (AGENTS.md
+> 60.16): PYME afirmada, los diez proyectos de I+D descritos uno a uno, qué
+> aporta como socio industrial, y qué tipo de convocatoria interesa de verdad.
+> Versiones subidas, así que **toda la caché de análisis está invalidada**.
+>
+> **Se midió (0,1244 USD, tres convocatorias) y el resultado está en 60.16.**
+> Acierto claro: PYME INNOVA Granada pasa a `ineligible` y se descarta por
+> territorio, así que ya no empata con una convocatoria a la que la empresa se
+> presenta. Pero **PowerUp e INNOVAE no suben: siguen en 45**.
+>
+> ## LO PRIMERO DE MAÑANA, y no es «afinar más el prompt»
+>
+> **`fit_score` no se deriva de las cinco sub-puntuaciones**: son campos
+> independientes del esquema `CallEvaluation` y los rellena el modelo por
+> separado. Se midió: con el perfil nuevo, la alineación tecnológica de PowerUp
+> **se dobla** (25 → 50), la estratégica sube (30 → 45) y la de rol también
+> (40 → 55) — **y el `fit_score` se queda clavado en 45**.
+>
+> O sea que el perfil funcionó y el número global no se enteró. Seguir tocando
+> el prompt sin resolver esto es gastar dinero contra una pared. Hay dos vías, y
+> **la elección es del usuario**: derivar el encaje de las dimensiones con pesos
+> que él decida —auditable y sin coste por llamada— o exigir al modelo que sea
+> coherente con las puntuaciones que él mismo da. Las dos respetan su condición
+> de no deformar el criterio para alcanzar una cifra.
+>
+> **Las cifras de referencia del usuario son termómetro, NO objetivo.** Lo dijo
+> expresamente: «no quiero que los criterios se deformen para alcanzar dicha
+> cifra artificialmente». PowerUp 75-85 en consorcio, INNOVAE 65-75, PYME INNOVA
+> baja por territorio. **La señal buena no es ninguna de las tres, sino que las
+> tres estaban en 45**: una convocatoria a la que la empresa se presenta y otra
+> excluida por territorio puntuaban igual, y esa distancia sí es un criterio que
+> no se puede falsear.
+>
+> **Encargo abierto: procesamiento por lotes** (60.16). Explorado, no
+> implementado. 50 % más barato, pero **invierte el bucle** porque las dos
+> llamadas por convocatoria están encadenadas. Los dos modos pueden convivir.
+> Antes va el *prompt caching*, que no está puesto y es mucho más barato de
+> hacer.
 >
 > **El panel RECALCULA el plazo, no lo lee** (AGENTS.md 60.14). El backend
 > publica `deadline` como los días que quedaban **el día de la recopilación**,

@@ -809,11 +809,33 @@ def analyze_with_claude(conv: dict, api_key: str, max_retries: int = 3) -> dict:
         "que hay encaje, di en el resumen a qué tema concreto se presentaría; si "
         "concluyes que no lo hay, justifícalo recorriendo esa lista, no la "
         "descripción de portada. "
+        # Enumerar los temas no basta: el 02/09 el modelo listó los siete de
+        # PowerUp NetZero y solo cruzó dos con el perfil —los térmicos, que son
+        # los más obvios—, dejando sin mirar el tema de soluciones digitales y el
+        # de eficiencia, que es al que la empresa se presenta (AGENTS.md 60.15).
+        "Cruza cada tema admisible con TODAS las secciones de capacidades del "
+        "perfil —incluidas la de simulación y gemelos digitales, la de qué aporta "
+        "como socio industrial y la lista de proyectos de I+D con su contenido—, "
+        "no solo con la capacidad más evidente. Un proyecto de I+D del perfil que "
+        "coincida con un tema admisible es evidencia de encaje, aunque el tema no "
+        "sea térmico. "
         "El encaje (fit_score) mide alineación tecnológica y estratégica: no lo "
         "rebajes por el tamaño del presupuesto, por la proximidad del plazo ni "
         "porque el radar no aporte candidatos a socio —eso es actionability_score, "
         "y la falta de socios preidentificados es una limitación nuestra, no de la "
         "convocatoria—. "
+        # La prohibición anterior se enunciaba una vez y el modelo la incumplió
+        # tres veces en un solo análisis (60.15). Se repite como enumeración
+        # explícita, que es la forma que sí se respeta.
+        "Esto vale también para los riesgos que enumeres: un presupuesto pequeño, "
+        "un plazo corto o la ausencia de socios NO son riesgos de encaje. "
+        "Sobre el dinero, el criterio del cliente es la ayuda a fondo perdido y su "
+        "intensidad, no el tamaño del proyecto. "
+        # El usuario prefiere revisar alguna irrelevante a perderse una buena
+        # (02/09/2026). El coste de un análisis de más es de céntimos; el de una
+        # oportunidad perdida, no.
+        "Ante la duda entre descartar y vigilar, VIGILA: descarta solo cuando la "
+        "evidencia lo sostenga, no cuando falte evidencia para lo contrario. "
         "Distingue, de forma general, entre "
         "participar como beneficiaria sobre una instalación propia y actuar como "
         "proveedor tecnológico para la instalación de otro beneficiario. El "
