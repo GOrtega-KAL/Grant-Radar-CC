@@ -2895,6 +2895,13 @@ class FrontendLayoutTests(unittest.TestCase):
         cada render y el `id` publicado es un contador posicional.
         """
         page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        # Modo local FORZADO. Sin esto, index.html trae la URL del Worker
+        # desplegado y esta prueba escribiría favoritos de verdad en
+        # producción cada vez que se ejecutara la suite.
+        page.add_init_script(
+            "window.GRANT_RADAR_FAVORITES_ENDPOINT = '';"
+            " try { localStorage.clear(); } catch (e) {}"
+        )
         page.goto(self.url, wait_until="networkidle")
         # `networkidle` no significa «ya está pintado»: `loadData()` sigue
         # después. Sin esta espera la prueba se vuelve intermitente bajo carga.
@@ -2931,6 +2938,13 @@ class FrontendLayoutTests(unittest.TestCase):
         controles del panel enseñan una selección cada uno.
         """
         page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        # Modo local FORZADO. Sin esto, index.html trae la URL del Worker
+        # desplegado y esta prueba escribiría favoritos de verdad en
+        # producción cada vez que se ejecutara la suite.
+        page.add_init_script(
+            "window.GRANT_RADAR_FAVORITES_ENDPOINT = '';"
+            " try { localStorage.clear(); } catch (e) {}"
+        )
         page.goto(self.url, wait_until="networkidle")
         # `networkidle` no significa «ya está pintado»: `loadData()` sigue
         # después. Sin esta espera la prueba se vuelve intermitente bajo carga.
@@ -3004,6 +3018,13 @@ class FrontendLayoutTests(unittest.TestCase):
         plazo vencido, por la misma puerta.
         """
         page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        # Modo local FORZADO. Sin esto, index.html trae la URL del Worker
+        # desplegado y esta prueba escribiría favoritos de verdad en
+        # producción cada vez que se ejecutara la suite.
+        page.add_init_script(
+            "window.GRANT_RADAR_FAVORITES_ENDPOINT = '';"
+            " try { localStorage.clear(); } catch (e) {}"
+        )
         page.goto(self.url, wait_until="networkidle")
         # `networkidle` no significa «ya está pintado»: `loadData()` sigue
         # después. Sin esta espera la prueba se vuelve intermitente bajo carga.
@@ -3039,6 +3060,13 @@ class FrontendLayoutTests(unittest.TestCase):
         avisar es peor que verla caducada.
         """
         page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        # Modo local FORZADO. Sin esto, index.html trae la URL del Worker
+        # desplegado y esta prueba escribiría favoritos de verdad en
+        # producción cada vez que se ejecutara la suite.
+        page.add_init_script(
+            "window.GRANT_RADAR_FAVORITES_ENDPOINT = '';"
+            " try { localStorage.clear(); } catch (e) {}"
+        )
         page.goto(self.url, wait_until="networkidle")
         # `networkidle` no significa «ya está pintado»: `loadData()` sigue
         # después. Sin esta espera la prueba se vuelve intermitente bajo carga.
@@ -3118,6 +3146,112 @@ class FrontendLayoutTests(unittest.TestCase):
         self.assertNotIn("sin conexión", page.locator("#favorites-chip").inner_text())
         page.close()
 
+    def test_a_stale_list_cannot_erase_what_you_just_marked(self):
+        """La consistencia eventual de KV, medida contra el endpoint real.
+
+        El 02/09/2026, sobre el Worker ya desplegado: un alta tarda **~30 s**
+        en aparecer en el `list()` de KV, mientras que una baja se propaga en
+        **0,1 s**. Cloudflare documenta hasta 60 s para ese índice.
+
+        Sin reconciliar, el fallo es el peor de esta función: marcas un
+        favorito, vuelves a la pestaña antes de que se propague,
+        `loadFavorites()` recibe una lista que todavía no lo trae y la estrella
+        **desaparece de tu propia pantalla**. Sin error y sin aviso.
+
+        Aquí el doble hace justo eso: acepta el `PUT` y sigue devolviendo una
+        lista vacía, como hace KV de verdad durante esos treinta segundos.
+        """
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        escrituras = []
+
+        def responder(route, request):
+            if request.method == "PUT":
+                escrituras.append(request.url)
+                route.fulfill(status=201, content_type="application/json",
+                              body='{"item": {}}')
+                return
+            # El listado va atrasado a propósito: nunca ve lo que se acaba de
+            # escribir, que es exactamente lo que hace KV durante ~30 s.
+            route.fulfill(status=200, content_type="application/json",
+                          body='{"items": [], "count": 0, "limit": 200}')
+
+        page.route("**/favoritos*", responder)
+        page.add_init_script(
+            "window.GRANT_RADAR_FAVORITES_ENDPOINT = 'https://doble.test/favoritos';"
+            " try { localStorage.clear(); } catch (e) {}"
+        )
+        page.goto(self.url, wait_until="networkidle")
+        page.wait_for_selector(".conv-item")
+
+        clave = page.evaluate("() => getFiltered()[0].stable_key")
+        page.locator(".conv-item .card-favorite").first.click()
+        page.wait_for_function("() => favorites.size === 1")
+        self.assertEqual(len(escrituras), 1)
+
+        # Volver a la pestaña recarga la lista: aquí es donde se perdía.
+        page.evaluate("async () => { await loadFavorites(); renderConvs(); }")
+        self.assertEqual(
+            page.evaluate("() => [...favorites.keys()]"), [clave],
+            "una lista atrasada no puede borrar una escritura propia reciente",
+        )
+        self.assertEqual(page.locator(".conv-item .card-favorite.is-favorite").count(), 1)
+
+        # Y al revés: pasada la ventana, manda el servidor. Si no, un favorito
+        # que otra persona quitó de verdad nunca se iría de esta pantalla.
+        page.evaluate(
+            "() => { for (const p of favoritesPending.values())"
+            " p.hecho -= FAVORITES_PENDING_MS + 1000; }"
+        )
+        page.evaluate("async () => { await loadFavorites(); renderConvs(); }")
+        self.assertEqual(
+            page.evaluate("() => favorites.size"), 0,
+            "pasada la ventana, la lista del servidor vuelve a mandar",
+        )
+        page.close()
+
+    def test_a_confirmed_write_stops_being_protected(self):
+        """La entrada pendiente se suelta en cuanto el servidor la confirma.
+
+        Si no, un favorito que un compañero quitase justo después seguiría
+        reapareciendo en esta pantalla durante minuto y medio.
+        """
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        confirmar = {"valor": False}
+
+        def responder(route, request):
+            if request.method == "PUT":
+                route.fulfill(status=201, content_type="application/json", body='{"item": {}}')
+                return
+            if confirmar["valor"]:
+                clave = page.evaluate("() => [...favorites.keys()][0]")
+                cuerpo = json.dumps({"items": [{"key": clave, "title": "x", "added_by": "y",
+                                               "added_at": "2026-09-02T00:00:00Z", "note": ""}],
+                                     "count": 1, "limit": 200})
+            else:
+                cuerpo = '{"items": [], "count": 0, "limit": 200}'
+            route.fulfill(status=200, content_type="application/json", body=cuerpo)
+
+        page.route("**/favoritos*", responder)
+        page.add_init_script(
+            "window.GRANT_RADAR_FAVORITES_ENDPOINT = 'https://doble.test/favoritos';"
+            " try { localStorage.clear(); } catch (e) {}"
+        )
+        page.goto(self.url, wait_until="networkidle")
+        page.wait_for_selector(".conv-item")
+
+        page.locator(".conv-item .card-favorite").first.click()
+        page.wait_for_function("() => favorites.size === 1")
+        self.assertEqual(page.evaluate("() => favoritesPending.size"), 1)
+
+        confirmar["valor"] = True
+        page.evaluate("async () => { await loadFavorites(); }")
+        self.assertEqual(
+            page.evaluate("() => favoritesPending.size"), 0,
+            "confirmada por el servidor, deja de necesitar protección",
+        )
+        self.assertEqual(page.evaluate("() => favorites.size"), 1)
+        page.close()
+
     def test_a_dead_endpoint_never_breaks_the_panel(self):
         """Un Worker caído degrada, no rompe.
 
@@ -3142,6 +3276,39 @@ class FrontendLayoutTests(unittest.TestCase):
         page.wait_for_function("() => favorites.size === 0")
         self.assertEqual(page.locator(".conv-item .card-favorite.is-favorite").count(), 0)
         page.close()
+
+    def test_no_test_can_write_to_the_deployed_worker(self):
+        """Ninguna prueba puede escribir en el Worker real.
+
+        `index.html` trae la URL del Worker desplegado, así que una prueba que
+        no la neutralice escribiría favoritos de verdad en producción en cada
+        `unittest discover`. Nadie lo vería fallar: la suite pasaría igual y
+        la lista del equipo se iría llenando de basura.
+
+        Cada prueba de favoritos tiene que hacer una de dos cosas: forzar el
+        modo local (`GRANT_RADAR_FAVORITES_ENDPOINT = ''`) o desviar la red con
+        `page.route`. Esta comprobación cuenta que ninguna se quede sin las dos.
+        """
+        fuente = (ROOT / "tests" / "test_grant_radar.py").read_text(encoding="utf-8")
+        cuerpos = fuente.split("    def test_")
+        descuidadas = []
+        for cuerpo in cuerpos[1:]:
+            nombre = cuerpo.split("(")[0]
+            # Solo importan las que abren un navegador: las de contrato leen
+            # el HTML como texto y no pueden llamar a nadie.
+            if "self.browser.new_page" not in cuerpo:
+                continue
+            if "card-favorite" not in cuerpo and "favorites" not in cuerpo:
+                continue
+            if "GRANT_RADAR_FAVORITES_ENDPOINT = ''" in cuerpo:
+                continue
+            if 'page.route("**/favoritos*"' in cuerpo:
+                continue
+            descuidadas.append(nombre)
+        self.assertEqual(
+            descuidadas, [],
+            "estas pruebas tocan favoritos sin neutralizar el endpoint real",
+        )
 
     def test_deadline_text_says_what_it_knows_and_nothing_more(self):
         """Las tres ramas, ejecutando la función en vez de leer su código."""

@@ -2,13 +2,16 @@ name = "grant-radar-favoritos"
 main = "worker.js"
 compatibility_date = "2026-01-01"
 
-# El identificador se rellena con lo que devuelva
-#   wrangler kv namespace create FAVORITOS
+# El identificador salió de `wrangler kv namespace create FAVORITOS`, el
+# 02/09/2026. No es un secreto: identifica un almacén dentro de la cuenta y no
+# da acceso a nada por sí solo, así que va versionado como manda Cloudflare.
+# Si se recrea el namespace, hay que actualizarlo aquí o el despliegue falla
+# con `KV namespace ... is not valid [code: 10042]`.
 # El binding se llama FAVORITOS porque es el nombre que worker.js espera en
 # `env.FAVORITOS`; si se cambia aquí, hay que cambiarlo allí.
 [[kv_namespaces]]
 binding = "FAVORITOS"
-id = "PENDIENTE_DE_RELLENAR"
+id = "fc3679b918024a10ba9a949d97e61968"
 
 # No hay `vars` ni `secrets`, y no debe haberlos: este archivo va al
 # repositorio público. Lo único configurable del Worker —qué origen puede

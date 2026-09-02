@@ -5803,12 +5803,71 @@ después. Una de ellas falló bajo la carga de la suite entera y pasaba aislada.
 No era un fallo del panel: era una carrera en la prueba. Todas esperan ahora a
 `.conv-item` antes de mirar nada.
 
+### 60.13. El Worker, desplegado — y lo que solo se supo al desplegarlo (02/09/2026)
+
+`https://grant-radar-favoritos.favoritos-worker.workers.dev/favoritos`, con su
+namespace KV. La URL está en `FAVORITES_ENDPOINT` (index.html) y el id del
+namespace en `wrangler.toml`; **ninguno de los dos es un secreto** y por eso van
+versionados, como manda Cloudflare.
+
+**El primer despliegue falló** con `KV namespace 'PENDIENTE_DE_RELLENAR' is not
+valid [code: 10042]`: el namespace estaba creado pero su id nunca se copió al
+`wrangler.toml`. Si vuelve a aparecer ese error, es eso y solo eso.
+
+#### La consistencia eventual de KV, que la prueba con dobles no podía ver
+
+La verificación contra el endpoint real dio **once comprobaciones buenas y una
+mala**: tras un alta con `201`, el `GET` seguía devolviendo la lista vacía. No
+era un fallo del Worker —la edición posterior devolvió `200`, así que el dato
+estaba escrito—, sino el índice de `list()` yendo por detrás. Medido:
+
+| | Tiempo en verse en `list()` |
+|---|---|
+| Un alta | **~30 s** |
+| Una baja | **0,1 s** |
+
+Y esa asimetría es lo que hacía daño. `loadFavorites()` **sustituía** el mapa
+local por lo que devolviera el servidor, así que marcabas un favorito, volvías a
+la pestaña dentro de esos treinta segundos y **la estrella desaparecía de tu
+propia pantalla**, sin error y sin aviso. Es exactamente el fallo silencioso
+contra el que se diseñó todo lo demás de esta función, entrando por una puerta
+que no existía hasta desplegar.
+
+**Arreglo:** el panel recuerda sus propias escrituras (`favoritesPending`) y
+reconcilia en vez de sustituir. Una entrada pendiente se suelta **en cuanto el
+servidor la confirma** —no espera la ventana entera—, y si la ventana vence sin
+confirmación manda el servidor, que es lo honesto: a esas alturas lo más
+probable es que la escritura se perdiera. La ventana es de **90 s**: margen
+sobre los 30 medidos y sobre los 60 que documenta Cloudflare.
+
+Las dos direcciones tienen prueba, con un doble que hace lo que hace KV de
+verdad —acepta el `PUT` y sigue devolviendo la lista vieja—, y la mutación de
+volver a `favorites = new Map(...)` las hace fallar.
+
+#### Un riesgo que apareció al conectar la URL
+
+Con un endpoint real escrito en `index.html`, las pruebas de favoritos que
+corrían en modo local pasaron a **escribir en producción** en cada
+`unittest discover`. Nadie lo habría visto: la suite pasa igual y la lista del
+equipo se va llenando de basura.
+
+Dos medidas. `FAVORITES_ENDPOINT` usa `??` y no `||`, para que una cadena vacía
+puesta desde fuera gane y una prueba pueda forzar el modo local —con `||` caería
+a producción—. Y `test_no_test_can_write_to_the_deployed_worker` recorre el
+propio archivo de pruebas y exige que **toda** prueba que abra un navegador y
+toque favoritos neutralice el endpoint, por una de las dos vías. Comprobado que
+caza un descuido real introducido a propósito.
+
+Verificado además de la forma más simple: la lista del Worker tenía cero
+elementos antes de la suite y cero después.
+
 ### 60.11. Estado
 
-**713 pruebas** en verde (666 al empezar). 41 módulos. Coste de la sesión en
+**716 pruebas** en verde (666 al empezar). 41 módulos. Coste de la sesión en
 API: **0 USD**. El producto publicado sigue siendo el del 21/08: **la decisión de
 pagar es del usuario y esta sesión no la ha empujado**.
 
-Queda una acción del usuario para que los favoritos sean de verdad compartidos:
-desplegar el Worker (`wrangler deploy`) y pegar su URL en `FAVORITES_ENDPOINT`.
-Hasta entonces funcionan en local, por navegador.
+El Worker está **desplegado y conectado** (60.13): los favoritos ya son
+compartidos. Lo único que queda por comprobar es lo que ninguna prueba puede
+demostrar — abrirlo en dos navegadores y ver aparecer en uno lo que se marca en
+el otro.

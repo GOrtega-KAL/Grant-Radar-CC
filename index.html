@@ -2243,9 +2243,15 @@
   // es el respaldo: si el Worker no responde, el panel cae a él solo. Y el día
   // que la herramienta viva en el servidor propio, migrar es cambiar esta
   // línea.
-  // Se puede fijar también desde fuera —un `<script>` de despliegue, o la
-  // prueba que ejercita el camino compartido— sin tocar este archivo.
-  const FAVORITES_ENDPOINT = window.GRANT_RADAR_FAVORITES_ENDPOINT || '';
+  // Se puede fijar también desde fuera —un `<script>` de despliegue, o las
+  // pruebas— sin tocar este archivo.
+  //
+  // `??` y no `||`, deliberadamente: una cadena **vacía** puesta desde fuera
+  // tiene que ganar, para que una prueba pueda forzar el modo local. Con `||`
+  // caería a la URL de producción y la suite escribiría favoritos de verdad
+  // en el Worker cada vez que se ejecutara.
+  const FAVORITES_ENDPOINT = window.GRANT_RADAR_FAVORITES_ENDPOINT
+    ?? 'https://grant-radar-favoritos.favoritos-worker.workers.dev/favoritos';
 
   const FAVORITES_LOCAL_KEY = 'grant-radar-favoritos';
   const FAVORITES_NAME_KEY = 'grant-radar-nombre';
@@ -2255,6 +2261,25 @@
   // guardado contra él señalaría mañana otra convocatoria, en silencio.
   let favorites = new Map();
   let favoritesOffline = false;
+
+  // ── LA CONSISTENCIA EVENTUAL DE KV, Y POR QUÉ HAY QUE TAPARLA ───────────
+  //
+  // Medido contra el endpoint real el 02/09/2026, y la asimetría es lo que
+  // importa: un alta tarda **~30 s** en aparecer en el `list()` de KV,
+  // mientras que una baja se propaga en **0,1 s**. Cloudflare documenta hasta
+  // 60 s para el índice de `list()`.
+  //
+  // Sin esto, el fallo es exactamente el que esta función lleva evitando en
+  // todo lo demás: marcas un favorito, vuelves a la pestaña antes de que se
+  // propague, `loadFavorites()` recibe una lista que todavía no lo incluye y
+  // **la estrella desaparece de tu propia pantalla**. Sin error, sin aviso.
+  //
+  // La solución no es esperar ni reintentar: es no dejar que una lista
+  // atrasada borre lo que este navegador acaba de hacer. Se recuerda cada
+  // escritura propia hasta que el servidor la confirme, o hasta que venza la
+  // ventana. 90 s da margen sobre los 30 medidos y sobre los 60 documentados.
+  const favoritesPending = new Map();
+  const FAVORITES_PENDING_MS = 90_000;
 
   function localGet(key, fallback) {
     try { return window.localStorage.getItem(key) ?? fallback; }
@@ -2314,7 +2339,7 @@
     }
     try {
       const data = await favoritesRequest('GET');
-      favorites = new Map((data.items || []).map(item => [item.key, item]));
+      favorites = reconcileFavorites(data.items);
       favoritesOffline = false;
     } catch (error) {
       // Un endpoint caído no puede romper el panel: se sigue con lo último que
@@ -2324,6 +2349,28 @@
       favoritesOffline = true;
     }
     renderFavoritesChip();
+  }
+
+  // Lo que dice el servidor, corregido con lo que este navegador sabe y él
+  // todavía no. Una entrada pendiente se descarta en cuanto el servidor la
+  // confirma —no hace falta agotar la ventana— o cuando la ventana vence, que
+  // es la salvaguarda por si la escritura se perdió de verdad.
+  function reconcileFavorites(items) {
+    const ahora = Date.now();
+    const mapa = new Map((items || []).map(item => [item.key, item]));
+    for (const [key, pendiente] of [...favoritesPending]) {
+      const confirmado = pendiente.accion === 'alta' ? mapa.has(key) : !mapa.has(key);
+      if (confirmado || ahora - pendiente.hecho > FAVORITES_PENDING_MS) {
+        favoritesPending.delete(key);
+        if (confirmado) continue;
+        // Ventana vencida sin confirmar: manda el servidor. Es lo honesto,
+        // porque a estas alturas lo más probable es que la escritura fallara.
+        continue;
+      }
+      if (pendiente.accion === 'alta') mapa.set(key, pendiente.record);
+      else mapa.delete(key);
+    }
+    return mapa;
   }
 
   function favoriteRecordFor(c) {
@@ -2344,12 +2391,19 @@
   async function persistFavorite(method, key, record, undo) {
     favoritesLocalWrite();
     if (!FAVORITES_ENDPOINT) return;
+    favoritesPending.set(key, {
+      accion: method === 'DELETE' ? 'baja' : 'alta',
+      hecho: Date.now(),
+      record,
+    });
     try {
       await favoritesRequest(method, key, record);
       favoritesOffline = false;
     } catch (error) {
       console.warn('No se pudo guardar el favorito:', error);
       undo();
+      // Si no llegó, no hay nada que proteger de una lista atrasada.
+      favoritesPending.delete(key);
       favoritesOffline = true;
       favoritesLocalWrite();
       renderConvs();

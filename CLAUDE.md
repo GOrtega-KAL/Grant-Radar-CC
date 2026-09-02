@@ -56,7 +56,7 @@ desactualizado si no se mantiene junto a ellos.
 >
 > ---
 >
-> **Estado del código a 02/09/2026 (tarde):** 41 módulos, **713 pruebas en
+> **Estado del código a 02/09/2026 (tarde):** 41 módulos, **716 pruebas en
 > verde**. Verificación `--no-claude` completa: 922 detectadas, **86 vigentes**,
 > prefiltro `retain=38, ambiguous=5, hold_manual=77, reject=802`. Pendientes de
 > analizar **83** (~2,12 USD). Cifras de referencia en **AGENTS.md 60.10**.
@@ -67,13 +67,19 @@ desactualizado si no se mantiene junto a ellos.
 > de hoy y el 42 de mañana son convocatorias distintas. Los favoritos del panel
 > se guardan contra `stable_key`; usar el `id` habría sido un fallo silencioso.
 >
-> **Los favoritos son compartidos en cuanto despliegues el Worker.** Está
-> escrito en `scripts/favoritos-worker/` con sus pasos; hasta que hagas
-> `wrangler deploy` y pegues la URL en `FAVORITES_ENDPOINT` (index.html), el
-> panel los guarda en el `localStorage` de cada navegador. **Es una acción
-> tuya, no del agente.** Antes de desplegar, `node probar-worker.mjs` en esa
-> carpeta ejercita el Worker entero sin red ni cuenta (25 comprobaciones).
-> **No está en `unittest`**: hay que lanzarla a mano.
+> **El Worker de favoritos está desplegado y conectado** (AGENTS.md 60.13):
+> `grant-radar-favoritos.favoritos-worker.workers.dev`. La URL y el id del
+> namespace KV van versionados y no son secretos.
+>
+> **Dos cosas que no hay que romper.** `FAVORITES_ENDPOINT` usa `??` y no `||`
+> a propósito: con `||`, una prueba que fuerce la cadena vacía caería a
+> producción y la suite escribiría favoritos de verdad en cada ejecución.
+> Y el panel **reconcilia** en vez de sustituir la lista, porque el `list()` de
+> KV tarda **~30 s** en ver un alta (y 0,1 s en ver una baja): sustituir hacía
+> desaparecer de tu pantalla la estrella que acababas de poner.
+>
+> Antes de cada `wrangler deploy`, `npm test` y `npm run check` en
+> `scripts/favoritos-worker/`. **No están en `unittest`**: se lanzan a mano.
 >
 > **El chip de Favoritos es excluyente** (AGENTS.md 60.12): al activarlo apaga
 > fuente, temática, búsqueda y los dos conmutadores, y cualquiera de ellos lo
