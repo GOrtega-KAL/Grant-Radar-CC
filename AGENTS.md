@@ -5816,8 +5816,8 @@ valid [code: 10042]`: el namespace estaba creado pero su id nunca se copió al
 
 #### La consistencia eventual de KV, que la prueba con dobles no podía ver
 
-La verificación contra el endpoint real dio **once comprobaciones buenas y una
-mala**: tras un alta con `201`, el `GET` seguía devolviendo la lista vacía. No
+La verificación contra el endpoint real dio **diez comprobaciones buenas y una
+mala** (once en total): tras un alta con `201`, el `GET` seguía devolviendo la lista vacía. No
 era un fallo del Worker —la edición posterior devolvió `200`, así que el dato
 estaba escrito—, sino el índice de `list()` yendo por detrás. Medido:
 
