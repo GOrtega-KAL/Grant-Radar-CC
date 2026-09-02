@@ -59,10 +59,27 @@ su cuenta si el Worker no responde.
 
 ## Comprobación
 
-La suite de Python **no ejecuta este archivo**: es JavaScript desplegado fuera
-del repositorio. No hay regresión automática que lo cubra y no conviene fingir
-que la hay. Lo que sí hay son estas tres llamadas, que se pasan a mano después
-de cada despliegue.
+### Antes de desplegar, sin cuenta y sin red
+
+```bash
+node probar-worker.mjs      # o: npm test
+```
+
+Ejercita el Worker entero con un KV de mentira: CORS y preflight, alta, edición,
+baja idempotente, los topes de 200 favoritos / 200 caracteres de nota / 40 de
+nombre, y el caso de `wrangler.toml` sin rellenar. **25 comprobaciones, ninguna
+red.** Node 18+ trae `Request` y `Response` nativos, así que el Worker corre tal
+cual.
+
+Merece la pena pasarlo antes de cada `wrangler deploy`: es donde están los
+errores que uno comete escribiendo esto, y verlos en producción cuesta mucho
+más.
+
+La suite de Python **no ejecuta este archivo** y no va a hacerlo: es JavaScript
+que vive fuera de su alcance. Esta prueba tampoco entra en `unittest`; hay que
+lanzarla a mano, y conviene saberlo en vez de suponer que algo la vigila.
+
+### Después de desplegar, contra el endpoint real
 
 Sustituye `$URL` por la del Worker. La cabecera `Origin` es obligatoria: sin
 ella el Worker responde `403`, que es justamente lo que debe hacer.

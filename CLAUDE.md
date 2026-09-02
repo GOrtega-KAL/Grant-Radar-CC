@@ -71,7 +71,9 @@ desactualizado si no se mantiene junto a ellos.
 > escrito en `scripts/favoritos-worker/` con sus pasos; hasta que hagas
 > `wrangler deploy` y pegues la URL en `FAVORITES_ENDPOINT` (index.html), el
 > panel los guarda en el `localStorage` de cada navegador. **Es una acción
-> tuya, no del agente.**
+> tuya, no del agente.** Antes de desplegar, `node probar-worker.mjs` en esa
+> carpeta ejercita el Worker entero sin red ni cuenta (25 comprobaciones).
+> **No está en `unittest`**: hay que lanzarla a mano.
 >
 > **El chip de Favoritos es excluyente** (AGENTS.md 60.12): al activarlo apaga
 > fuente, temática, búsqueda y los dos conmutadores, y cualquiera de ellos lo

@@ -5524,10 +5524,18 @@ deliberadas, revertidas después: cambiar `favorites.has(c.stable_key)` por
 string a la ruta hace fallar la del camino compartido. Una prueba que no falla
 al romper lo que vigila no vigila nada.
 
-**Hueco declarado:** `worker.js` es JavaScript desplegado fuera del repositorio y
-**la suite de Python no lo ejecuta**. Se cubre con tres `curl` documentados en su
-`README.md`, más la prueba a dos navegadores. No se finge que haya regresión
-automática donde no la hay.
+**El hueco, declarado primero y luego tapado.** `worker.js` es JavaScript que
+vive fuera del alcance de la suite de Python, así que se documentó como hueco
+con tres `curl` manuales. Al instalarse Node en el equipo para poder desplegar,
+se escribió `probar-worker.mjs`: ejercita el Worker entero con un KV de mentira
+—CORS y preflight, alta, edición, baja idempotente, los tres topes, y el caso de
+`wrangler.toml` sin rellenar—, **25 comprobaciones sin red y sin cuenta**. Node
+18+ trae `Request` y `Response` nativos, de modo que el Worker corre tal cual.
+
+Sigue **sin entrar en `unittest`**, y eso se dice en su README en vez de
+suponerse: hay que lanzarla a mano antes de cada `wrangler deploy`. Lo que
+ninguna de las dos cosas demuestra es que la lista sea de verdad compartida —eso
+solo lo dice la prueba a dos navegadores—.
 
 ### 60.5. El aviso diario ya dice qué ha cambiado, no solo cuánto costaría
 

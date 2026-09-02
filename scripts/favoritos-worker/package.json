@@ -1,0 +1,9 @@
+{
+  "name": "grant-radar-favoritos",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node probar-worker.mjs",
+    "deploy": "wrangler deploy"
+  }
+}
