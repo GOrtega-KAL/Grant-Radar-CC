@@ -3431,6 +3431,36 @@ class FrontendLayoutTests(unittest.TestCase):
         )
         page.close()
 
+    def test_the_search_controls_line_up_with_the_count_tag(self):
+        """La búsqueda y el recuento comparten borde derecho.
+
+        El formulario reserva 370 px para que la fila no salte al aparecer y
+        desaparecer la «×», y su contenido se quedaba alineado a la izquierda
+        de ese hueco: la búsqueda acababa ~30 px antes que la etiqueta de la
+        línea de abajo y se leía como desalineada.
+        """
+        for ancho in (1600, 1280, 912, 390):
+            with self.subTest(ancho=ancho):
+                page = self.browser.new_page(viewport={"width": ancho, "height": 900})
+                page.add_init_script("window.GRANT_RADAR_FAVORITES_ENDPOINT = '';")
+                page.goto(self.url, wait_until="networkidle")
+                page.wait_for_selector(".conv-item")
+                # La «×» solo se enseña con una búsqueda puesta.
+                page.fill("#title-search-input", "a")
+                page.press("#title-search-input", "Enter")
+                bordes = page.evaluate("""() => {
+                    const derecha = el => Math.round(el.getBoundingClientRect().right);
+                    return {
+                      equis: derecha(document.getElementById('clear-title-search')),
+                      etiqueta: derecha(document.getElementById('filter-count-tag')),
+                    };
+                }""")
+                self.assertLessEqual(
+                    abs(bordes["equis"] - bordes["etiqueta"]), 1,
+                    f"la búsqueda no está alineada con el recuento: {bordes}",
+                )
+                page.close()
+
     def test_deadline_text_says_what_it_knows_and_nothing_more(self):
         """Las tres ramas, ejecutando la función en vez de leer su código."""
         page = self.browser.new_page(viewport={"width": 1080, "height": 720})

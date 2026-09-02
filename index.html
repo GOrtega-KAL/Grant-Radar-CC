@@ -605,7 +605,12 @@
   .sort-tooltip.open { display: block; }
   .sort-help.dismissed .sort-tooltip { display: none; }
 
-  .title-search { display: flex; align-items: center; gap: 6px; min-width: min(100%, 370px); }
+  /* `justify-content: flex-end` y no el de por defecto: el formulario reserva
+     370 px para que la fila no salte al aparecer y desaparecer la «×», y sin
+     esto su contenido se quedaba pegado a la izquierda de ese hueco. El
+     resultado era una búsqueda que acababa ~30 px antes que la etiqueta de
+     recuento de la línea de abajo, y se leía como desalineada. */
+  .title-search { display: flex; align-items: center; justify-content: flex-end; gap: 6px; min-width: min(100%, 370px); }
   .title-search input {
     width: 220px; min-height: 34px; padding: 7px 10px;
     border: 1px solid var(--border); border-radius: 9px;
