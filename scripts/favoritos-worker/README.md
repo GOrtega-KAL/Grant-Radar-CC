@@ -33,19 +33,65 @@ cambiar un comentario no cambia de dueño el favorito.
 
 ## Despliegue
 
-Hace falta una cuenta de Cloudflare (el plan gratuito sobra) y `wrangler`:
+Hace falta Node.js y una cuenta de Cloudflare (el plan gratuito sobra). Todo lo
+demás está en esta carpeta.
+
+### Antes de empezar, dos tropiezos de Windows que cuestan una tarde
+
+Los dos aparecieron de verdad al preparar esto, y ninguno es culpa del Worker.
+
+**1. `node` no se reconoce, aunque esté instalado.** El instalador añade Node al
+PATH del sistema, pero una terminal abierta antes arrastra el PATH viejo. En VS
+Code **no basta con abrir otra pestaña de terminal**: hereda el entorno del
+propio VS Code, así que hay que reiniciarlo. Para desbloquear la sesión actual
+sin cerrar nada:
+
+```powershell
+$env:Path = [Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [Environment]::GetEnvironmentVariable("Path","User")
+```
+
+**2. `npx : No se puede cargar el archivo ... npx.ps1 porque la ejecución de
+scripts está deshabilitada`.** La política de PowerShell por defecto en Windows
+cliente es `Restricted` y bloquea todo `.ps1`, incluido el shim de npx. Tres
+salidas, de menos a más invasiva:
+
+| | Qué hace |
+|---|---|
+| `npx.cmd …` en vez de `npx …` | El shim `.cmd` no es un script de PowerShell. **No cambia ninguna configuración.** |
+| `Set-ExecutionPolicy -Scope Process RemoteSigned` | Solo esta terminal; se revierte al cerrarla |
+| `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` | Permanente para tu usuario. Es lo que Microsoft recomienda en equipos de desarrollo, pero **es un cambio de seguridad de tu máquina**: decídelo tú |
+
+### Los pasos
 
 ```bash
-npm install -g wrangler
-wrangler login
-
 cd "scripts/favoritos-worker"
-wrangler kv namespace create FAVORITOS
+
+npm install          # instala wrangler AQUÍ, fijado en package-lock.json
+npm test             # 25 comprobaciones del Worker, sin red ni cuenta
+npm run check        # empaqueta y valida wrangler.toml, sin desplegar
+
+npx wrangler login   # abre el navegador y pide autorización
+
+npx wrangler kv namespace create FAVORITOS
 #  → copia el `id` que imprime dentro de wrangler.toml
 
-wrangler deploy
+npm run deploy
 #  → imprime la URL: https://grant-radar-favoritos.<subdominio>.workers.dev
 ```
+
+**Por qué `npm install` local y no `npm install -g wrangler` ni `npx wrangler` a
+secas.** Con `npx`, cada invocación extrae wrangler y su binario `workerd` en una
+caché temporal y luego intenta borrarla; en Windows, el antivirus tiene el
+binario abierto justo entonces y npm falla con `EBUSY: resource busy or locked`.
+Pasó, y no es intermitente de forma útil. Instalado aquí se extrae una vez, se
+queda, y además la versión queda fijada para quien lo retome dentro de unos
+meses.
+
+**Si npm avisa de `allow-scripts`** sobre `esbuild` y `workerd`: es una
+protección de npm 11 que bloquea sus `postinstall`. **Déjala como está.**
+Comprobado: `wrangler --version`, `--dry-run` y el despliegue funcionan igual;
+esos `postinstall` descargan binarios que solo hacen falta para `wrangler dev`,
+que aquí no se usa.
 
 Con esa URL, en `index.html`:
 

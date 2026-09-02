@@ -4,6 +4,10 @@
   "type": "module",
   "scripts": {
     "test": "node probar-worker.mjs",
+    "check": "wrangler deploy --dry-run",
     "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.128.0"
   }
 }

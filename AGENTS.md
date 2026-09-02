@@ -5537,6 +5537,17 @@ suponerse: hay que lanzarla a mano antes de cada `wrangler deploy`. Lo que
 ninguna de las dos cosas demuestra es que la lista sea de verdad compartida —eso
 solo lo dice la prueba a dos navegadores—.
 
+**Tres tropiezos de Windows, todos reales y ninguno del Worker**, documentados en
+su README para no volver a pagarlos: una terminal abierta antes de instalar Node
+arrastra el PATH viejo (y en VS Code hay que reiniciar el editor, no la pestaña);
+la política `Restricted` de PowerShell bloquea `npx.ps1`, que se esquiva con
+`npx.cmd` sin cambiar ninguna configuración; y `npx wrangler` a secas falla con
+`EBUSY` porque extrae el binario `workerd` en una caché temporal que el antivirus
+tiene abierta al ir a borrarla. Por eso wrangler se instala **local** en la
+carpeta, con su versión fijada. El aviso `allow-scripts` de npm 11 sobre
+`esbuild` y `workerd` **se deja como está**: comprobado que `--dry-run` y el
+despliegue funcionan igual.
+
 ### 60.5. El aviso diario ya dice qué ha cambiado, no solo cuánto costaría
 
 `compare_collection_against_product()`, en `product_watch.py`, y **una** cifra
