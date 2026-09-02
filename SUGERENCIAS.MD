@@ -1584,7 +1584,26 @@ implementaciones de la identidad porque tiene que haberlas —el panel deriva la
 clave cuando el JSON aún no la trae—, y **esa prueba es lo único que impide que
 se separen**.
 
-Estado: **711 pruebas** en verde, 41 módulos, **0 USD** gastados en API.
+### Y una corrección que solo aparece usando la herramienta
+
+El filtro de favoritos se diseñó combinable con los demás: más potente, y así se
+justificó al planificarlo. El usuario lo probó y pidió lo contrario, con un
+argumento que ninguna revisión de código habría dado — el resto de controles del
+panel enseñan **una selección cada uno**, así que uno que además se acumule se
+lee como si estuviera estropeado, y la lista de favoritos es demasiado corta
+para que filtrar dentro compense ese coste.
+
+Frente al punto **2.9**: hay una clase de defecto que no es un fallo de lógica ni
+de cobertura, sino de **coherencia con lo que el resto de la interfaz ya enseña**,
+y solo se detecta usando la herramienta. Ninguna prueba lo habría encontrado
+porque el comportamiento era exactamente el especificado.
+
+Al hacerlo excluyente apareció además un fallo silencioso real: un favorito que
+el análisis descartara después desaparecía de la lista salvo que se encendiera
+«Descartadas» — el mismo fallo ya corregido para los de plazo vencido, entrando
+por otra puerta. Lo arregló la misma línea que simplificaba el filtro.
+
+Estado: **713 pruebas** en verde, 41 módulos, **0 USD** gastados en API.
 
 ## Nota de alcance
 

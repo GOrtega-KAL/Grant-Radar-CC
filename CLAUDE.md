@@ -56,7 +56,7 @@ desactualizado si no se mantiene junto a ellos.
 >
 > ---
 >
-> **Estado del código a 02/09/2026 (tarde):** 41 módulos, **711 pruebas en
+> **Estado del código a 02/09/2026 (tarde):** 41 módulos, **713 pruebas en
 > verde**. Verificación `--no-claude` completa: 922 detectadas, **86 vigentes**,
 > prefiltro `retain=38, ambiguous=5, hold_manual=77, reject=802`. Pendientes de
 > analizar **83** (~2,12 USD). Cifras de referencia en **AGENTS.md 60.10**.
@@ -72,6 +72,13 @@ desactualizado si no se mantiene junto a ellos.
 > `wrangler deploy` y pegues la URL en `FAVORITES_ENDPOINT` (index.html), el
 > panel los guarda en el `localStorage` de cada navegador. **Es una acción
 > tuya, no del agente.**
+>
+> **El chip de Favoritos es excluyente** (AGENTS.md 60.12): al activarlo apaga
+> fuente, temática, búsqueda y los dos conmutadores, y cualquiera de ellos lo
+> apaga a él. La primera versión dejaba combinarlo y el usuario lo corrigió tras
+> usarlo: los demás controles enseñan una selección cada uno, así que uno que se
+> acumule se lee como si estuviera roto. **No lo reabras** para «hacerlo más
+> potente».
 >
 > **Un aviso de método que costó caro y no conviene reaprender** (AGENTS.md
 > 59.1): al medir el impacto del plural se usó el corpus que había en disco

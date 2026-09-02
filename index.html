@@ -2115,6 +2115,7 @@
   }
 
   function selectSource(value) {
+    leaveFavoritesFilter();
     filterState.source = value;
     buildSourceMenu();
     toggleSourceMenu(false);
@@ -2125,6 +2126,7 @@
 
   function applyTitleSearch(event) {
     event?.preventDefault();
+    leaveFavoritesFilter();
     filterState.query = foldForSearch(document.getElementById('title-search-input').value);
     document.getElementById('clear-title-search').hidden = !filterState.query;
     updateMobileFilterCount();
@@ -2170,6 +2172,7 @@
   }
 
   function setFilter(dim, value, element) {
+    leaveFavoritesFilter();
     filterState[dim] = value;
     element.closest('.filter-cluster').querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
     element.classList.add('active');
@@ -2200,6 +2203,7 @@
   }
 
   function syncToggle(type, checked) {
+    leaveFavoritesFilter();
     if (type === 'discarded') {
       filterState.showDiscarded = checked;
       document.getElementById('toggle-descartadas').checked = checked;
@@ -2214,7 +2218,12 @@
   }
 
   function updateMobileFilterCount() {
-    const count = [filterState.source !== 'all', filterState.tag !== 'all', Boolean(filterState.query), filterState.showDiscarded, filterState.onlyReview, filterState.onlyFavorites].filter(Boolean).length;
+    // Con favoritos activo el recuento es 1, no la suma: es el único filtro
+    // que se está aplicando, y decir «(3)» sugeriría que hay otros dos.
+    const count = filterState.onlyFavorites ? 1 : [
+      filterState.source !== 'all', filterState.tag !== 'all',
+      Boolean(filterState.query), filterState.showDiscarded, filterState.onlyReview
+    ].filter(Boolean).length;
     document.getElementById('mobile-filter-count').textContent = count ? `(${count})` : '';
   }
 
@@ -2417,8 +2426,60 @@
     chip.setAttribute('aria-pressed', String(filterState.onlyFavorites));
   }
 
+  // ── FAVORITOS COMO MODO EXCLUYENTE ───────────────────────────────────────
+  //
+  // Decidido con el usuario el 02/09/2026, después de usarlo. La primera
+  // versión dejaba combinar «Favoritos» con fuente, temática y búsqueda, lo
+  // cual era más potente y **peor**: el resto de controles del panel enseñan
+  // una selección cada uno, así que un filtro que además se acumula sobre los
+  // demás se lee como si estuviera estropeado. Y no compensa, porque la lista
+  // de favoritos es corta por definición: filtrar dentro de diez fichas no
+  // resuelve ningún problema real y sí añade un control confuso.
+  //
+  // La regla, entonces: **con Favoritos activo, Favoritos ES el filtro.** No
+  // se aplica ni la fuente, ni la temática, ni la búsqueda, ni los dos
+  // conmutadores de visibilidad. Se ve la lista entera, incluidas las
+  // vencidas y las descartadas: una convocatoria marcada a mano no puede
+  // desaparecer sin avisar, que es la misma razón por la que ya se mostraban
+  // las de plazo cumplido.
+
+  function leaveFavoritesFilter() {
+    if (!filterState.onlyFavorites) return;
+    filterState.onlyFavorites = false;
+    renderFavoritesChip();
+  }
+
+  // Apaga los demás filtros y su interfaz, sin pasar por sus manejadores:
+  // esos llaman a `leaveFavoritesFilter()` y se entraría en bucle.
+  function clearOtherFilters() {
+    filterState.source = 'all';
+    filterState.tag = 'all';
+    filterState.query = '';
+    filterState.showDiscarded = false;
+    filterState.onlyReview = false;
+
+    buildSourceMenu();
+    const search = document.getElementById('title-search-input');
+    if (search) search.value = '';
+    const clearButton = document.getElementById('clear-title-search');
+    if (clearButton) clearButton.hidden = true;
+    document.querySelectorAll('.filter-cluster .filter-chip').forEach(chip => {
+      if (chip.id !== 'favorites-chip') chip.classList.remove('active');
+    });
+    const cualquiera = document.querySelector(
+      ".filter-cluster .filter-chip[onclick*=\"'tag','all'\"]"
+    );
+    if (cualquiera) cualquiera.classList.add('active');
+    for (const id of ('toggle-descartadas toggle-descartadas-mobile '
+                      + 'toggle-review toggle-review-mobile').split(' ')) {
+      const casilla = document.getElementById(id);
+      if (casilla) casilla.checked = false;
+    }
+  }
+
   function toggleFavoritesFilter() {
     filterState.onlyFavorites = !filterState.onlyFavorites;
+    if (filterState.onlyFavorites) clearOtherFilters();
     renderFavoritesChip();
     updateMobileFilterCount();
     renderConvs();
@@ -2426,11 +2487,12 @@
 
   function getFiltered() {
     let list = convocatorias.filter(c => {
-      if (filterState.onlyFavorites && !favorites.has(c.stable_key)) return false;
-      // Excepción deliberada: bajo el filtro de favoritos, uno vencido SÍ se
-      // muestra. Que una convocatoria marcada a mano desaparezca sin avisar es
-      // peor que verla caducada; la tarjeta la atenúa y la etiqueta.
-      if ((c.deadline ?? 1) <= 0 && !filterState.onlyFavorites) return false;
+      // Favoritos es excluyente: si está activo, no se mira nada más. Incluye
+      // a propósito las vencidas y las descartadas, porque lo que se marcó a
+      // mano no puede desaparecer sin avisar; la tarjeta las atenúa y las
+      // etiqueta para que se distingan de un vistazo.
+      if (filterState.onlyFavorites) return favorites.has(c.stable_key);
+      if ((c.deadline ?? 1) <= 0) return false;
       if (c.descartada && !filterState.showDiscarded) return false;
       if (filterState.onlyReview && !c.data_pending && !c.review_required) return false;
       if (filterState.source !== 'all' && !convHasSource(c, filterState.source)) return false;

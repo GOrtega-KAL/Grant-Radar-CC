@@ -5512,9 +5512,8 @@ propio previsto para dentro de unos meses (59.9), no este Worker.
    descarta todo lo vencido en cualquier otro caso; aquí la excepción es
    deliberada, porque que una convocatoria marcada a mano desaparezca sin avisar
    es peor que verla caducada.
-3. El chip **no pasa por `setFilter()`**, que es excluyente dentro de su grupo:
-   lleva su propio conmutador para poder combinarse con fuente, temática y
-   búsqueda a la vez.
+3. El chip **no pasa por `setFilter()`**: necesita apagar todos los demás
+   filtros, no solo los de su cluster (ver 60.12).
 
 Gratis por arrastre: las descargas XLSX/CSV exportan `getFiltered()`, así que
 «filtrar por favoritos y descargar» funcionó sin tocar el exportador.
@@ -5725,9 +5724,69 @@ Orden de verificación, sin cambios respecto a 43.3:
 3. `poetry run python -m unittest discover -s tests` — **711 pruebas**
 4. `poetry run python "Grant-Radar-prueba.py" --no-claude`
 
+### 60.12. Favoritos pasa a ser excluyente, después de usarlo (02/09/2026)
+
+Corrección pedida por el usuario tras probar la primera versión. Se anota con el
+error incluido, porque es una equivocación de diseño fácil de repetir.
+
+La primera versión dejaba **combinar** «Favoritos» con fuente, temática y
+búsqueda. Sobre el papel era más potente y así se justificó al planificarlo. En
+la mano es peor, por dos motivos que solo se ven usándolo:
+
+> «Es correcta pero mecánicamente contraintuitiva: el resto de filtros solo
+> permiten aplicar uno a la vez, mientras que favoritos permite aplicar
+> favoritos + otro filtro a la vez. La lista de favoritos no es tan extensa como
+> para hacer un segundo filtrado dentro y a cambio tiene un control confuso y
+> poco intuitivo.» (usuario, 02/09/2026)
+
+Los dos motivos, por separado, porque son distintos:
+
+1. **Coherencia.** Los demás controles del panel enseñan **una selección cada
+   uno** —un desplegable de fuente, un chip de temática—. Un control que además
+   se acumula sobre los otros no se lee como «más potente», se lee como si
+   estuviera estropeado.
+2. **La potencia no se paga sola.** Filtrar dentro de una lista de diez fichas
+   marcadas a mano no resuelve ningún problema que exista. El coste —un control
+   cuyo comportamiento hay que deducir— es fijo; el beneficio, hipotético.
+
+**La regla ahora: con Favoritos activo, Favoritos ES el filtro.** No se aplica ni
+la fuente, ni la temática, ni la búsqueda, **ni los dos conmutadores de
+visibilidad**. `getFiltered()` sale en la primera línea:
+
+```js
+if (filterState.onlyFavorites) return favorites.has(c.stable_key);
+```
+
+Esa línea arregló de paso un fallo silencioso que la versión anterior tenía y
+nadie había visto: **una convocatoria marcada a mano que el análisis descartara
+después desaparecía de la lista**, salvo que se encendiera «Descartadas». Es
+exactamente el mismo fallo que ya se había corregido para las de plazo vencido,
+entrando por otra puerta. Ahora las dos se muestran, atenuadas y etiquetadas, y
+hay una prueba para cada una.
+
+La exclusión es **en las dos direcciones**, y las dos están probadas: activar
+Favoritos borra los demás filtros y su interfaz —el campo de búsqueda se vacía,
+las casillas se desmarcan, el chip «Cualquier temática» vuelve a activarse—, y
+tocar cualquier otro filtro apaga Favoritos. Un campo de búsqueda con texto
+dentro que ya no se aplica es peor que no haberlo borrado.
+
+`clearOtherFilters()` toca el estado y la interfaz **sin pasar por los
+manejadores** de cada filtro, porque esos llaman a `leaveFavoritesFilter()` y se
+entraría en bucle. La prueba de contrato cuenta las cuatro llamadas a
+`leaveFavoritesFilter()` que debe haber —`setFilter`, `selectSource`,
+`applyTitleSearch`, `syncToggle`—: si mañana se añade un quinto filtro y nadie lo
+conecta, falla.
+
+**Y una nota sobre las pruebas de esta ronda**, que costó una intermitencia: las
+de favoritos afirmaban justo después de `page.goto(..., wait_until="networkidle")`,
+y `networkidle` **no significa «ya está pintado»** — `loadData()` sigue corriendo
+después. Una de ellas falló bajo la carga de la suite entera y pasaba aislada.
+No era un fallo del panel: era una carrera en la prueba. Todas esperan ahora a
+`.conv-item` antes de mirar nada.
+
 ### 60.11. Estado
 
-**711 pruebas** en verde (666 al empezar). 41 módulos. Coste de la sesión en
+**713 pruebas** en verde (666 al empezar). 41 módulos. Coste de la sesión en
 API: **0 USD**. El producto publicado sigue siendo el del 21/08: **la decisión de
 pagar es del usuario y esta sesión no la ha empujado**.
 

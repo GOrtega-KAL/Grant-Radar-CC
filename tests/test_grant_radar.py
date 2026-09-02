@@ -2095,14 +2095,27 @@ class FrontendContractTests(unittest.TestCase):
             "event.stopPropagation();toggleFavorite(", self.html
         )
 
-    def test_the_favorites_filter_does_not_go_through_setFilter(self):
-        """`setFilter()` es excluyente dentro de su grupo.
+    def test_the_favorites_filter_has_its_own_exclusive_handler(self):
+        """Favoritos es excluyente, pero no por la vía de `setFilter()`.
 
-        Si el chip de favoritos pasara por ahí, activarlo apagaría el filtro de
-        temática, y el encargo era justamente que se combinaran.
+        `setFilter(dim, value, element)` asigna un valor y apaga los chips de
+        su propio grupo. Favoritos necesita otra cosa: es un conmutador, y al
+        encenderse tiene que apagar **todos** los demás filtros —fuente,
+        temática, búsqueda y los dos conmutadores de visibilidad—, no solo los
+        de su cluster. De ahí un manejador propio.
+
+        (La primera versión, del 02/09/2026, sí permitía combinarlo con el
+        resto. El usuario lo probó y pidió lo contrario: los demás controles
+        enseñan una selección cada uno, así que uno que además se acumule se
+        lee como si estuviera roto, y la lista de favoritos es demasiado corta
+        para que filtrar dentro compense el control extra.)
         """
         self.assertNotIn("setFilter('favorites'", self.html)
         self.assertIn("onclick=\"toggleFavoritesFilter()\"", self.html)
+        self.assertIn("function leaveFavoritesFilter()", self.html)
+        self.assertIn("function clearOtherFilters()", self.html)
+        # Los cuatro puntos de entrada de los demás filtros tienen que apagarlo.
+        self.assertEqual(self.html.count("leaveFavoritesFilter();"), 4)
 
     def test_all_four_sort_explanations_are_present(self):
         for term in ("Compatibilidad", "Accionabilidad", "Tiempo restante", "Confianza"):
@@ -2883,6 +2896,9 @@ class FrontendLayoutTests(unittest.TestCase):
         """
         page = self.browser.new_page(viewport={"width": 1080, "height": 720})
         page.goto(self.url, wait_until="networkidle")
+        # `networkidle` no significa «ya está pintado»: `loadData()` sigue
+        # después. Sin esta espera la prueba se vuelve intermitente bajo carga.
+        page.wait_for_selector(".conv-item")
         page.evaluate("() => { try { localStorage.clear(); } catch (e) {} }")
 
         total = page.locator(".conv-item").count()
@@ -2898,14 +2914,121 @@ class FrontendLayoutTests(unittest.TestCase):
         page.click("#favorites-chip")
         self.assertEqual(page.locator(".conv-item").count(), 1)
         self.assertEqual(page.evaluate("() => getFiltered()[0].stable_key"), clave)
-        # Se combina con los demás filtros en vez de sustituirlos.
-        self.assertEqual(page.evaluate("() => filterState.tag"), "all")
 
         page.locator(".conv-item .card-favorite").first.click()
         self.assertEqual(page.evaluate("() => favorites.size"), 0)
         self.assertEqual(page.locator(".conv-item").count(), 0)
         page.click("#favorites-chip")
         self.assertEqual(page.locator(".conv-item").count(), total)
+        page.close()
+
+    def test_the_favorites_filter_is_exclusive_in_both_directions(self):
+        """Favoritos apaga los demás filtros, y cualquiera de ellos lo apaga.
+
+        Es la corrección que pidió el usuario el 02/09/2026 tras usar la
+        primera versión: podía combinarse con fuente, temática y búsqueda, y
+        eso lo hacía mecánicamente contraintuitivo, porque el resto de
+        controles del panel enseñan una selección cada uno.
+        """
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        page.goto(self.url, wait_until="networkidle")
+        # `networkidle` no significa «ya está pintado»: `loadData()` sigue
+        # después. Sin esta espera la prueba se vuelve intermitente bajo carga.
+        page.wait_for_selector(".conv-item")
+        page.evaluate("() => { try { localStorage.clear(); } catch (e) {} }")
+
+        # Se marcan dos favoritos para que filtrar dentro fuera posible.
+        page.evaluate("""() => {
+            for (const c of getFiltered().slice(0, 2)) {
+                favorites.set(c.stable_key, {
+                    key: c.stable_key, title: c.title, source: c.source, url: c.url,
+                    added_by: 'Prueba', added_at: new Date().toISOString(), note: ''
+                });
+            }
+            renderFavoritesChip();
+        }""")
+
+        # 1. Con otros filtros puestos, activar Favoritos los borra todos.
+        page.evaluate("""() => {
+            selectSource(convocatorias[0].source);
+            document.getElementById('title-search-input').value = 'zzz';
+            applyTitleSearch();
+            syncToggle('review', true);
+        }""")
+        self.assertNotEqual(page.evaluate("() => filterState.source"), "all")
+        self.assertTrue(page.evaluate("() => filterState.query"))
+
+        page.click("#favorites-chip")
+        estado = page.evaluate("() => ({...filterState})")
+        self.assertTrue(estado["onlyFavorites"])
+        self.assertEqual(estado["source"], "all")
+        self.assertEqual(estado["tag"], "all")
+        self.assertEqual(estado["query"], "")
+        self.assertFalse(estado["onlyReview"])
+        self.assertFalse(estado["showDiscarded"])
+        # Y la interfaz acompaña al estado: un campo de búsqueda con texto
+        # dentro y un filtro que ya no se aplica es peor que no borrarlo.
+        self.assertEqual(page.input_value("#title-search-input"), "")
+        self.assertFalse(page.is_checked("#toggle-review"))
+        self.assertEqual(page.locator(".conv-item").count(), 2)
+        # Un solo filtro activo, y el recuento móvil tiene que decir eso.
+        self.assertEqual(page.evaluate("() => { updateMobileFilterCount(); return document.getElementById('mobile-filter-count').textContent; }"), "(1)")
+
+        # 2. Y al revés: tocar cualquier otro filtro apaga Favoritos.
+        for accion in (
+            'setFilter("tag","h2",document.querySelector(".filter-chip"))',
+            "selectSource('all')",
+            "applyTitleSearch()",
+            "syncToggle('discarded', true)",
+        ):
+            with self.subTest(accion=accion[:22]):
+                page.evaluate("() => { filterState.onlyFavorites = true; renderFavoritesChip(); }")
+                page.evaluate(f"() => {{ {accion}; }}")
+                self.assertFalse(
+                    page.evaluate("() => filterState.onlyFavorites"),
+                    "este filtro debía apagar Favoritos",
+                )
+                self.assertNotIn(
+                    "active",
+                    page.locator("#favorites-chip").get_attribute("class"),
+                    "el chip tiene que dejar de verse activo",
+                )
+        page.close()
+
+    def test_a_discarded_favorite_does_not_vanish_either(self):
+        """La otra mitad de «con Favoritos activo no se aplica nada más».
+
+        Antes, una convocatoria marcada a mano que el análisis descartara
+        después desaparecía de la lista salvo que se encendiera «Descartadas».
+        Es el mismo fallo silencioso que ya se había corregido para las de
+        plazo vencido, por la misma puerta.
+        """
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        page.goto(self.url, wait_until="networkidle")
+        # `networkidle` no significa «ya está pintado»: `loadData()` sigue
+        # después. Sin esta espera la prueba se vuelve intermitente bajo carga.
+        page.wait_for_selector(".conv-item")
+        page.evaluate("() => { try { localStorage.clear(); } catch (e) {} }")
+
+        clave = page.evaluate("""() => {
+            const c = getFiltered()[0];
+            c.descartada = true;
+            favorites.set(c.stable_key, {
+                key: c.stable_key, title: c.title, source: c.source, url: c.url,
+                added_by: 'Prueba', added_at: new Date().toISOString(), note: ''
+            });
+            renderFavoritesChip();
+            renderConvs();
+            return c.stable_key;
+        }""")
+        self.assertNotIn(
+            clave, page.evaluate("() => getFiltered().map(c => c.stable_key)"),
+            "sin el filtro, una descartada sigue oculta salvo que se pidan",
+        )
+        page.click("#favorites-chip")
+        self.assertEqual(page.evaluate("() => getFiltered().map(c => c.stable_key)"), [clave])
+        self.assertFalse(page.evaluate("() => filterState.showDiscarded"),
+                         "no hace falta encender «Descartadas» para verla")
         page.close()
 
     def test_an_expired_favorite_is_still_visible_under_the_filter(self):
@@ -2917,6 +3040,9 @@ class FrontendLayoutTests(unittest.TestCase):
         """
         page = self.browser.new_page(viewport={"width": 1080, "height": 720})
         page.goto(self.url, wait_until="networkidle")
+        # `networkidle` no significa «ya está pintado»: `loadData()` sigue
+        # después. Sin esta espera la prueba se vuelve intermitente bajo carga.
+        page.wait_for_selector(".conv-item")
         page.evaluate("() => { try { localStorage.clear(); } catch (e) {} }")
 
         # Se vence la primera ficha a mano y se marca por su clave estable.
@@ -2972,6 +3098,7 @@ class FrontendLayoutTests(unittest.TestCase):
             " try { localStorage.clear(); } catch (e) {}"
         )
         page.goto(self.url, wait_until="networkidle")
+        page.wait_for_selector(".conv-item")
 
         self.assertIn("GET", [metodo for metodo, _ in recibido],
                       "al cargar hay que traerse lo que hayan marcado los demás")
@@ -3004,6 +3131,7 @@ class FrontendLayoutTests(unittest.TestCase):
             " try { localStorage.clear(); } catch (e) {}"
         )
         page.goto(self.url, wait_until="networkidle")
+        page.wait_for_selector(".conv-item")
 
         self.assertGreater(page.locator(".conv-item").count(), 0, "el panel sigue en pie")
         page.wait_for_function(
