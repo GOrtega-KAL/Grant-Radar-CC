@@ -56,7 +56,7 @@ desactualizado si no se mantiene junto a ellos.
 >
 > ---
 >
-> **Estado del código a 02/09/2026 (tarde):** 41 módulos, **719 pruebas en
+> **Estado del código a 02/09/2026 (tarde):** 41 módulos, **720 pruebas en
 > verde**. Verificación `--no-claude` completa: 922 detectadas, **86 vigentes**,
 > prefiltro `retain=38, ambiguous=5, hold_manual=77, reject=802`. Pendientes de
 > analizar **83** (~2,12 USD). Cifras de referencia en **AGENTS.md 60.10**.
@@ -70,6 +70,17 @@ desactualizado si no se mantiene junto a ellos.
 > **El Worker de favoritos está desplegado y conectado** (AGENTS.md 60.13):
 > `grant-radar-favoritos.favoritos-worker.workers.dev`. La URL y el id del
 > namespace KV van versionados y no son secretos.
+>
+> **PowerUp NetZero sigue siendo un falso negativo, a medias** (AGENTS.md
+> 60.15). Remedido el 02/09 por 0,0280 USD: sube de 35 a 45 y **deja de
+> descartarse**, así que el arreglo de la sección 47 funciona en parte. Pero el
+> evaluador **enumera los ocho temas admisibles y solo cruza dos** con el
+> perfil; nunca contrasta la línea de simulación y gemelos digitales contra
+> «Digital solutions», que es justo el encaje para el que se creó esa línea.
+> Y de sus cinco riesgos, **tres son los que el prompt le prohíbe usar** para
+> rebajar el encaje (presupuesto, plazo, falta de socios). La corrección toca
+> la clasificación, así que **cuesta una prueba de pago por iteración y es
+> decisión del usuario**: no la emprendas por tu cuenta.
 >
 > **El panel RECALCULA el plazo, no lo lee** (AGENTS.md 60.14). El backend
 > publica `deadline` como los días que quedaban **el día de la recopilación**,

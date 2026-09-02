@@ -3686,7 +3686,7 @@ claro**:
 
 | Convocatoria | fit | Veredicto |
 |---|---|---|
-| PowerUp NetZero | 35 | **falso negativo** |
+| PowerUp NetZero | 35 | **falso negativo**. Remedido el 02/09 tras los arreglos: sube a 45 y deja de descartarse, pero **no queda cerrado** — ver 60.15 |
 | De-risking renewable fuel technologies | 15 | correcto: es compra pública precomercial, solo autoridades contratantes |
 | PYME Sostenible / PYME Digital (Granada) | 35 / 15 | correcto: territorial |
 | Cabildo de Lanzarote | 15 | correcto: territorial |
@@ -5395,7 +5395,7 @@ ejecución concreta, y el historial que importa vive en la auditoría.
 **666 pruebas** en verde (646 al empezar). Verificación `--no-claude`: 921
 detectadas, **84 vigentes**, prefiltro `retain=38, ambiguous=5, hold_manual=75,
 reject=803`. Pendientes de analizar **81** (~2,07 USD). Coste de la sesión en
-API: **0 USD**.
+API: **0,0280 USD** (una prueba dirigida, autorizada, 60.15).
 
 ## 60. Una identidad que aguante, y lo que se pudo construir encima, a 02/09/2026 (tarde)
 
@@ -5932,9 +5932,96 @@ prioridad es depurar antes que pagar. **El defecto lo creó la pausa, no el
 código.** Conviene mirar con esa lente cualquier otro campo que sea un «cuánto
 falta» y no un «cuándo».
 
+### 60.15. PowerUp NetZero, remedido: el arreglo del 21/08 funciona a medias (02/09/2026)
+
+Encargo del usuario: la ficha publicada da 35 % de encaje a una convocatoria a
+la que **la empresa se está presentando** —están redactando la memoria—, y quiere
+ver cómo se evalúa para ajustar el criterio. Prueba dirigida autorizada
+expresamente. **Coste real: 0,0280 USD**, una convocatoria.
+
+Antes de pagar se comprobó gratis lo que había que comprobar: `"PowerUp NetZero"`
+acota a **una sola** candidata (la lección de 54.5), y estaba como `cache=new`,
+porque la caché se invalidó el 31/08 al cambiar los prompts. Es decir: **lo
+publicado es de antes del arreglo de la sección 47**, que corrigió este mismo
+caso. La hipótesis del usuario era correcta.
+
+#### Qué cambió
+
+| | Publicado 21/08 | Remedido 02/09 |
+|---|---|---|
+| `fit_score` | 35 | **45** |
+| `decision` | `discard_out_of_scope` | **`watch`** |
+| `descartada` | **True** | **False** |
+| Encaje de rol | 15 | **40** |
+| Capacidad de consorcio | 30 | **50** |
+| Encaje TRL | 60 | **70** |
+| Alineación tecnológica | 25 | 25 |
+| Actionability | 25 | 25 |
+
+**Deja de descartarse**, que era el daño principal. La regla de temas funciona:
+el evaluador ya no razona sobre los cinco titulares de portada, sino que
+**enumera los siete temas de STRAND 1** y nombra en cuál encajaría
+(`CO2 and hydrogen coupling`).
+
+#### Pero el falso negativo no está cerrado, y ahora se sabe exactamente por qué
+
+**La extracción es impecable**: capturó los ocho temas, incluido
+`Digital solutions for PowerUp NetZero NZT`.
+
+**El evaluador los enumera y luego evalúa Kalfrisa contra solo dos de ellos** —
+`CO2 and hydrogen coupling` y `Carbon capture technologies`—, y concluye «encaje
+temático débil». **Nunca contrasta la línea de simulación y gemelos digitales
+del perfil contra el tema de soluciones digitales**, que es precisamente el
+encaje que 47.1 identificó y para el que se creó esa línea del perfil. Lista el
+tema, no lo usa.
+
+El modo de fallo, entonces, **se ha movido**: ya no es «ignora la lista de
+temas», es «recorre la lista pero solo la cruza con la capacidad más obvia del
+perfil, la térmica». La línea de simulación se declaró autónoma en el perfil
+justo para esto y sigue sin activarse.
+
+#### Y tres reglas del prompt que el modelo incumple
+
+De sus cinco `risks_and_unknowns`, tres son literalmente lo que el prompt de
+evaluación le prohíbe usar para rebajar el encaje:
+
+> «El encaje (fit_score) mide alineación tecnológica y estratégica: **no lo
+> rebajes por el tamaño del presupuesto, por la proximidad del plazo ni porque
+> el radar no aporte candidatos a socio** —eso es actionability_score, y la
+> falta de socios preidentificados es una limitación nuestra, no de la
+> convocatoria—.»
+
+Y aun así escribe, como riesgos: «ausencia de socios: no hay candidatos
+identificados en el radar», «presupuesto máximo EUR 120k muy limitado» y «plazo
+13 días hábiles muy ajustado». No hay forma de saber si además arrastraron el
+número; lo que sí consta es que la instrucción no se está respetando en la
+narrativa, y el `resumen` los presenta como «tres obstáculos críticos».
+
+**Un cuarto riesgo sí es legítimo** y conviene no meterlo en el mismo saco: la
+condición de PYME. El prompt permite evaluar el tamaño «si los hechos indican
+una restricción expresa», y aquí `applicant_types` es `['SMEs', 'start-ups']`.
+Está bien señalado.
+
+#### Lo que queda, y por qué no se hace aquí
+
+La corrección apunta al perfil o al prompt, y **un cambio que toca la
+clasificación se mide llamando al conector, no sobre la muestra cómoda**
+(59.1) — es decir, cuesta otra prueba de pago por iteración. Queda propuesto,
+no hecho, y es **decisión del usuario** porque el criterio de encaje es suyo:
+
+1. Que el evaluador cruce **cada** tema admisible con **todas** las líneas del
+   perfil, no solo con la dominante. Hoy la instrucción dice que basta encajar
+   en uno; no dice que haya que probar todos contra todo el perfil.
+2. Endurecer la separación `fit` / `actionability`, que se enuncia una vez y en
+   una frase larga. La evidencia de que no basta está arriba.
+
+**No se toca la taxonomía**: 47.3 ya midió que forzar `tech_tags` aquí sería la
+regla ad-hoc para una convocatoria concreta que la sección 1 prohíbe. Sigue
+valiendo.
+
 ### 60.11. Estado
 
-**719 pruebas** en verde (666 al empezar). 41 módulos. Coste de la sesión en
+**720 pruebas** en verde (666 al empezar). 41 módulos. Coste de la sesión en
 API: **0 USD**. El producto publicado sigue siendo el del 21/08: **la decisión de
 pagar es del usuario y esta sesión no la ha empujado**.
 

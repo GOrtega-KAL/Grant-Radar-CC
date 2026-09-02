@@ -7,7 +7,7 @@
     "evaluator_version": "fit-2026-08-v8-no-presumption",
     "partner_catalog_version": "2026-07-v2",
     "model_version": "claude-haiku-4-5",
-    "saved_at": "2026-09-01T07:36:17.993963+00:00"
+    "saved_at": "2026-09-02T13:26:27.060198+00:00"
   },
   "entries": {
     "8632dbf0fa3eafa1c97558bc5eb5949e64e516c103c947ff5321c11d67fc3511": {
@@ -2894,7 +2894,7 @@
         "match_score": 72,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "La convocatoria admite empresas en Navarra y Kalfrisa está en Zaragoza (Aragón), lo que genera una incompatibilidad geográfica crítica: la elegibilidad territorial es ES22 (Navarra) y Kalfrisa no reside allí. Sin embargo, la línea 'Proyectos competitivos - Modalidad individual' no especifica restricción geográfica explícita en los hechos extraídos, solo en metadatos generales. Debe verificarse si la restricción a Navarra aplica a todas las líneas o solo a algunas. Si aplica universalmente, Kalfrisa es ineligible por ubicación. Si la modalidad individual admite solicitantes de otras regiones, Kalfrisa sería elegible bajo esa línea específica.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -3294,6 +3294,620 @@
       "partner_catalog_version": "2026-07-v2",
       "model_version": "claude-haiku-4-5",
       "cached_at": "2026-09-01T07:36:17.993937+00:00"
+    },
+    "6ecae9542bcc3b44f2af08c07517d9427705637b3c1912a3e597c80475f7bfc9": {
+      "raw_document": {
+        "source": "ECCP",
+        "identifier": "",
+        "title": "PowerUp NetZero Open Call for Innovation Projects",
+        "description": "Opportunity PowerUp NetZero Open Call for Innovation Projects DEADLINE: 15 September 2026 Purpose of the Call The PowerUp NetZero Open Call for Innovation Projects provides financial support to SMEs and start-ups seeking to adopt, develop, or improve net-zero technologies and solutions within their processes, products, or services. The call focuses on specific topics and challenges addressing the following Net-Zero technologies: Solar Energy Battery and Energy Storage Hydrogen Technologies Sustainable Biogas and Biomethane Carbon Capture and Storage (CCS) Scope of Supported Projects The call targets collaborative innovation projects aimed at: Developing and testing Proofs of Concept (PoC) for new or improved environmentally friendly products; Implementing innovative net-zero solutions and services; Conducting pilot and demonstration activities. Funding Conditions Total available budget: EUR 1,615,000 Number of supported projects: at least 14 projects Grant amount provided by PowerUp NetZero per project proposal: between EUR 80,000 and EUR 120,000 (covering up to 80% of the total project budget) Consortium composition: minimum 2 and maximum 3 companies Beneficiaries must provide at least 20% co-financing through private resources. Innovation Requirements A high degree of innovation is expected from all proposed projects. Funded activities may address technical risks associated with the demonstration of innovative technologies and solutions, including: Optimisation of technology processes and operational parameters. Improvement of product, service, or solution characteristics. Technology Readiness Level Innovation projects should demonstrate an innovative net-zero technology or solution in an operational or in a Virtual & Industrially Relevant environment (TRL 6-7) but are not necessarily expected yet to reach large scale demonstration or commercial production. Eligibility Criteria Applicants must be Consortia of SMEs (also including start-ups provided they are SMEs) established in an EU Member State or in a country participating in the Single Market Programme (SMP) at the moment of the call launching date.Applicants must have at least one closed and validated financial year.\" Further Information Official call webpage: https://piemonteinnova.it/second-powerup-netzero-open-call-innovation-p… COSME Batteries biogas energy storage European SMEs Hydrogen Innovation low-carbon economy circular resource efficiency Solar energy Share this Article",
+        "deadline_days": 13,
+        "deadline_date": "2026-09-15",
+        "open_date": "",
+        "fecha_sin_confirmar": false,
+        "budget": "EUR 1,615,000 total",
+        "url": "https://www.clustercollaboration.eu/content/powerup-netzero-open-call-innovation-projects",
+        "keywords_found": [],
+        "org": "European Cluster Collaboration Platform",
+        "source_type": "Scraping HTML ECCP",
+        "funding_mechanism": "cascade",
+        "document_role": "external_call_landing",
+        "discovery_sources": [
+          "ECCP"
+        ],
+        "related_document_contents": [
+          {
+            "source": "PROJECT WEBSITE",
+            "title": "Power Up Net Zero Second Open Call - Fondazione Piemonte Innova",
+            "url": "https://piemonteinnova.it/second-powerup-netzero-open-call-innovation-projects/",
+            "document_role": "beneficiary_project_call",
+            "description": "Power Up Net Zero Second Open Call - Fondazione Piemonte Innova Iscriviti alla Newsletter Chi siamo Governance Il team Lavora con noi Sostenibilità Certificazioni Storia Ecosistema Il Polo di innovazione ICT Il sistema dei poli Il Cluster Nazionale Smart Communities Il sistema dei Cluster Nazionali EEN – Enterprise Europe Network Diventa partner Cosa Facciamo FPI per città e territori FPI in Europa Servizi GDPR e Compliance Cybersecurity e Dati AI e Digitalizzazione Supporto progettuale Servizi finanziati Progetti Bandi News & Eventi Power Up Net Zero Open Call FOR innovation projects The PowerUp NetZero OPEN CALL FOR INNOVATION PROJECTS provides financial support for helping SMEs and start-ups adopt or improve net-zero technologies and solutions (Solar energy, Battery and energy storage, H2 technologies, Sustainable biogas and biomethane, Carbon Capture and Storage (CCS)) in their processes, products or services. The call for innovation projects targets companies working together to implement: PoC or testing of new / improved environmentally friendly products; N et-zero solutions and services; P ilot /demonstration actions. A high degree of innovation is expected in response of this call. Funded activities could address technical risks associated with the demonstration of innovative technologies and solutions, such as optimising technology processes and operational parameters and/or improving the characteristics of their products/solutions. Innovation projects should demonstrate an innovative net-zero technology or solution in an operational or in a Virtual & Industrially Relevant environment (TRL 6-7) but are not necessarily expected yet to reach large scale demonstration or commercial production. Applicants must be Consortia of SMEs (also including start-ups provided they are SMEs) established in an EU Member State or in a country participating in the Single Market Programme (SMP) at the moment of the call launching date. GUIDELINES TO APPLY KEY DATES Call opening date: 18-06-2026 Call deadline: 15-09-2026 at 17:00 (Brussels time) The application form is available here. Templates of the supporting documents to successfully complete an application can be downloaded here: Supporting Documents Templates . In relation to the Strand B: City of Turin Challenges, the City of Turin has shared the following factsheets with specific information on their main challenges of interest: City of Turin – Po River Test Area – Fact Sheet City of Turin – Urban Road Test Area- Fact Sheet City of Turin – Catalytic-Pavements-Test-Area WHO CAN APPLY? Applications must be presented by a Consortia composed by at least 2 SMEs or start-ups and maximum 3 SMES. All SMEs should have at least one closed and validated financial year and registered in an EU Member State or a country participating in the Single Market Programme (SMP). Each SME may participate to only one Consortia, and each Consortia may submit only one application to this call. In the case of multiple submissions by the same applicant, only the last one received (as per timestamp of the IT system) will enter the evaluation process, the rest will not be considered, meaning, they will be declared non-eligible. WHAT ARE THE ACTIVITIES TO BE ADDRESSED WITHIN THE PROPOSAL? Funding will be provided to SMEs and start-ups for activities related to development, implementation, adoption, test and/or demonstration of solutions related to at least one of the NZT tackled by the project and answering to specific challenges within the following topics: STRAND 1 Topics: 1) Waste management of solar panels and batteries; 2) Materials and critical raw materials concerns; 3) Storage alternatives to batteries; 4) Digital solutions for PowerUp NetZero NZT; 5) Value chain efficiency; 6) CO2 and hydrogen coupling; and 7) Carbon capture technologies. STRAND 2: City of Turin Challenges All activities must have linkages with at least one of the project’s 5 Net-Zero Technologies (Solar energy, Battery and energy storage, H2 technologies, Sustainable biogas/ biomethane, and Carbon Capture and Storage (CCS)). WHAT’S THE AVAILABLE BUDGET? PowerUp NetZero has allocated EUR 1.615.000,00 to support Innovation Projects , with financial support for at least 14 projects. The budget is managed by two consortium partners: FPI and EnviPark. The financial contribution per project proposal ranges from a minimum of EUR 80.000,00 to a maximum of EUR 120.000,00. Projects must be submitted by consortia composed of at least two members and no more than three companies and must address at least one of the challenges described in this document. Beneficiaries must ensure a minimum co-funding rate of 20% of the total eligible budget of the supported activity, to be covered through private financial sources. Applicants should plan budgets in line with the co-funding rate applicable to the requested grant amount. HOW LONG SHOULD THE ACTIVITY LAST? All activities financed by this call must have a duration of maximum 10 months starting from the signature of the contract. WHAT DO I NEED TO SUBMIT AN APPLICATION? All needed information is available at the Call Guidelines above. The application form is available at the EUSurvey Platform. A word template is available as a guide of the application form, but it must not be considered an application. While all supporting documents to successfully complete an application are found here: Supporting Documents templates . Only one application per SME will be accepted under this specific call. In the case of multiple submissions by the same applicant, only the last one received (as per timestamp of the IT system) will enter the evaluation process, the rest will not be considered, meaning, they will be declared non-eligible. Beneficiaries can participate to the different Open Calls of the project (Business Innovation Services and Technology Adoption Activities or Innovation Projects), but a single beneficiary cannot receive more than 60.000,00 EUR overall. Q&A & Presentations For any inquiries, reach out t o punz@piemonteinnova.it Frequently Asked Questions (FAQ) English Info Day recording Italian Info Day Presentation PowerUp NetZero’s Beneficiary Agreement – draft model The PowerUp NetZero Project is funded under Grant Agreement no. 101236733 – SMP-COSME-2024-CLUSTER Call for proposals. Privacy policy PROJECT PARTNERS CO-FUNDED BY EUROPEAN UNION Gestisci consenso Via Vincenzo Vela, 3 – 10128 Torino Tel +39 011 19501401 C.F.: 97634160010 P.I.: 09049730014 SDI: 1N74KED Segui Segui Segui Segui Iscriviti alla Newsletter Etica e qualità Certificazioni Sostenibilità Amministrazione trasparente Media Whistleblowing © 2025 FONDAZIONE PIEMONTE INNOVA | P.I: 09049730014 | TUTTI I DIRITTI RISERVATI | INFORMATIVA PRIVACY | COOKIE POLICY | DEVELOPED BY MAILANDER Italiano English Deutsch Español Français Italiano Polski Svenska Suomi Português Română Slovenščina Slovenčina Nederlands Dansk Ελληνικά Čeština Magyar Lietuvių Latviešu Eesti Hrvatski Gaeilge Български Norsk Türkçe Bahasa Indonesia Português (Brasil) 日本語 한국어 简体中文 العربية Русский हिन्दी Українська Srpski English (UK) ایران ישראל Македонија ประเทศไทย Việt Nam Regolazioni di accessibilità Offerto da OneTap Nascondi barra degli strumenti Indietro Per quanto tempo vuoi nascondere la barra degli strumenti?Per quanto tempo vuoi nascondere la barra degli strumenti di accessibilità? Durata nascondi barra degli strumenti Solo per questa sessione 24 ore Una settimana Non ora Nascondi barra degli strumenti Profili di accessibilità Modalità Ipovedenti Migliora gli elementi visivi del sito web Profilo Sicuro per Convulsioni Rimuove i lampi e riduce i colori Modalità ADHD Friendly Navigazione focalizzata, senza distrazioni Modalità Cecità Riduce le distrazioni, migliora la concentrazione Modalità Sicura per Epilessia Scurisce i colori e ferma il lampeggiamento Moduli di contenuto Dimensione icona + Predefinito - Font leggibile Interlinea + Predefinito - Cursore Spaziatura lettere Align Text Interlinea Moduli colore Contrasto Contrasto Monocromatico Moduli di orientamento Riga di lettura Maschera di lettura Nascondi immagini Evidenzia titoli Ferma animazioni Evidenzia link Reimposta impostazioni Chi siamo Governance Il team Lavora con noi Sostenibilità Certificazioni Storia Ecosistema Il Polo di innovazione ICT Il sistema dei poli Il Cluster Nazionale Smart Communities Il sistema dei Cluster Nazionali EEN – Enterprise Europe Network Diventa partner Cosa Facciamo FPI per città e territori FPI in Europa Servizi GDPR e Compliance Cybersecurity e Dati AI e Digitalizzazione Supporto progettuale Servizi finanziati Progetti Bandi News & Eventi Translate »"
+          }
+        ],
+        "external_project_links": [
+          "https://piemonteinnova.it/second-powerup-netzero-open-call-innovation-projects/"
+        ],
+        "related_documents_trace": [
+          {
+            "source": "PROJECT WEBSITE",
+            "title": "Power Up Net Zero Second Open Call - Fondazione Piemonte Innova",
+            "url": "https://piemonteinnova.it/second-powerup-netzero-open-call-innovation-projects/",
+            "document_role": "beneficiary_project_call"
+          }
+        ],
+        "related_documents_count": 1,
+        "bdns_id": "",
+        "deterministic_prefilter": {
+          "decision": "retain",
+          "score": 10,
+          "signals": {
+            "tech_tags": [],
+            "industrial": [],
+            "funding": [
+              "co-financing",
+              "financial support",
+              "funding",
+              "grant",
+              "open call"
+            ],
+            "innovation": [
+              "demonstration",
+              "innovation",
+              "pilot",
+              "poc",
+              "proof of concept"
+            ],
+            "enterprise": [
+              "smes",
+              "start-up"
+            ],
+            "own_investment": [],
+            "explicit_ineligible": [],
+            "unrelated_sector": []
+          },
+          "reason": "Financiación empresarial e innovación expresas.",
+          "reason_code": "generic_prefilter"
+        }
+      },
+      "extracted_facts": {
+        "call_status": "open",
+        "programme": "SMP-COSME-2024-CLUSTER",
+        "action_type": "Innovation Projects",
+        "applicant_types": [
+          "SMEs",
+          "start-ups"
+        ],
+        "eligible_geographies": [
+          "EU Member States",
+          "countries participating in the Single Market Programme (SMP)"
+        ],
+        "eligible_entity_types": [
+          "SMEs",
+          "start-ups"
+        ],
+        "eligibility_evidence": [
+          "Applicants must be Consortia of SMEs (also including start-ups provided they are SMEs) established in an EU Member State or in a country participating in the Single Market Programme (SMP) at the moment of the call launching date",
+          "Applicants must have at least one closed and validated financial year"
+        ],
+        "budget_total_eur": 1615000.0,
+        "funding_rate_percent": 80.0,
+        "project_budget_eur": null,
+        "project_cost_min_eur": null,
+        "grant_max_eur": 120000.0,
+        "deadline_date": "2026-09-15",
+        "trl_min": 6,
+        "trl_max": 7,
+        "trl_source": "Innovation projects should demonstrate an innovative net-zero technology or solution in an operational or in a Virtual & Industrially Relevant environment (TRL 6-7)",
+        "consortium_required": true,
+        "consortium_evidence": "Consortium composition: minimum 2 and maximum 3 companies",
+        "required_topics": [
+          "Waste management of solar panels and batteries",
+          "Materials and critical raw materials concerns",
+          "Storage alternatives to batteries",
+          "Digital solutions for PowerUp NetZero NZT",
+          "Value chain efficiency",
+          "CO2 and hydrogen coupling",
+          "Carbon capture technologies",
+          "City of Turin Challenges"
+        ],
+        "eligible_actions": [
+          "Developing and testing Proofs of Concept (PoC) for new or improved environmentally friendly products",
+          "Implementing innovative net-zero solutions and services",
+          "Conducting pilot and demonstration activities",
+          "Optimisation of technology processes and operational parameters",
+          "Improvement of product, service, or solution characteristics"
+        ],
+        "expected_outcomes": [],
+        "funding_lines": [
+          {
+            "name": "STRAND 1 - Net-Zero Technologies",
+            "scope": "Waste management of solar panels and batteries; Materials and critical raw materials concerns; Storage alternatives to batteries; Digital solutions for PowerUp NetZero NZT; Value chain efficiency; CO2 and hydrogen coupling; Carbon capture technologies",
+            "applicant_types": [
+              "SMEs",
+              "start-ups"
+            ],
+            "eligible_entity_types": [
+              "SMEs",
+              "start-ups"
+            ],
+            "eligible_cnae": [],
+            "eligible_actions": [
+              "Developing and testing Proofs of Concept (PoC) for new or improved environmentally friendly products",
+              "Implementing innovative net-zero solutions and services",
+              "Conducting pilot and demonstration activities"
+            ],
+            "requirements": [
+              "Minimum 2 and maximum 3 companies per consortium",
+              "At least one closed and validated financial year",
+              "Minimum 20% co-financing through private resources",
+              "Maximum project duration of 10 months",
+              "High degree of innovation expected"
+            ],
+            "budget_total_eur": null,
+            "project_cost_min_eur": null,
+            "grant_max_eur": 120000.0,
+            "funding_rate_percent": 80.0,
+            "deadline_date": "2026-09-15",
+            "consortium_required": true,
+            "evidence": [
+              "Grant amount provided by PowerUp NetZero per project proposal: between EUR 80,000 and EUR 120,000 (covering up to 80% of the total project budget)",
+              "Beneficiaries must provide at least 20% co-financing through private resources",
+              "All activities financed by this call must have a duration of maximum 10 months starting from the signature of the contract"
+            ]
+          },
+          {
+            "name": "STRAND 2 - City of Turin Challenges",
+            "scope": "All activities must have linkages with at least one of the project's 5 Net-Zero Technologies (Solar energy, Battery and energy storage, H2 technologies, Sustainable biogas/biomethane, and Carbon Capture and Storage (CCS))",
+            "applicant_types": [
+              "SMEs",
+              "start-ups"
+            ],
+            "eligible_entity_types": [
+              "SMEs",
+              "start-ups"
+            ],
+            "eligible_cnae": [],
+            "eligible_actions": [
+              "Developing and testing Proofs of Concept (PoC) for new or improved environmentally friendly products",
+              "Implementing innovative net-zero solutions and services",
+              "Conducting pilot and demonstration activities"
+            ],
+            "requirements": [
+              "Minimum 2 and maximum 3 companies per consortium",
+              "At least one closed and validated financial year",
+              "Minimum 20% co-financing through private resources",
+              "Maximum project duration of 10 months",
+              "High degree of innovation expected",
+              "Linkage with at least one of the 5 Net-Zero Technologies"
+            ],
+            "budget_total_eur": null,
+            "project_cost_min_eur": null,
+            "grant_max_eur": 120000.0,
+            "funding_rate_percent": 80.0,
+            "deadline_date": "2026-09-15",
+            "consortium_required": true,
+            "evidence": [
+              "Grant amount provided by PowerUp NetZero per project proposal: between EUR 80,000 and EUR 120,000 (covering up to 80% of the total project budget)",
+              "Beneficiaries must provide at least 20% co-financing through private resources",
+              "All activities financed by this call must have a duration of maximum 10 months starting from the signature of the contract"
+            ]
+          }
+        ],
+        "evidence": [
+          "Total available budget: EUR 1,615,000",
+          "Number of supported projects: at least 14 projects",
+          "Grant amount provided by PowerUp NetZero per project proposal: between EUR 80,000 and EUR 120,000 (covering up to 80% of the total project budget)",
+          "Consortium composition: minimum 2 and maximum 3 companies",
+          "Beneficiaries must provide at least 20% co-financing through private resources",
+          "Innovation projects should demonstrate an innovative net-zero technology or solution in an operational or in a Virtual & Industrially Relevant environment (TRL 6-7)",
+          "All activities financed by this call must have a duration of maximum 10 months starting from the signature of the contract",
+          "Call opening date: 18-06-2026",
+          "Call deadline: 15-09-2026 at 17:00 (Brussels time)"
+        ],
+        "missing_fields": [
+          "project_cost_min_eur",
+          "project_budget_eur"
+        ]
+      },
+      "evaluation": {
+        "fit_score": 45,
+        "actionability_score": 25,
+        "confidence": 35,
+        "decision": "watch",
+        "eligibility": "unknown",
+        "eligibility_reason": "Kalfrisa es empresa mediana; la convocatoria exige SMEs o start-ups. No constan en los hechos el número de empleados, volumen de negocios ni balance de Kalfrisa para verificar si cumple la definición jurídica de PYME aplicable en SMP-COSME-2024. Debe verificarse contra los umbrales de la UE (≤250 empleados, ≤50M€ facturación o ≤25M€ balance). Además, requiere consorcio de 2-3 empresas: Kalfrisa no tiene socios preidentificados en el radar.",
+        "recommended_role": "unknown",
+        "scores": {
+          "technological_fit": 25,
+          "strategic_fit": 30,
+          "role_fit": 40,
+          "trl_fit": 70,
+          "consortium_readiness": 50
+        },
+        "evidence_quality": "low",
+        "positive_evidence": [
+          "TRL 6-7 alineado con capacidades de demostración industrial de Kalfrisa (recuperadores, hornos, RTO, electrificación)",
+          "Experiencia acreditada en consorcios de I+D (HIGH2-FURNACES, DESCARB-e, EHAT, DT4RAF, etc.)",
+          "Duración máxima 10 meses compatible con proyectos piloto/demostración",
+          "Financiación 80% (EUR 80-120k) accesible para PoC y demostración a escala reducida"
+        ],
+        "risks_and_unknowns": [
+          "Encaje temático débil: STRAND 1 lista 7 temas (residuos paneles/baterías, materias primas críticas, almacenamiento alternativo, soluciones digitales PowerUp, eficiencia cadena valor, acoplamiento CO2-H2, captura de carbono). Kalfrisa tiene capacidades en 'CO2 y hydrogen coupling' (mezclas H2, combustión, hibridación) y potencialmente en 'Carbon capture technologies' si integra postcombustión térmica, pero no en residuos de paneles/baterías, materias primas críticas ni almacenamiento de energía. STRAND 2 exige nexo con 5 tecnologías (solar, baterías, H2, biogás, CCS): solo H2 encaja directamente.",
+          "Ausencia de socios: convocatoria exige consorcio 2-3 empresas; no hay candidatos identificados en el radar.",
+          "Condición PYME no verificada: empresa mediana no es automáticamente PYME; requiere comprobación de empleados, facturación y balance.",
+          "Presupuesto máximo EUR 120k muy limitado para demostración industrial de equipos térmicos (recuperadores, hornos, RTO); típicamente Kalfrisa requiere presupuestos superiores.",
+          "Plazo 13 días hábiles hasta cierre (15-09-2026 desde 02-09-2026): muy ajustado para formar consorcio, redactar propuesta y validar elegibilidad."
+        ],
+        "partner_needs": [
+          "Mínimo 1 socio adicional (máximo 2 más) para formar consorcio de 2-3 empresas",
+          "Socio con experiencia en uno de los temas STRAND 1 (residuos paneles/baterías, materias primas, almacenamiento, soluciones digitales PowerUp, eficiencia cadena valor) o STRAND 2 (nexo con solar, baterías, biogás o CCS)",
+          "Socio capaz de aportar 20% cofinanciación privada (EUR 20-30k mínimo)"
+        ],
+        "recommended_partners": [],
+        "resumen": "Kalfrisa tiene capacidades en hidrógeno industrial, combustión, electrificación térmica y postcombustión que podrían alinearse con 'CO2 and hydrogen coupling' (STRAND 1) o 'H2 technologies' (STRAND 2), pero el encaje temático es débil: la convocatoria prioriza residuos de paneles/baterías, materias primas críticas y almacenamiento de energía, fuera del foco de Kalfrisa. El TRL 6-7 es compatible con su experiencia de demostración. Sin embargo, tres obstáculos críticos impiden acción inmediata: (1) condición PYME no verificada (empresa mediana requiere comprobación de umbrales UE); (2) ausencia de socios para formar consorcio obligatorio 2-3 empresas; (3) plazo de 13 días hábiles insuficiente para formar consorcio y redactar propuesta. Presupuesto máximo EUR 120k es muy limitado para demostración industrial de equipos térmicos. Recomendación: manual_review para evaluar si existe socio potencial con experiencia en temas STRAND 1/2 y si la condición PYME se cumple; si ambas se resuelven, considerar STRAND 2 (H2 + nexo Turín) como vía secundaria.",
+        "accion": "1. Verificar inmediatamente si Kalfrisa cumple definición jurídica de PYME (UE: ≤250 empleados, ≤50M€ facturación, ≤25M€ balance). 2. Identificar socio(s) potencial(es) con experiencia en: residuos paneles/baterías, materias primas críticas, almacenamiento alternativo, soluciones digitales PowerUp (STRAND 1) O solar, baterías, biogás, CCS (STRAND 2). 3. Si PYME confirmada y socio identificado: evaluar si proyecto piloto/PoC en H2 industrial o postcombustión térmica encaja en 'CO2 and hydrogen coupling' (STRAND 1) o 'H2 technologies' (STRAND 2). 4. Presupuesto máximo EUR 120k: dimensionar PoC/demostración a escala reducida (validación de concepto, no equipamiento completo). 5. Plazo crítico: 13 días hábiles; si no hay socio preidentificado, riesgo muy alto de no cumplir deadline. Considerar esperar próxima convocatoria si no hay socio inmediato.",
+        "tags": []
+      },
+      "analysis": {
+        "fit_score": 45,
+        "actionability_score": 25,
+        "confidence": 35,
+        "decision": "watch",
+        "eligibility": "unknown",
+        "eligibility_reason": "Kalfrisa es empresa mediana; la convocatoria exige SMEs o start-ups. No constan en los hechos el número de empleados, volumen de negocios ni balance de Kalfrisa para verificar si cumple la definición jurídica de PYME aplicable en SMP-COSME-2024. Debe verificarse contra los umbrales de la UE (≤250 empleados, ≤50M€ facturación o ≤25M€ balance). Además, requiere consorcio de 2-3 empresas: Kalfrisa no tiene socios preidentificados en el radar.",
+        "recommended_role": "unknown",
+        "scores": {
+          "technological_fit": 25,
+          "strategic_fit": 30,
+          "role_fit": 40,
+          "trl_fit": 70,
+          "consortium_readiness": 50
+        },
+        "evidence_quality": "low",
+        "positive_evidence": [
+          "TRL 6-7 alineado con capacidades de demostración industrial de Kalfrisa (recuperadores, hornos, RTO, electrificación)",
+          "Experiencia acreditada en consorcios de I+D (HIGH2-FURNACES, DESCARB-e, EHAT, DT4RAF, etc.)",
+          "Duración máxima 10 meses compatible con proyectos piloto/demostración",
+          "Financiación 80% (EUR 80-120k) accesible para PoC y demostración a escala reducida"
+        ],
+        "risks_and_unknowns": [
+          "Encaje temático débil: STRAND 1 lista 7 temas (residuos paneles/baterías, materias primas críticas, almacenamiento alternativo, soluciones digitales PowerUp, eficiencia cadena valor, acoplamiento CO2-H2, captura de carbono). Kalfrisa tiene capacidades en 'CO2 y hydrogen coupling' (mezclas H2, combustión, hibridación) y potencialmente en 'Carbon capture technologies' si integra postcombustión térmica, pero no en residuos de paneles/baterías, materias primas críticas ni almacenamiento de energía. STRAND 2 exige nexo con 5 tecnologías (solar, baterías, H2, biogás, CCS): solo H2 encaja directamente.",
+          "Ausencia de socios: convocatoria exige consorcio 2-3 empresas; no hay candidatos identificados en el radar.",
+          "Condición PYME no verificada: empresa mediana no es automáticamente PYME; requiere comprobación de empleados, facturación y balance.",
+          "Presupuesto máximo EUR 120k muy limitado para demostración industrial de equipos térmicos (recuperadores, hornos, RTO); típicamente Kalfrisa requiere presupuestos superiores.",
+          "Plazo 13 días hábiles hasta cierre (15-09-2026 desde 02-09-2026): muy ajustado para formar consorcio, redactar propuesta y validar elegibilidad."
+        ],
+        "partner_needs": [
+          "Mínimo 1 socio adicional (máximo 2 más) para formar consorcio de 2-3 empresas",
+          "Socio con experiencia en uno de los temas STRAND 1 (residuos paneles/baterías, materias primas, almacenamiento, soluciones digitales PowerUp, eficiencia cadena valor) o STRAND 2 (nexo con solar, baterías, biogás o CCS)",
+          "Socio capaz de aportar 20% cofinanciación privada (EUR 20-30k mínimo)"
+        ],
+        "recommended_partner_ids": [],
+        "objeto_y_actuaciones": "Convocatoria SMP-COSME-2024 financia proyectos de innovación neta cero en dos líneas: STRAND 1 aborda residuos de paneles/baterías, materias primas críticas, almacenamiento alternativo, soluciones digitales PowerUp, eficiencia de cadena valor, acoplamiento CO2-hidrógeno y captura de carbono; STRAND 2 vincula desafíos de Turín con 5 tecnologías neta cero (solar, baterías, H2, biogás, CCS). Financia desarrollo y prueba de PoC, implementación de soluciones neta cero e innovadoras, actividades piloto y demostración, optimización de procesos y mejora de características de productos/servicios. Excluye explícitamente: entidades no PYME/start-up, consorcios fuera de 2-3 empresas, proyectos sin cierre financiero validado, cofinanciación privada <20%, duración >10 meses, TRL <6. No detalla exclusiones de gastos específicas ni elegibilidad de equipos.",
+        "resumen": "Kalfrisa tiene capacidades en hidrógeno industrial, combustión, electrificación térmica y postcombustión que podrían alinearse con 'CO2 and hydrogen coupling' (STRAND 1) o 'H2 technologies' (STRAND 2), pero el encaje temático es débil: la convocatoria prioriza residuos de paneles/baterías, materias primas críticas y almacenamiento de energía, fuera del foco de Kalfrisa. El TRL 6-7 es compatible con su experiencia de demostración. Sin embargo, tres obstáculos críticos impiden acción inmediata: (1) condición PYME no verificada (empresa mediana requiere comprobación de umbrales UE); (2) ausencia de socios para formar consorcio obligatorio 2-3 empresas; (3) plazo de 13 días hábiles insuficiente para formar consorcio y redactar propuesta. Presupuesto máximo EUR 120k es muy limitado para demostración industrial de equipos térmicos. Recomendación: manual_review para evaluar si existe socio potencial con experiencia en temas STRAND 1/2 y si la condición PYME se cumple; si ambas se resuelven, considerar STRAND 2 (H2 + nexo Turín) como vía secundaria.",
+        "accion": "1. Verificar inmediatamente si Kalfrisa cumple definición jurídica de PYME (UE: ≤250 empleados, ≤50M€ facturación, ≤25M€ balance). 2. Identificar socio(s) potencial(es) con experiencia en: residuos paneles/baterías, materias primas críticas, almacenamiento alternativo, soluciones digitales PowerUp (STRAND 1) O solar, baterías, biogás, CCS (STRAND 2). 3. Si PYME confirmada y socio identificado: evaluar si proyecto piloto/PoC en H2 industrial o postcombustión térmica encaja en 'CO2 and hydrogen coupling' (STRAND 1) o 'H2 technologies' (STRAND 2). 4. Presupuesto máximo EUR 120k: dimensionar PoC/demostración a escala reducida (validación de concepto, no equipamiento completo). 5. Plazo crítico: 13 días hábiles; si no hay socio preidentificado, riesgo muy alto de no cumplir deadline. Considerar esperar próxima convocatoria si no hay socio inmediato.",
+        "tags": [],
+        "match_score": 45,
+        "priority": "low",
+        "descartada": false,
+        "motivo_descarte": "",
+        "trl_min": 6,
+        "trl_max": 7,
+        "socio_consorcio": "",
+        "recommended_partners": [],
+        "dimensiones": [
+          {
+            "name": "Alineación tecnológica",
+            "val": 25
+          },
+          {
+            "name": "Capacidad de consorcio",
+            "val": 50
+          },
+          {
+            "name": "Encaje TRL",
+            "val": 70
+          },
+          {
+            "name": "Encaje de rol",
+            "val": 40
+          },
+          {
+            "name": "Oportunidad estratégica",
+            "val": 30
+          }
+        ],
+        "call_facts": {
+          "call_status": "open",
+          "programme": "SMP-COSME-2024-CLUSTER",
+          "action_type": "Innovation Projects",
+          "applicant_types": [
+            "SMEs",
+            "start-ups"
+          ],
+          "eligible_geographies": [
+            "EU Member States",
+            "countries participating in the Single Market Programme (SMP)"
+          ],
+          "eligible_entity_types": [
+            "SMEs",
+            "start-ups"
+          ],
+          "eligibility_evidence": [
+            "Applicants must be Consortia of SMEs (also including start-ups provided they are SMEs) established in an EU Member State or in a country participating in the Single Market Programme (SMP) at the moment of the call launching date",
+            "Applicants must have at least one closed and validated financial year"
+          ],
+          "budget_total_eur": 1615000.0,
+          "funding_rate_percent": 80.0,
+          "project_budget_eur": null,
+          "project_cost_min_eur": null,
+          "grant_max_eur": 120000.0,
+          "deadline_date": "2026-09-15",
+          "trl_min": 6,
+          "trl_max": 7,
+          "trl_source": "Innovation projects should demonstrate an innovative net-zero technology or solution in an operational or in a Virtual & Industrially Relevant environment (TRL 6-7)",
+          "consortium_required": true,
+          "consortium_evidence": "Consortium composition: minimum 2 and maximum 3 companies",
+          "required_topics": [
+            "Waste management of solar panels and batteries",
+            "Materials and critical raw materials concerns",
+            "Storage alternatives to batteries",
+            "Digital solutions for PowerUp NetZero NZT",
+            "Value chain efficiency",
+            "CO2 and hydrogen coupling",
+            "Carbon capture technologies",
+            "City of Turin Challenges"
+          ],
+          "eligible_actions": [
+            "Developing and testing Proofs of Concept (PoC) for new or improved environmentally friendly products",
+            "Implementing innovative net-zero solutions and services",
+            "Conducting pilot and demonstration activities",
+            "Optimisation of technology processes and operational parameters",
+            "Improvement of product, service, or solution characteristics"
+          ],
+          "expected_outcomes": [],
+          "funding_lines": [
+            {
+              "name": "STRAND 1 - Net-Zero Technologies",
+              "scope": "Waste management of solar panels and batteries; Materials and critical raw materials concerns; Storage alternatives to batteries; Digital solutions for PowerUp NetZero NZT; Value chain efficiency; CO2 and hydrogen coupling; Carbon capture technologies",
+              "applicant_types": [
+                "SMEs",
+                "start-ups"
+              ],
+              "eligible_entity_types": [
+                "SMEs",
+                "start-ups"
+              ],
+              "eligible_cnae": [],
+              "eligible_actions": [
+                "Developing and testing Proofs of Concept (PoC) for new or improved environmentally friendly products",
+                "Implementing innovative net-zero solutions and services",
+                "Conducting pilot and demonstration activities"
+              ],
+              "requirements": [
+                "Minimum 2 and maximum 3 companies per consortium",
+                "At least one closed and validated financial year",
+                "Minimum 20% co-financing through private resources",
+                "Maximum project duration of 10 months",
+                "High degree of innovation expected"
+              ],
+              "budget_total_eur": null,
+              "project_cost_min_eur": null,
+              "grant_max_eur": 120000.0,
+              "funding_rate_percent": 80.0,
+              "deadline_date": "2026-09-15",
+              "consortium_required": true,
+              "evidence": [
+                "Grant amount provided by PowerUp NetZero per project proposal: between EUR 80,000 and EUR 120,000 (covering up to 80% of the total project budget)",
+                "Beneficiaries must provide at least 20% co-financing through private resources",
+                "All activities financed by this call must have a duration of maximum 10 months starting from the signature of the contract"
+              ]
+            },
+            {
+              "name": "STRAND 2 - City of Turin Challenges",
+              "scope": "All activities must have linkages with at least one of the project's 5 Net-Zero Technologies (Solar energy, Battery and energy storage, H2 technologies, Sustainable biogas/biomethane, and Carbon Capture and Storage (CCS))",
+              "applicant_types": [
+                "SMEs",
+                "start-ups"
+              ],
+              "eligible_entity_types": [
+                "SMEs",
+                "start-ups"
+              ],
+              "eligible_cnae": [],
+              "eligible_actions": [
+                "Developing and testing Proofs of Concept (PoC) for new or improved environmentally friendly products",
+                "Implementing innovative net-zero solutions and services",
+                "Conducting pilot and demonstration activities"
+              ],
+              "requirements": [
+                "Minimum 2 and maximum 3 companies per consortium",
+                "At least one closed and validated financial year",
+                "Minimum 20% co-financing through private resources",
+                "Maximum project duration of 10 months",
+                "High degree of innovation expected",
+                "Linkage with at least one of the 5 Net-Zero Technologies"
+              ],
+              "budget_total_eur": null,
+              "project_cost_min_eur": null,
+              "grant_max_eur": 120000.0,
+              "funding_rate_percent": 80.0,
+              "deadline_date": "2026-09-15",
+              "consortium_required": true,
+              "evidence": [
+                "Grant amount provided by PowerUp NetZero per project proposal: between EUR 80,000 and EUR 120,000 (covering up to 80% of the total project budget)",
+                "Beneficiaries must provide at least 20% co-financing through private resources",
+                "All activities financed by this call must have a duration of maximum 10 months starting from the signature of the contract"
+              ]
+            }
+          ],
+          "evidence": [
+            "Total available budget: EUR 1,615,000",
+            "Number of supported projects: at least 14 projects",
+            "Grant amount provided by PowerUp NetZero per project proposal: between EUR 80,000 and EUR 120,000 (covering up to 80% of the total project budget)",
+            "Consortium composition: minimum 2 and maximum 3 companies",
+            "Beneficiaries must provide at least 20% co-financing through private resources",
+            "Innovation projects should demonstrate an innovative net-zero technology or solution in an operational or in a Virtual & Industrially Relevant environment (TRL 6-7)",
+            "All activities financed by this call must have a duration of maximum 10 months starting from the signature of the contract",
+            "Call opening date: 18-06-2026",
+            "Call deadline: 15-09-2026 at 17:00 (Brussels time)"
+          ],
+          "missing_fields": [
+            "project_cost_min_eur",
+            "project_budget_eur"
+          ]
+        },
+        "tech_tags": [],
+        "data_pending": true,
+        "data_gaps": [
+          "eligibility_unknown"
+        ],
+        "monitoring_flags": [
+          "deadline_under_15_days"
+        ],
+        "review_required": false,
+        "review_reasons": [],
+        "token_usage": {
+          "extraction": {
+            "stage": "extracción factual",
+            "api_calls": 1,
+            "retry_api_calls": 0,
+            "input_tokens": 5652,
+            "output_tokens": 1468,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 0,
+            "total_tokens": 7120,
+            "estimated_cost_usd": 0.012992,
+            "attempts": [
+              {
+                "stage": "extracción factual",
+                "attempt": 1,
+                "valid_output": true,
+                "api_calls": 1,
+                "retry_api_calls": 0,
+                "input_tokens": 5652,
+                "output_tokens": 1468,
+                "cache_write_tokens": 0,
+                "cache_read_tokens": 0,
+                "total_tokens": 7120,
+                "estimated_cost_usd": 0.012992,
+                "max_tokens": 5000,
+                "service_tier": "standard"
+              }
+            ]
+          },
+          "evaluation": {
+            "stage": "evaluación de encaje",
+            "api_calls": 1,
+            "retry_api_calls": 0,
+            "input_tokens": 5458,
+            "output_tokens": 1902,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 0,
+            "total_tokens": 7360,
+            "estimated_cost_usd": 0.014968,
+            "attempts": [
+              {
+                "stage": "evaluación de encaje",
+                "attempt": 1,
+                "valid_output": true,
+                "api_calls": 1,
+                "retry_api_calls": 0,
+                "input_tokens": 5458,
+                "output_tokens": 1902,
+                "cache_write_tokens": 0,
+                "cache_read_tokens": 0,
+                "total_tokens": 7360,
+                "estimated_cost_usd": 0.014968,
+                "max_tokens": 3000,
+                "service_tier": "standard"
+              }
+            ]
+          },
+          "api_calls": 2,
+          "retry_api_calls": 0,
+          "input_tokens": 11110,
+          "output_tokens": 3370,
+          "cache_write_tokens": 0,
+          "cache_read_tokens": 0,
+          "total_tokens": 14480,
+          "estimated_cost_usd": 0.02796
+        }
+      },
+      "token_usage": {
+        "extraction": {
+          "stage": "extracción factual",
+          "api_calls": 1,
+          "retry_api_calls": 0,
+          "input_tokens": 5652,
+          "output_tokens": 1468,
+          "cache_write_tokens": 0,
+          "cache_read_tokens": 0,
+          "total_tokens": 7120,
+          "estimated_cost_usd": 0.012992,
+          "attempts": [
+            {
+              "stage": "extracción factual",
+              "attempt": 1,
+              "valid_output": true,
+              "api_calls": 1,
+              "retry_api_calls": 0,
+              "input_tokens": 5652,
+              "output_tokens": 1468,
+              "cache_write_tokens": 0,
+              "cache_read_tokens": 0,
+              "total_tokens": 7120,
+              "estimated_cost_usd": 0.012992,
+              "max_tokens": 5000,
+              "service_tier": "standard"
+            }
+          ]
+        },
+        "evaluation": {
+          "stage": "evaluación de encaje",
+          "api_calls": 1,
+          "retry_api_calls": 0,
+          "input_tokens": 5458,
+          "output_tokens": 1902,
+          "cache_write_tokens": 0,
+          "cache_read_tokens": 0,
+          "total_tokens": 7360,
+          "estimated_cost_usd": 0.014968,
+          "attempts": [
+            {
+              "stage": "evaluación de encaje",
+              "attempt": 1,
+              "valid_output": true,
+              "api_calls": 1,
+              "retry_api_calls": 0,
+              "input_tokens": 5458,
+              "output_tokens": 1902,
+              "cache_write_tokens": 0,
+              "cache_read_tokens": 0,
+              "total_tokens": 7360,
+              "estimated_cost_usd": 0.014968,
+              "max_tokens": 3000,
+              "service_tier": "standard"
+            }
+          ]
+        },
+        "api_calls": 2,
+        "retry_api_calls": 0,
+        "input_tokens": 11110,
+        "output_tokens": 3370,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 14480,
+        "estimated_cost_usd": 0.02796
+      },
+      "source_hash": "c6d1adbb028b88aabb3f160c2551ae76bf870980c3e3cb367b3c9125cb95f364",
+      "retrieved_at": "2026-09-02T13:15:02.338134+00:00",
+      "extractor_version": "facts-2026-08-v9-programme-annexes-and-budget",
+      "evaluator_version": "fit-2026-08-v8-no-presumption",
+      "profile_version": "kalfrisa-2026-08-v5-simulation-line",
+      "partner_catalog_version": "2026-07-v2",
+      "model_version": "claude-haiku-4-5",
+      "cached_at": "2026-09-02T13:26:27.060174+00:00"
     }
   }
 }
