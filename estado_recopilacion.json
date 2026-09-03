@@ -1,12 +1,13 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-02T08:41:41.958800+00:00",
-  "collected_on": "2026-09-02",
+  "generated_at": "2026-09-03T07:03:04.541232+00:00",
+  "collected_on": "2026-09-03",
   "detected": 922,
-  "active": 86,
-  "pending_analyses": 83,
-  "estimated_cost_usd": 2.1248,
+  "active": 87,
+  "pending_analyses": 84,
+  "estimated_cost_usd": 2.1504,
   "last_publication": "2026-08-21",
-  "days_since_publication": 12,
-  "new_since_publication": 13
+  "days_since_publication": 13,
+  "new_since_publication": 17,
+  "batch": null
 }
