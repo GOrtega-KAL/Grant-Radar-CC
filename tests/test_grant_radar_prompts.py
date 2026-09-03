@@ -183,20 +183,25 @@ class ExtractionSystemPromptTests(unittest.TestCase):
 
 
 class KalfrisaProfileTests(unittest.TestCase):
-    def test_simulation_is_an_autonomous_capability(self):
-        """PowerUp NetZero encajaba por su tema de soluciones digitales.
+    def test_the_simulation_split_says_who_does_what(self):
+        """La simulación NO es capacidad propia, y el perfil tiene que decirlo.
 
-        El perfil mencionaba gemelos digitales, pero en la misma frase que
-        «vinculados a equipos y procesos térmicos», lo que invitaba a leerlos
-        como capacidad subordinada. Ahora es línea propia.
+        Hasta el 03/09/2026 esta prueba exigía «capacidad autónoma», una frase
+        que venía de la ronda de PowerUp NetZero del 21/08. El usuario la
+        desmintió: en IGNITE y DT4RAF el CFD lo aportaron los socios de
+        simulación, y Kalfrisa puso el caso de uso, los equipos y la validación.
+
+        El invariante correcto no es «tiene una línea propia» sino «dice quién
+        hace qué», que es lo que evita el error de las microondas. Y hay un
+        matiz que sí es capacidad suya y no conviene perder: la validación
+        experimental a escala piloto o industrial.
         """
-        self.assertIn("SIMULACIÓN Y GEMELOS DIGITALES", KALFRISA_PROFILE)
-        self.assertIn("capacidad autónoma", KALFRISA_PROFILE)
-        # EHEAT, no EHAT: el acrónimo estuvo mal escrito hasta que el
-        # usuario lo corrigió el 03/09/2026. Un acrónimo equivocado hace
-        # el proyecto invisible para el cruce con los temas admisibles.
+        self.assertIn("SIMULACIÓN, CÁLCULO Y VALIDACIÓN", KALFRISA_PROFILE)
+        self.assertIn("NO ejecuta simulación CFD", KALFRISA_PROFILE)
+        self.assertIn("PILOTO O INDUSTRIAL", KALFRISA_PROFILE)
         self.assertIn("EHEAT", KALFRISA_PROFILE)
-        self.assertNotIn("EHAT —", KALFRISA_PROFILE)
+        # Y no puede volver a presentarse como casa de CFD.
+        self.assertNotIn("capacidad autónoma", KALFRISA_PROFILE)
 
     def test_the_out_of_scope_list_does_not_exclude_a_whole_programme(self):
         """La cláusula describe el objeto de un proyecto, no la portada."""
@@ -244,16 +249,16 @@ class VersionBumpTests(unittest.TestCase):
         self.assertIn("NO desarrolla ni implementa", KALFRISA_PROFILE)
         self.assertIn("microondas", KALFRISA_PROFILE)
         # Y las microondas no pueden aparecer en la lista de capacidades propias.
-        capacidades = KALFRISA_PROFILE.split("CAPACIDADES Y ACTIVOS TECNOLÓGICOS:")[1]
-        capacidades = capacidades.split("SIMULACIÓN Y GEMELOS DIGITALES")[0]
-        self.assertNotIn("microond", capacidades.lower())
+        fabrica = KALFRISA_PROFILE.split("LO QUE KALFRISA FABRICA")[1]
+        fabrica = fabrica.split("LO QUE KALFRISA INTEGRA")[0]
+        self.assertNotIn("microond", fabrica.lower())
 
     def test_the_versions_reflect_this_round(self):
         # Las tres suben el 02/09/2026 con las respuestas del usuario sobre su
         # propio criterio: PYME afirmada, proyectos de I+D descritos uno a uno,
         # papel de socio industrial, y qué convocatorias interesan de verdad
         # (AGENTS.md 60.16).
-        self.assertEqual(PROFILE_VERSION, "kalfrisa-2026-09-v8-consortium-roles")
+        self.assertEqual(PROFILE_VERSION, "kalfrisa-2026-09-v9-builds-integrates-wants")
         self.assertEqual(EVALUATOR_VERSION, "fit-2026-09-v10-profile-is-authoritative")
         self.assertEqual(
             ANALYSIS_PROMPT_VERSION, "2026-09-v16-profile-is-authoritative"

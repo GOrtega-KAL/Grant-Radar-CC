@@ -2941,7 +2941,13 @@
       const days = Number(state.days_since_publication);
       const partes = [
         `<strong>${pending} convocatoria${pending === 1 ? '' : 's'} espera${pending === 1 ? '' : 'n'} análisis</strong>`,
-        Number.isFinite(cost) ? `coste estimado ${cost.toFixed(2)} USD` : '',
+        // Las dos tarifas, porque son la misma decisión con dos precios: el
+        // modo instantáneo devuelve el análisis en minutos y el diferido cuesta
+        // la MITAD a cambio de esperar (medido exacto, AGENTS.md 61.9). Sin las
+        // dos cifras juntas, elegir exige saberse el descuento de memoria.
+        Number.isFinite(cost)
+          ? `coste estimado ${cost.toFixed(2)} USD · ${(cost * BATCH_COST_FACTOR).toFixed(2)} USD por lotes`
+          : '',
         state.collected_on ? `recopilado el ${formatShortDate(state.collected_on)}` : '',
         Number.isFinite(days)
           ? `lo publicado tiene ${days} día${days === 1 ? '' : 's'}`
@@ -2969,6 +2975,9 @@
   // han pasado el filtro determinista, no el de Haiku. Presentarlas como
   // oportunidades sería contar como encontrado lo que aún no se ha evaluado.
   const COLLECTION_SOON_DAYS = 14;
+  // La Batches API cobra al 50 %. Verificado contra la factura el 03/09/2026:
+  // 0,00481 USD por lotes frente a 0,00961 instantáneo (AGENTS.md 61.9).
+  const BATCH_COST_FACTOR = 0.5;
 
   function collectionChangesHtml(state) {
     const nuevas = Number(state.new_since_publication);

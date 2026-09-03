@@ -16,41 +16,67 @@ IDENTIDAD:
 - Lo que sí debe comprobarse convocatoria por convocatoria es la elegibilidad
   por CNAE, por ubicación y por tipo de entidad; nunca se dará por supuesta.
 
-CAPACIDADES Y ACTIVOS TECNOLÓGICOS:
-- Recuperación y valorización de calor residual; recuperadores convectivos y de
-  radiación; gases de escape de alta temperatura.
-- Hornos industriales, combustión y quemadores de bajas emisiones; mezclas de
-  hidrógeno y demostraciones de hasta 100 % H2 cuando el proceso lo permita.
-- Electrificación e hibridación del calor de proceso.
-- Oxidación térmica regenerativa y recuperativa (RTO), tratamiento de COV/NMVOC
-  y concentración mediante rotor de zeolitas.
-- Valorización térmica de residuos, pirólisis y postcombustión.
-- IIoT, monitorización remota, control avanzado, mantenimiento predictivo y ACV
-  vinculados a equipos y procesos térmicos.
+LO QUE KALFRISA FABRICA (equipo propio, diseñado y construido por ella):
+- Intercambiadores de calor, precalentadores y calentadores.
+- Recuperadores de calor residual, convectivos y de radiación, para gases de
+  escape de alta temperatura. El recuperador de doble camisa es desarrollo
+  propio.
+- Hornos industriales y hornos crematorios; quemadores de bajas emisiones.
+- Oxidación térmica regenerativa y recuperativa (RTO).
+- Scrubbers (lavadores de gases).
+- Equipos de valorización térmica de residuos y postcombustión. Kalfrisa PUEDE
+  construir equipos de pirólisis —ya ha diseñado un horno rotativo para
+  tratamiento térmico de paneles solares— aunque no sea un producto de catálogo.
 
-SIMULACIÓN Y GEMELOS DIGITALES (línea propia, no subordinada a la térmica):
-- CFD/HPC, modelización, gemelos digitales y validación experimental de
-  simulaciones, desarrollados en proyectos de I+D en consorcio.
-- Es una capacidad autónoma: Kalfrisa puede entrar en un consorcio como socio de
-  simulación o de validación aunque el paraguas de la convocatoria no sea
-  térmico. Matiz: los casos de uso que hoy modela y valida son TÉRMICOS, así que
-  el paraguas puede no serlo pero el caso de uso concreto sí lo es.
-- Las herramientas de cálculo propias son de uso INTERNO: Kalfrisa no vende
-  software de diseño. El negocio asociado es vender servicios de optimización de
-  sus propios equipos.
-- Línea de desarrollo declarada hacia la que la empresa quiere avanzar:
-  mantenimiento predictivo y monitorización.
+LO QUE KALFRISA INTEGRA PERO NO FABRICA:
+- Rotoconcentradores de zeolitas: el equipo se compra. Lo propio es la
+  INTEGRACIÓN en el proceso, el control y la sensórica sobre la que se apoya.
+  Los procesos que requieren depuración de COV o rotoconcentradores son de
+  interés MUY ALTO, precisamente por esa capacidad de integración.
+- Filtros de mangas: se integran, no se construyen.
+- Esta distinción importa: integrar tecnología de un tercero sobre un proceso
+  propio es una capacidad real y vendible, pero no es lo mismo que desarrollarla.
+  No presentes a Kalfrisa como fabricante de lo que solo integra.
+
+LÍNEAS QUE KALFRISA QUIERE DESARROLLAR (interés declarado para I+D):
+- Estas NO son capacidades actuales, pero una convocatoria que permita
+  desarrollarlas SÍ interesa, y encaja con el objeto de un proyecto de I+D.
+- Oxidadores catalíticos y SCR: hoy no se construyen, y es una línea que la
+  empresa quiere abrir.
+- IIoT, control y optimización de los equipos industriales propios, basados en
+  datos.
+- Programas de dimensionamiento y cálculo de los equipos que construye.
+- Inversión y digitalización de los activos y procesos propios.
+- Depuración de gases por rotoconcentradores y scrubbers.
+- Electrificación de los equipos que construye.
+- EXPANSIÓN INTERNACIONAL de mercado. Ya hay presencia exterior fuerte y se
+  quiere potenciar: las convocatorias de internacionalización interesan.
+
+SIMULACIÓN, CÁLCULO Y VALIDACIÓN — con su reparto real:
+- Kalfrisa NO ejecuta simulación CFD ni construye gemelos digitales por su
+  cuenta: en IGNITE y DT4RAF eso lo aportaron socios de simulación (NABLADOT,
+  BIFI-Universidad de Zaragoza, AIMEN). No la presentes como casa de CFD.
+- Lo que Kalfrisa SÍ aporta en esos proyectos, y es su papel habitual: el CASO
+  DE USO, los EQUIPOS y la VALIDACIÓN.
+- VALIDACIÓN EXPERIMENTAL de simulaciones a escala PILOTO O INDUSTRIAL: sí, es
+  capacidad propia. A escala de laboratorio, no.
+- Herramientas de cálculo propias: son de DIMENSIONAMIENTO Y DISEÑO de los
+  equipos que fabrica, no CFD. Son de uso interno; Kalfrisa no vende software.
+- Que la modelización la desarrolle otro socio NO reduce el encaje: es el
+  reparto normal, y aportar el caso de uso industrial y la validación es un
+  papel buscado en los consorcios de simulación.
 
 QUÉ APORTA KALFRISA COMO SOCIO INDUSTRIAL DE UN CONSORCIO:
 - Ingeniería de proyecto.
+- Los equipos, y el caso de uso industrial real sobre el que probar.
 - Datos propios de instalaciones piloto o en funcionamiento, con consentimiento
   de su titular.
 - La medición de esos datos: servicio de asistencia técnica (SAT) e IIoT
   propios, que Kalfrisa integra, instala y configura.
-- Nave piloto en Zaragoza donde pueden ensayarse equipos a escala piloto.
-- Es habitual que Kalfrisa aporte el CASO DE USO REAL y la VALIDACIÓN mientras
-  otro socio aporta la modelización. Que el modelo lo desarrolle otro NO reduce
-  el encaje: es el reparto de papeles normal en estos consorcios.
+- Nave piloto propia en Zaragoza: 110 m², techo alto, 100 kW de potencia
+  disponible, con hornos pequeños eléctricos, híbridos y de hidrógeno. Permite
+  ensayar pilotos y prototipos de tamaño NO industrial. Para demostración a
+  escala industrial hace falta una instalación de cliente.
 
 EXPERIENCIA I+D RELEVANTE (con su contenido, para poder cruzarla con los temas
 admisibles de una convocatoria):
@@ -59,34 +85,38 @@ admisibles de una convocatoria):
   indique el papel de Kalfrisa, es ese y solo ese. Si un proyecto no dice qué
   aportó Kalfrisa, no supongas que hizo todo lo que el proyecto abarca.
 - IGNITE — FORTISSIMO PLUS, Kalfrisa como líder, con BIFI-Universidad de
-  Zaragoza y NABLADOT: optimización de precalentadores industriales mediante
-  HPC, simulación CFD avanzada y gemelos digitales.
-- DT4RAF — gemelo digital para optimizar recuperadores de alta eficiencia
-  mediante simulación y monitorización.
+  Zaragoza y NABLADOT: optimización de precalentadores industriales con HPC y
+  CFD. El cálculo lo aportaron los socios; Kalfrisa, el caso de uso, los equipos
+  y la validación.
+- DT4RAF — gemelo digital de recuperadores de alta eficiencia, con CLENAR,
+  NABLADOT y AIMEN. Mismo reparto: el modelo es de los socios de simulación.
 - EHEAT — electrificación industrial en consorcio. El calentamiento por
   microondas lo desarrollan OTROS SOCIOS: Kalfrisa NO desarrolla ni implementa
   microondas. Su papel es la ingeniería y la integración de las conducciones de
-  alta temperatura del proceso, la sensórica y el control (IIoT) de los
-  segmentos que le corresponden.
+  alta temperatura del proceso, la sensórica y el control (IIoT).
 - RAFeRTO — tecnologías digitales y técnicas predictivas en oxidadores térmicos
-  regenerativos y recuperadores de calor.
-- e-RTO — modelo digital para electrificación y control avanzado del oxidador
-  térmico regenerativo.
-- HIGH2-FURNACES — hornos híbridos con sustitución de hasta 80-100 % de
-  hidrógeno en combustión industrial.
-- 3H2 — mezclas de hidrógeno y gas natural en quemadores industriales.
+  regenerativos y recuperadores de calor, con CLENAR y ELECTROINGENIUM.
+- e-RTO — en solitario: modelo digital para electrificación y control avanzado
+  del oxidador térmico regenerativo.
+- HIGH2-FURNACES — hornos híbridos con sustitución de hasta 100 % de hidrógeno.
+  Las demostraciones de 100 % H2 son capacidad de Kalfrisa, a un TRL todavía NO
+  industrial.
+- 3H2 — en solitario: mezclas de hidrógeno y gas natural en quemadores
+  industriales, hasta 50 % H2.
 - EDPIC — postcombustor eléctrico para depuración de gases en RECICLAJE DE
-  PANELES FOTOVOLTAICOS mediante pirólisis, con gemelo digital.
-- DESCARB-e — descarbonización mediante electrificación de hornos.
+  PANELES FOTOVOLTAICOS. La pirólisis era de un tercero, ni de Kalfrisa ni de
+  IBER Sostenibilidad; el postcombustor sí es de Kalfrisa.
+- DESCARB-e — en solitario: descarbonización mediante electrificación de hornos.
 - LIFE ABATE — reducción de COV y CO2 en plantas de tratamiento mecánico
-  biológico mediante rotoconcentrador y degradación térmica.
-- Industria 4.0 — digitalización, automatización, inteligencia artificial y big
-  data aplicadas a los procesos productivos propios.
-- Cremaciones digitales y eficientes — hornos crematorios con mejoras de
-  combustión, transferencia térmica, instrumentación y gemelo digital.
-- Tecnología de recuperación de radiación — recuperación de radiación de alta
-  temperatura en hornos de fusión; de aquí sale el recuperador de doble camisa
-  de alta eficiencia.
+  biológico. El rotoconcentrador se compra; Kalfrisa aporta su integración, el
+  control de proceso, la sensórica y la degradación térmica.
+- Industria 4.0 — en solitario: digitalización, automatización, inteligencia
+  artificial y big data en los procesos productivos propios.
+- Cremaciones digitales y eficientes — en solitario: hornos crematorios con
+  mejoras de combustión, transferencia térmica, instrumentación y gemelo digital.
+- Tecnología de recuperación de radiación — en solitario: recuperación de
+  radiación de alta temperatura en hornos de fusión; de aquí sale el recuperador
+  de doble camisa.
 - Experiencia acreditada de participación en consorcios de I+D: la ausencia de
   socios preidentificados en el radar no es un obstáculo para Kalfrisa ni un
   motivo para rebajar el encaje de una convocatoria.
@@ -103,6 +133,8 @@ QUÉ TIPO DE CONVOCATORIA INTERESA:
   Complementan a los proyectos largos y grandes.
 - Las convocatorias de INVERSIÓN interesan cuando la ayuda se justifica por una
   mejora de eficiencia energética del propio proceso.
+- Las convocatorias de INTERNACIONALIZACIÓN interesan: la empresa quiere
+  potenciar su presencia exterior, que ya es fuerte.
 - Lo que decide el interés económico NO es el tamaño del presupuesto del
   proyecto, sino la AYUDA A FONDO PERDIDO y su intensidad: 90.000 € al 80 %
   interesa más que 200.000 € al 25 %. Un importe pequeño no resta encaje si el
@@ -127,16 +159,21 @@ FUERA DE FOCO SALVO CONEXIÓN INDUSTRIAL TÉRMICA EXPLÍCITA:
 - Edificios residenciales/terciarios y transporte.
 - Solar fotovoltaica, eólica o hidrógeno genérico sin uso térmico industrial.
 - Reciclaje de paneles fotovoltaicos: encaja SOLO por la vía TÉRMICA —pirólisis,
-  depuración de gases de proceso—, que es la de EDPIC. El estado del arte
+  hornos rotativos, depuración de gases de proceso—. El estado del arte
   industrial de ese reciclaje es el tratamiento MECÁNICO, y eso no encaja. No
   descartes el tema sin mirar antes por qué vía lo plantea la convocatoria.
-- Software o IA genéricos sin integración con equipos/procesos térmicos ni con
-  la línea de simulación y gemelos digitales descrita arriba.
+- Software o IA genéricos sin relación con los equipos y procesos que Kalfrisa
+  fabrica u opera.
 - Investigación básica TRL 1-3 sin ruta industrial.
 - Ayudas exclusivas para tipos de entidad que excluyan a Kalfrisa.
 - Adquisición ordinaria de equipos sin innovación, demostración o desarrollo.
 
-No atribuyas a Kalfrisa capacidades no incluidas aquí. En particular, no des por
-propios SCR, filtros de mangas u oxidación catalítica si la convocatoria no aporta
-evidencia adicional. «Modelos de orden reducido» (ROM) es vocabulario de socios
-de simulación, no una capacidad que Kalfrisa declare como propia.
+No atribuyas a Kalfrisa capacidades no incluidas aquí. En particular:
+- El ANÁLISIS DE CICLO DE VIDA (ACV) NO es capacidad de Kalfrisa; lo aportan
+  socios como CIRCE.
+- La simulación CFD y los gemelos digitales los aportan socios de simulación,
+  no Kalfrisa (ver la sección de simulación).
+- «Modelos de orden reducido» (ROM) es vocabulario de esos socios, no una
+  capacidad que Kalfrisa declare como propia.
+- Oxidadores catalíticos y SCR: hoy NO se fabrican. Aparecen arriba como línea
+  que se quiere desarrollar, que es distinto de una capacidad actual.

@@ -56,7 +56,7 @@ desactualizado si no se mantiene junto a ellos.
 >
 > ---
 >
-> **Estado del código al cerrar el 03/09/2026:** 42 módulos, **744 pruebas en
+> **Estado del código al cerrar el 03/09/2026:** 42 módulos, **748 pruebas en
 > verde**. Verificación `--no-claude` completa: 922 detectadas, **86 vigentes**,
 > prefiltro `retain=38, ambiguous=5, hold_manual=77, reject=802`. Pendientes de
 > analizar **83** (~2,12 USD). Cifras de referencia en **AGENTS.md 60.10**.
@@ -120,6 +120,14 @@ desactualizado si no se mantiene junto a ellos.
 > procesos**, así que dos `--batch-collect` solapados pagarían la fase 2 dos
 > veces. Punto 41 del backlog. Con ejecución manual el riesgo es bajo; antes de
 > dejarlo desatendido hay que cerrarlo.
+>
+> **El perfil se reescribió el 03/09 con las respuestas del usuario** (AGENTS.md
+> 61.15) y la partición ES la corrección: **lo que Kalfrisa FABRICA**, **lo que
+> INTEGRA pero no fabrica** y **las líneas que QUIERE DESARROLLAR** son tres
+> encajes distintos, y tenerlos en una sola lista fue lo que produjo el error de
+> las microondas. Lo más contraintuitivo: **la simulación CFD NO es capacidad
+> suya** —la aportan NABLADOT, BIFI y AIMEN— y lo que sí es suyo es el caso de
+> uso, los equipos y la **validación a escala piloto o industrial**.
 >
 > **CRITERIO DE DISEÑO que fijaste el 03/09 y manda sobre lo demás:** nada de
 > reglas deterministas en la puntuación, ni ajuste artificial para alcanzar una

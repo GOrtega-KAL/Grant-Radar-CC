@@ -3390,6 +3390,33 @@ class FrontendLayoutTests(unittest.TestCase):
         self.assertEqual(resultado["conFecha"], 5, "con fecha manda la fecha, no el número")
         page.close()
 
+    def test_the_banner_shows_both_prices(self):
+        """Instantáneo y por lotes, juntos: es la misma decisión con dos precios.
+
+        El diferido cuesta la mitad a cambio de esperar —verificado contra la
+        factura, no estimado (AGENTS.md 61.9)—. Sin las dos cifras a la vez,
+        decidir cuál lanzar exige saberse el descuento de memoria.
+        """
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        page.add_init_script("window.GRANT_RADAR_FAVORITES_ENDPOINT = '';")
+        page.goto(self.url, wait_until="networkidle")
+        page.wait_for_selector(".conv-item")
+
+        banner = page.locator("#collection-state")
+        if not banner.is_visible():
+            self.skipTest("sin análisis pendientes no hay aviso que comprobar")
+        texto = banner.inner_text()
+        estado = json.loads(
+            (ROOT / "estado_recopilacion.json").read_text(encoding="utf-8")
+        )
+        coste = estado.get("estimated_cost_usd")
+        if coste is None:
+            self.skipTest("el estado publicado no trae coste")
+        self.assertIn(f"{coste:.2f} USD", texto)
+        self.assertIn(f"{coste * 0.5:.2f} USD por lotes", texto)
+        self.assertEqual(page.evaluate("() => BATCH_COST_FACTOR"), 0.5)
+        page.close()
+
     def test_the_banner_reports_a_batch_in_flight(self):
         """Un lote tarda entre minutos y 24 h: tiene que verse que existe.
 

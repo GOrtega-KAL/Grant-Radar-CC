@@ -6636,3 +6636,96 @@ saberlo.
 - Los dos modos comparten los constructores de petición. Cualquier optimización
   que se le ocurra a alguien —cachear prompts, cambiar de modelo— tiene que
   entrar por ahí, o los dos caminos empezarán a divergir.
+### 61.15. Qué es de Kalfrisa y qué es de sus socios: el perfil, reescrito con los datos
+
+Las doce preguntas de la batería, respondidas. Lo que sale **no es un retoque**:
+obliga a partir la lista de capacidades en tres, porque estaban mezcladas tres
+cosas que producen encajes distintos.
+
+#### La partición, que es la corrección de fondo
+
+| Sección nueva | Qué contiene | Por qué separada |
+|---|---|---|
+| **LO QUE KALFRISA FABRICA** | Intercambiadores, precalentadores, calentadores, recuperadores, hornos, quemadores, RTO, **scrubbers** | Es capacidad plena: puede presentarse como fabricante |
+| **LO QUE INTEGRA PERO NO FABRICA** | Rotoconcentradores de zeolitas (se compran), filtros de mangas | Integrar sobre proceso propio es real y vendible, pero **no** es fabricar |
+| **LÍNEAS QUE QUIERE DESARROLLAR** | Oxidadores catalíticos y SCR, IIoT y control por datos, programas de dimensionamiento, digitalización de activos, electrificación, **internacionalización** | No son capacidades hoy, pero una convocatoria que permita desarrollarlas **sí interesa** |
+
+Tenerlas en una sola lista es lo que produjo el error de las microondas: el
+modelo no tenía forma de distinguir «lo hace» de «lo usa» de «le gustaría».
+
+#### Las correcciones concretas, una por respuesta
+
+- **La simulación no es capacidad propia.** En IGNITE y DT4RAF el CFD lo
+  aportaron NABLADOT, BIFI y AIMEN. Kalfrisa pone **el caso de uso, los equipos
+  y la validación**. Sí es suya la **validación experimental a escala piloto o
+  industrial** —no a escala de laboratorio—, y eso es un papel buscado en un
+  consorcio de simulación, así que el perfil lo dice en positivo.
+- **Las herramientas de cálculo propias son de dimensionamiento y diseño**, no
+  CFD. La pregunta A2 existía justo para separarlas.
+- **El 100 % de H2 sí es capacidad de Kalfrisa**, a un **TRL todavía no
+  industrial**. Ese matiz es el que evita prometer demostración industrial.
+- **El rotoconcentrador se compra**; lo propio es la integración, el control y
+  la sensórica. Y los procesos con depuración de COV son de **interés muy alto**
+  precisamente por eso: una limitación de fabricación que es una oportunidad de
+  integración.
+- **La pirólisis de EDPIC era de un tercero**, ni de Kalfrisa ni de IBER. Pero
+  Kalfrisa **puede construir** esos equipos y ya diseñó un horno rotativo para
+  tratamiento térmico de paneles solares. No es lo mismo «tiene la tecnología»
+  que «puede fabricar el equipo», y el perfil ahora lo distingue.
+- **El ACV no es suyo.** Se retira de capacidades y pasa a la lista de lo que no
+  hay que atribuirle. Encaja con que CIRCE lo tenga en el catálogo de socios.
+- **Los oxidadores catalíticos y el SCR cambian de bando.** Estaban como
+  exclusión —«no des por propios»— y siguen sin fabricarse, pero son **línea
+  que se quiere abrir**: una convocatoria de I+D para desarrollarlos interesa.
+  Era un falso negativo activo.
+- **Scrubbers sí se fabrican**; filtros de mangas se integran.
+
+#### Dos cosas que el radar no buscaba y ahora sí
+
+1. **La internacionalización.** «Ya tenemos presencia muy fuerte pero se quiere
+   potenciar.» Es una clase entera de convocatorias —cámaras de comercio, ICEX,
+   XPANDE— que el perfil no mencionaba, y que de hecho aparecen en la
+   recopilación y se venían descartando.
+2. **La nave piloto, con números.** 110 m², techo alto, **100 kW**, hornos
+   pequeños eléctricos, híbridos y de hidrógeno. Antes decía «pueden ensayarse
+   equipos a escala piloto», que no distingue nada. Ahora se puede juzgar si una
+   convocatoria que exige demostración física encaja — y decir que **para escala
+   industrial hace falta instalación de cliente**.
+
+#### El catálogo de socios, corregido con C1 y C2
+
+- **CLENAR es el Clúster de Energía de Aragón**: organiza, lidera y tramita, y
+  **no tiene capacidad técnica**. Pierde `energy_systems`, que era engañoso —el
+  modelo podía recomendarlo para aportar tecnología— y gana la nota de lo que
+  sí hace. Marcado como colaboración previa: está en cuatro proyectos.
+- **Entra NABLADOT**, que faltaba pese a ser socio y proveedor habitual y a
+  aportar exactamente la capacidad de CFD que Kalfrisa no tiene.
+- Marcadas las colaboraciones reales: BIFI, AIMEN, FHa, CIRCE, Unizar.
+- **AERIS no entra: es competencia.** Anotado para que nadie lo añada mirando la
+  lista de socios de LIFE ABATE.
+
+#### El aviso del panel, con los dos precios
+
+A petición del usuario, el recuadro enseña ahora **las dos tarifas juntas**:
+
+> 84 convocatorias esperan análisis · coste estimado **2.15 USD · 1.08 USD por
+> lotes** · recopilado el 3/9 · lo publicado tiene 13 días
+
+Es la misma decisión con dos precios, y sin las dos cifras a la vez había que
+saberse el descuento de memoria.
+
+#### Una prueba que afirmaba algo falso, y por qué importa
+
+`test_simulation_is_an_autonomous_capability` exigía que el perfil dijera
+«capacidad autónoma» de la simulación. Venía de la ronda de PowerUp del 21/08 y
+**el usuario la ha desmentido**. Reescrita como
+`test_the_simulation_split_says_who_does_what`: ya no exige una afirmación sino
+**que el perfil diga quién hace qué**, y prohíbe expresamente volver a la frase
+anterior.
+
+Conviene anotarlo: una prueba puede fijar durante dos semanas algo que nadie
+había comprobado con el cliente. Las pruebas protegen de las regresiones, no de
+las suposiciones.
+
+Versiones: perfil a `kalfrisa-2026-09-v9-builds-integrates-wants`, catálogo a
+`2026-09-v2-nabladot-and-roles`.

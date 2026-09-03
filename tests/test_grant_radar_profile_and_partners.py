@@ -21,8 +21,15 @@ class KalfrisaProfileTests(unittest.TestCase):
         # (AGENTS.md 60.16). Las secciones nuevas entran aquí para que no se
         # puedan perder en una edición futura sin que nadie lo note.
         for section in (
-            "IDENTIDAD:", "CAPACIDADES Y ACTIVOS TECNOLÓGICOS:",
-            "SIMULACIÓN Y GEMELOS DIGITALES",
+            "IDENTIDAD:",
+            # El 03/09/2026 «CAPACIDADES» se partió en tres, y esa partición
+            # ES la corrección: fabricar, integrar y querer desarrollar son
+            # encajes distintos, y tenerlos en una sola lista fue lo que
+            # produjo el error de las microondas (AGENTS.md 61.15).
+            "LO QUE KALFRISA FABRICA",
+            "LO QUE KALFRISA INTEGRA PERO NO FABRICA:",
+            "LÍNEAS QUE KALFRISA QUIERE DESARROLLAR",
+            "SIMULACIÓN, CÁLCULO Y VALIDACIÓN",
             "QUÉ APORTA KALFRISA COMO SOCIO INDUSTRIAL DE UN CONSORCIO:",
             "EXPERIENCIA I+D RELEVANTE",
             "QUÉ TIPO DE CONVOCATORIA INTERESA:", "SECTORES:",
@@ -36,8 +43,10 @@ class KalfrisaProfileTests(unittest.TestCase):
 
 
 class PartnerCatalogTests(unittest.TestCase):
-    def test_catalog_has_sixteen_partners_with_required_fields(self):
-        self.assertEqual(len(PARTNER_CATALOG), 16)
+    def test_catalog_has_its_partners_with_required_fields(self):
+        # Diecisiete desde el 03/09/2026: entra NABLADOT, socio y proveedor
+        # habitual de simulación que faltaba pese a aparecer en dos proyectos.
+        self.assertEqual(len(PARTNER_CATALOG), 17)
         for partner in PARTNER_CATALOG:
             for field in ("id", "name", "region", "capabilities",
                           "eu_experience", "prior_collaboration"):
