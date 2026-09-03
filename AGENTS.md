@@ -2460,6 +2460,7 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 29 | El prefiltro de listado del BOE descarta 153 de 168 entradas **sin registrar exclusión**: solo deja rastro el filtro posterior, sobre el documento ya abierto | Sección 45.2. Auditar las 153 inflaría el catálogo (365 ejecuciones guardadas); lo razonable es un recuento por organismo, no una entrada por ficha |
 | 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
 | 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
+| 41 | **Bloqueo entre procesos para `--batch-collect`.** Hoy no hay ninguno: con una recogida programada cada pocos minutos, dos procesos pueden leer `phase1_running` a la vez, recoger los dos y **enviar la fase 2 dos veces**, pagándola dos veces. Con ejecución manual el riesgo es bajo; **antes de dejarlo desatendido en un servidor hay que cerrarlo** | Sección 61.14. El arreglo es pequeño: un archivo de bloqueo con `O_EXCL` junto al de estado, liberado en un `finally`, y una recogida que salga en silencio si no lo consigue |
 | 34 | Programar la recopilación `--no-claude` diaria en el Programador de tareas de Windows | Sección 47.6 tiene el comando. **Es una acción del usuario en su equipo**, no del agente: queda anotada para no darla por hecha |
 | 37 | **La ejecución completa**, ~2,02 USD sobre 79 convocatorias, **cuando el usuario lo decida** | Sección **54.9**. Los tres controles de 53.2 ya están ejercitados: presupuesto y elegibilidad de Horizon el 01/09 (54.4) y el territorial de Navarra el mismo día (54.10), por 0,1271 USD en total. No queda validación pendiente; lo que falta es publicar, y **la prioridad fijada por el usuario es depurar antes que publicar**: informar del desfase sí, convertirlo en urgencia no. **Requiere autorización expresa** |
 
@@ -6523,3 +6524,115 @@ consorcio necesitan el mismo acotado: DT4RAF, EDPIC y LIFE ABATE describen
 tecnología que probablemente es de Kalfrisa —recuperadores, postcombustión,
 rotoconcentrador— pero eso no se ha confirmado, y la regla nueva dice
 justamente que no hay que suponerlo.
+### 61.14. El modo por lotes, anotado para cuando la herramienta viva en un servidor
+
+Escrito a petición del usuario, pensando en la migración a un servidor 24/7 que
+está prevista «dentro de unos meses» (59.9). Todo lo de abajo describe lo que
+**hay hoy**; lo que faltaría está en el último apartado y es corto.
+
+#### La máquina de estados, entera
+
+```
+        (sin archivo)
+             │  --batch  → recopila, selecciona, envía fase 1
+             ▼
+      phase1_running ──────── --batch-collect (aún procesando) ──┐
+             │                                                    │ sale con 0,
+             │  --batch-collect (terminada)                        │ sin coste
+             │  · recoge hechos                                    │
+             │  · envía fase 2                                     ▼
+             ▼                                             (vuelve a intentarlo)
+      phase2_running ──────── --batch-collect (aún procesando) ──┘
+             │
+             │  --batch-collect (terminada)
+             │  · recoge evaluaciones
+             │  · ensambla con _build_compatible_analysis()
+             │  · escribe en la caché de análisis
+             │  · retira el archivo de estado
+             ▼
+        (sin archivo)  →  una ejecución normal publica, sin llamar a Claude
+```
+
+`phase1_done` y `failed` existen en el módulo como estados intermedios;
+`store_phase1_results()` marca el primero antes de enviar la fase 2, y el
+segundo se usa cuando la fase 1 no devuelve ni una extracción válida.
+
+#### Dónde vive cada cosa
+
+| Archivo | Qué es | ¿Sobrevive al proceso? |
+|---|---|---|
+| `grant_radar_data/batch_state.json` | El lote en vuelo: id, fase, versiones, **las convocatorias enteras** y los hechos de la fase 1 | Sí. Es el marcador |
+| `grant_radar_data/grant_radar_cache.json` | Los análisis terminados | Sí |
+| `grant_radar_data/grant_radar_audit.json` | El histórico de ejecuciones | Sí |
+| `estado_recopilacion.json` | Lo que ve el panel, con el bloque `batch` | Sí, y además se sube a GitHub Pages |
+
+Todo cuelga de `DATA_DIR`, que es `PROJECT_DIR/grant_radar_data`. **En un
+servidor, ese directorio es el único que necesita almacenamiento persistente**:
+si se pierde, se pierde el rastro de un lote pagado.
+
+#### Qué es seguro repetir, que es lo que un cron necesita
+
+- **`--batch-collect` es idempotente mientras el lote no haya terminado**: mira,
+  informa y sale con 0 sin tocar nada ni gastar. Se puede llamar cada cinco
+  minutos sin consecuencias.
+- **`--batch` se niega si ya hay uno en vuelo.** No hace falta que el cron lleve
+  la cuenta.
+- **`--batch-status` no toca la red.** Vale para una sonda de salud.
+- **La recogida final es la única que escribe en la caché**, y lo hace de una vez
+  al terminar.
+
+Forma natural en un servidor, entonces:
+
+```
+# recopilación diaria sin coste
+30 6 * * *   ... "Grant-Radar-prueba.py" --no-claude
+
+# el lote, cuando se decida pagarlo (o a diario, si se acepta el gasto)
+0  7 * * *   ... "Grant-Radar-prueba.py" --batch
+
+# la recogida, insistente y barata
+*/10 * * * * ... "Grant-Radar-prueba.py" --batch-collect
+```
+
+#### Lo único que hay que añadir antes de dejarlo desatendido
+
+**No hay bloqueo entre procesos. Es el hueco real**, y con `--batch-collect`
+cada diez minutos deja de ser teórico: si una recogida tarda más que el
+intervalo, dos procesos pueden leer `phase1_running` a la vez, los dos recoger
+la fase 1 y los dos **enviar la fase 2**. Se pagaría dos veces y el segundo
+estado sobrescribiría al primero.
+
+El arreglo es pequeño y conviene hacerlo antes de programarlo, no después: un
+archivo de bloqueo junto al de estado, creado con `O_EXCL`, con el PID y la hora
+dentro y liberado en un `finally`. Con un `--batch-collect` que salga en
+silencio si no lo consigue —no es un error que otro proceso esté recogiendo—.
+
+Mientras la ejecución sea manual el riesgo es bajo, porque no se lanzan dos a la
+vez a propósito. Queda anotado aquí para que la migración no lo herede sin
+saberlo.
+
+#### Tres cosas más que la migración se encontrará
+
+1. **`CLAUDE_API_KEY` y `GITHUB_TOKEN` en el entorno.** Sin el segundo, todo
+   funciona igual y solo se salta la publicación del estado — la del panel, no
+   la del producto.
+2. **Las horas son UTC** (`datetime.now(timezone.utc)`) en el estado del lote y
+   en el estado publicado, y **locales** en los mensajes de commit. No hay
+   ambigüedad en lo que se compara.
+3. **El bloqueo de versiones sigue mandando** (61.4): si un despliegue cambia el
+   prompt o el perfil mientras un lote vuela, la recogida se niega. En un
+   servidor eso significa que **desplegar durante un lote lo deja bloqueado**
+   hasta volver a la versión anterior o abandonarlo. No es un fallo —es la
+   salvaguarda haciendo su trabajo— pero conviene saberlo antes de encadenar
+   despliegue y cron.
+
+#### Lo que NO hay que cambiar al migrar
+
+- El modo instantáneo sigue existiendo y es el bueno para una prueba dirigida:
+  el lote tarda minutos y el instantáneo, segundos.
+- La recogida final **no publica** a propósito (61.3). En un servidor, la
+  publicación la hace la ejecución normal siguiente, que encontrará todo en
+  caché y no llamará a Claude.
+- Los dos modos comparten los constructores de petición. Cualquier optimización
+  que se le ocurra a alguien —cachear prompts, cambiar de modelo— tiene que
+  entrar por ahí, o los dos caminos empezarán a divergir.

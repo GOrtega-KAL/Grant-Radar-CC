@@ -114,6 +114,13 @@ desactualizado si no se mantiene junto a ellos.
 > verdad: la ejecución completa de las 84 pendientes costaría ~1,08 USD por
 > lotes en vez de ~2,15, y **requiere tu autorización**.
 >
+> **Para migrar a un servidor 24/7, lee AGENTS.md 61.14**: la máquina de estados
+> entera, qué archivos necesitan almacenamiento persistente (`grant_radar_data/`
+> y solo ese), la forma del cron y lo único que falta — **no hay bloqueo entre
+> procesos**, así que dos `--batch-collect` solapados pagarían la fase 2 dos
+> veces. Punto 41 del backlog. Con ejecución manual el riesgo es bajo; antes de
+> dejarlo desatendido hay que cerrarlo.
+>
 > **CRITERIO DE DISEÑO que fijaste el 03/09 y manda sobre lo demás:** nada de
 > reglas deterministas en la puntuación, ni ajuste artificial para alcanzar una
 > cifra. El camino es estudiar qué motiva una nota baja y ajustar los criterios
