@@ -229,9 +229,9 @@ class VersionBumpTests(unittest.TestCase):
         # papel de socio industrial, y qué convocatorias interesan de verdad
         # (AGENTS.md 60.16).
         self.assertEqual(PROFILE_VERSION, "kalfrisa-2026-09-v6-projects-and-sme")
-        self.assertEqual(EVALUATOR_VERSION, "fit-2026-09-v9-topic-crossing")
+        self.assertEqual(EVALUATOR_VERSION, "fit-2026-09-v10-profile-is-authoritative")
         self.assertEqual(
-            ANALYSIS_PROMPT_VERSION, "2026-09-v15-topic-crossing-and-recall"
+            ANALYSIS_PROMPT_VERSION, "2026-09-v16-profile-is-authoritative"
         )
         # El extractor entra en esta comprobación ahora que su prompt se puede
         # leer y editar: cambiar el texto sin subir la versión dejaría la caché

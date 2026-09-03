@@ -6337,6 +6337,33 @@ nueva quedará apagada sola, que es lo que el usuario intuía al preguntarlo.
 Proporciones, para no perder de vista cuál es la palanca: **el lote ahorra
 ~1,06 USD por ejecución completa y la caché ~0,25**.
 
+### 61.8. Fase 2.a: el prompt contradecía al perfil, y lo introduje yo
+
+Al reescribir el perfil el 02/09 se afirmó que Kalfrisa **es** una PYME, con su
+motivo y su holding. El prompt de sistema del evaluador siguió diciendo lo
+contrario:
+
+| Dónde | Qué decía |
+|---|---|
+| `CLAUDE_EVALUATION_SYSTEM_PROMPT` | «Kalfrisa es una empresa de tamaño mediano. **No deduzcas** que cumple la definición de PYME» |
+| `kalfrisa_profile.txt` | «Kalfrisa **ES UNA PYME**… **NO pidas verificar** la condición» |
+
+Las dos viajaban en la misma llamada, un día entero.
+
+**La corrección no es cambiar una frase por otra**, que dejaría el mismo
+problema esperando: se **retira** del prompt todo lo que describe al cliente y
+se dice de dónde sale la autoridad — «sobre el tamaño, la condición jurídica y
+la identidad del cliente manda el perfil». Quién es Kalfrisa lo dice el perfil;
+repetirlo en dos sitios es exactamente cómo se llega a que se contradigan.
+
+Versiones a `fit-2026-09-v10-profile-is-authoritative` y
+`2026-09-v16-profile-is-authoritative`.
+
+**La lección, que no es sobre PYMEs:** un dato del cliente escrito en dos
+lugares no tiene dos fuentes, tiene una fuente y una copia — y la copia envejece
+sin avisar. Antes de añadir al prompt algo que ya está en el perfil, conviene
+preguntarse cuál de los dos manda.
+
 ### 61.7. Lo que falta de esta ronda
 
 - **Un lote de humo de 2 peticiones** (~0,001 USD) para confirmar que la
@@ -6344,7 +6371,8 @@ Proporciones, para no perder de vista cuál es la palanca: **el lote ahorra
   —comprobado en `MessageCreateParamsNonStreaming`— pero eso no prueba que el
   servicio lo acepte. **Requiere autorización expresa**, y hasta entonces el
   modo por lotes está escrito y probado con dobles, no ejercitado de verdad.
-- La fase 2 del plan: calidad de prompts, empezando por una contradicción
-  activa —el prompt de sistema aún dice «no deduzcas que Kalfrisa cumple la
-  definición de PYME» mientras el perfil afirma desde el 02/09 que **sí** lo
-  es—.
+- El resto de la fase 2 del plan: el diagnóstico de qué deprime el `fit_score`
+  —leyendo gratis los `risks_and_unknowns` de la caché— y los tres flecos del
+  perfil que necesitan respuesta del usuario: si el proyecto es `EHAT` o
+  `EHEAT`, qué es exactamente (su descripción es la única que se escribió sin
+  fuente) y si entran los tres proyectos que la web lista y el perfil no.

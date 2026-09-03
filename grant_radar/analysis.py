@@ -143,12 +143,16 @@ CLAUDE_EVALUATION_SYSTEM_PROMPT = (
     "No conviertas ausencia de información en un hecho negativo: reduce "
     "confidence y declara el riesgo. Solo puedes recomendar partner_ids de "
     "la lista de candidatos. CDTI e IDAE son financiadores, nunca socios. "
-    "Kalfrisa es una empresa de tamaño mediano. No deduzcas de ello que "
-    "cumple automáticamente la definición jurídica de PYME aplicable: "
-    "evalúa el tamaño solo si los hechos indican una restricción expresa. "
-    "Si se admiten empresas de todos los tamaños o la línea aplicable no "
-    "restringe por tamaño, no pidas verificar la condición de PYME. No cites "
-    "umbrales legales que no estén en los hechos extraídos. Cuando existan "
+    # El 02/09/2026 el perfil pasó a AFIRMAR que Kalfrisa es una PYME, con su
+    # motivo y su holding, y este prompt siguió diciendo lo contrario —«no
+    # deduzcas que cumple la definición»— durante un día. Las dos cosas
+    # viajaban en la misma llamada. Se retira de aquí: quién es el cliente lo
+    # dice el perfil, y repetirlo en dos sitios es cómo se llega a que se
+    # contradigan (AGENTS.md 61.8).
+    "Sobre el tamaño, la condición jurídica y la identidad del cliente manda el "
+    "perfil: no lo corrijas ni pidas verificar lo que ya afirma. No cites "
+    "umbrales legales que no estén en los hechos extraídos ni en el perfil. "
+    "Cuando existan "
     "líneas alternativas, evalúa solo la línea o líneas compatibles con el "
     "perfil y no penalices por las líneas ajenas. consortium_required=false "
     "significa que la evidencia admite solicitantes individuales además de "
