@@ -232,7 +232,7 @@ class VersionBumpTests(unittest.TestCase):
         # propio criterio: PYME afirmada, proyectos de I+D descritos uno a uno,
         # papel de socio industrial, y qué convocatorias interesan de verdad
         # (AGENTS.md 60.16).
-        self.assertEqual(PROFILE_VERSION, "kalfrisa-2026-09-v6-projects-and-sme")
+        self.assertEqual(PROFILE_VERSION, "kalfrisa-2026-09-v7-eheat-and-three-more")
         self.assertEqual(EVALUATOR_VERSION, "fit-2026-09-v10-profile-is-authoritative")
         self.assertEqual(
             ANALYSIS_PROMPT_VERSION, "2026-09-v16-profile-is-authoritative"

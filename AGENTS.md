@@ -6402,3 +6402,53 @@ máximo documentado son 24 h y la expectativa «casi siempre menos de una hora»
 se queda corta por abajo para lotes pequeños. No cambia el diseño —sigue sin
 esperar, porque un lote de 84 puede tardar mucho más— pero conviene saber que
 en la práctica `--batch-collect` puede tener trabajo a los pocos minutos.
+### 61.10. Qué pasa si cierras el editor: la reanudación, probada
+
+Pregunta del usuario antes de autorizar un lote grande, y la respuesta corta es
+que **el proceso local no importa**: el lote lo procesan los servidores de
+Anthropic y lo que queda en el equipo es un archivo.
+
+`grant_radar_data/batch_state.json` es el marcador. Sobrevive a cerrar VS Code,
+a reiniciar y a cambiar de sesión, porque es un archivo y no memoria. Probado
+fabricando estados y ejecutando el programa contra ellos:
+
+| Situación simulada | Qué dice el programa |
+|---|---|
+| Fase 1 en curso, 0,7 h | `«phase1_running» · fase 1 de 2 · 84 convocatorias · enviado hace 0.7 h` |
+| Fase 2 pendiente, 2,3 h | `«phase2_running» · fase 2 de 2` + «Recoger con: --batch-collect» |
+| Lote de 26 h | añade **`CADUCADO: la API descarta los lotes a las 24 h`** |
+| `--batch` con uno ya en vuelo | «YA HAY UN LOTE EN VUELO — no se envía otro» |
+
+`--batch-status` no toca la red y no cuesta nada, así que se puede consultar
+tantas veces como haga falta.
+
+**El hueco que la pregunta destapó, y que estaba de verdad.** `--batch` guardaba
+el estado local pero **no republicaba `estado_recopilacion.json`**: quien
+enviaba un lote y cerraba el editor dejaba un análisis pagado en marcha del que
+el **panel** no sabía nada hasta la siguiente recopilación diaria. El programa
+lo sabía; el dashboard no.
+
+Corregido en los tres momentos en que el estado cambia —envío de la fase 1,
+envío de la fase 2 y cierre del ciclo—. `--batch-collect` usa
+`refresh_published_batch_block()`, que actualiza **solo** el bloque `batch`:
+no ha recopilado nada, así que las cifras de convocatorias y desfase son de la
+última recopilación de verdad y tienen que quedarse como están.
+
+`batch_state.json` va a `.gitignore`: es local y efímero —el identificador de un
+lote concreto y las convocatorias que lleva dentro— y no describe el producto.
+
+### 61.11. El perfil, cerrado con las respuestas del usuario
+
+- **EHEAT** (era `EHAT`, error de transcripción): «electrificación industrial
+  mediante calentamiento por **microondas** y recirculación de gases, con
+  gemelos digitales y control predictivo». Era la única descripción escrita sin
+  fuente, y trae una tecnología —microondas— que no aparecía en ninguna otra
+  parte del perfil.
+- Entran tres proyectos más, confirmados como ámbitos de interés y desarrollo:
+  **Industria 4.0** (digitalización, IA y big data en procesos propios),
+  **Cremaciones digitales y eficientes** (hornos crematorios con gemelo digital)
+  y **Tecnología de recuperación de radiación** (de donde sale el recuperador de
+  doble camisa).
+
+Trece proyectos descritos, frente a las nueve siglas desnudas del 01/09. Versión
+del perfil a `kalfrisa-2026-09-v7-eheat-and-three-more`.

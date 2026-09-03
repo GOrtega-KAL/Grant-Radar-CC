@@ -1262,6 +1262,14 @@ def run_pipeline(
             analysis_target, PHASE_EXTRACTION,
         )
         save_batch_state(new_batch_state(analysis_target, lote_id), BATCH_STATE_FILE)
+        # El panel tiene que enterarse YA. Sin esto, quien envía un lote y
+        # cierra el editor deja un análisis pagado en marcha del que el
+        # dashboard no sabe nada hasta la siguiente recopilación diaria.
+        publish_collection_state(
+            build_staleness_report(load_audit_runs(AUDIT_FILE)),
+            detected_count, len(all_raw),
+            pending_keys={cache_key(item) for item in analysis_candidates},
+        )
         print()
         print("=" * 60)
         print("MODO POR LOTES — fase 1 enviada")
@@ -1740,6 +1748,42 @@ def parse_args():
     return args
 
 
+def refresh_published_batch_block() -> None:
+    """Actualiza el bloque `batch` del estado publicado, y solo ese bloque.
+
+    `--batch-collect` no recopila nada, así que no puede recalcular cuántas
+    convocatorias hay ni cuánto se desfasa lo publicado: esas cifras son de la
+    última recopilación de verdad y deben quedarse como están. Lo único que ha
+    cambiado es en qué punto va el lote.
+    """
+    try:
+        with open(COLLECTION_STATE_FILE, "r", encoding="utf-8") as handle:
+            estado = json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        return
+    if not isinstance(estado, dict):
+        return
+    estado["batch"] = batch_state_for_dashboard(
+        load_batch_state(BATCH_STATE_FILE)
+    ) or None
+    estado["generated_at"] = datetime.now(timezone.utc).isoformat()
+    try:
+        with open(COLLECTION_STATE_FILE, "w", encoding="utf-8") as handle:
+            json.dump(estado, handle, ensure_ascii=False, indent=2)
+    except OSError as exc:
+        log.warning(f"No se pudo actualizar el estado publicado: {exc}")
+        return
+    github_upload(
+        COLLECTION_STATE_FILE,
+        token=GITHUB_TOKEN, user=GITHUB_USER, repo=GITHUB_REPO,
+        branch=GITHUB_BRANCH,
+        message=(
+            "Grant-Radar: estado del lote "
+            f"{datetime.now().strftime('%Y-%m-%d %H:%M')} UTC"
+        ),
+    )
+
+
 def run_batch_collect() -> int:
     """Recoge un lote enviado con `--batch` y avanza al siguiente paso.
 
@@ -1812,6 +1856,7 @@ def run_batch_collect() -> int:
         state["submitted_at"] = datetime.now(timezone.utc).isoformat()
         state["state"] = STATE_PHASE2_RUNNING
         save_batch_state(state, BATCH_STATE_FILE)
+        refresh_published_batch_block()
         print(f"  Fase 2 enviada: {nuevo_id}")
         print("  Vuelve a ejecutar --batch-collect cuando termine.")
         return 0
@@ -1859,6 +1904,7 @@ def run_batch_collect() -> int:
     print(f"\n  Análisis guardados en caché: {guardadas}")
     print(f"  Coste estimado del lote: ${coste_total:.4f} (tarifa de lote, 50 %)")
     clear_batch_state(BATCH_STATE_FILE)
+    refresh_published_batch_block()
     print("  Estado del lote retirado: el ciclo ha terminado.")
     print(
         "\n  Para publicar, lanza el pipeline normal: encontrará todo en caché\n"

@@ -26,3 +26,7 @@ grant_radar_data/logs/
 # si alguien lo ejecuta, esto evita que acaben versionadas.
 scripts/favoritos-worker/node_modules/
 scripts/favoritos-worker/.wrangler/
+
+# Estado del lote diferido: es local y efímero —identificador de un lote
+# concreto y las convocatorias que lleva dentro—, y no describe el producto.
+grant_radar_data/batch_state.json

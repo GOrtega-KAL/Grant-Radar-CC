@@ -59,8 +59,8 @@ admisibles de una convocatoria):
   HPC, simulación CFD avanzada y gemelos digitales.
 - DT4RAF — gemelo digital para optimizar recuperadores de alta eficiencia
   mediante simulación y monitorización.
-- EHEAT — proyecto de I+D en consorcio de mayor duración, en la línea de
-  simulación y validación experimental.
+- EHEAT — electrificación industrial mediante calentamiento por MICROONDAS y
+  recirculación de gases, con gemelos digitales y control predictivo.
 - RAFeRTO — tecnologías digitales y técnicas predictivas en oxidadores térmicos
   regenerativos y recuperadores de calor.
 - e-RTO — modelo digital para electrificación y control avanzado del oxidador
@@ -73,6 +73,13 @@ admisibles de una convocatoria):
 - DESCARB-e — descarbonización mediante electrificación de hornos.
 - LIFE ABATE — reducción de COV y CO2 en plantas de tratamiento mecánico
   biológico mediante rotoconcentrador y degradación térmica.
+- Industria 4.0 — digitalización, automatización, inteligencia artificial y big
+  data aplicadas a los procesos productivos propios.
+- Cremaciones digitales y eficientes — hornos crematorios con mejoras de
+  combustión, transferencia térmica, instrumentación y gemelo digital.
+- Tecnología de recuperación de radiación — recuperación de radiación de alta
+  temperatura en hornos de fusión; de aquí sale el recuperador de doble camisa
+  de alta eficiencia.
 - Experiencia acreditada de participación en consorcios de I+D: la ausencia de
   socios preidentificados en el radar no es un obstáculo para Kalfrisa ni un
   motivo para rebajar el encaje de una convocatoria.
