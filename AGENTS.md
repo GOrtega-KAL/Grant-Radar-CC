@@ -6366,13 +6366,39 @@ preguntarse cuál de los dos manda.
 
 ### 61.7. Lo que falta de esta ronda
 
-- **Un lote de humo de 2 peticiones** (~0,001 USD) para confirmar que la
-  Batches API acepta `output_config.format`. El SDK lo admite en el tipo
-  —comprobado en `MessageCreateParamsNonStreaming`— pero eso no prueba que el
-  servicio lo acepte. **Requiere autorización expresa**, y hasta entonces el
-  modo por lotes está escrito y probado con dobles, no ejercitado de verdad.
 - El resto de la fase 2 del plan: el diagnóstico de qué deprime el `fit_score`
   —leyendo gratis los `risks_and_unknowns` de la caché— y los tres flecos del
   perfil que necesitan respuesta del usuario: si el proyecto es `EHAT` o
   `EHEAT`, qué es exactamente (su descripción es la única que se escribió sin
   fuente) y si entran los tres proyectos que la web lista y el perfil no.
+
+### 61.9. El lote de humo: confirmado, y el 50 % medido
+
+Autorizado por el usuario. Dos convocatorias inventadas, **usando el código
+real** —`build_batch_requests`, `submit_batch`, `poll_batch`, `collect_batch`—
+y no una aproximación escrita para la ocasión: lo que queda validado es la
+implementación, no un primo suyo.
+
+```
+Lote: msgbatch_014kRyS3hdPezybKR7BCWy3z
+Terminado en 244 s · succeeded=2, errored=0
+Extracciones válidas: 2 de 2 · fallos: 0
+Tokens: 6.583 · coste $0,00481 (el mismo en instantáneo: $0,00961)
+```
+
+**Las tres cosas que había que confirmar, confirmadas:**
+
+1. **La Batches API acepta `output_config.format`.** Era el riesgo que podía
+   tumbar todo el modo: el SDK lo admite en el tipo, pero eso no probaba que el
+   servicio lo aceptara. Lo acepta.
+2. **El descuento del 50 % es exacto**, no aproximado: 0,00481 frente a
+   0,00961. El multiplicador de `message_usage_record()` refleja la factura.
+3. **La extracción funciona igual que en instantáneo.** Sacó las dos fechas de
+   cierre, 500.000 € de presupuesto, 60 % de intensidad, 200.000 € de ayuda
+   máxima y `consortium_required: yes` de la segunda, que era la que lo decía.
+
+**Un dato útil sobre la latencia:** 244 segundos para dos peticiones. El
+máximo documentado son 24 h y la expectativa «casi siempre menos de una hora»
+se queda corta por abajo para lotes pequeños. No cambia el diseño —sigue sin
+esperar, porque un lote de 84 puede tardar mucho más— pero conviene saber que
+en la práctica `--batch-collect` puede tener trabajo a los pocos minutos.

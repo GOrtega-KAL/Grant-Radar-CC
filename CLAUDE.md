@@ -106,12 +106,13 @@ desactualizado si no se mantiene junto a ellos.
 > excluida por territorio puntuaban igual, y esa distancia sí es un criterio que
 > no se puede falsear.
 >
-> **El modo por lotes está IMPLEMENTADO** (AGENTS.md 61): `--batch`,
-> `--batch-collect`, `--batch-status` y `--batch-abandon`. Cuesta la mitad.
-> **Lo único que falta es ejercitarlo de verdad**: un lote de humo de dos
-> peticiones (~0,001 USD) para confirmar que la API acepta salidas
-> estructuradas en lote. El SDK lo admite en el tipo, pero eso no prueba que el
-> servicio lo acepte. **Requiere tu autorización.**
+> **El modo por lotes está IMPLEMENTADO Y VERIFICADO** (AGENTS.md 61):
+> `--batch`, `--batch-collect`, `--batch-status` y `--batch-abandon`. El lote de
+> humo pasó el 03/09 (61.9): la API acepta salidas estructuradas en lote, 2 de 2
+> extracciones válidas, y **el descuento del 50 % es exacto** —0,00481 frente a
+> 0,00961 USD—. Lo que no se ha ejercitado todavía es un lote **grande** de
+> verdad: la ejecución completa de las 84 pendientes costaría ~1,08 USD por
+> lotes en vez de ~2,15, y **requiere tu autorización**.
 >
 > **CRITERIO DE DISEÑO que fijaste el 03/09 y manda sobre lo demás:** nada de
 > reglas deterministas en la puntuación, ni ajuste artificial para alcanzar una
