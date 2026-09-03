@@ -3390,6 +3390,77 @@ class FrontendLayoutTests(unittest.TestCase):
         self.assertEqual(resultado["conFecha"], 5, "con fecha manda la fecha, no el número")
         page.close()
 
+    def test_the_banner_reports_a_batch_in_flight(self):
+        """Un lote tarda entre minutos y 24 h: tiene que verse que existe.
+
+        Sin esta línea, la cifra de «esperan análisis» no distingue un lote
+        pagado y en marcha de no haber hecho nada. Y `waiting_outside` cubre la
+        carrera que pidió el usuario el 03/09/2026: una convocatoria detectada
+        DESPUÉS del envío no entra en el lote en vuelo, pero tiene que verse
+        esperando o alguien creerá que ya se está analizando.
+        """
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        page.add_init_script("window.GRANT_RADAR_FAVORITES_ENDPOINT = '';")
+        page.goto(self.url, wait_until="networkidle")
+        page.wait_for_selector(".conv-item")
+
+        texto = page.evaluate("""() => {
+            const previo = convocatorias.slice();
+            convocatorias = [];
+            const html = batchStateHtml({
+                state: 'phase2_running', phase: 2, of_phases: 2,
+                items: 83, age_hours: 0.67, waiting_outside: 4
+            });
+            convocatorias = previo;
+            const caja = document.createElement('div');
+            caja.innerHTML = html;
+            return caja.textContent;
+        }""")
+        self.assertIn("Análisis por lotes en curso", texto)
+        self.assertIn("fase 2 de 2", texto)
+        self.assertIn("evaluando encaje", texto)
+        self.assertIn("83 convocatorias", texto)
+        self.assertIn("40 min", texto)
+        self.assertIn("4 detectadas después", texto)
+        self.assertIn("próxima ejecución", texto)
+        page.close()
+
+    def test_the_batch_line_never_shows_call_titles(self):
+        """Misma frontera que el resto del recuadro: estado, no catálogo."""
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        page.add_init_script("window.GRANT_RADAR_FAVORITES_ENDPOINT = '';")
+        page.goto(self.url, wait_until="networkidle")
+        page.wait_for_selector(".conv-item")
+
+        texto = page.evaluate("""() => {
+            const caja = document.createElement('div');
+            caja.innerHTML = batchStateHtml({
+                state: 'phase1_running', phase: 1, of_phases: 2,
+                items: 83, age_hours: 2.5, waiting_outside: 0
+            });
+            return caja.textContent;
+        }""")
+        titulos = page.evaluate(
+            "() => convocatorias.map(c => c.title).filter(t => t && t.length > 25)"
+        )
+        for titulo in titulos:
+            self.assertNotIn(titulo[:25], texto)
+        # Sin nada esperando fuera, no se inventa la frase.
+        self.assertNotIn("espera", texto)
+        page.close()
+
+    def test_without_a_batch_the_line_does_not_appear(self):
+        page = self.browser.new_page(viewport={"width": 1080, "height": 720})
+        page.add_init_script("window.GRANT_RADAR_FAVORITES_ENDPOINT = '';")
+        page.goto(self.url, wait_until="networkidle")
+        page.wait_for_selector(".conv-item")
+        for vacio in ("null", "undefined", "{}", "{state: ''}"):
+            with self.subTest(valor=vacio):
+                self.assertEqual(
+                    page.evaluate(f"() => batchStateHtml({vacio})"), "",
+                )
+        page.close()
+
     def test_the_collection_banner_shows_no_call_text(self):
         """El aviso describe la recopilación, no el catálogo.
 

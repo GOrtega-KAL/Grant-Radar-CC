@@ -876,6 +876,7 @@
   .card-favorite.is-favorite svg { fill: currentColor; }
 
   .collection-state-changes { margin-top: 5px; font-weight: 700; }
+  .collection-state-batch { margin-top: 4px; font-weight: 600; opacity: .9; }
 
   .favorites-chip { display: inline-flex; align-items: center; gap: 5px; }
   .favorites-chip .favorites-star { color: var(--warning); }
@@ -2946,7 +2947,9 @@
           ? `lo publicado tiene ${days} día${days === 1 ? '' : 's'}`
           : ''
       ].filter(Boolean);
-      banner.innerHTML = partes.join(' · ') + collectionChangesHtml(state);
+      banner.innerHTML = partes.join(' · ')
+        + collectionChangesHtml(state)
+        + batchStateHtml(state.batch);
       banner.style.display = 'block';
     } catch (error) {
       banner.style.display = 'none';
@@ -2994,6 +2997,52 @@
     // misma frontera que el backend ya respeta en `estado_recopilacion.json`,
     // donde una prueba impide meter convocatorias (AGENTS.md 60.5).
     return `<div class="collection-state-changes">${partes.join(' · ')}</div>`;
+  }
+
+  // ── EL LOTE DIFERIDO EN CURSO ────────────────────────────────────────────
+  //
+  // Un lote tarda entre minutos y 24 horas, y durante ese tiempo nadie sabría
+  // que hay un análisis pagado en marcha: la cifra de «esperan análisis» no lo
+  // distingue de no haber hecho nada. Esta línea existe para eso.
+  //
+  // `waiting_outside` son las convocatorias que la recopilación de hoy ha
+  // encontrado DESPUÉS de enviarse el lote. No se añaden al que está en vuelo
+  // —eso obligaría a reenviarlo entero y a pagarlo dos veces— así que hay que
+  // decir que esperan a la siguiente, o alguien creerá que ya se están
+  // analizando (requisito del usuario, 03/09/2026).
+  const BATCH_STATE_LABELS = {
+    phase1_running: 'extrayendo hechos',
+    phase1_done: 'hechos listos',
+    phase2_running: 'evaluando encaje',
+    failed: 'con fallos'
+  };
+
+  function batchStateHtml(batch) {
+    if (!batch || !batch.state) return '';
+    const partes = [`<strong>Análisis por lotes en curso</strong>`];
+    const etiqueta = BATCH_STATE_LABELS[batch.state];
+    if (Number.isFinite(Number(batch.phase)) && Number.isFinite(Number(batch.of_phases))) {
+      partes.push(`fase ${batch.phase} de ${batch.of_phases}${etiqueta ? ` (${etiqueta})` : ''}`);
+    } else if (etiqueta) {
+      partes.push(etiqueta);
+    }
+    if (Number(batch.items) > 0) {
+      partes.push(`${batch.items} convocatoria${Number(batch.items) === 1 ? '' : 's'}`);
+    }
+    const horas = Number(batch.age_hours);
+    if (Number.isFinite(horas)) {
+      partes.push(horas < 1
+        ? `enviado hace ${Math.max(1, Math.round(horas * 60))} min`
+        : `enviado hace ${horas.toFixed(1)} h`);
+    }
+    const fuera = Number(batch.waiting_outside);
+    if (Number.isFinite(fuera) && fuera > 0) {
+      partes.push(
+        `${fuera} detectada${fuera === 1 ? '' : 's'} después ` +
+        `espera${fuera === 1 ? '' : 'n'} a la próxima ejecución`
+      );
+    }
+    return `<div class="collection-state-batch">${partes.join(' · ')}</div>`;
   }
 
   function formatShortDate(value) {

@@ -122,6 +122,9 @@ from grant_radar.holds import (
     run_bdns_hold_pilot,
 )
 from grant_radar.analysis import (
+    _build_compatible_analysis,
+    derive_deterministic_context,
+    merge_stage_usage,
     CLAUDE_SLEEP_S,
     _hydrate_stable_cached_documents,
     # La resolución de holds con Haiku, que sigue aquí, comparte con la capa de
@@ -173,6 +176,30 @@ from grant_radar.http_client import (
     HTTP_USER_AGENT,
     _http_get,
     _is_safe_public_https_url,
+)
+import anthropic
+
+from grant_radar.batch_analysis import (
+    BatchStateError,
+    PHASE_EVALUATION,
+    PHASE_EXTRACTION,
+    STATE_PHASE1_RUNNING,
+    STATE_PHASE2_RUNNING,
+    STATE_FAILED,
+    assert_versions_match,
+    batch_items,
+    batch_state_for_dashboard,
+    clear_batch_state,
+    collect_batch,
+    empty_stage_usage,
+    load_batch_state,
+    new_batch_state,
+    poll_batch,
+    restore_facts,
+    save_batch_state,
+    store_phase1_results,
+    submit_batch,
+    summarize_batch_state,
 )
 from grant_radar.browser import PlaywrightBrowser, VerifyingDocumentBrowser
 # La matriz de reglas previa a Claude. El script solo necesita estas dos: el
@@ -356,6 +383,7 @@ OUTPUT_FILE = os.path.join(PROJECT_DIR, "convocatorias.json")
 COLLECTION_STATE_FILE = os.path.join(PROJECT_DIR, "estado_recopilacion.json")
 CACHE_FILE = os.path.join(DATA_DIR, "grant_radar_cache.json")
 AUDIT_FILE = os.path.join(DATA_DIR, "grant_radar_audit.json")
+BATCH_STATE_FILE = os.path.join(DATA_DIR, "batch_state.json")
 
 
 # ── PERFIL DE KALFRISA Y CATÁLOGO DE SOCIOS ──────────────────────────
@@ -457,7 +485,8 @@ print("✓ Función GitHub Pages cargada")
 
 
 def publish_collection_state(
-    staleness: dict, detected: int, active: int, collection_changes: dict | None = None
+    staleness: dict, detected: int, active: int,
+    collection_changes: dict | None = None, pending_keys: set | None = None,
 ) -> None:
     """Deja a la vista del dashboard cuántas convocatorias esperan análisis.
 
@@ -471,10 +500,18 @@ def publish_collection_state(
     Lo que publica es un archivo aparte, pequeño y de solo lectura para el
     panel, que describe la recopilación y no el producto.
     """
+    # El lote en vuelo, si lo hay. `pending_keys` son las candidatas que esta
+    # recopilación analizaría: las que no estén en el lote se cuentan como
+    # esperando fuera. Es el caso que pidió el usuario el 03/09/2026 — entre el
+    # envío y la recogida aparece una convocatoria nueva, y NO se añade al lote
+    # en vuelo, pero tiene que verse que está esperando.
     state = build_collection_state(
         staleness,
         detected=detected,
         active=active,
+        batch=batch_state_for_dashboard(
+            load_batch_state(BATCH_STATE_FILE), pending_keys,
+        ),
         generated_at=datetime.now(timezone.utc).isoformat(),
         collection_changes=collection_changes,
     )
@@ -498,10 +535,47 @@ def publish_collection_state(
     )
 
 
+def build_cache_entry(
+    conv: dict, analysis: dict, usage: dict, retrieved_at: str
+) -> dict:
+    """Una entrada de la caché de análisis.
+
+    Se separó del bucle el 03/09/2026 para que el modo por lotes escriba
+    **exactamente la misma forma**: si cada camino armara su entrada, una
+    ejecución diferida podría guardar un campo de menos y la ficha saldría
+    incompleta sin que ningún recuento lo delatara.
+    """
+    return {
+        "raw_document": conv,
+        "extracted_facts": analysis.get("call_facts", {}),
+        "evaluation": {
+            field: analysis.get(field)
+            for field in (
+                "fit_score", "actionability_score", "confidence", "decision",
+                "eligibility", "eligibility_reason", "recommended_role",
+                "scores", "evidence_quality", "positive_evidence",
+                "risks_and_unknowns", "partner_needs",
+                "recommended_partners", "resumen", "accion", "tags",
+            )
+        },
+        "analysis": analysis,
+        "token_usage": usage,
+        "source_hash": source_hash(conv),
+        "retrieved_at": retrieved_at,
+        "extractor_version": EXTRACTOR_VERSION,
+        "evaluator_version": EVALUATOR_VERSION,
+        "profile_version": PROFILE_VERSION,
+        "partner_catalog_version": PARTNER_CATALOG_VERSION,
+        "model_version": CLAUDE_MODEL,
+        "cached_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
 def run_pipeline(
 
 
     no_claude: bool = False,
+    batch: bool = False,
     max_claude: int | None = None,
 
 
@@ -1081,7 +1155,10 @@ def run_pipeline(
             )
         else:
             publish_collection_state(
-                staleness, detected_count, len(all_raw), collection_changes
+                staleness, detected_count, len(all_raw), collection_changes,
+                pending_keys={
+                    cache_key(item) for item in forecast_selection["new_items"]
+                },
             )
         print("=" * 60)
         return all_raw
@@ -1159,6 +1236,49 @@ def run_pipeline(
         print("=" * 60)
         return
 
+    if batch:
+        # Modo diferido: se envía y se sale. No se espera, porque un lote puede
+        # tardar hasta 24 h y dejar el equipo ocupado ese tiempo sería peor que
+        # volver luego con --batch-collect.
+        anterior = load_batch_state(BATCH_STATE_FILE)
+        if anterior:
+            print()
+            print("=" * 60)
+            print("YA HAY UN LOTE EN VUELO — no se envía otro")
+            print("  " + summarize_batch_state(anterior))
+            print("  Recógelo con --batch-collect, o descártalo con --batch-abandon.")
+            print("=" * 60)
+            return
+        if not analysis_target:
+            print()
+            print("  No hay convocatorias nuevas que analizar. No se envía lote.")
+            return
+        if not claude_key_format_is_valid(CLAUDE_API_KEY):
+            print()
+            print("  CLAUDE_API_KEY ausente o con formato inválido.")
+            return
+        lote_id = submit_batch(
+            anthropic.Anthropic(api_key=CLAUDE_API_KEY),
+            analysis_target, PHASE_EXTRACTION,
+        )
+        save_batch_state(new_batch_state(analysis_target, lote_id), BATCH_STATE_FILE)
+        print()
+        print("=" * 60)
+        print("MODO POR LOTES — fase 1 enviada")
+        print(f"  Lote: {lote_id}")
+        print(f"  Convocatorias: {len(analysis_target)}")
+        print(
+            f"  Coste máximo estimado: "
+            f"${safety['estimated_upper_cost_usd'] * 0.5:.4f} "
+            "(tarifa de lote, 50 %)"
+        )
+        print("  La mayoría terminan en menos de una hora; el máximo son 24 h.")
+        print("  Comprobar con --batch-status y recoger con --batch-collect:")
+        print("  ninguna de las dos cosas cuesta nada.")
+        print("  No se generó ni publicó convocatorias.json.")
+        print("=" * 60)
+        return
+
     if analysis_target:
         print(
             f"\nAnalizando {len(analysis_target)} de "
@@ -1208,31 +1328,9 @@ def run_pipeline(
                 f"{usage.get('total_tokens', 0):,} · "
                 f"coste estimado ${usage.get('estimated_cost_usd', 0):.4f}"
             )
-        key = cache_key(conv)
-        cache[key] = {
-            "raw_document": conv,
-            "extracted_facts": analysis.get("call_facts", {}),
-            "evaluation": {
-                field: analysis.get(field)
-                for field in (
-                    "fit_score", "actionability_score", "confidence", "decision",
-                    "eligibility", "eligibility_reason", "recommended_role",
-                    "scores", "evidence_quality", "positive_evidence",
-                    "risks_and_unknowns", "partner_needs",
-                    "recommended_partners", "resumen", "accion", "tags",
-                )
-            },
-            "analysis": analysis,
-            "token_usage": usage,
-            "source_hash": source_hash(conv),
-            "retrieved_at": run_started_at,
-            "extractor_version": EXTRACTOR_VERSION,
-            "evaluator_version": EVALUATOR_VERSION,
-            "profile_version": PROFILE_VERSION,
-            "partner_catalog_version": PARTNER_CATALOG_VERSION,
-            "model_version": CLAUDE_MODEL,
-            "cached_at": datetime.now(timezone.utc).isoformat(),
-        }
+        cache[cache_key(conv)] = build_cache_entry(
+            conv, analysis, usage, run_started_at,
+        )
         # Guardar caché tras cada análisis para no perder progreso si falla a mitad
         cache_save(cache, CACHE_FILE)
         if i < len(analysis_target) - 1:
@@ -1523,6 +1621,42 @@ def parse_args():
         ),
     )
     parser.add_argument(
+        "--batch",
+        action="store_true",
+        help=(
+            "Modo diferido: envia el analisis a la Batches API, que cuesta la "
+            "MITAD, guarda el estado y termina sin esperar. La recogida es otra "
+            "invocacion, --batch-collect. Requiere autorizacion expresa como "
+            "cualquier llamada de pago."
+        ),
+    )
+    parser.add_argument(
+        "--batch-collect",
+        action="store_true",
+        help=(
+            "Recoge un lote enviado con --batch. Si acaba de terminar la fase 1 "
+            "envia la fase 2 y vuelve a salir; si ya estan las dos, ensambla, "
+            "guarda en cache y publica. Si el lote aun no esta listo lo dice y "
+            "sale sin coste."
+        ),
+    )
+    parser.add_argument(
+        "--batch-status",
+        action="store_true",
+        help=(
+            "Dice en que estado esta el lote en vuelo leyendo solo el archivo "
+            "de estado. Sin red y sin coste."
+        ),
+    )
+    parser.add_argument(
+        "--batch-abandon",
+        action="store_true",
+        help=(
+            "Olvida el lote en vuelo. El trabajo ya pagado se pierde: usar solo "
+            "si el criterio ha cambiado y sus resultados ya no sirven."
+        ),
+    )
+    parser.add_argument(
         "--replay-hold-report",
         action="store_true",
         help=(
@@ -1569,6 +1703,22 @@ def parse_args():
         parser.error(
             "--gap-report no puede combinarse con otros modos de ejecución"
         )
+    modos_lote = [
+        args.batch, args.batch_collect, args.batch_status, args.batch_abandon,
+    ]
+    if sum(1 for activo in modos_lote if activo) > 1:
+        parser.error(
+            "--batch, --batch-collect, --batch-status y --batch-abandon son "
+            "modos distintos y no pueden combinarse entre si"
+        )
+    if any(modos_lote) and (
+        args.no_claude or args.max_claude is not None or args.hold_pilot is not None
+        or args.replay_hold_report or args.staleness_report or args.gap_report
+        or args.claude_match or args.force_reanalysis or args.source
+    ):
+        parser.error(
+            "los modos de lote no pueden combinarse con otros modos de ejecucion"
+        )
     if args.source and not args.no_claude:
         # Deliberadamente estricto. Una selección parcial produce un catálogo
         # incompleto, y dejarla llegar al análisis publicaría un producto al
@@ -1588,6 +1738,133 @@ def parse_args():
             "--force-reanalysis requiere al menos un --claude-match"
         )
     return args
+
+
+def run_batch_collect() -> int:
+    """Recoge un lote enviado con `--batch` y avanza al siguiente paso.
+
+    Es la otra mitad del modo diferido. **No recopila fuentes**: todo lo que
+    necesita —las convocatorias enteras y los hechos de la fase 1— viaja en
+    `batch_state.json`, así que esta invocación es rápida y no molesta a los
+    organismos públicos.
+
+    Qué hace según el punto en que esté:
+
+    - fase 1 aún en curso → lo dice y sale, **sin coste**;
+    - fase 1 terminada → recoge los hechos y **envía la fase 2**;
+    - fase 2 terminada → ensambla, **guarda en caché** y retira el estado.
+
+    Por qué la recogida final no publica: los análisis quedan en la caché, y
+    una ejecución normal del pipeline los encuentra ahí y publica **sin llamar
+    a Claude**, porque todo son aciertos de caché. Duplicar aquí la ruta de
+    publicación habría sido escribir por segunda vez algo que ya funciona.
+    """
+    state = load_batch_state(BATCH_STATE_FILE)
+    if not state:
+        print("No hay ningún lote en vuelo. Nada que recoger.")
+        return 0
+
+    print("Grant-Radar — recogida de lote diferido")
+    print(f"  {summarize_batch_state(state)}")
+    try:
+        assert_versions_match(state)
+    except BatchStateError as exc:
+        print(f"\n  RECOGIDA CANCELADA: {exc}")
+        return 1
+
+    if not claude_key_format_is_valid(CLAUDE_API_KEY):
+        print("  CLAUDE_API_KEY ausente o con formato inválido.")
+        return 1
+    client = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
+
+    estado_lote = poll_batch(client, state["batch_id"])
+    if not estado_lote["ended"]:
+        recuentos = ", ".join(
+            f"{k}={v}" for k, v in sorted(estado_lote["counts"].items()) if v
+        )
+        print(
+            f"  El lote sigue procesándose ({estado_lote['processing_status']})"
+            + (f" · {recuentos}" if recuentos else "")
+        )
+        print("  Vuelve a intentarlo más tarde. Esta comprobación no cuesta nada.")
+        return 0
+
+    convocatorias = batch_items(state)
+
+    # ── Fase 1 terminada: recoger hechos y lanzar la fase 2 ──────────────────
+    if state["state"] == STATE_PHASE1_RUNNING:
+        hechos, consumo, fallos = collect_batch(
+            client, state["batch_id"], CallFacts, "extracción factual",
+        )
+        print(f"  Fase 1 recogida: {len(hechos)} hechos, {len(fallos)} fallos")
+        for fallo in fallos[:5]:
+            print(f"    · {fallo['custom_id'][:12]}… {fallo['reason'][:70]}")
+        if not hechos:
+            print("  Ninguna extracción válida: no hay nada que evaluar.")
+            state["state"] = STATE_FAILED
+            save_batch_state(state, BATCH_STATE_FILE)
+            return 1
+        store_phase1_results(state, hechos, consumo, fallos)
+        nuevo_id = submit_batch(
+            client, convocatorias, PHASE_EVALUATION, hechos,
+        )
+        state["batch_id"] = nuevo_id
+        state["submitted_at"] = datetime.now(timezone.utc).isoformat()
+        state["state"] = STATE_PHASE2_RUNNING
+        save_batch_state(state, BATCH_STATE_FILE)
+        print(f"  Fase 2 enviada: {nuevo_id}")
+        print("  Vuelve a ejecutar --batch-collect cuando termine.")
+        return 0
+
+    # ── Fase 2 terminada: ensamblar y guardar ────────────────────────────────
+    if state["state"] != STATE_PHASE2_RUNNING:
+        print(f"  Estado inesperado «{state['state']}»: nada que hacer.")
+        return 1
+
+    hechos = restore_facts(state, CallFacts)
+    evaluaciones, consumo, fallos = collect_batch(
+        client, state["batch_id"], CallEvaluation, "evaluación de encaje",
+    )
+    print(f"  Fase 2 recogida: {len(evaluaciones)} evaluaciones, {len(fallos)} fallos")
+    for fallo in fallos[:5]:
+        print(f"    · {fallo['custom_id'][:12]}… {fallo['reason'][:70]}")
+
+    consumos_fase1 = {
+        registro.get("custom_id", ""): registro
+        for registro in (state.get("usage") or [])
+    }
+    cache = cache_load(CACHE_FILE)
+    guardadas = 0
+    coste_total = 0.0
+    ahora = datetime.now(timezone.utc).isoformat()
+    for conv in convocatorias:
+        clave = cache_key(conv)
+        modelo_hechos = hechos.get(clave)
+        modelo_evaluacion = evaluaciones.get(clave)
+        if modelo_hechos is None or modelo_evaluacion is None:
+            continue
+        tech_tags, candidates = derive_deterministic_context(conv)
+        uso = merge_stage_usage(
+            consumos_fase1.get(clave) or empty_stage_usage("extracción factual"),
+            consumo.get(clave) or empty_stage_usage("evaluación de encaje"),
+        )
+        analysis = _build_compatible_analysis(
+            conv, modelo_hechos, modelo_evaluacion, candidates, tech_tags, uso,
+        )
+        cache[clave] = build_cache_entry(conv, analysis, uso, ahora)
+        guardadas += 1
+        coste_total += uso.get("estimated_cost_usd", 0.0)
+    cache_save(cache, CACHE_FILE)
+
+    print(f"\n  Análisis guardados en caché: {guardadas}")
+    print(f"  Coste estimado del lote: ${coste_total:.4f} (tarifa de lote, 50 %)")
+    clear_batch_state(BATCH_STATE_FILE)
+    print("  Estado del lote retirado: el ciclo ha terminado.")
+    print(
+        "\n  Para publicar, lanza el pipeline normal: encontrará todo en caché\n"
+        "  y NO volverá a llamar a Claude."
+    )
+    return 0
 
 
 def build_gap_reports() -> list:
@@ -1634,6 +1911,33 @@ def build_gap_reports() -> list:
 
 if __name__ == "__main__":
     args = parse_args()
+    if args.batch_status:
+        print("Grant-Radar — estado del lote diferido")
+        estado = load_batch_state(BATCH_STATE_FILE)
+        print("  " + summarize_batch_state(estado))
+        if estado:
+            print(f"  Identificador: {estado.get('batch_id', '?')}")
+            fallos = estado.get("failures") or []
+            if fallos:
+                print(f"  Fallos anotados hasta ahora: {len(fallos)}")
+            print("  Recoger con: --batch-collect")
+        print("  No se llamó a Claude ni se tocó la red.")
+        sys.exit(0)
+    if args.batch_abandon:
+        estado = load_batch_state(BATCH_STATE_FILE)
+        if not estado:
+            print("No hay ningún lote en vuelo. Nada que abandonar.")
+            sys.exit(0)
+        # El trabajo del lote ya está pagado: se dice en voz alta antes de
+        # tirarlo, para que nadie lo haga por costumbre.
+        print(f"Abandonando el lote {estado.get('batch_id', '?')} "
+              f"({len(estado.get('items') or {})} convocatorias).")
+        print("  Ese trabajo ya está pagado y se pierde.")
+        clear_batch_state(BATCH_STATE_FILE)
+        print("  Estado retirado.")
+        sys.exit(0)
+    if args.batch_collect:
+        sys.exit(run_batch_collect())
     if args.gap_report:
         reports = build_gap_reports()
         print(format_gap_report(reports, datetime.now().date().isoformat()))
@@ -1667,6 +1971,7 @@ if __name__ == "__main__":
     else:
         run_pipeline(
             no_claude=args.no_claude,
+            batch=args.batch,
             max_claude=args.max_claude,
             claude_matches=args.claude_match,
             force_reanalysis=args.force_reanalysis,

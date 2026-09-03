@@ -181,6 +181,7 @@ def build_collection_state(
     active: int,
     generated_at: str,
     collection_changes: dict | None = None,
+    batch: dict | None = None,
 ) -> dict:
     """Estado que publica una recopilación `--no-claude` para el dashboard.
 
@@ -217,4 +218,9 @@ def build_collection_state(
         # la recopilación de hoy y el producto solo tiene la del día que se
         # publicó.
         "new_since_publication": cambios.get("new_since_publication"),
+        # El lote diferido, si lo hay. Describe el ESTADO de un proceso en
+        # curso —en qué fase va, cuántas convocatorias lleva y cuántas han
+        # aparecido después y esperan fuera—, nunca las convocatorias en sí:
+        # es la misma frontera que respeta todo este archivo.
+        "batch": batch if isinstance(batch, dict) and batch else None,
     }

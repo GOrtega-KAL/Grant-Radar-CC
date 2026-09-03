@@ -56,7 +56,7 @@ desactualizado si no se mantiene junto a ellos.
 >
 > ---
 >
-> **Estado del código al cerrar el 02/09/2026:** 41 módulos, **720 pruebas en
+> **Estado del código al cerrar el 03/09/2026:** 42 módulos, **744 pruebas en
 > verde**. Verificación `--no-claude` completa: 922 detectadas, **86 vigentes**,
 > prefiltro `retain=38, ambiguous=5, hold_manual=77, reject=802`. Pendientes de
 > analizar **83** (~2,12 USD). Cifras de referencia en **AGENTS.md 60.10**.
@@ -106,11 +106,25 @@ desactualizado si no se mantiene junto a ellos.
 > excluida por territorio puntuaban igual, y esa distancia sí es un criterio que
 > no se puede falsear.
 >
-> **Encargo abierto: procesamiento por lotes** (60.16). Explorado, no
-> implementado. 50 % más barato, pero **invierte el bucle** porque las dos
-> llamadas por convocatoria están encadenadas. Los dos modos pueden convivir.
-> Antes va el *prompt caching*, que no está puesto y es mucho más barato de
-> hacer.
+> **El modo por lotes está IMPLEMENTADO** (AGENTS.md 61): `--batch`,
+> `--batch-collect`, `--batch-status` y `--batch-abandon`. Cuesta la mitad.
+> **Lo único que falta es ejercitarlo de verdad**: un lote de humo de dos
+> peticiones (~0,001 USD) para confirmar que la API acepta salidas
+> estructuradas en lote. El SDK lo admite en el tipo, pero eso no prueba que el
+> servicio lo acepte. **Requiere tu autorización.**
+>
+> **CRITERIO DE DISEÑO que fijaste el 03/09 y manda sobre lo demás:** nada de
+> reglas deterministas en la puntuación, ni ajuste artificial para alcanzar una
+> cifra. El camino es estudiar qué motiva una nota baja y ajustar los criterios
+> **generales**. Eso descartó derivar `fit_score` con pesos, y descartó también
+> rellenar el prompt para desbloquear la caché (61.6).
+>
+> **La caché de prompt NO se pone todavía, y está medido por qué:** Haiku 4.5
+> exige un prefijo mínimo de **4.096 tokens** y el nuestro son ~3.447. Por
+> debajo no avisa, simplemente no cachea. Llegar al umbral exigiría meter
+> contenido que no hace falta — el ajuste artificial que descartaste. Se
+> reevalúa después de la fase de calidad, y si se pone será **condicional**:
+> con un solo análisis la caché **pierde** dinero, y el equilibrio está en dos.
 >
 > **El panel RECALCULA el plazo, no lo lee** (AGENTS.md 60.14). El backend
 > publica `deadline` como los días que quedaban **el día de la recopilación**,
@@ -359,6 +373,7 @@ Progresivamente movida a `grant_radar/` (paquete con nombre importable):
 | `claude_selection.py` | Qué se manda a Claude, **en qué orden** (`prioritize_claude_candidates()`, 60.6) y la barrera de coste previa |
 | `staleness.py` | Cuánto se está desfasando lo publicado, leyendo solo la auditoría (`--staleness-report`). Sin red y sin coste. Construye también `estado_recopilacion.json`, que **no repite el producto**: hay una prueba que lo vigila y ya paró un intento (60.5) |
 | `bdns_rules.py` | **La matriz de reglas previa a Claude**: siete niveles de precedencia que deciden qué convocatorias llegan a Haiku y, con ello, el coste. Fue lo último en salir del script (AGENTS.md 57). Para tocar cualquier condición de aquí, ampliar antes `tests/fixtures/bdns_filter_cases.json` |
+| `batch_analysis.py` | **El modo diferido**: dos lotes encadenados —todas las extracciones, luego todas las evaluaciones— al 50 % de coste. No arma prompts: los pide a los mismos constructores que el modo instantáneo, que es lo único que impide que los dos caminos diverjan (AGENTS.md 61) |
 | `gap_report.py` | Qué campos faltan, por fuente, en lo ya analizado (`--gap-report`). Lee el JSON publicado **y la caché de análisis**: ese segundo origen es el que permite comprobar una prueba `--max-claude` sin volver a pagarla. Sin red y sin coste (AGENTS.md 54.3) |
 | `coverage_watch.py` | Vigilancia de programas recurrentes conocidos. `active_not_captured` es el único estado que significa avería: abierta en su landing y no encontrada (sección 46.4) |
 | `hold_quotes.py` | Validación de que una cita prueba la conclusión de un hold |

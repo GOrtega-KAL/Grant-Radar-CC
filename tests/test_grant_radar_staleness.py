@@ -191,15 +191,34 @@ class CollectionStateTests(unittest.TestCase):
         tres convocatorias publicadas — y esta prueba la paró. Tenía razón:
         eso es el producto, el panel ya lo tiene cargado y puede derivarlo.
         Subir el número sin más habría convertido el guardián en un trámite.
+
+        Y de 10 a 11 el 03/09/2026, por `batch`, que describe el estado de un
+        lote diferido en curso: en qué fase va, cuántas convocatorias lleva y
+        cuántas esperan fuera. Son recuentos y marcas de tiempo, ningún título,
+        y por eso la comprobación baja ahora también dentro de ese diccionario:
+        un campo anidado puede colar el producto igual que uno de primer nivel.
         """
         estado = build_collection_state(
-            self.informe(), detected=1, active=1, generated_at="2026-08-31T07:00:00+00:00"
+            self.informe(), detected=1, active=1, generated_at="2026-08-31T07:00:00+00:00",
+            batch={"state": "phase1_running", "phase": 1, "of_phases": 2,
+                   "items": 83, "submitted_at": "2026-09-03T09:00:00+00:00",
+                   "age_hours": 0.5, "waiting_outside": 4},
         )
         self.assertNotIn("convocatorias", estado)
-        self.assertLessEqual(len(estado), 10)
-        # Ningún valor del estado puede ser una lista de fichas.
-        for clave, valor in estado.items():
-            self.assertNotIsInstance(valor, list, f"{clave} repite el producto")
+        self.assertLessEqual(len(estado), 11)
+
+        def sin_listas(valores, prefijo=""):
+            for clave, valor in valores.items():
+                ruta = f"{prefijo}{clave}"
+                self.assertNotIsInstance(valor, list, f"{ruta} repite el producto")
+                if isinstance(valor, dict):
+                    sin_listas(valor, f"{ruta}.")
+
+        sin_listas(estado)
+        # Y el bloque del lote no puede traer texto largo: eso sería una ficha.
+        for clave, valor in (estado["batch"] or {}).items():
+            if isinstance(valor, str):
+                self.assertLess(len(valor), 60, f"batch.{clave} parece contenido")
 
     def test_nothing_pending_is_a_valid_state_not_an_absence(self):
         estado = build_collection_state(

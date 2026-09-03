@@ -6188,3 +6188,163 @@ El Worker está **desplegado y conectado** (60.13): los favoritos ya son
 compartidos. Lo único que queda por comprobar es lo que ninguna prueba puede
 demostrar — abrirlo en dos navegadores y ver aparecer en uno lo que se marca en
 el otro.
+
+## 61. El modo por lotes, y un criterio de diseño que el usuario fijó, a 03/09/2026
+
+Encargo del usuario: dos modos de mandar el trabajo a Haiku —instantáneo y
+diferido— porque la Batches API cuesta la **mitad** y en subvenciones no corre
+prisa que una convocatoria se identifique un día antes o después.
+
+### 61.1. El criterio de diseño, y manda sobre el resto
+
+> **Nada de reglas deterministas en la puntuación de convocatorias, ni de
+> ajuste artificial para alcanzar una cifra.** El camino es estudiar qué motiva
+> una nota baja y ajustar con eso los **criterios generales**, de forma que
+> sirva también para convocatorias futuras. (usuario, 03/09/2026)
+
+Descarta derivar `fit_score` de las cinco dimensiones con pesos —que era una de
+las opciones sobre la mesa tras 60.16— y descarta también **rellenar el prompt
+para llegar a un umbral técnico** (61.6). Anotado aquí porque es la clase de
+atajo que una sesión futura tomaría con buena intención.
+
+### 61.2. Por qué el lote invierte el bucle, y qué se hizo primero
+
+El análisis instantáneo hace **dos llamadas encadenadas por convocatoria**: la
+evaluación se construye con lo que devolvió la extracción. En un lote eso no
+cabe, porque se envía entero y se recoge entero. El modo diferido recorre el
+problema por el otro eje: **un lote con las 83 extracciones y, cuando termina,
+otro con las 83 evaluaciones**.
+
+El riesgo de eso no es que falle: es que los dos modos **se separen con el
+tiempo** y el análisis dependa de por qué camino entró la convocatoria — un
+fallo que no aparecería en ningún recuento. Por eso lo primero no fue el lote
+sino trocear los prompts:
+
+| Función nueva en `analysis.py` | Qué es |
+|---|---|
+| `build_extraction_request(conv)` | Etapa A, pura, no toca la red |
+| `build_evaluation_request(conv, facts)` | Etapa B, pura |
+| `call_evidence(conv)` | El recorte de evidencia que usan las dos etapas |
+| `derive_deterministic_context(conv)` | Etiquetas y socios; **no** dependen de la extracción |
+| `merge_stage_usage()` / `message_usage_record()` | La contabilidad, compartida |
+
+`analyze_with_claude()` pasa de **184 a 36 líneas** y ya no arma ningún prompt.
+
+**La equivalencia no se supuso, se midió.** Se cargó la versión anterior del
+módulo junto a la nueva, se interceptaron sus llamadas para capturar los
+prompts que armaba de verdad y se compararon sobre tres formas de convocatoria
+—con documentos, sin ellos, sin fechas—: `system`, `user` y `max_tokens`
+idénticos byte a byte en los seis casos. Esa comprobación quedó permanente en
+`RequestBuilderTests`, ya sin depender de git, y la mutación de añadir un
+espacio al prompt del camino instantáneo la hace fallar.
+
+Anotar además que `test_grant_radar_script_names` volvió a ganarse el sueldo:
+cazó un `official_facts` que se quedaba sin definir al mover el bloque. Es
+exactamente el fallo latente de la sección 29 y sigue siendo la red que lo ve.
+
+### 61.3. Las cuatro banderas y el ciclo
+
+- `--batch` — recopila, selecciona con el orden de siempre, envía la fase 1,
+  guarda el estado y **termina**. No espera: un lote puede tardar 24 h.
+- `--batch-collect` — según el punto: si la fase 1 sigue, lo dice y sale **sin
+  coste**; si terminó, recoge los hechos y **envía la fase 2**; si terminó la
+  fase 2, ensambla y **guarda en caché**.
+- `--batch-status` — lee el archivo de estado. Sin red.
+- `--batch-abandon` — olvida el lote, diciendo en voz alta que ese trabajo ya
+  está pagado y se pierde.
+
+**La recogida final no publica, a propósito.** Deja los análisis en la caché, y
+una ejecución normal del pipeline los encuentra ahí y publica **sin llamar a
+Claude**, porque todo son aciertos. Duplicar aquí la ruta de publicación habría
+sido escribir por segunda vez algo que ya funciona.
+
+### 61.4. Cuatro decisiones que no son evidentes
+
+1. **`custom_id` = `cache_key(conv)`.** Ya es un sha256 estable de 64
+   caracteres —el máximo que admite la API— y además es la clave con la que se
+   guardará el resultado: no hace falta una tabla intermedia que se pueda
+   desincronizar, y un resultado no puede acabar en la ficha de otra.
+2. **El estado guarda las convocatorias enteras, no un resumen.** La fase 2
+   tiene que evaluar exactamente la misma convocatoria que extrajo la fase 1;
+   volver a recopilar para recuperarlas haría que una fuente que cambie el
+   texto entre medias diera otro `cache_key` y dejara huérfano un resultado ya
+   pagado. Son ~3,9 MB en local, que es barato por esa garantía.
+3. **El bloqueo de versiones es una salvaguarda real.** `cache_key()` incluye
+   las versiones de prompt, perfil y catálogo. Si alguien las toca mientras el
+   lote vuela, la recogida **se niega** y dice cuál cambió: mezclar dos
+   criterios en el mismo producto sin que nadie lo vea sería peor que perder el
+   lote.
+4. **No hay reintento dentro del lote.** El modo instantáneo reintenta al vuelo
+   con más tokens cuando el JSON no valida; aquí no se puede. Los fallos se
+   anotan y, como no entran en caché, la siguiente ejecución los vuelve a
+   seleccionar sin código nuevo. Inventar un reintento automático escondería un
+   problema que conviene ver.
+
+### 61.5. La carrera que pidió el usuario, y el panel
+
+> «Se ha de prever el caso de que se lance la primera ejecución y, durante la
+> espera, aparezca alguna convocatoria adicional mediante `--no-claude`: el
+> programa ha de actuar no incluyéndola en el proceso por lotes pero mostrando
+> que está a la espera.» (usuario, 03/09/2026)
+
+Implementado tal cual. `publish_collection_state()` lee el estado del lote y
+publica un bloque `batch` con la fase, el número de convocatorias, la antigüedad
+y **`waiting_outside`**: las candidatas de hoy que **no** están en el lote en
+vuelo. No se añaden —eso obligaría a reenviarlo entero y a pagarlo dos veces—
+pero se ven esperando. El panel lo enseña:
+
+> Análisis por lotes en curso · fase 2 de 2 (evaluando encaje) · 83
+> convocatorias · enviado hace 40 min · 4 detectadas después esperan a la
+> próxima ejecución
+
+Con la misma frontera de siempre: **estado, nunca títulos de convocatoria**. La
+guarda de 60.5 cazó el campo nuevo al subir de 10 a 11 campos, y en vez de
+relajarla se **endureció**: ahora baja también dentro del diccionario anidado y
+rechaza cadenas largas, porque un campo anidado puede colar el producto igual
+que uno de primer nivel.
+
+### 61.6. La caché de prompt: medida, y por ahora NO se pone
+
+Haiku 4.5 exige un **prefijo mínimo de 4.096 tokens** para cachear. Por debajo
+no avisa: devuelve `cache_creation_input_tokens: 0` y sigue.
+
+| Prefijo estable, medido | |
+|---|---|
+| Llamada de **extracción** | ~586 tokens → muy lejos |
+| Llamada de **evaluación** | ~3.447 tokens → **faltan 649** |
+
+Se llegaría metiendo el catálogo de socios entero (+941) o la taxonomía con su
+vocabulario (+1.359). **Las dos son el ajuste artificial que 61.1 descarta**, y
+además tienen riesgo: mandar todo el vocabulario térmico refuerza justo el
+sesgo que 60.15 documentó —que el modelo solo cruce las capacidades obvias— y
+mandar el catálogo entero cambia qué socios puede recomendar.
+
+Decisión: **hacer la fase de calidad por sus méritos, volver a medir, y añadir
+`cache_control` solo si el prefijo cruza los 4.096 por su cuenta.**
+
+Y cuando se ponga, debe ser **condicional**, porque con una sola llamada la
+caché **pierde dinero** (se paga la escritura, ×1,25, y no se lee nunca):
+
+| Análisis | Ahorro |
+|---|---|
+| 1 | **−0,0010 USD** |
+| 2 | +0,0027 |
+| 70 | **+0,253 USD** |
+
+Punto de equilibrio en **N ≥ 2**. En el modo periódico con una convocatoria
+nueva quedará apagada sola, que es lo que el usuario intuía al preguntarlo.
+
+Proporciones, para no perder de vista cuál es la palanca: **el lote ahorra
+~1,06 USD por ejecución completa y la caché ~0,25**.
+
+### 61.7. Lo que falta de esta ronda
+
+- **Un lote de humo de 2 peticiones** (~0,001 USD) para confirmar que la
+  Batches API acepta `output_config.format`. El SDK lo admite en el tipo
+  —comprobado en `MessageCreateParamsNonStreaming`— pero eso no prueba que el
+  servicio lo acepte. **Requiere autorización expresa**, y hasta entonces el
+  modo por lotes está escrito y probado con dobles, no ejercitado de verdad.
+- La fase 2 del plan: calidad de prompts, empezando por una contradicción
+  activa —el prompt de sistema aún dice «no deduzcas que Kalfrisa cumple la
+  definición de PYME» mientras el perfil afirma desde el 02/09 que **sí** lo
+  es—.

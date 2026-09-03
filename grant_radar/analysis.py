@@ -361,39 +361,9 @@ def _structured_claude_call(
     attempt_usages = []
 
     def usage_record(message, attempt_number: int, valid_output: bool) -> dict:
-        usage = message.usage
-        input_tokens = int(getattr(usage, "input_tokens", 0) or 0)
-        output_tokens = int(getattr(usage, "output_tokens", 0) or 0)
-        cache_write_tokens = int(
-            getattr(usage, "cache_creation_input_tokens", 0) or 0
+        return message_usage_record(
+            message, stage, attempt_number, valid_output, attempt_max_tokens,
         )
-        cache_read_tokens = int(
-            getattr(usage, "cache_read_input_tokens", 0) or 0
-        )
-        estimated_cost_usd = (
-            input_tokens * CLAUDE_INPUT_USD_PER_MTOK
-            + output_tokens * CLAUDE_OUTPUT_USD_PER_MTOK
-            + cache_write_tokens * CLAUDE_CACHE_WRITE_USD_PER_MTOK
-            + cache_read_tokens * CLAUDE_CACHE_READ_USD_PER_MTOK
-        ) / 1_000_000
-        return {
-            "stage": stage,
-            "attempt": attempt_number,
-            "valid_output": valid_output,
-            "api_calls": 1,
-            "retry_api_calls": int(attempt_number > 1),
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
-            "cache_write_tokens": cache_write_tokens,
-            "cache_read_tokens": cache_read_tokens,
-            "total_tokens": (
-                input_tokens + output_tokens
-                + cache_write_tokens + cache_read_tokens
-            ),
-            "estimated_cost_usd": round(estimated_cost_usd, 6),
-            "max_tokens": attempt_max_tokens,
-            "service_tier": getattr(usage, "service_tier", None),
-        }
 
     def combined_usage() -> dict:
         return {
@@ -444,11 +414,7 @@ def _structured_claude_call(
                     }
                 },
             )
-            raw_output = "".join(
-                str(block.text)
-                for block in getattr(message, "content", [])
-                if getattr(block, "type", "") == "text"
-            ).strip()
+            raw_output = structured_output_text(message)
             attempt_record = usage_record(message, attempt + 1, False)
             attempt_usages.append(attempt_record)
             attempt_recorded = True
@@ -681,6 +647,66 @@ def _build_compatible_analysis(
     }
     return result
 
+
+
+# La Batches API cobra al 50 %. El multiplicador es un parámetro explícito y no
+# una constante escondida: el coste publicado no puede depender de por qué modo
+# se analizó una convocatoria sin que se vea en el código quién aplica el
+# descuento (AGENTS.md 61).
+BATCH_PRICE_MULTIPLIER = 0.5
+
+
+def message_usage_record(
+    message,
+    stage: str,
+    attempt_number: int = 1,
+    valid_output: bool = False,
+    max_tokens: int | None = None,
+    price_multiplier: float = 1.0,
+) -> dict:
+    """El consumo de una respuesta de Haiku, en el formato que espera la caché.
+
+    Se separó de `_structured_claude_call()` el 03/09/2026 para que el modo por
+    lotes cuente exactamente igual: si cada camino hiciera su propia aritmética,
+    el coste publicado dependería de por dónde entró el análisis.
+    """
+    usage = getattr(message, "usage", None)
+    input_tokens = int(getattr(usage, "input_tokens", 0) or 0)
+    output_tokens = int(getattr(usage, "output_tokens", 0) or 0)
+    cache_write_tokens = int(getattr(usage, "cache_creation_input_tokens", 0) or 0)
+    cache_read_tokens = int(getattr(usage, "cache_read_input_tokens", 0) or 0)
+    estimated_cost_usd = price_multiplier * (
+        input_tokens * CLAUDE_INPUT_USD_PER_MTOK
+        + output_tokens * CLAUDE_OUTPUT_USD_PER_MTOK
+        + cache_write_tokens * CLAUDE_CACHE_WRITE_USD_PER_MTOK
+        + cache_read_tokens * CLAUDE_CACHE_READ_USD_PER_MTOK
+    ) / 1_000_000
+    return {
+        "stage": stage,
+        "attempt": attempt_number,
+        "valid_output": valid_output,
+        "api_calls": 1,
+        "retry_api_calls": int(attempt_number > 1),
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "cache_write_tokens": cache_write_tokens,
+        "cache_read_tokens": cache_read_tokens,
+        "total_tokens": (
+            input_tokens + output_tokens + cache_write_tokens + cache_read_tokens
+        ),
+        "estimated_cost_usd": round(estimated_cost_usd, 6),
+        "max_tokens": max_tokens,
+        "service_tier": getattr(usage, "service_tier", None),
+    }
+
+
+def structured_output_text(message) -> str:
+    """El texto de una respuesta estructurada, uniendo sus bloques."""
+    return "".join(
+        str(block.text)
+        for block in getattr(message, "content", [])
+        if getattr(block, "type", "") == "text"
+    ).strip()
 
 
 def merge_stage_usage(extraction_usage: dict, evaluation_usage: dict) -> dict:
