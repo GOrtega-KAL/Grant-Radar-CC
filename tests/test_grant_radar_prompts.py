@@ -259,9 +259,11 @@ class VersionBumpTests(unittest.TestCase):
         # papel de socio industrial, y qué convocatorias interesan de verdad
         # (AGENTS.md 60.16).
         self.assertEqual(PROFILE_VERSION, "kalfrisa-2026-09-v9-builds-integrates-wants")
-        self.assertEqual(EVALUATOR_VERSION, "fit-2026-09-v10-profile-is-authoritative")
         self.assertEqual(
-            ANALYSIS_PROMPT_VERSION, "2026-09-v16-profile-is-authoritative"
+            EVALUATOR_VERSION, "fit-2026-09-v11-coherent-score-and-three-fits"
+        )
+        self.assertEqual(
+            ANALYSIS_PROMPT_VERSION, "2026-09-v17-coherent-score-and-three-fits"
         )
         # El extractor entra en esta comprobación ahora que su prompt se puede
         # leer y editar: cambiar el texto sin subir la versión dejaría la caché
@@ -366,6 +368,81 @@ class RequestBuilderTests(unittest.TestCase):
                 analysis.derive_deterministic_context(conv)
         finally:
             analysis.anthropic.Anthropic = original
+
+
+class EvaluationUserPromptTests(unittest.TestCase):
+    """Las tres instrucciones que salen del diagnóstico del 03/09/2026.
+
+    A diferencia de las de arriba, estas viven en el prompt de USUARIO, que se
+    arma en `build_evaluation_request()`. Se leen construyendo la petición, que
+    es pura y no toca la red.
+
+    Su origen es una medición, no una anécdota: 439 riesgos de los 80 análisis
+    en disco, agrupados por motivo. En la banda que se queda clavada en 45 el
+    65,9 % de los riesgos son huecos de información, y la banda alta tiene el
+    mismo 63,7 % — o sea que el hueco no distinguía un 45 de un 75 y estaba
+    arrastrando el encaje hacia el centro (AGENTS.md 62).
+    """
+
+    CONV = {
+        "title": "Ayudas a la depuración de gases en procesos industriales",
+        "source": "BDNS", "url": "https://x.test/a", "org": "Org",
+        "description": "Depuración de COV y eficiencia energética. " * 20,
+        "keywords_found": ["voc"], "source_type": "x",
+        "deadline_date": "2026-10-01", "open_date": "2026-09-01",
+    }
+
+    def _prompt(self):
+        from grant_radar import analysis
+        from tests.test_grant_radar_claude_schemas import _minimal_call_facts
+        return analysis.build_evaluation_request(self.CONV, _minimal_call_facts()).user
+
+    def test_the_three_kinds_of_fit_all_count_as_fit(self):
+        """La partición del perfil del 03/09, que el prompt no sabía leer.
+
+        Tenerlas en una sola lista produjo que se le atribuyera a Kalfrisa el
+        calentamiento por microondas de EHEAT (AGENTS.md 61.13). Partirlas en
+        el perfil no basta: sin esto, «no lo fabrica» se lee como «no encaja»,
+        y los oxidadores catalíticos y el SCR —que el perfil movió de exclusión
+        a línea que se quiere abrir— seguirían siendo un falso negativo.
+        """
+        prompt = self._prompt()
+        self.assertIn("TRES encajes distintos y los tres son encaje", prompt)
+        for seccion in ("FABRICA", "INTEGRA", "QUIERE DESARROLLAR"):
+            with self.subTest(seccion=seccion):
+                self.assertIn(seccion, prompt)
+        self.assertIn(
+            "No rebajes el encaje porque la tecnología no sea de fabricación "
+            "propia",
+            prompt,
+        )
+        # El otro lado de la moneda: reconocer la integración no autoriza a
+        # presentarla como fabricación. Es el error de 61.13 por la otra puerta.
+        self.assertIn("no presentarla como fabricante de lo que solo integra", prompt)
+
+    def test_a_missing_field_is_not_a_risk_to_the_fit(self):
+        prompt = self._prompt()
+        self.assertIn("NO es un riesgo de encaje", prompt)
+        self.assertIn("baja confidence y evidence_quality", prompt)
+        self.assertIn("NO rebaja fit_score", prompt)
+
+    def test_the_global_score_must_agree_with_the_dimensions_it_gave(self):
+        """`fit_score` y `scores` son campos independientes del esquema.
+
+        Medido el 02/09: la alineación tecnológica de PowerUp se dobló (25 → 50)
+        y el encaje se quedó en 45 (AGENTS.md 60.16). Y medido el 03/09 sobre
+        las 77 publicadas: 16 valen exactamente 45. La coherencia no se deriva
+        —eso sería la regla determinista que el criterio de 61.1 descarta—, se
+        pide.
+        """
+        prompt = self._prompt()
+        self.assertIn("COHERENTE con las cinco sub-puntuaciones", prompt)
+        self.assertIn("No uses un valor intermedio por defecto", prompt)
+
+    def test_no_instruction_runs_into_another_one(self):
+        assert_no_field_after_a_preposition(self, self._prompt(), (
+            "fit_score", "actionability_score", "confidence", "recommended_role",
+        ))
 
 
 if __name__ == "__main__":

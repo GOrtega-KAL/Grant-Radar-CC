@@ -1657,6 +1657,79 @@ toda la semana.
 
 
 
+## 21. Estado a 03/09/2026 (tarde): la medición que cancela trabajo, otra vez
+
+El paso 2 que el usuario había fijado —«afinar etiquetas y prompt»— traía una
+lista concreta de vocabulario que añadir a la taxonomía. Se midió antes de
+escribirlo, y **la mitad del encargo se cayó**.
+
+### El patrón que ya lleva tres apariciones
+
+| Cuándo | Qué se iba a hacer | Qué dijo la medición |
+|---|---|---|
+| 01/09 (15) | Regla determinista de consorcio, para tapar 21 de 77 fichas | 3 de 3 análisis lo resolvían leyendo el documento oficial. **Cancelado** |
+| 01/09 (16) | Ensanchar el chip «Hornos», que filtraba vacío | Filtraba por equipo mientras las convocatorias se describen por objetivo. **Retirado** |
+| 03/09 (21) | Añadir scrubbers, rotoconcentradores, SCR y filtros de mangas a la taxonomía | **Cero apariciones** en 313 documentos oficiales, 5.006 títulos excluidos y 163.952 caracteres de Horizon en vivo. **Cancelado** |
+
+Las tres veces la propuesta era razonable **leyendo la documentación**, y las
+tres veces falsa **mirando los datos**. Frente al punto **2.9**, esto ya no es
+una anécdota: es la forma habitual en que este proyecto genera trabajo inútil.
+
+### Lo que la medición sí encontró, y no estaba en ninguna lista
+
+Agrupar por motivo los 439 riesgos de los 80 análisis en disco costó una tarde y
+cero dólares, y produjo dos cosas que ninguna revisión de código habría dado:
+
+1. **En la banda que se queda clavada en 45, el 65,9 % de los riesgos son huecos
+   de información.** Y la banda alta tiene **el mismo 63,7 %**. O sea que lo que
+   parecía la causa del estancamiento **no distingue un 45 de un 75**.
+2. **`fit_score` va por encima de la media de sus cinco dimensiones en las cuatro
+   bandas.** La lectura natural del hallazgo del 02/09 —«el encaje hereda notas
+   bajas»— era falsa. El problema es el contrario: **casi no varía**, y 16 de las
+   77 fichas valen exactamente 45.
+
+El segundo invierte el signo de una conclusión escrita el día anterior. Conviene
+anotarlo junto al aviso del 02/09 sobre medir mal: **una medición sobre un solo
+caso puede dar la dirección equivocada**, y PowerUp era un caso.
+
+### La clase de defecto que esta ronda añade al catálogo
+
+Los puntos 2.9, y las notas del 02/09 y el 03/09, describían tres clases: el
+fallo de lógica, el de cobertura, el dato correcto que no significa nada, y la
+afirmación falsa sobre el mundo. Esta ronda añade una quinta, más barata de
+arreglar y más cara de detectar:
+
+**La regla que está bien escrita, se ejecuta, y no discrimina nada.**
+
+Sus dos ejemplares de hoy:
+
+- **52 de los 80 análisis no llevan ninguna etiqueta técnica**, y las cuatro
+  fichas mejor puntuadas —72, 72, 65, 65— tampoco. La taxonomía funciona; lo que
+  no hace es influir en la nota, que es para lo que se la iba a ampliar.
+- **«RTO» en singular etiqueta como `emissions` tres topics de Horizon** que son
+  oficinas de transferencia, computación cuántica y filantropía. Está mal, y su
+  impacto medido es **cero**, porque otra red los descarta igual.
+
+Ninguna prueba puede señalarlas, porque ninguna está rota. Solo aparecen al
+contar sobre el corpus **cuántas veces la regla cambió una decisión**.
+
+### Una decisión que se devolvió al usuario con las cifras
+
+El usuario había autorizado retirar cuatro términos de exclusión que
+contradicen el perfil nuevo, y la medición llegó después: esos términos guardan
+**27 fichas del programa PYME Global de las Cámaras** —World Travel Market, SIAL
+París, feria médica de Düsseldorf, misiones a Perú y Camerún—, ninguna con señal
+industrial en el título. Retirarlos cuesta **~0,7 USD por ejecución, recurrente,
+para rescatar una de 27**.
+
+Se le devolvió la decisión con el número delante en vez de ejecutarla. Es lo
+mismo que el proyecto hizo el 01/09 con la regla de consorcio, y merece quedar
+escrito como norma y no como caso: **una autorización dada sobre una estimación
+no cubre lo que la medición desmienta después**.
+
+Estado: **752 pruebas** en verde, 42 módulos, **0 USD** gastados en API en esta
+ronda. El producto publicado sigue siendo el del 21/08.
+
 ## Nota de alcance
 
 Este documento es una evaluación externa de solo lectura, ampliada con una

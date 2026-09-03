@@ -56,11 +56,15 @@ desactualizado si no se mantiene junto a ellos.
 >
 > ---
 >
-> **Estado del código al cerrar el 03/09/2026:** 42 módulos, **748 pruebas en
-> verde**. Verificación `--no-claude` completa: 922 detectadas, **87 vigentes**,
-> prefiltro `retain=35, ambiguous=5, hold_manual=80, reject=802`. Pendientes de
-> analizar **84** — **2,15 USD instantáneo o 1,08 USD por lotes**. Cifras de
-> referencia en **AGENTS.md 61**.
+> **Estado del código al cerrar el 03/09/2026 (tarde):** 42 módulos, **752
+> pruebas en verde**. Verificación `--no-claude` completa: **921 detectadas, 87
+> vigentes**, prefiltro `retain=35, ambiguous=5, hold_manual=80, reject=801`.
+> **Sin regresión**: idéntico al de esta mañana salvo un `reject` (802→801), que
+> es deriva de la ventana deslizante de BDNS, no del cambio.
+>
+> Pendientes de analizar **87** —eran 84— porque el cambio de prompt **invalidó
+> la caché a propósito**: **2,23 USD instantáneo o ~1,11 USD por lotes**. Cifras
+> de referencia en **AGENTS.md 62**.
 >
 > **Cada ficha publicada lleva ahora `stable_key`** (AGENTS.md 60.2), y es lo
 > que hay que usar para referirse a una convocatoria desde fuera del JSON. El
@@ -72,32 +76,53 @@ desactualizado si no se mantiene junto a ellos.
 > `grant-radar-favoritos.favoritos-worker.workers.dev`. La URL y el id del
 > namespace KV van versionados y no son secretos.
 >
-> ## POR DÓNDE SEGUIR, al cerrar el 03/09/2026
+> ## POR DÓNDE SEGUIR, al cerrar el 03/09/2026 (tarde)
 >
-> El usuario fijó tres pasos y **el 1 está hecho**. Quedan el 2 y el 3, en este
-> orden y sin saltarse ninguno:
+> El usuario fijó tres pasos. **El 1 y el 2 están hechos. Queda el 3.**
 >
-> **PASO 2 — afinar etiquetas y prompt.** Es lo siguiente. El perfil quedó
-> reescrito con sus respuestas (AGENTS.md 61.15) y ahora hay cosas que la
-> taxonomía y el prompt todavía no reflejan:
+> **PASO 2 — HECHO, y el diagnóstico canceló la mitad de lo que proponía.**
+> Todo el detalle en **AGENTS.md 62**; lo esencial, para no volver a intentarlo:
 >
-> - La taxonomía técnica no distingue **fabricar** de **integrar** de **querer
->   desarrollar**, que es la partición que el perfil acaba de estrenar.
-> - Entran conceptos que no tienen etiqueta: **scrubbers**, **rotoconcentradores
->   y depuración de COV** (interés muy alto), **oxidadores catalíticos y SCR**
->   (línea a desarrollar, ya no exclusión) e **internacionalización**, que es
->   una clase entera de convocatorias que se venía descartando.
-> - El prompt tampoco sabe leer la distinción: hay que decirle que una
->   convocatoria sobre algo que Kalfrisa **integra** o **quiere desarrollar**
->   también encaja, y con qué papel.
+> - **La taxonomía NO se amplió, y es una decisión medida, no un olvido.**
+>   `scrubber`, `rotoconcentrador`, `oxidador catalítico`, `SCR` y `filtro de
+>   mangas` tienen **cero apariciones** en 313 documentos oficiales de BDNS,
+>   5.006 títulos excluidos y 163.952 caracteres de topics de Horizon en vivo.
+>   Es la lección del chip «Hornos» (55.1): las convocatorias se describen por
+>   **objetivo**, no por equipo. **COV, VOC, RTO y «oxidación térmica» ya
+>   estaban** en la taxonomía, bajo `emissions` — la nota anterior de este
+>   archivo era imprecisa.
+> - **Y aunque se ampliara, no movería la nota:** 52 de los 80 análisis no
+>   llevan ninguna etiqueta técnica, y **las cuatro fichas mejor puntuadas
+>   (72, 72, 65, 65) no tienen ninguna**. La taxonomía sirve para descubrir y
+>   excluir, no para puntuar.
+> - **Sí se cambió el prompt, con tres instrucciones** (versiones a
+>   `fit-2026-09-v11-coherent-score-and-three-fits` y
+>   `2026-09-v17-coherent-score-and-three-fits`): el dato ausente no rebaja el
+>   encaje sino `confidence`; `fit_score` debe ser coherente con las cinco
+>   sub-puntuaciones que el propio modelo da; y **los tres encajes del perfil
+>   —fabrica, integra, quiere desarrollar— son encaje**, cada uno con su papel.
+> - **Ninguna de las tres se puede verificar sin pagar.** Las pruebas garantizan
+>   que la instrucción está y está entera; que el modelo la obedezca solo se ve
+>   en una ejecución real.
 >
-> Antes de tocar nada, el diagnóstico **gratis** que quedó pendiente de 61: leer
-> de la caché los `risks_and_unknowns` y `resumen` de los análisis existentes y
-> agrupar **por qué motivo** se rebaja el encaje. Está todo en disco.
+> **El hallazgo que manda sobre el paso 3:** medidos los 439 riesgos de los 80
+> análisis en disco, **el 65,9 % de los riesgos de la banda estancada en 45 son
+> huecos de información** —«no consta», «falta», «desconocido»—, y **la banda
+> alta tiene el mismo 63,7 %**. O sea que el hueco **no distinguía un 45 de un
+> 75**. Y `fit_score` va **por encima** de la media de sus dimensiones en las
+> cuatro bandas: no está arrastrado hacia abajo, está **aplanado** —16 de 77
+> fichas valen exactamente 45—. **45 es un atractor, no una valoración.**
 >
-> **PASO 3 — la ejecución completa.** Después del 2, no antes. **84
-> convocatorias**, y ahora hay dos precios: **~2,15 USD instantáneo** o
-> **~1,08 USD por lotes** (`--batch`). Requiere **autorización expresa**.
+> **PASO 3 — la ejecución completa. Es lo siguiente, y requiere autorización
+> expresa.** El cambio de prompt **invalidó la caché a propósito**, así que
+> ahora hay más pendientes que las 84 de esta mañana; la cifra exacta y el coste
+> los da `--no-claude` o `--staleness-report`, gratis. Dos precios:
+> **instantáneo** o **~la mitad por lotes** (`--batch`).
+>
+> Es la única forma de saber si los tres cambios de prompt funcionan. Conviene
+> mirar **las cinco dimensiones y no solo el número global**, y comprobar dos
+> cosas concretas: si el 45 se despega, y si alguna convocatoria de algo que
+> Kalfrisa **integra** o **quiere desarrollar** sube.
 >
 > ## Lo que hay que saber para no repetir errores ya pagados
 >
@@ -259,9 +284,12 @@ desactualizado si no se mantiene junto a ellos.
 > No queda orden de extracción pendiente. Si una sesión futura busca «lo
 > siguiente de la modularización», la respuesta es que no hay.
 >
-> **Arranque en frío: AGENTS.md secciones 54 a 61**, que cierran el 01-03/09/2026.
-> La **61** es la última: modo por lotes, notas para el servidor (61.14) y el
-> perfil reescrito con las respuestas del cliente (61.15).
+> **Arranque en frío: AGENTS.md secciones 54 a 62**, que cierran el 01-03/09/2026.
+> La **62** es la última, y es la que más ahorra trabajo: el diagnóstico que
+> canceló medio paso 2 con cifras —por qué motivo se rebaja el encaje (62.2), que
+> `fit_score` está aplanado y no arrastrado (62.3), y que ampliar la taxonomía no
+> puede funcionar (62.4 y 62.5)—. Antes, la **61**: modo por lotes, notas para el
+> servidor (61.14) y el perfil reescrito con las respuestas del cliente (61.15).
 > Antes de ellas, la 53 resume las cinco del 31/08 (48 a 52). Backlog abierto
 > en la sección 36.
 >

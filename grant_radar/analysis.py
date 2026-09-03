@@ -970,6 +970,23 @@ def build_evaluation_request(conv: dict, facts_model: BaseModel) -> ClaudeReques
         "no solo con la capacidad más evidente. Un proyecto de I+D del perfil que "
         "coincida con un tema admisible es evidencia de encaje, aunque el tema no "
         "sea térmico. "
+        # El perfil se partió en tres el 03/09 —fabrica, integra, quiere
+        # desarrollar— porque tenerlas en una sola lista produjo que se
+        # atribuyera a Kalfrisa el calentamiento por microondas de EHEAT
+        # (AGENTS.md 61.13 y 61.15). El prompt no sabía leer la partición: sin
+        # esto, «no fabrica» se lee como «no encaja», y los oxidadores
+        # catalíticos y el SCR —que el perfil movió de exclusión a línea que se
+        # quiere abrir— seguirían siendo un falso negativo.
+        "El perfil separa TRES encajes distintos y los tres son encaje, no solo "
+        "el primero: lo que Kalfrisa FABRICA, lo que INTEGRA pero no fabrica, y "
+        "las LÍNEAS QUE QUIERE DESARROLLAR. Una convocatoria sobre algo que "
+        "integra encaja con el papel de integrador —integración en proceso "
+        "propio, control y sensórica—, y una sobre una línea que quiere "
+        "desarrollar encaja como proyecto de I+D, que es justamente para lo que "
+        "sirve la ayuda. No rebajes el encaje porque la tecnología no sea de "
+        "fabricación propia; lo que sí debes hacer es decir en recommended_role "
+        "con cuál de los tres papeles se presentaría, y no presentarla como "
+        "fabricante de lo que solo integra. "
         "El encaje (fit_score) mide alineación tecnológica y estratégica: no lo "
         "rebajes por el tamaño del presupuesto, por la proximidad del plazo ni "
         "porque el radar no aporte candidatos a socio —eso es actionability_score, "
@@ -982,6 +999,28 @@ def build_evaluation_request(conv: dict, facts_model: BaseModel) -> ClaudeReques
         "un plazo corto o la ausencia de socios NO son riesgos de encaje. "
         "Sobre el dinero, el criterio del cliente es la ayuda a fondo perdido y su "
         "intensidad, no el tamaño del proyecto. "
+        # Medido el 03/09 sobre los 439 riesgos de los 80 análisis en disco: en
+        # la banda que se queda en 45, el 65,9 % de los riesgos son huecos de
+        # información —«no consta», «falta», «desconocido»—. La banda alta tiene
+        # el mismo 63,7 %, así que el hueco NO distingue un 45 de un 75: es
+        # ruido de fondo que estaba arrastrando el encaje hacia el centro.
+        "Un dato que la convocatoria no publica —presupuesto, CNAE, TRL, gastos "
+        "elegibles, requisito de consorcio— NO es un riesgo de encaje: baja "
+        "confidence y evidence_quality, se declara en risks_and_unknowns y se "
+        "dice qué habría que verificar, pero NO rebaja fit_score. Una "
+        "convocatoria del ámbito de Kalfrisa mal documentada encaja igual de "
+        "bien que una bien documentada; lo que cambia es lo que sabemos de "
+        "ella, no lo que le conviene al cliente. "
+        # Y el hallazgo de fondo de esa misma medición: `fit_score` casi no
+        # varía. 16 de las 77 fichas publicadas valen exactamente 45, y el 02/09
+        # la alineación tecnológica de PowerUp se dobló (25 → 50) sin que el
+        # encaje se moviera (AGENTS.md 60.16). `fit_score` y `scores` son campos
+        # independientes del esquema, así que la coherencia hay que pedirla.
+        "fit_score debe ser COHERENTE con las cinco sub-puntuaciones de scores "
+        "que tú mismo asignas: si la mayoría son altas, el encaje no puede ser "
+        "medio, y al revés. Antes de fijarlo, léelas y comprueba que el número "
+        "global las representa. No uses un valor intermedio por defecto cuando "
+        "dudes: la duda se expresa en confidence, no aplanando el encaje. "
         # El usuario prefiere revisar alguna irrelevante a perderse una buena
         # (02/09/2026). El coste de un análisis de más es de céntimos; el de una
         # oportunidad perdida, no.

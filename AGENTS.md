@@ -2461,6 +2461,8 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 30 | Los umbrales de salud son absolutos y calibrados a mano sobre un solo día | Sección 45.1. `compare_funnels()` ya cubre lo que un umbral absoluto no puede, pero la evolución natural es derivar los umbrales del historial de la auditoría en vez de fijarlos en el conector |
 | 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
 | 41 | **Bloqueo entre procesos para `--batch-collect`.** Hoy no hay ninguno: con una recogida programada cada pocos minutos, dos procesos pueden leer `phase1_running` a la vez, recoger los dos y **enviar la fase 2 dos veces**, pagándola dos veces. Con ejecución manual el riesgo es bajo; **antes de dejarlo desatendido en un servidor hay que cerrarlo** | Sección 61.14. El arreglo es pequeño: un archivo de bloqueo con `O_EXCL` junto al de estado, liberado en un `finally`, y una recogida que salga en silencio si no lo consigue |
+| 42 | **«RTO» en singular etiqueta como `emissions` topics de Horizon que no lo son.** En el vocabulario de Kalfrisa `RTO` es un *Regenerative Thermal Oxidizer*; en Horizon es una *Research and Technology Organisation*. La guardia de plurales de 59.2 para el «RTOs» pero no el singular: 3 de 31 topics mal etiquetados (transferencia de tecnología, computación cuántica, filantropía). **Impacto medido hoy: cero** — los tres se descartan por otras reglas—, pero `emissions` está en `thermal_core`, que suprime cuatro exclusiones sectoriales del perfil | Sección 62.8. Latente, no activo. El arreglo natural es pasar `rto` de `strong_terms` a `contextual_terms`, que ya existe para vocabulario ambiguo; exige medir llamando a los conectores (59.1) y hoy el beneficio medido sería nulo |
+| 43 | **Los cuatro términos de internacionalización de `BDNS_ALWAYS_OUT_OF_SCOPE_TERMS` contradicen el perfil del 03/09**, que dice que esas convocatorias interesan | Sección 62.6. **Medido y aparcado a propósito**: guardan 27 fichas del PYME Global de las Cámaras —ferias de turismo, alimentación y material médico—, ninguna con señal industrial en el título, y retirarlos cuesta ~0,7 USD por ejecución para rescatar una. Reabrir solo si aparece una convocatoria de internacionalización nacional o aragonesa dirigida a empresa industrial |
 | 34 | Programar la recopilación `--no-claude` diaria en el Programador de tareas de Windows | Sección 47.6 tiene el comando. **Es una acción del usuario en su equipo**, no del agente: queda anotada para no darla por hecha |
 | 37 | **La ejecución completa**, ~2,02 USD sobre 79 convocatorias, **cuando el usuario lo decida** | Sección **54.9**. Los tres controles de 53.2 ya están ejercitados: presupuesto y elegibilidad de Horizon el 01/09 (54.4) y el territorial de Navarra el mismo día (54.10), por 0,1271 USD en total. No queda validación pendiente; lo que falta es publicar, y **la prioridad fijada por el usuario es depurar antes que publicar**: informar del desfase sí, convertirlo en urgencia no. **Requiere autorización expresa** |
 
@@ -6729,3 +6731,256 @@ las suposiciones.
 
 Versiones: perfil a `kalfrisa-2026-09-v9-builds-integrates-wants`, catálogo a
 `2026-09-v2-nabladot-and-roles`.
+
+## 62. El diagnóstico que canceló medio paso 2, a 03/09/2026 (tarde)
+
+El paso 2 fijado por el usuario decía «afinar etiquetas y prompt», y ordenaba
+hacer antes el diagnóstico **gratis** que quedó pendiente de 61.7: leer de la
+caché los `risks_and_unknowns` y agrupar por qué motivo se rebaja el encaje.
+
+Se hizo, y **canceló buena parte del trabajo que el propio paso proponía**. Esta
+sección deja las cifras, porque la conclusión es contraintuitiva y una sesión
+futura la desharía con buena intención.
+
+### 62.1. El corpus real, y sus dos edades
+
+En disco no hay un corpus, hay dos: **77 fichas publicadas** con el evaluador
+**v6 del 21/08** y **3 análisis en caché** con el **v9 del 02/09**. La auditoría
+(19 MB, 86 ejecuciones) **no guarda análisis**: guarda exclusiones. Total, 80
+análisis y **439 riesgos** clasificados por motivo.
+
+Conviene decirlo porque el prompt ha cambiado dos veces desde el v6: las cifras
+describen un evaluador que ya no corre. Sirven para ver **modos de fallo**, no
+para medir la versión actual.
+
+### 62.2. Por qué se rebaja el encaje: no es lo que parecía
+
+| motivo | 0-15 | 25-35 | **45** | 60+ |
+|---|---|---|---|---|
+| **hueco de información** | 9,6 % | 40,6 % | **65,9 %** | 63,7 % |
+| fuera de objeto | 25,2 % | 2,1 % | 1,6 % | 1,0 % |
+| territorio | 15,7 % | 12,5 % | 4,0 % | 0,0 % |
+| desalineación técnica | 6,1 % | 6,2 % | 8,7 % | 1,0 % |
+| presupuesto pequeño | 7,0 % | 5,2 % | **0,0 %** | 0,0 % |
+| plazo / socios del radar | 1,7 % | 3,1 % | 3,2 % | 1,0 % |
+
+**Lo que estanca en 45 no es que la convocatoria encaje mal: es que el modelo no
+sabe.** Dos tercios de sus riesgos son «no consta», «falta», «desconocido».
+
+Y el dato que lo cierra es la última columna: **la banda alta tiene el mismo
+63,7 %**. El hueco de información **no distingue un 45 de un 75** — es ruido de
+fondo en todo lo que pasa de 25. Lo que sí discrimina, territorio y fuera de
+objeto, ya funciona: 15,7 % → 0 % y 25,2 % → 1 %.
+
+**Las tres prohibiciones del prompt se respetan** en este corpus: presupuesto
+3,2 %, plazo 0,5 %, socios del radar 0,5 %. PowerUp (60.15), donde se
+incumplieron tres veces en un solo análisis, **no era representativo**.
+
+### 62.3. `fit_score` no está arrastrado hacia abajo: está aplanado
+
+Medido sobre las 77, contra la media de sus cinco dimensiones:
+
+| banda | fit medio | media de dimensiones | desfase |
+|---|---|---|---|
+| 0-15 | 7,5 | 1,5 | **fit +6,0** |
+| 25-35 | 29,1 | 18,4 | **fit +10,7** |
+| 45 | 45,0 | 38,6 | **fit +6,4** |
+| 60+ | 71,2 | 68,3 | **fit +2,9** |
+
+`fit_score` va **por encima** de sus dimensiones en las cuatro bandas. Así que
+la lectura natural de 60.16 —«el encaje hereda notas bajas»— es falsa. El
+problema es el contrario: **casi no varía**. 16 de las 77 valen exactamente 45,
+y los valores son casi todos múltiplos de cinco. **45 es un atractor, no una
+valoración.**
+
+Eso descarta derivar el encaje con pesos (ya descartado por 61.1) y deja una
+sola vía compatible con el criterio del usuario: **pedir coherencia**, que es lo
+que se hizo en 62.7.
+
+### 62.4. Las etiquetas técnicas casi no influyen en la nota
+
+- **52 de los 80 análisis no llevan ninguna `tech_tag`.**
+- De las 31 fichas vivas, **11 no tienen etiqueta — y entre ellas están las
+  cuatro mejor puntuadas** (72, 72, 65, 65): Cervera, INNOVA, INNTERCONECTA y un
+  programa autonómico de I+D.
+- Solo **8 etiquetas distintas** se usan en todo el corpus, y `emis`
+  —la de emisiones— **no aparece ni una vez**.
+
+La taxonomía sirve para **descubrir y excluir**, no para puntuar. El prompt ya
+lo dice («que llegue vacía no significa que no haya encaje») y los datos
+confirman que se le hace caso. **Ampliarla para mejorar la nota es trabajo que
+no puede funcionar.**
+
+### 62.5. El vocabulario nuevo, buscado donde está el riesgo
+
+El paso 2 pedía dar etiqueta a scrubbers, rotoconcentradores, COV, oxidadores
+catalíticos, SCR e internacionalización. Se buscaron esos términos **en los tres
+sitios donde podrían estar**, no en los supervivientes (la lección de 59.1):
+
+| concepto | 313 documentos oficiales de BDNS | 5.006 títulos excluidos | Horizon en vivo (31 topics, 163.952 car.) |
+|---|---|---|---|
+| scrubber, rotoconcentrador, ox. catalítico, SCR, filtro de mangas, depuración de gases | **0** | **0** | **0** |
+| internacionalización | 168 (29 docs) | 19 | 0 |
+
+**Tres correcciones al plan escrito en CLAUDE.md:**
+
+1. **COV, VOC, RTO y «oxidación térmica» YA ESTÁN en la taxonomía**, bajo
+   `emissions`. La nota del arranque en frío era imprecisa.
+2. **Añadir scrubbers, rotoconcentradores, SCR y filtros de mangas no cambiaría
+   nada**: cero apariciones en todo el material disponible. Es exactamente la
+   lección del chip «Hornos» (55.1) — **las convocatorias se describen por
+   objetivo, no por equipo**, y ningún organismo escribe «scrubber» en unas
+   bases.
+3. La internacionalización sí aparece, pero no donde se pensaba (62.6).
+
+**Encargo cancelado por medición**, como el de la regla de consorcio en 54.5.
+
+### 62.6. La internacionalización: el conflicto es real y las cifras lo desmienten
+
+`BDNS_ALWAYS_OUT_OF_SCOPE_TERMS` contiene `programa pyme global`,
+`mision comercial`, `visita a la feria` y `encuentros empresariales
+internacionales`, y el perfil del 03/09 dice que la internacionalización
+interesa. El conflicto existe. Lo que no existe es el falso negativo.
+
+Esos cuatro términos no guardan «una clase entera de convocatorias»: guardan
+**27 fichas sueltas** del programa PYME Global de las Cámaras de Comercio, una
+por feria o misión — World Travel Market, SIAL París, Taste Spain, feria médica
+COMPAMED de Düsseldorf, Metstrade, misiones a Perú, Túnez, Camerún y Gambia.
+
+**Ninguna de las 27 tiene señal industrial ni técnica en el título** —se
+comprobó con `detect_tech_tags()` e `INDUSTRIAL_CONTEXT_TERMS`—, incluida
+**IMTS Chicago**, que es de máquina-herramienta y es la única de fondo
+relevante. Es decir: una regla condicional «excluir salvo conexión industrial»,
+que es el patrón que el proyecto usa en `_hard_out_of_scope()`, **daría el mismo
+resultado que hoy**.
+
+Y retirarlos a secas tiene precio medido: las 27 pasan de `reject` a
+**`ambiguous`**, o sea que van a Claude. **~0,7 USD por ejecución, recurrente,
+para rescatar una de 27** — y esa una es una ayuda provincial a visitar una
+feria, que además fallaría por territorio.
+
+De las 19 exclusiones de internacionalización del histórico, **la mayoría son
+correctas por otros motivos**: becas de vicerrectorado, subvenciones
+nominativas, beneficiario intermediario (agentes de soporte), territorio. La de
+ICEX la excluye `entidades colaboradoras en gestion de ayudas de icex`, que
+también es correcta.
+
+**Conclusión: el conflicto se anota, no se ejecuta.** No hay hoy ninguna
+convocatoria de internacionalización perdida por estos términos. El usuario
+había autorizado retirarlos; la medición llegó después y **la decisión se le
+devolvió con las cifras**, que es lo que 54.5 llama cancelar por medición.
+
+### 62.7. Los tres cambios de prompt, y de dónde sale cada uno
+
+Versiones a `fit-2026-09-v11-coherent-score-and-three-fits` y
+`2026-09-v17-coherent-score-and-three-fits`. Los tres van al prompt de
+**usuario**, en `build_evaluation_request()`.
+
+1. **El dato ausente no es un riesgo de encaje.** Sale directamente de 62.2:
+   baja `confidence` y `evidence_quality`, se declara y se dice qué verificar,
+   pero no toca `fit_score`. «Una convocatoria del ámbito de Kalfrisa mal
+   documentada encaja igual de bien que una bien documentada; lo que cambia es
+   lo que sabemos de ella, no lo que le conviene al cliente.»
+2. **`fit_score` debe ser coherente con las cinco sub-puntuaciones que el propio
+   modelo asigna**, y no usar un valor intermedio por defecto ante la duda —para
+   eso está `confidence`—. Sale de 62.3. **No se deriva con pesos**: eso es la
+   regla determinista que 61.1 descarta. Se pide.
+3. **Los tres encajes del perfil son encaje.** Lo que Kalfrisa FABRICA, lo que
+   INTEGRA y las LÍNEAS QUE QUIERE DESARROLLAR producen tres papeles distintos,
+   y los tres valen. Sin esto, «no lo fabrica» se lee como «no encaja» y los
+   oxidadores catalíticos y el SCR —que el perfil movió de exclusión a línea que
+   se quiere abrir— seguían siendo un falso negativo activo. La instrucción
+   incluye el reverso, que es el error de 61.13 por la otra puerta: reconocer la
+   integración **no** autoriza a presentar a Kalfrisa como fabricante.
+
+Cuatro pruebas nuevas en `EvaluationUserPromptTests`, que lee el prompt de
+usuario construyendo la petición (es pura, no toca la red). **752 pruebas.**
+
+**Ninguno de los tres se puede verificar sin pagar.** Las pruebas garantizan que
+la instrucción está y está entera; que el modelo la obedezca solo se ve en una
+ejecución real, y eso es decisión del usuario.
+
+### 62.7bis. El prefijo creció, y eso reabre la caché de prompt
+
+61.6 midió que la llamada de evaluación tiene un prefijo estable de ~3.447
+tokens y que Haiku 4.5 exige **4.096** para cachear, y decidió no forzarlo
+porque llegar metiendo contenido innecesario era el ajuste artificial que 61.1
+descarta. También dejó dicho: **«se reevalúa después de la fase de calidad, y si
+se pone será condicional»**.
+
+Las tres instrucciones de 62.7 añaden ~1.100 caracteres al prompt de usuario por
+sus propios méritos, no para llegar a ningún umbral. **Queda pendiente volver a
+contar** — es gratis, con el endpoint de recuento de tokens — y, si el prefijo
+ha cruzado los 4.096 por su cuenta, poner `cache_control`. Sigue valiendo la
+condición de 61.6: con **un solo** análisis la caché pierde dinero (−0,0010 USD)
+y el equilibrio está en **N ≥ 2**, así que debe activarse de forma condicional al
+número de análisis de la ejecución.
+
+### 62.8. Un falso amigo vivo: «RTO» en singular
+
+`rto` es `strong_term` de `emissions` porque en el vocabulario de Kalfrisa es un
+*Regenerative Thermal Oxidizer*. En Horizon, **RTO es una Research and Technology
+Organisation**, y aparece en la letra pequeña de casi cualquier topic.
+
+La guardia de 59.2 (`PLURAL_MIN_LENGTH = 3`) impide que `rto` case con «RTOs», y
+funciona. **Lo que no puede parar es el singular**, y eso ocurre de verdad:
+
+| topic de Horizon | etiqueta que recibe |
+|---|---|
+| Strengthening the role of Technology Transfer Offices | `emissions` |
+| Large-Scale Photonic Quantum Computing Platform Technologies | `emissions` |
+| Enhancing the involvement of philanthropic organisations | `emissions` |
+
+**3 de 31 topics mal etiquetados. Impacto medido hoy: cero** — los tres se
+descartan igualmente por `not_relevant_local_filter` y
+`generic_deterministic_reject`. Es un fallo **latente**, no activo, y por eso no
+se ha tocado: cambiar la taxonomía exige medir llamando a los conectores (59.1)
+y el beneficio medido sería nulo.
+
+Importa saber que existe porque `emissions` está en `thermal_core`, y
+`thermal_core` **suprime** cuatro exclusiones sectoriales del perfil
+(ciberseguridad, seguridad civil, gobernanza y generación renovable). Si alguna
+de esas convocatorias pasara el prefiltro local, entraría con un salvoconducto.
+Anotado como punto 42 del backlog.
+
+### 62.9. La lección de método de esta ronda
+
+Las dos mitades del paso 2 se resolvieron **en direcciones opuestas a lo
+previsto**, y por la misma causa: el plan se escribió leyendo el perfil y la
+taxonomía, no midiendo el corpus.
+
+- «Falta etiqueta para scrubbers y COV» → COV ya estaba, y scrubbers no aparece
+  en 313 documentos, 5.006 títulos y 164.000 caracteres de Horizon.
+- «La internacionalización se venía descartando» → cierto, y bien descartada:
+  27 ferias de turismo, alimentación y material médico.
+
+Es el mismo aviso de 60.3 —un plan escrito sobre documentación tiene cuatro
+afirmaciones falsas— aplicado a un plan escrito sobre el perfil. **Verificar
+contra los datos antes de empezar** costó una tarde y evitó dos cambios que
+habrían empeorado el producto, uno de ellos con coste recurrente.
+
+### 62.10. Cifras de referencia a 03/09/2026 (tarde)
+
+Verificación `--no-claude` completa al cerrar la ronda, contra las de la mañana
+(61):
+
+| | Mañana | Tarde | |
+|---|---|---|---|
+| Detectadas | 922 | **921** | deriva de fuente |
+| Vigentes | 87 | **87** | igual |
+| Prefiltro | `retain=35, ambiguous=5, hold_manual=80, reject=802` | `retain=35, ambiguous=5, hold_manual=80, reject=801` | un `reject` menos |
+| Pendientes de analizar | 84 | **87** | **la caché se invalidó a propósito** |
+| Coste instantáneo | 2,15 USD | **2,23 USD** | tres análisis más |
+| Coste por lotes | 1,08 USD | **~1,11 USD** | la mitad, como siempre |
+
+**Sin regresión.** El embudo es idéntico dígito a dígito salvo un `reject`, y esa
+diferencia es la ventana deslizante de BDNS moviéndose por causas externas, que
+es el aviso del punto 26 del backlog. Las 87 vigentes son las mismas.
+
+Las tres pendientes de más no son un descubrimiento: son los tres análisis que
+estaban en caché con el evaluador v9 y que el cambio de versión invalida. Es el
+comportamiento que la sección 5 describe y que se quiere.
+
+**752 pruebas** en verde (748 al empezar). **0 USD gastados en API** en toda la
+ronda. El producto publicado sigue siendo el del 21/08: esta sesión no ha
+empujado a pagar, sólo ha dejado el paso 3 listo y con su precio delante.
