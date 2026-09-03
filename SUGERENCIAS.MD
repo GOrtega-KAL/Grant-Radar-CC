@@ -1627,7 +1627,34 @@ industrial, que lo que decide el interés es la ayuda a fondo perdido y no el
 presupuesto, que las convocatorias en cascada son objetivo habitual— fuera
 conocimiento del negocio que **nunca había estado escrito en ninguna parte**.
 
-Estado: **720 pruebas** en verde, 41 módulos, **0,0280 USD** gastados en API.
+### Y la clase de defecto que solo aparece preguntando al cliente
+
+El 03/09 se descubrió que el perfil atribuía a Kalfrisa el calentamiento por
+microondas de EHEAT —que desarrollan otros socios del consorcio— y la simulación
+CFD de IGNITE y DT4RAF —que aportan NABLADOT, BIFI y AIMEN—. Ninguna prueba lo
+señalaba. Al contrario: **había una prueba exigiendo** que el perfil llamara
+«capacidad autónoma» a la simulación, y llevaba dos semanas fijando algo que
+nadie había comprobado con el cliente.
+
+Frente al punto **2.9** y a lo anotado el 02/09, esta es la tercera y peor clase:
+no es un fallo de lógica, ni de cobertura, ni de coherencia con la interfaz. Es
+**una afirmación falsa sobre el mundo**, escrita de buena fe a partir de una
+fuente pública que describía *lo que hacía el proyecto* en vez de *lo que aportó
+la empresa*.
+
+Su firma es característica y conviene reconocerla: **no produce falsos negativos
+sino falsos positivos cualificados**. El radar encaja, el análisis parece sólido,
+y el error solo se ve al leer las bases — o preparando la memoria. Es el único
+tipo de fallo de este proyecto que no se detecta mirando el producto.
+
+La única red posible es preguntar. De las doce preguntas de la batería del
+03/09, **nueve cambiaron el perfil**, y tres de ellas invirtieron el signo de
+una entrada: los oxidadores catalíticos y el SCR pasaron de exclusión a línea
+que se quiere desarrollar, y eran un falso negativo activo.
+
+Estado: **748 pruebas** en verde, 42 módulos, **0,1524 USD** gastados en API en
+toda la semana.
+
 
 
 ## Nota de alcance

@@ -57,9 +57,10 @@ desactualizado si no se mantiene junto a ellos.
 > ---
 >
 > **Estado del código al cerrar el 03/09/2026:** 42 módulos, **748 pruebas en
-> verde**. Verificación `--no-claude` completa: 922 detectadas, **86 vigentes**,
-> prefiltro `retain=38, ambiguous=5, hold_manual=77, reject=802`. Pendientes de
-> analizar **83** (~2,12 USD). Cifras de referencia en **AGENTS.md 60.10**.
+> verde**. Verificación `--no-claude` completa: 922 detectadas, **87 vigentes**,
+> prefiltro `retain=35, ambiguous=5, hold_manual=80, reject=802`. Pendientes de
+> analizar **84** — **2,15 USD instantáneo o 1,08 USD por lotes**. Cifras de
+> referencia en **AGENTS.md 61**.
 >
 > **Cada ficha publicada lleva ahora `stable_key`** (AGENTS.md 60.2), y es lo
 > que hay que usar para referirse a una convocatoria desde fuera del JSON. El
@@ -71,40 +72,66 @@ desactualizado si no se mantiene junto a ellos.
 > `grant-radar-favoritos.favoritos-worker.workers.dev`. La URL y el id del
 > namespace KV van versionados y no son secretos.
 >
-> ## POR DÓNDE SEGUIR, al cerrar el 02/09/2026
+> ## POR DÓNDE SEGUIR, al cerrar el 03/09/2026
 >
-> **El perfil se reescribió con el criterio que dio el usuario** (AGENTS.md
-> 60.16): PYME afirmada, los diez proyectos de I+D descritos uno a uno, qué
-> aporta como socio industrial, y qué tipo de convocatoria interesa de verdad.
-> Versiones subidas, así que **toda la caché de análisis está invalidada**.
+> El usuario fijó tres pasos y **el 1 está hecho**. Quedan el 2 y el 3, en este
+> orden y sin saltarse ninguno:
 >
-> **Se midió (0,1244 USD, tres convocatorias) y el resultado está en 60.16.**
-> Acierto claro: PYME INNOVA Granada pasa a `ineligible` y se descarta por
-> territorio, así que ya no empata con una convocatoria a la que la empresa se
-> presenta. Pero **PowerUp e INNOVAE no suben: siguen en 45**.
+> **PASO 2 — afinar etiquetas y prompt.** Es lo siguiente. El perfil quedó
+> reescrito con sus respuestas (AGENTS.md 61.15) y ahora hay cosas que la
+> taxonomía y el prompt todavía no reflejan:
 >
-> ## LO PRIMERO DE MAÑANA, y no es «afinar más el prompt»
+> - La taxonomía técnica no distingue **fabricar** de **integrar** de **querer
+>   desarrollar**, que es la partición que el perfil acaba de estrenar.
+> - Entran conceptos que no tienen etiqueta: **scrubbers**, **rotoconcentradores
+>   y depuración de COV** (interés muy alto), **oxidadores catalíticos y SCR**
+>   (línea a desarrollar, ya no exclusión) e **internacionalización**, que es
+>   una clase entera de convocatorias que se venía descartando.
+> - El prompt tampoco sabe leer la distinción: hay que decirle que una
+>   convocatoria sobre algo que Kalfrisa **integra** o **quiere desarrollar**
+>   también encaja, y con qué papel.
+>
+> Antes de tocar nada, el diagnóstico **gratis** que quedó pendiente de 61: leer
+> de la caché los `risks_and_unknowns` y `resumen` de los análisis existentes y
+> agrupar **por qué motivo** se rebaja el encaje. Está todo en disco.
+>
+> **PASO 3 — la ejecución completa.** Después del 2, no antes. **84
+> convocatorias**, y ahora hay dos precios: **~2,15 USD instantáneo** o
+> **~1,08 USD por lotes** (`--batch`). Requiere **autorización expresa**.
+>
+> ## Lo que hay que saber para no repetir errores ya pagados
+>
+> **CRITERIO DE DISEÑO, fijado por el usuario el 03/09 y manda sobre lo demás:**
+> nada de reglas deterministas en la puntuación, ni ajuste artificial para
+> alcanzar una cifra. El camino es entender qué motiva una nota baja y ajustar
+> los criterios **generales**. Eso descartó derivar `fit_score` con pesos y
+> descartó rellenar el prompt para desbloquear la caché.
 >
 > **`fit_score` no se deriva de las cinco sub-puntuaciones**: son campos
-> independientes del esquema `CallEvaluation` y los rellena el modelo por
-> separado. Se midió: con el perfil nuevo, la alineación tecnológica de PowerUp
-> **se dobla** (25 → 50), la estratégica sube (30 → 45) y la de rol también
-> (40 → 55) — **y el `fit_score` se queda clavado en 45**.
+> independientes del esquema `CallEvaluation`. Medido el 02/09: la alineación
+> tecnológica de PowerUp se dobló (25 → 50) y el `fit_score` **se quedó en 45**.
+> Conviene tenerlo presente al medir el paso 2 — mirar las cinco dimensiones y
+> no solo el número global.
 >
-> O sea que el perfil funcionó y el número global no se enteró. Seguir tocando
-> el prompt sin resolver esto es gastar dinero contra una pared. Hay dos vías, y
-> **la elección es del usuario**: derivar el encaje de las dimensiones con pesos
-> que él decida —auditable y sin coste por llamada— o exigir al modelo que sea
-> coherente con las puntuaciones que él mismo da. Las dos respetan su condición
-> de no deformar el criterio para alcanzar una cifra.
+> **Las cifras de referencia del usuario son termómetro, NO objetivo.** PowerUp
+> 75-85 en consorcio, INNOVAE 65-75, PYME INNOVA baja por territorio. La señal
+> buena no es ninguna de las tres, sino que **las tres estaban en 45**: una
+> convocatoria a la que la empresa se presenta y otra excluida por territorio
+> puntuaban igual. Esa distancia sí es un criterio que no se puede falsear, y ya
+> mejoró: PYME INNOVA cae a 35 y `discard_ineligible`.
 >
-> **Las cifras de referencia del usuario son termómetro, NO objetivo.** Lo dijo
-> expresamente: «no quiero que los criterios se deformen para alcanzar dicha
-> cifra artificialmente». PowerUp 75-85 en consorcio, INNOVAE 65-75, PYME INNOVA
-> baja por territorio. **La señal buena no es ninguna de las tres, sino que las
-> tres estaban en 45**: una convocatoria a la que la empresa se presenta y otra
-> excluida por territorio puntuaban igual, y esa distancia sí es un criterio que
-> no se puede falsear.
+> **Lo más contraintuitivo del perfil nuevo** (AGENTS.md 61.15): la simulación
+> CFD **NO es capacidad de Kalfrisa** —la aportan NABLADOT, BIFI y AIMEN—. Lo
+> suyo es el caso de uso, los equipos y la **validación a escala piloto o
+> industrial**. Una prueba llevaba dos semanas afirmando lo contrario sin que
+> nadie lo hubiera comprobado con el cliente.
+>
+> **El error más caro de esta ronda, para no repetirlo:** describir un proyecto
+> **en consorcio** por lo que hace el proyecto y no por lo que aporta Kalfrisa.
+> Produjo que se le atribuyera el calentamiento por microondas de EHEAT. No es
+> un falso negativo, es un **falso positivo cualificado**: el análisis parece
+> sólido y el error solo se ve al leer las bases. El perfil lleva ahora una
+> regla que lo prohíbe.
 >
 > **El modo por lotes está IMPLEMENTADO Y VERIFICADO** (AGENTS.md 61):
 > `--batch`, `--batch-collect`, `--batch-status` y `--batch-abandon`. El lote de
@@ -232,8 +259,9 @@ desactualizado si no se mantiene junto a ellos.
 > No queda orden de extracción pendiente. Si una sesión futura busca «lo
 > siguiente de la modularización», la respuesta es que no hay.
 >
-> **Arranque en frío: AGENTS.md secciones 54 a 60**, que cierran el 01-02/09/2026.
-> La **60** es la última y la más reciente.
+> **Arranque en frío: AGENTS.md secciones 54 a 61**, que cierran el 01-03/09/2026.
+> La **61** es la última: modo por lotes, notas para el servidor (61.14) y el
+> perfil reescrito con las respuestas del cliente (61.15).
 > Antes de ellas, la 53 resume las cinco del 31/08 (48 a 52). Backlog abierto
 > en la sección 36.
 >
