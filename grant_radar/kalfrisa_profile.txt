@@ -59,7 +59,7 @@ admisibles de una convocatoria):
   HPC, simulación CFD avanzada y gemelos digitales.
 - DT4RAF — gemelo digital para optimizar recuperadores de alta eficiencia
   mediante simulación y monitorización.
-- EHAT — proyecto de I+D en consorcio de mayor duración, en la línea de
+- EHEAT — proyecto de I+D en consorcio de mayor duración, en la línea de
   simulación y validación experimental.
 - RAFeRTO — tecnologías digitales y técnicas predictivas en oxidadores térmicos
   regenerativos y recuperadores de calor.

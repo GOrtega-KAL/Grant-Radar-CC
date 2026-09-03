@@ -192,7 +192,11 @@ class KalfrisaProfileTests(unittest.TestCase):
         """
         self.assertIn("SIMULACIÓN Y GEMELOS DIGITALES", KALFRISA_PROFILE)
         self.assertIn("capacidad autónoma", KALFRISA_PROFILE)
-        self.assertIn("EHAT", KALFRISA_PROFILE)
+        # EHEAT, no EHAT: el acrónimo estuvo mal escrito hasta que el
+        # usuario lo corrigió el 03/09/2026. Un acrónimo equivocado hace
+        # el proyecto invisible para el cruce con los temas admisibles.
+        self.assertIn("EHEAT", KALFRISA_PROFILE)
+        self.assertNotIn("EHAT —", KALFRISA_PROFILE)
 
     def test_the_out_of_scope_list_does_not_exclude_a_whole_programme(self):
         """La cláusula describe el objeto de un proyecto, no la portada."""
