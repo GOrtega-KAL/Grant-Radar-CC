@@ -54,13 +54,20 @@ QUÉ APORTA KALFRISA COMO SOCIO INDUSTRIAL DE UN CONSORCIO:
 
 EXPERIENCIA I+D RELEVANTE (con su contenido, para poder cruzarla con los temas
 admisibles de una convocatoria):
+- REGLA AL LEER ESTA LISTA: casi todos son proyectos EN CONSORCIO, y participar
+  en uno no convierte en propia la tecnología que aporta otro socio. Donde se
+  indique el papel de Kalfrisa, es ese y solo ese. Si un proyecto no dice qué
+  aportó Kalfrisa, no supongas que hizo todo lo que el proyecto abarca.
 - IGNITE — FORTISSIMO PLUS, Kalfrisa como líder, con BIFI-Universidad de
   Zaragoza y NABLADOT: optimización de precalentadores industriales mediante
   HPC, simulación CFD avanzada y gemelos digitales.
 - DT4RAF — gemelo digital para optimizar recuperadores de alta eficiencia
   mediante simulación y monitorización.
-- EHEAT — electrificación industrial mediante calentamiento por MICROONDAS y
-  recirculación de gases, con gemelos digitales y control predictivo.
+- EHEAT — electrificación industrial en consorcio. El calentamiento por
+  microondas lo desarrollan OTROS SOCIOS: Kalfrisa NO desarrolla ni implementa
+  microondas. Su papel es la ingeniería y la integración de las conducciones de
+  alta temperatura del proceso, la sensórica y el control (IIoT) de los
+  segmentos que le corresponden.
 - RAFeRTO — tecnologías digitales y técnicas predictivas en oxidadores térmicos
   regenerativos y recuperadores de calor.
 - e-RTO — modelo digital para electrificación y control avanzado del oxidador

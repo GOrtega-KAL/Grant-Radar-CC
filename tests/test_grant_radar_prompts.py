@@ -227,12 +227,33 @@ class KalfrisaProfileTests(unittest.TestCase):
 class VersionBumpTests(unittest.TestCase):
     """Cambiar prompt o perfil sin subir versión deja la caché sirviendo lo viejo."""
 
+    def test_a_consortium_project_does_not_become_an_own_capability(self):
+        """Participar en un consorcio no hace propia la tecnología de otro.
+
+        El 03/09/2026 se describió EHEAT como «electrificación industrial
+        mediante calentamiento por MICROONDAS», y el usuario lo corrigió: las
+        microondas las desarrollan otros socios, y el papel de Kalfrisa es la
+        ingeniería, las conducciones de alta temperatura, la sensórica y el
+        control. Atribuirle una tecnología que no tiene es peor que no
+        describir el proyecto: produce encajes con convocatorias a las que no
+        se puede presentar.
+        """
+        self.assertIn("REGLA AL LEER ESTA LISTA", KALFRISA_PROFILE)
+        self.assertIn("no convierte en propia la tecnología que aporta otro socio",
+                      KALFRISA_PROFILE)
+        self.assertIn("NO desarrolla ni implementa", KALFRISA_PROFILE)
+        self.assertIn("microondas", KALFRISA_PROFILE)
+        # Y las microondas no pueden aparecer en la lista de capacidades propias.
+        capacidades = KALFRISA_PROFILE.split("CAPACIDADES Y ACTIVOS TECNOLÓGICOS:")[1]
+        capacidades = capacidades.split("SIMULACIÓN Y GEMELOS DIGITALES")[0]
+        self.assertNotIn("microond", capacidades.lower())
+
     def test_the_versions_reflect_this_round(self):
         # Las tres suben el 02/09/2026 con las respuestas del usuario sobre su
         # propio criterio: PYME afirmada, proyectos de I+D descritos uno a uno,
         # papel de socio industrial, y qué convocatorias interesan de verdad
         # (AGENTS.md 60.16).
-        self.assertEqual(PROFILE_VERSION, "kalfrisa-2026-09-v7-eheat-and-three-more")
+        self.assertEqual(PROFILE_VERSION, "kalfrisa-2026-09-v8-consortium-roles")
         self.assertEqual(EVALUATOR_VERSION, "fit-2026-09-v10-profile-is-authoritative")
         self.assertEqual(
             ANALYSIS_PROMPT_VERSION, "2026-09-v16-profile-is-authoritative"

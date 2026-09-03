@@ -66,9 +66,18 @@ STATE_PHASE2_RUNNING = "phase2_running"
 STATE_DONE = "done"
 STATE_FAILED = "failed"
 
-# Un lote de la API caduca a las 24 h. Se guarda para poder decir «esto ya no
-# va a llegar» en vez de sondear indefinidamente.
-BATCH_MAX_HOURS = 24
+# Las 24 h de la Batches API son el plazo de PROCESAMIENTO, no de recogida.
+# Medido contra un lote real el 03/09/2026: `expires_at` sale exactamente a
+# creación + 24 h, el lote terminó en 3 min 48 s y sus resultados siguen
+# recuperándose después. Lo que caduca a las 24 h es lo que Anthropic todavía
+# no haya procesado —esas peticiones vuelven como `expired`—; lo ya terminado
+# queda disponible 29 días.
+#
+# La distinción importa para el uso real: con ejecuciones manuales, nadie tiene
+# que volver corriendo en 24 h. Si la fase 1 termina en minutos, se puede
+# recoger días después sin perder nada (AGENTS.md 61.12).
+BATCH_PROCESSING_HOURS = 24
+BATCH_RESULTS_DAYS = 29
 
 
 class BatchStateError(RuntimeError):
@@ -360,8 +369,16 @@ def summarize_batch_state(state: dict | None, now: datetime | None = None) -> st
     ]
     if horas is not None:
         partes.append(f"enviado hace {horas:.1f} h")
-        if horas > BATCH_MAX_HOURS:
-            partes.append("CADUCADO: la API descarta los lotes a las 24 h")
+        # Solo avisa si sigue SIN procesar pasada su ventana: entonces sí hay
+        # peticiones que volverán como `expired`. Un lote ya terminado no se
+        # pierde por llevar tiempo — sus resultados duran 29 días.
+        if horas > BATCH_PROCESSING_HOURS and state["state"] in (
+            STATE_PHASE1_RUNNING, STATE_PHASE2_RUNNING
+        ):
+            partes.append(
+                "AVISO: lleva más de 24 h sin terminar; lo que Anthropic no "
+                "haya procesado volverá como caducado"
+            )
     return " · ".join(partes)
 
 

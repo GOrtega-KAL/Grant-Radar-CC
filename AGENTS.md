@@ -6452,3 +6452,74 @@ lote concreto y las convocatorias que lleva dentro— y no describe el producto.
 
 Trece proyectos descritos, frente a las nueve siglas desnudas del 01/09. Versión
 del perfil a `kalfrisa-2026-09-v7-eheat-and-three-more`.
+### 61.12. Las 24 h son de procesamiento, no de recogida (medido)
+
+El usuario preguntó si la caducidad era de Anthropic o nuestra, porque con
+ejecuciones manuales no puede garantizar volver en 24 h. Se midió contra el lote
+real del humo en vez de fiarse de la documentación:
+
+```
+created_at         2026-09-03 07:23:06
+ended_at           2026-09-03 07:26:54     ← terminó en 3 min 48 s
+expires_at         2026-09-04 07:23:06     ← creación + 24 h exactas
+processing_status  ended
+→ 2 resultados recuperados DESPUÉS, con el lote ya terminado
+```
+
+**La distinción, que cambia el uso real:** `expires_at` es el plazo que
+Anthropic se da para **procesar**. Lo que no haya procesado a esa hora vuelve
+como `expired`. Lo que **sí** procesó queda disponible **29 días**. Como los
+lotes terminan en minutos, en la práctica **nadie tiene que volver corriendo**:
+se puede enviar el lunes y recoger el jueves sin perder nada.
+
+Y como las dos fases se envían por separado, cada una estrena su propia ventana
+de 24 h desde su propia creación. No hay ningún reloj corriendo contra el
+usuario.
+
+**Nuestro aviso estaba mal y se corrigió.** Decía «CADUCADO» a cualquier lote de
+más de 24 h, incluidos los ya terminados — lo que habría empujado a recoger con
+prisa por un peligro que no existe. Ahora solo avisa si el lote **sigue
+corriendo** pasada su ventana, que es el único caso en que de verdad hay
+peticiones que se van a perder.
+
+### 61.13. EHEAT: le atribuí a Kalfrisa una tecnología que no tiene
+
+La descripción que se escribió con la respuesta del usuario decía
+«electrificación industrial mediante calentamiento por **microondas**…», y el
+usuario lo corrigió:
+
+> «El calentamiento por microondas es desarrollado por otros socios del
+> consorcio. El papel principal de Kalfrisa es la ingeniería e integrar las
+> conducciones a altas temperaturas del proceso, la sensórica y el control del
+> proceso (IoT) de los segmentos que le tocan, pero Kalfrisa **NO** desarrolla
+> ni implementa calentamiento por microondas.» (usuario, 03/09/2026)
+
+**Es el fallo más peligroso de los que se han cometido describiendo el perfil**,
+y conviene entender por qué: no produce un falso negativo —una convocatoria que
+se pierde— sino un **falso positivo cualificado**. El radar habría encajado con
+convocatorias de calentamiento por microondas, el análisis habría parecido
+sólido, y el error solo se habría visto al leer las bases o, peor, al preparar
+la propuesta.
+
+La causa es de método: al describir un proyecto **en consorcio** se describió
+*lo que hace el proyecto*, no *lo que aporta Kalfrisa*. Son cosas distintas en
+diez de los trece proyectos de la lista.
+
+Arreglo en dos niveles. El de EHEAT, con su papel explícito; y una **regla al
+principio de la lista**, que es lo que evita repetirlo con el siguiente
+proyecto que se añada:
+
+> «Casi todos son proyectos EN CONSORCIO, y participar en uno no convierte en
+> propia la tecnología que aporta otro socio. Donde se indique el papel de
+> Kalfrisa, es ese y solo ese. Si un proyecto no dice qué aportó Kalfrisa, no
+> supongas que hizo todo lo que el proyecto abarca.»
+
+Con una prueba que exige la regla, exige el «NO desarrolla ni implementa» de
+EHEAT y comprueba que **«microondas» no aparece en la lista de capacidades
+propias**, que es donde el error habría hecho daño de verdad.
+
+**Queda pendiente de revisar con el usuario** si los otros proyectos en
+consorcio necesitan el mismo acotado: DT4RAF, EDPIC y LIFE ABATE describen
+tecnología que probablemente es de Kalfrisa —recuperadores, postcombustión,
+rotoconcentrador— pero eso no se ha confirmado, y la regla nueva dice
+justamente que no hay que suponerlo.

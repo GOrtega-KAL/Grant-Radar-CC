@@ -13,7 +13,8 @@ import unittest
 from datetime import datetime, timedelta, timezone
 
 from grant_radar.batch_analysis import (
-    BATCH_MAX_HOURS,
+    BATCH_PROCESSING_HOURS,
+    BATCH_RESULTS_DAYS,
     PHASE_EVALUATION,
     PHASE_EXTRACTION,
     STATE_PHASE1_DONE,
@@ -309,9 +310,34 @@ class DashboardStateTests(unittest.TestCase):
         self.assertEqual(batch_state_for_dashboard(None), {})
         self.assertEqual(summarize_batch_state(None), "No hay ningún lote en vuelo.")
 
-    def test_an_expired_batch_says_so_instead_of_waiting_forever(self):
-        estado = self._estado(["a"], hace_horas=BATCH_MAX_HOURS + 2)
-        self.assertIn("CADUCADO", summarize_batch_state(estado))
+    def test_a_batch_still_processing_past_its_window_is_flagged(self):
+        """Las 24 h son de PROCESAMIENTO, no de recogida.
+
+        Medido contra un lote real el 03/09/2026: `expires_at` sale a creación
+        + 24 h, el lote terminó en 3 min 48 s y sus resultados se siguen
+        recuperando después. Lo que caduca es lo que Anthropic no haya
+        procesado; lo terminado dura 29 días.
+
+        Así que el aviso solo tiene sentido cuando el lote **sigue corriendo**
+        pasada su ventana. Decirlo de uno ya terminado asustaría sin motivo, y
+        con ejecuciones manuales eso empujaría a recoger con prisa.
+        """
+        corriendo = self._estado(["a"], hace_horas=BATCH_PROCESSING_HOURS + 2)
+        self.assertIn("AVISO", summarize_batch_state(corriendo))
+
+        for estado in (STATE_PHASE1_DONE, "done"):
+            with self.subTest(estado=estado):
+                terminado = self._estado(
+                    ["a"], estado=estado, hace_horas=BATCH_PROCESSING_HOURS + 48,
+                )
+                self.assertNotIn("AVISO", summarize_batch_state(terminado))
+
+    def test_a_recent_batch_is_never_flagged(self):
+        self.assertNotIn("AVISO", summarize_batch_state(self._estado(["a"], hace_horas=3)))
+
+    def test_the_results_window_is_much_longer_than_the_processing_one(self):
+        """El dato que quita la prisa: 29 días para recoger, 24 h para procesar."""
+        self.assertGreater(BATCH_RESULTS_DAYS * 24, BATCH_PROCESSING_HOURS * 20)
 
     def test_age_is_measured_in_hours(self):
         estado = self._estado(["a"], hace_horas=3)
