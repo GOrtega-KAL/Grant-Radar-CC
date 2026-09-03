@@ -35,6 +35,7 @@ import logging
 import time
 from collections import Counter, defaultdict
 from datetime import datetime
+from typing import NamedTuple
 
 import anthropic
 # Transformación del esquema Pydantic al dialecto que acepta la API. Es un
@@ -681,13 +682,110 @@ def _build_compatible_analysis(
     return result
 
 
-def analyze_with_claude(conv: dict, api_key: str, max_retries: int = 3) -> dict:
+
+def merge_stage_usage(extraction_usage: dict, evaluation_usage: dict) -> dict:
+    """Suma el consumo de las dos etapas en el registro que espera la caché.
+
+    Se separó de `analyze_with_claude()` el 03/09/2026 porque el modo por
+    lotes ensambla las mismas dos etapas en otro proceso y necesita sumarlas
+    igual. Contar distinto según el modo haría que el coste publicado
+    dependiera de por dónde se analizó, que es justo lo que no puede pasar.
     """
-    Etapa A: extrae hechos sin valorar el encaje.
-    Etapa B: evalúa esos hechos frente al perfil y a socios preseleccionados.
-    La prioridad, el descarte por ineligibilidad y la revisión son deterministas.
+    return {
+        "extraction": extraction_usage,
+        "evaluation": evaluation_usage,
+        "api_calls": (
+            extraction_usage.get("api_calls", 1)
+            + evaluation_usage.get("api_calls", 1)
+        ),
+        "retry_api_calls": (
+            extraction_usage.get("retry_api_calls", 0)
+            + evaluation_usage.get("retry_api_calls", 0)
+        ),
+        "input_tokens": (
+            extraction_usage["input_tokens"] + evaluation_usage["input_tokens"]
+        ),
+        "output_tokens": (
+            extraction_usage["output_tokens"] + evaluation_usage["output_tokens"]
+        ),
+        "cache_write_tokens": (
+            extraction_usage["cache_write_tokens"]
+            + evaluation_usage["cache_write_tokens"]
+        ),
+        "cache_read_tokens": (
+            extraction_usage["cache_read_tokens"]
+            + evaluation_usage["cache_read_tokens"]
+        ),
+        "total_tokens": (
+            extraction_usage["total_tokens"] + evaluation_usage["total_tokens"]
+        ),
+        "estimated_cost_usd": round(
+            extraction_usage["estimated_cost_usd"]
+            + evaluation_usage["estimated_cost_usd"],
+            6,
+        ),
+    }
+
+
+def call_evidence(conv: dict) -> tuple[str, list]:
+    """La evidencia acotada de una convocatoria: `(raw_description, related_documents)`.
+
+    La necesitan las dos etapas —la extracción para armar el documento fuente y
+    `derive_deterministic_context()` para etiquetar—, así que vive aparte: si
+    cada una recortara la evidencia por su cuenta, el mismo documento podría
+    quedar representado de dos formas distintas dentro del mismo análisis.
     """
-    client = anthropic.Anthropic(api_key=api_key)
+    raw_description = str(conv.get("description", "")).strip()
+    if not raw_description:
+        raw_description = "[La fuente no proporciona descripción detallada]"
+    # Selecciona evidencia distribuida; evita que un documento multilínea quede
+    # representado únicamente por su primera sección.
+    raw_description = select_evidence_excerpt(
+        raw_description,
+        conv.get("title", ""),
+        EVIDENCE_SOURCE_DESCRIPTION_BUDGET,
+    )
+    related_role_rank = {
+        "call_extract": 100,
+        "call": 90,
+        "regulatory_bases": 85,
+        "amendment": 75,
+        "program_landing": 70,
+        "source_record": 50,
+    }
+    related_documents = sorted(
+        conv.get("related_document_contents", []),
+        key=lambda document: (
+            related_role_rank.get(document.get("document_role", ""), 0),
+            len(str(document.get("description", ""))),
+        ),
+        reverse=True,
+    )[:EVIDENCE_MAX_RELATED_DOCUMENTS]
+    return raw_description, related_documents
+
+
+class ClaudeRequest(NamedTuple):
+    """Una llamada a Haiku, construida pero **no enviada**.
+
+    Existe para que el modo instantáneo y el modo por lotes construyan
+    exactamente la misma petición. Si los dos armaran el prompt por su cuenta,
+    divergirían en silencio y el producto dependería de por qué camino se
+    analizó cada convocatoria — que es el peor fallo posible aquí, porque no
+    se vería en ningún recuento.
+    """
+
+    system: str
+    user: str
+    schema: type[BaseModel]
+    max_tokens: int
+    stage: str
+
+
+def build_extraction_request(conv: dict) -> ClaudeRequest:
+    """Etapa A: los hechos de la convocatoria, sin valorar el encaje.
+
+    Pura: depende solo de `conv`. No toca la red.
+    """
     raw_description = str(conv.get("description", "")).strip()
     if not raw_description:
         raw_description = "[La fuente no proporciona descripción detallada]"
@@ -746,11 +844,21 @@ def analyze_with_claude(conv: dict, api_key: str, max_retries: int = 3) -> dict:
             + json.dumps(official_facts, ensure_ascii=False)
             + "\n</official_structured_data>"
         )
-    facts_model, extraction_usage = _structured_claude_call(
-        client, CallFacts, CLAUDE_EXTRACTION_SYSTEM_PROMPT, extraction_prompt, 5000,
-        conv.get("title", ""), "extracción factual", max_retries,
+    return ClaudeRequest(
+        CLAUDE_EXTRACTION_SYSTEM_PROMPT, extraction_prompt, CallFacts,
+        5000, "extracción factual",
     )
 
+
+def derive_deterministic_context(conv: dict) -> tuple[list, list]:
+    """Etiquetas técnicas y socios preseleccionados: `(tech_tags, candidates)`.
+
+    No dependen de lo que devuelva la extracción —salen del texto de la
+    convocatoria y de sus documentos—, así que se pueden calcular antes,
+    después o en otro proceso. Es lo que permite que el modo por lotes las
+    reconstruya en la fase 2 sin arrastrarlas en el archivo de estado.
+    """
+    raw_description, related_documents = call_evidence(conv)
     combined_text = " ".join([
         str(conv.get("title", "")),
         raw_description,
@@ -761,6 +869,19 @@ def analyze_with_claude(conv: dict, api_key: str, max_retries: int = 3) -> dict:
     ])
     tech_tags = detect_tech_tags(combined_text)
     candidates = preselect_partners(tech_tags)
+    return tech_tags, candidates
+
+
+def build_evaluation_request(conv: dict, facts_model: BaseModel) -> ClaudeRequest:
+    """Etapa B: el encaje de esos hechos con el perfil.
+
+    Pura: depende de `conv` y de lo que devolvió la etapa A. No toca la red.
+    """
+    tech_tags, candidates = derive_deterministic_context(conv)
+    # Los mismos hechos oficiales que vio la extracción. Se recalculan aquí
+    # —es puro y barato— en vez de arrastrarlos: así la fase 2 del modo por
+    # lotes no necesita guardarlos en el archivo de estado.
+    official_facts = _official_structured_facts(conv)
     public_candidates = [
         {
             "id": item["id"],
@@ -844,49 +965,45 @@ def analyze_with_claude(conv: dict, api_key: str, max_retries: int = 3) -> dict:
         + json.dumps(evaluation_payload, ensure_ascii=False)
         + "\n</input>"
     )
+    return ClaudeRequest(
+        CLAUDE_EVALUATION_SYSTEM_PROMPT, evaluation_prompt, CallEvaluation,
+        3000, "evaluación de encaje",
+    )
+
+
+def analyze_with_claude(conv: dict, api_key: str, max_retries: int = 3) -> dict:
+    """Análisis instantáneo: las dos etapas encadenadas, en este proceso.
+
+    Etapa A: extrae hechos sin valorar el encaje.
+    Etapa B: evalúa esos hechos frente al perfil y a socios preseleccionados.
+    La prioridad, el descarte por ineligibilidad y la revisión son deterministas.
+
+    Desde el 03/09/2026 **no arma los prompts**: los pide a
+    `build_extraction_request()` y `build_evaluation_request()`, que son los
+    mismos que usa el modo por lotes. Es lo que garantiza que los dos modos no
+    puedan divergir sin que una prueba lo vea.
+    """
+    client = anthropic.Anthropic(api_key=api_key)
+    titulo = conv.get("title", "")
+
+    extraccion = build_extraction_request(conv)
+    facts_model, extraction_usage = _structured_claude_call(
+        client, extraccion.schema, extraccion.system, extraccion.user,
+        extraccion.max_tokens, titulo, extraccion.stage, max_retries,
+    )
+
+    tech_tags, candidates = derive_deterministic_context(conv)
+    evaluacion = build_evaluation_request(conv, facts_model)
     try:
         evaluation_model, evaluation_usage = _structured_claude_call(
-            client, CallEvaluation, CLAUDE_EVALUATION_SYSTEM_PROMPT,
-            evaluation_prompt, 3000,
-            conv.get("title", ""), "evaluación de encaje", max_retries,
+            client, evaluacion.schema, evaluacion.system, evaluacion.user,
+            evaluacion.max_tokens, titulo, evaluacion.stage, max_retries,
         )
     except ClaudeAnalysisError as exc:
         exc.partial_usages = [extraction_usage, *exc.partial_usages]
         raise
-    total_usage = {
-        "extraction": extraction_usage,
-        "evaluation": evaluation_usage,
-        "api_calls": (
-            extraction_usage.get("api_calls", 1)
-            + evaluation_usage.get("api_calls", 1)
-        ),
-        "retry_api_calls": (
-            extraction_usage.get("retry_api_calls", 0)
-            + evaluation_usage.get("retry_api_calls", 0)
-        ),
-        "input_tokens": (
-            extraction_usage["input_tokens"] + evaluation_usage["input_tokens"]
-        ),
-        "output_tokens": (
-            extraction_usage["output_tokens"] + evaluation_usage["output_tokens"]
-        ),
-        "cache_write_tokens": (
-            extraction_usage["cache_write_tokens"]
-            + evaluation_usage["cache_write_tokens"]
-        ),
-        "cache_read_tokens": (
-            extraction_usage["cache_read_tokens"]
-            + evaluation_usage["cache_read_tokens"]
-        ),
-        "total_tokens": (
-            extraction_usage["total_tokens"] + evaluation_usage["total_tokens"]
-        ),
-        "estimated_cost_usd": round(
-            extraction_usage["estimated_cost_usd"]
-            + evaluation_usage["estimated_cost_usd"],
-            6,
-        ),
-    }
+
     return _build_compatible_analysis(
-        conv, facts_model, evaluation_model, candidates, tech_tags, total_usage
+        conv, facts_model, evaluation_model, candidates, tech_tags,
+        merge_stage_usage(extraction_usage, evaluation_usage),
     )

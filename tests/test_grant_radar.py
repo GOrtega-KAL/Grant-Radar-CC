@@ -3868,13 +3868,32 @@ class StructuredCallRetryTests(unittest.TestCase):
                 self.fail("debería haber abortado")
 
     def test_extraction_has_more_room_than_evaluation(self):
-        # La extracción es la etapa que recibió la evidencia enriquecida y la
-        # que se truncó en producción: necesita más techo, no menos.
-        # Se lee grant_radar/analysis.py, donde vive la capa desde el
-        # 31/08/2026 (AGENTS.md, sección 48).
-        fuente = (ROOT / "grant_radar" / "analysis.py").read_text(encoding="utf-8")
-        self.assertIn("extraction_prompt, 5000,", fuente)
-        self.assertIn("evaluation_prompt, 3000,", fuente)
+        """La extracción necesita más techo que la evaluación.
+
+        Es la etapa que recibe la evidencia enriquecida y la que se truncó en
+        producción. Hasta el 03/09/2026 esto se comprobaba buscando los
+        literales `"extraction_prompt, 5000,"` en el código; ahora que los
+        constructores de petición son puros se puede **preguntarles**, que es
+        lo que de verdad importa y no se rompe al mover una línea.
+        """
+        from grant_radar.analysis import (
+            build_extraction_request, build_evaluation_request,
+        )
+        # Se reutiliza la factoría que ya existe en las pruebas del esquema en
+        # vez de escribir otro doble: si CallFacts gana un campo obligatorio,
+        # las dos rompen a la vez y no una sola.
+        from tests.test_grant_radar_claude_schemas import _minimal_call_facts
+        conv = {
+            "title": "Ayudas a la recuperación de calor residual",
+            "source": "BDNS", "url": "https://x.test/a", "org": "Org",
+            "description": "Eficiencia energética en hornos industriales. " * 20,
+            "keywords_found": [], "source_type": "x",
+        }
+        extraccion = build_extraction_request(conv)
+        evaluacion = build_evaluation_request(conv, _minimal_call_facts())
+        self.assertEqual(extraccion.max_tokens, 5000)
+        self.assertEqual(evaluacion.max_tokens, 3000)
+        self.assertGreater(extraccion.max_tokens, evaluacion.max_tokens)
 
 
 class HaikuPayloadTests(unittest.TestCase):

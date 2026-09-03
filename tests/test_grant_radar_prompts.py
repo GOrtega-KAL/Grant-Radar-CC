@@ -243,5 +243,100 @@ class VersionBumpTests(unittest.TestCase):
         )
 
 
+class RequestBuilderTests(unittest.TestCase):
+    """Los dos modos tienen que armar EXACTAMENTE la misma petición.
+
+    El 03/09/2026 se trocearon los prompts en `build_extraction_request()` y
+    `build_evaluation_request()` para que el modo por lotes pudiera armarlos
+    sin duplicar código. El riesgo de ese troceado no es que falle: es que
+    `analyze_with_claude()` y el modo diferido se separen con el tiempo y el
+    análisis dependa de por qué camino entró la convocatoria — un fallo que
+    no aparecería en ningún recuento.
+
+    Esta prueba intercepta la llamada real y compara lo que recibe con lo que
+    devuelven los constructores. Si alguien vuelve a armar un prompt dentro de
+    `analyze_with_claude()`, falla.
+    """
+
+    CONVOCATORIAS = (
+        {"title": "Ayudas a la recuperación de calor residual en hornos",
+         "source": "BDNS", "url": "https://x.test/a", "org": "Org", "bdns_id": "919481",
+         "description": "Eficiencia energética con recuperadores y RTO. " * 30,
+         "keywords_found": ["waste heat"], "source_type": "x",
+         "deadline_date": "2026-10-01", "open_date": "2026-09-01"},
+        {"title": "Open call sin fechas ni documentos", "source": "ECCP",
+         "url": "https://y.test/b", "org": "ECCP", "description": "",
+         "keywords_found": [], "source_type": "y"},
+        {"title": "Convocatoria con documentos relacionados", "source": "IDAE",
+         "url": "https://z.test/c", "org": "IDAE",
+         "description": "Ayudas a la descarbonización industrial. " * 12,
+         "keywords_found": [], "source_type": "z",
+         "related_document_contents": [
+             {"document_role": "call", "description": "Bases reguladoras. " * 40},
+             {"document_role": "regulatory_bases", "description": "Anexo II. " * 25}]},
+    )
+
+    def test_the_instant_path_sends_what_the_builders_produce(self):
+        from grant_radar import analysis
+        from tests.test_grant_radar_claude_schemas import _minimal_call_facts
+
+        hechos = _minimal_call_facts()
+        uso = {"input_tokens": 1, "output_tokens": 1, "cache_write_tokens": 0,
+               "cache_read_tokens": 0, "total_tokens": 2, "estimated_cost_usd": 0.0,
+               "api_calls": 1, "retry_api_calls": 0}
+
+        class Alto(Exception):
+            """Corta tras la segunda llamada: ya se ha visto lo que hacía falta."""
+
+        for conv in self.CONVOCATORIAS:
+            with self.subTest(conv=conv["title"][:34]):
+                recibido = []
+
+                def espia(client, output_model, system_prompt, user_prompt,
+                          max_tokens, title, stage, max_retries):
+                    recibido.append((system_prompt, user_prompt, max_tokens, output_model))
+                    if len(recibido) == 1:
+                        return hechos, dict(uso)
+                    raise Alto()
+
+                original = analysis._structured_claude_call
+                analysis._structured_claude_call = espia
+                try:
+                    analysis.analyze_with_claude(conv, "sk-ant-doble-no-se-usa")
+                except Alto:
+                    pass
+                finally:
+                    analysis._structured_claude_call = original
+
+                self.assertEqual(len(recibido), 2, "deben ser dos etapas encadenadas")
+                esperado = [
+                    analysis.build_extraction_request(conv),
+                    analysis.build_evaluation_request(conv, hechos),
+                ]
+                for (sistema, usuario, techo, esquema), quiere in zip(recibido, esperado):
+                    self.assertEqual(sistema, quiere.system)
+                    self.assertEqual(usuario, quiere.user)
+                    self.assertEqual(techo, quiere.max_tokens)
+                    self.assertIs(esquema, quiere.schema)
+
+    def test_the_builders_do_not_touch_the_network(self):
+        """Son puros: se pueden llamar en un lote, en otro proceso o en un test."""
+        from grant_radar import analysis
+        from tests.test_grant_radar_claude_schemas import _minimal_call_facts
+
+        def prohibido(*args, **kwargs):
+            raise AssertionError("un constructor de petición ha llamado a la API")
+
+        original = analysis.anthropic.Anthropic
+        analysis.anthropic.Anthropic = prohibido
+        try:
+            for conv in self.CONVOCATORIAS:
+                analysis.build_extraction_request(conv)
+                analysis.build_evaluation_request(conv, _minimal_call_facts())
+                analysis.derive_deterministic_context(conv)
+        finally:
+            analysis.anthropic.Anthropic = original
+
+
 if __name__ == "__main__":
     unittest.main()
