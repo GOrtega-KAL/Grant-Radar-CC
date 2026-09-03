@@ -961,7 +961,11 @@ class IdentityAndFilterTests(unittest.TestCase):
     def test_residual_bdns_wording_variants_are_rejected(self):
         cases = (
             "Campaña municipal de bonos de comercio 2026",
-            "Convocatoria Pyme Global 2026 para participación en feria",
+            # Lleva territorio a propósito: desde el 03/09/2026 lo que descarta
+            # esta convocatoria es dónde debe estar la empresa, no que sea una
+            # feria (AGENTS.md 63).
+            "Convocatoria Pyme Global 2026 para participación en feria para "
+            "empresas de la provincia de Sevilla",
             "Ayudas para la conciliación de la vida personal, familiar y laboral",
             "Ayudas para el fomento de la actividad cultural en áreas rurales",
             "Convocatoria de subvenciones a entidades locales destinadas a residuos",
@@ -1332,8 +1336,13 @@ class IdentityAndFilterTests(unittest.TestCase):
                 )
 
     def test_bdns_commercial_residential_and_training_scopes_are_rejected(self):
+        # «Programa Pyme Global para visita a la feria» salió de esta lista el
+        # 03/09/2026 (AGENTS.md 63): descartaba por el TEMA y contradecía el
+        # perfil, que dice que la internacionalización interesa. Esas
+        # convocatorias siguen fuera, pero por el territorio de sus
+        # beneficiarios, que es un hecho comprobable — ver el test de abajo y
+        # `BeneficiaryTerritoryTests` en test_grant_radar_sources_bdns.py.
         for description in (
-            "Programa Pyme Global para visita a la feria internacional.",
             "Eficiencia energética en edificios residenciales.",
             "Acciones formativas para personas empleadas.",
             "Plan Wave Plus para personas trabajadoras prioritariamente ocupadas.",
@@ -1345,6 +1354,30 @@ class IdentityAndFilterTests(unittest.TestCase):
             with self.subTest(description=description):
                 outcome = self.bdns_case(description=description)
                 self.assertEqual(outcome["reason_code"], "explicit_non_industrial_scope")
+
+    def test_a_trade_fair_call_is_rejected_by_territory_not_by_topic(self):
+        """El relevo de los seis términos retirados el 03/09/2026.
+
+        Medido sobre las 36 de ferias, misiones e internacionalización del
+        histórico: 14 siguen fuera por otros motivos reales, 18 las caza el
+        territorio y solo 4 llegan a Claude (0,05 USD por lotes).
+        """
+        fuera = self.bdns_case(
+            title=("Convocatoria Pyme Global 2026 Visita Feria SIAL París "
+                   "para empresas de la provincia de Sevilla"),
+            description="Ayudas a la participación en ferias internacionales.",
+        )
+        self.assertEqual(fuera["decision"], "reject")
+        self.assertEqual(fuera["reason_code"], "beneficiary_territory_outside_aragon")
+
+        # Y la contraria: la misma convocatoria en Aragón ya no se descarta por
+        # ser de una feria, que es justo lo que el perfil pedía.
+        dentro = self.bdns_case(
+            title=("Convocatoria Pyme Global 2026 Visita Feria industrial "
+                   "para empresas de la provincia de Zaragoza"),
+            description="Ayudas a la participación en ferias internacionales.",
+        )
+        self.assertNotEqual(dentro["reason_code"], "beneficiary_territory_outside_aragon")
 
     def test_identifier_merges_sources_and_provenance(self):
         base = {

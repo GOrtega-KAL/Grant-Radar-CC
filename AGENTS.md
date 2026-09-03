@@ -2462,7 +2462,7 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 32 | Nueve hosts responden 200 a cualquier ruta, no solo `cdti.es`: sedes electrónicas y fundaciones públicas, 13 URLs publicadas afectadas | Sección 46.3. Hoy solo se avisa. Verificarlas de verdad exigiría navegador, que es caro para 13 URLs por ejecución; decidir si compensa o si basta con marcarlas en el dashboard |
 | 41 | **Bloqueo entre procesos para `--batch-collect`.** Hoy no hay ninguno: con una recogida programada cada pocos minutos, dos procesos pueden leer `phase1_running` a la vez, recoger los dos y **enviar la fase 2 dos veces**, pagándola dos veces. Con ejecución manual el riesgo es bajo; **antes de dejarlo desatendido en un servidor hay que cerrarlo** | Sección 61.14. El arreglo es pequeño: un archivo de bloqueo con `O_EXCL` junto al de estado, liberado en un `finally`, y una recogida que salga en silencio si no lo consigue |
 | 42 | **«RTO» en singular etiqueta como `emissions` topics de Horizon que no lo son.** En el vocabulario de Kalfrisa `RTO` es un *Regenerative Thermal Oxidizer*; en Horizon es una *Research and Technology Organisation*. La guardia de plurales de 59.2 para el «RTOs» pero no el singular: 3 de 31 topics mal etiquetados (transferencia de tecnología, computación cuántica, filantropía). **Impacto medido hoy: cero** — los tres se descartan por otras reglas—, pero `emissions` está en `thermal_core`, que suprime cuatro exclusiones sectoriales del perfil | Sección 62.8. Latente, no activo. El arreglo natural es pasar `rto` de `strong_terms` a `contextual_terms`, que ya existe para vocabulario ambiguo; exige medir llamando a los conectores (59.1) y hoy el beneficio medido sería nulo |
-| 43 | **Los cuatro términos de internacionalización de `BDNS_ALWAYS_OUT_OF_SCOPE_TERMS` contradicen el perfil del 03/09**, que dice que esas convocatorias interesan | Sección 62.6. **Medido y aparcado a propósito**: guardan 27 fichas del PYME Global de las Cámaras —ferias de turismo, alimentación y material médico—, ninguna con señal industrial en el título, y retirarlos cuesta ~0,7 USD por ejecución para rescatar una. Reabrir solo si aparece una convocatoria de internacionalización nacional o aragonesa dirigida a empresa industrial |
+| 44 | **El territorio dicho en el ORGANISMO, no en el sujeto beneficiario.** `_bdns_beneficiary_territory_outside_aragon()` exige «para empresas de <territorio>» a propósito, para que «Misión Comercial a México» no descarte por el destino del viaje. Se le escapan las que lo dicen en el convocante: «Cámara Bahía de Algeciras», «Extremadura Avante». Medido el 03/09: **3 convocatorias, ~0,04 USD por ejecución** | Sección 63.4. **No perseguir a la ligera**: una Cámara de Comercio delimita territorio, pero «Cámara de España» no, y sobreajustar aquí es el modo de fallo que este proyecto lleva documentado desde el chip «Hornos» (55.1). Si se hace, medir contra las fichas vivas igual que en 63.4 |
 | 34 | Programar la recopilación `--no-claude` diaria en el Programador de tareas de Windows | Sección 47.6 tiene el comando. **Es una acción del usuario en su equipo**, no del agente: queda anotada para no darla por hecha |
 | 37 | **La ejecución completa**, ~2,02 USD sobre 79 convocatorias, **cuando el usuario lo decida** | Sección **54.9**. Los tres controles de 53.2 ya están ejercitados: presupuesto y elegibilidad de Horizon el 01/09 (54.4) y el territorial de Navarra el mismo día (54.10), por 0,1271 USD en total. No queda validación pendiente; lo que falta es publicar, y **la prioridad fijada por el usuario es depurar antes que publicar**: informar del desfase sí, convertirlo en urgencia no. **Requiere autorización expresa** |
 
@@ -2540,6 +2540,7 @@ frío. No hay que buscarlos en las tablas de arriba: ya no están.
 | 36 | CDTI llegaba sin bases: 300 caracteres tecleados y cero documentos | Sección 51.2: las fichas del catálogo curado se leen con el navegador que ya las visitaba y traen sus documentos oficiales, con el mismo extractor que el calendario |
 | 8 | La matriz de reglas previa a Claude, lo último del orden de extracción | Sección 57: extraída a `grant_radar/bdns_rules.py` en sesión dedicada, 774 líneas movidas y **el embudo idéntico dígito a dígito** (`ambiguous=7, hold_manual=75, reject=803, retain=34`). Resultó más limpia de lo temido —cero dependencias de globales del script, ningún módulo la importa— porque `holds.py` y ECCP la reciben inyectada, decisión tomada en su día justo para esto |
 | 28 | ¿Mantener o retirar el catálogo estático de BOA? | Sección 56.1: **retirado el conector entero**, con la condición que puso el usuario comprobada antes: `paip_aragon` sale `active_captured` con 12 coincidencias y `sources=["BDNS"]`, y la caché documental trae el texto oficial del PAIP, 24 documentos de Transición Justa y 4 con Teruel. Verificado tras retirarlo: 82 vigentes, las mismas. El proyecto pasa de ocho fuentes a **siete** |
+| 43 | Los términos de internacionalización de `BDNS_ALWAYS_OUT_OF_SCOPE_TERMS` contradecían el perfil del 03/09 | Sección **63**: **cerrado la misma noche que se abrió**, y con la conclusión contraria a la de 62.6. Se retiran los seis y su trabajo lo hace `_bdns_beneficiary_territory_outside_aragon()`, que descarta por el territorio de los beneficiarios dicho en el título —una lista cerrada de provincias, no un catálogo de ferias que caduque—. De las 36: 14 fuera por otros motivos, 18 las caza el territorio, 4 llegan a Claude por 0,05 USD. **Cero falsos positivos sobre las 31 fichas vivas** |
 | 40 | El plural en `_term_present()` | Sección 59: aplicado **con guardia de siglas** (`PLURAL_MIN_LENGTH = 3`). La primera versión hizo casar `rto` con «RTOs» —que en Horizon son *Research and Technology Organisations*— y coló ocho convocatorias irrelevantes. Efecto final: 82 → 84 vigentes, ninguna sale. **Beneficio más modesto de lo estimado**: «calores residuales» no añade convocatorias, solo mejora la clasificación de las que ya entraban |
 | 39 | La tasa de financiación de Horizon | Sección 59.5: leída de la sección G de los Anexos Generales. **La premisa de este punto era falsa**: no estaba en lo que ya descargábamos, sino en la página 32, más allá del corte de 48.000 caracteres. `max_chars` es ahora parámetro |
 | 19 | `build_keywords()` sin ninguna prueba | Sección 59.4: nueve pruebas, y tenía un fallo —cuatro de sus siete colores estaban muertos—. El color se deriva ahora de la categoría técnica |
@@ -6865,10 +6866,18 @@ nominativas, beneficiario intermediario (agentes de soporte), territorio. La de
 ICEX la excluye `entidades colaboradoras en gestion de ayudas de icex`, que
 también es correcta.
 
-**Conclusión: el conflicto se anota, no se ejecuta.** No hay hoy ninguna
-convocatoria de internacionalización perdida por estos términos. El usuario
-había autorizado retirarlos; la medición llegó después y **la decisión se le
-devolvió con las cifras**, que es lo que 54.5 llama cancelar por medición.
+**Conclusión de aquel momento: el conflicto se anota, no se ejecuta.** El
+usuario había autorizado retirarlos; la medición llegó después y la decisión se
+le devolvió con las cifras, que es lo que 54.5 llama cancelar por medición.
+
+> **SUPERADO ESA MISMA NOCHE — leer la sección 63.** El usuario respondió con la
+> pregunta correcta: buscar patrones que separen las útiles de las inútiles en
+> vez de decidir en bloque. Los ~0,69 USD de arriba daban por supuesto que nada
+> ocuparía el lugar de los términos. Con el relevo territorial puesto, retirarlos
+> cuesta **0,05 USD** y las inútiles caen por dónde se aplican, no por de qué
+> van. **Los seis términos están retirados; este apartado se conserva porque el
+> razonamiento intermedio explica por qué el número cambió, no porque siga
+> valiendo su recomendación.**
 
 ### 62.7. Los tres cambios de prompt, y de dónde sale cada uno
 
@@ -6984,3 +6993,126 @@ comportamiento que la sección 5 describe y que se quiere.
 **752 pruebas** en verde (748 al empezar). **0 USD gastados en API** en toda la
 ronda. El producto publicado sigue siendo el del 21/08: esta sesión no ha
 empujado a pagar, sólo ha dejado el paso 3 listo y con su precio delante.
+
+## 63. Descartar por dónde, no por de qué: el relevo de seis términos, a 03/09/2026 (noche)
+
+Encargo del usuario, después de leer 62.6:
+
+> «Respecto a las convocatorias de internacionalización, busca patrones que
+> permitan distinguir de manera coherente y extrapolable convocatorias útiles de
+> inútiles, por ejemplo si se puede detectar fácilmente que no son de foco
+> industrial: descartar, si se puede encontrar fácilmente que la localización de
+> aplicación descarta a Kalfrisa: descartar.» (usuario, 03/09/2026)
+
+Es la pregunta correcta, y **cambia la conclusión de 62.6**. Allí se recomendó
+no tocar nada porque retirar los términos costaba ~0,69 USD por ejecución. Ese
+número daba por supuesto que no habría nada que ocupara su lugar. Con el relevo
+puesto, cuesta **0,05 USD**.
+
+### 63.1. El patrón que estaba a la vista y nadie había leído
+
+Los títulos completos de las 36 convocatorias de ferias, misiones e
+internacionalización del histórico dicen **dónde tiene que estar la empresa**,
+casi siempre y casi con la misma fórmula:
+
+```
+… VISITA A FERIA "IMTS CHICAGO 2026" PARA EMPRESAS DE LA PROVINCIA DE JAEN
+… Visita Feria SIAL París para empresas de la provincia de Sevilla
+… para empresas y autónomos de la provincia de Cádiz
+… A PYMES DE CC.AA. DE EXTREMADURA PARA LA PARTICIPACION EN …
+… PARA EMPRESAS DE LA DEMARCACIÓN TERRITORIAL DE LA CÁMARA DE COMERCIO … DE GRANADA
+Ayudas 2026 a empresas extremeñas para el acceso a mercados exteriores
+```
+
+**La maquinaria territorial ya existía y no entendía esa forma.** Se apoyaba en
+dos cosas: el campo oficial `bdns_regions` —que en estos registros viene vacío o
+inútil— y un regex que solo reconoce «término municipal de X» / «municipio de
+X». «Para empresas de la provincia de Jaén» se le escapaba entera.
+
+### 63.2. Por qué el territorio y no el sector de la feria
+
+La otra mitad del encargo —«detectar que no son de foco industrial»— **se
+estudió y se descartó**, y conviene dejar escrito el motivo.
+
+El sector está en el **nombre de la feria**: SIAL y Taste Spain son
+alimentación, World Travel Market turismo, COMPAMED material médico, Metstrade
+náutica, IMTS máquina-herramienta. Detectarlo exige **un catálogo de nombres de
+feria mantenido a mano**, que es exactamente la clase de lista que caduca en
+silencio: es el punto 27 del backlog, y el 21/08 seis de las diez URLs del
+catálogo de CDTI eran 404 sin que nadie se enterara.
+
+El territorio, en cambio, se apoya en una **lista cerrada y estable**: las
+provincias y comunidades españolas. No caducan. Por eso la regla mira dónde y no
+de qué.
+
+Y hay una razón de fondo, que es la que el usuario pedía: **descartar por el
+tema es lo que había** —«misión comercial», «visita a la feria»— y es lo que
+contradecía el perfil. Descartar por el territorio es un **hecho comprobable de
+elegibilidad**, sirve igual para una convocatoria de I+D que para una feria, y
+no vuelve a chocar con el perfil cuando el cliente cambie de intereses.
+
+### 63.3. Qué se hizo
+
+Tres cambios en `grant_radar/bdns_rules.py`:
+
+1. **`_bdns_beneficiary_territory_outside_aragon(title)`**, junto a las otras
+   reglas territoriales de `_bdns_intrinsic_exclusion()`. Devuelve el territorio
+   ajeno o `None`, y produce el veredicto `beneficiary_territory_outside_aragon`.
+2. **Se retiran los seis términos** de `BDNS_ALWAYS_OUT_OF_SCOPE_TERMS`:
+   `programa pyme global`, `convocatoria pyme global`, `mision comercial`,
+   `visita a la feria`, `participacion en feria` y
+   `encuentros empresariales internacionales`.
+3. **`beca de colaboracion` en singular**, que faltaba: la lista solo tenía el
+   plural y «Convocatoria de beca de colaboración para el Vicedecanato de
+   Internacionalización» se colaba por eso.
+
+**La decisión de diseño que evita el falso positivo:** se exige el **sujeto
+beneficiario** delante del topónimo. Sin él, «Misión Comercial a México» o
+«…con socios de Cataluña y Galicia» descartarían por un país de destino o por la
+procedencia de un socio, que no es donde tiene que estar Kalfrisa. Hay una
+prueba dedicada a eso.
+
+### 63.4. Las cifras, y cuál de ellas es la que importa
+
+De las **36** del histórico:
+
+| | |
+|---|---|
+| Siguen fuera por **otro motivo real** (nominativa, tipo de beneficiario, región oficial, estado) | **14** |
+| Las caza el **patrón territorial nuevo** | **18** |
+| **Llegan a Claude** | **4** — 0,051 USD por lotes, 0,102 instantáneo |
+
+Las cuatro que pasan son: la misión a Perú y la de Camerún-Senegal-Gambia (no
+dicen territorio), «SIAL París para empresas de **Motril**» (es un municipio, no
+una provincia) y una de Extremadura Avante cuyo territorio está en el organismo y
+no en el sujeto. Se dejan pasar a propósito: 0,013 USD cada una, y la preferencia
+del usuario es vigilar antes que descartar.
+
+**Verificado de punta a punta** con `--no-claude` completa esa misma noche:
+el embudo pasa de `reject=802, hold_manual=80` a **`reject=797, hold_manual=84`**
+y las vigentes de **87 a 92**. Las cinco nuevas son exactamente la clase
+prevista —Motril, Extremadura Avante, Cámara Bahía de Algeciras, Camerún y
+Perú— y **no desaparece ninguna**: la regla no quitó nada que estuviera dentro.
+Coste final del análisis pendiente: **2,36 USD instantáneo o ~1,18 por lotes**.
+
+**Pero la cifra que decide no es ninguna de esas: es el cero.** La regla se
+probó contra las **31 fichas vivas** del producto publicado y **no descarta
+ninguna**. Un falso positivo aquí tiraría una oportunidad buena sin dejar
+rastro, que es el único fallo de esta clase que el usuario no podría ver.
+
+### 63.5. Dos pruebas viejas que fijaban la regla retirada
+
+`test_bdns_commercial_residential_and_training_scopes_are_rejected` y
+`test_residual_bdns_wording_variants_are_rejected` exigían que una convocatoria
+de PYME Global saliera `explicit_non_industrial_scope`. **No se borraron**: se
+reescribieron para exigir el mismo resultado —que siga fuera— por el mecanismo
+nuevo, y se añadió una que comprueba lo contrario, que es lo que el perfil
+pedía: **la misma convocatoria en Zaragoza ya no se descarta por ser de una
+feria**.
+
+Es el aviso de 61.15 otra vez, y por eso conviene repetirlo: una prueba en verde
+no demuestra que la regla sea correcta, solo que no ha cambiado. Cuando la regla
+cambia a propósito, la prueba se reescribe explicando por qué; borrarla habría
+perdido la mitad útil, que es que esas convocatorias sigan fuera.
+
+**760 pruebas** (752 al empezar la noche).

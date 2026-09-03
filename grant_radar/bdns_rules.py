@@ -137,9 +137,14 @@ BDNS_CONSORTIUM_DIRECT_TERMS = (
     "empresas participantes", "entidades participantes",
 )
 BDNS_ALWAYS_OUT_OF_SCOPE_TERMS = (
-    "programa pyme global", "convocatoria pyme global",
-    "mision comercial", "visita a la feria",
-    "participacion en feria", "encuentros empresariales internacionales",
+    # Los seis terminos de ferias, misiones comerciales y PYME Global se
+    # RETIRARON el 03/09/2026 (AGENTS.md 63). Contradecian el perfil, que dice
+    # que la internacionalizacion interesa, y sobre todo descartaban por el TEMA
+    # en vez de por un hecho comprobable. Su trabajo lo hace ahora
+    # `_bdns_beneficiary_territory_outside_aragon()`, que descarta por el
+    # territorio de los beneficiarios: de las 36 del historico, 14 siguen fuera
+    # por otros motivos reales, 18 las caza el territorio y solo 4 llegan a
+    # Claude — 0,05 USD por lotes. No volver a anadirlos aqui.
     "promocion turistica", "bonos comercio", "bonos de comercio",
     "bono comercio", "bono de comercio", "comercio minorista",
     "empresas turisticas", "sector turistico", "ambito turistico",
@@ -152,7 +157,8 @@ BDNS_ALWAYS_OUT_OF_SCOPE_TERMS = (
     "aparatos electrodomesticos", "premios cultura", "premio de investigacion",
     "premios nacionales", "convocatoria de premios", "concurso de artesania",
     "premios a la excelencia", "startup awards", "hackathon",
-    "beca de formacion", "becas de colaboracion", "acciones formativas",
+    "beca de formacion", "becas de colaboracion", "beca de colaboracion",
+    "acciones formativas",
     "beca de iniciacion", "movilidad para practicas",
     "plan wave plus", "personas trabajadoras prioritariamente ocupadas",
     "trabajos fin de grado", "trabajos de fin de grado",
@@ -191,6 +197,84 @@ BDNS_DOCUMENT_OUT_OF_SCOPE_TERMS = (
 BDNS_DOCUMENT_NAMED_ACCESS_TERMS = (
     "subvencion directa excepcional", "convenio a suscribir con",
 )
+
+# Provincias y comunidades espanolas AJENAS a Aragon. Es una lista cerrada y
+# estable —las provincias no cambian—, al reves que un catalogo de ferias, que
+# es la clase de lista que caduca en silencio (punto 27 del backlog). Se ordena
+# de mas larga a mas corta para que «santa cruz de tenerife» gane a «tenerife».
+BDNS_TERRITORIES_OUTSIDE_ARAGON = (
+    "santa cruz de tenerife", "castilla-la mancha", "castilla la mancha",
+    "castilla y leon", "comunidad valenciana", "comunitat valenciana",
+    "region de murcia", "illes balears", "las palmas", "gran canaria",
+    "la coruna", "a coruna", "ciudad real", "la rioja", "pais vasco",
+    "alava", "araba", "albacete", "alicante", "alacant", "almeria", "asturias",
+    "avila", "badajoz", "baleares", "barcelona", "burgos", "caceres", "cadiz",
+    "cantabria", "castellon", "castello", "cordoba", "cuenca", "girona",
+    "gerona", "granada", "guadalajara", "guipuzcoa", "gipuzkoa", "huelva",
+    "jaen", "leon", "lleida", "lerida", "lugo", "madrid", "malaga", "murcia",
+    "navarra", "nafarroa", "ourense", "orense", "palencia", "pontevedra",
+    "salamanca", "tenerife", "segovia", "sevilla", "soria", "tarragona",
+    "toledo", "valencia", "valladolid", "vizcaya", "bizkaia", "zamora",
+    "ceuta", "melilla", "andalucia", "canarias", "cataluna", "catalunya",
+    "extremadura", "galicia", "euskadi", "mallorca", "menorca", "ibiza",
+    "lanzarote", "fuerteventura", "la palma", "la gomera", "el hierro",
+)
+
+
+# «Ayudas 2026 a empresas extremenas para el acceso a mercados exteriores».
+BDNS_GENTILICS_OUTSIDE_ARAGON = (
+    "extremenas", "andaluzas", "catalanas", "gallegas", "vascas", "valencianas",
+    "murcianas", "canarias", "asturianas", "navarras", "riojanas", "cantabras",
+    "castellanomanchegas", "manchegas", "madrilenas",
+)
+
+
+# El sujeto beneficiario y el conector que lo une a su territorio. Se exige el
+# sujeto a proposito: un topónimo suelto en el titulo suele ser el ORGANISMO que
+# convoca o el destino de un viaje —«Mision Comercial a Mexico»—, no el
+# territorio de los beneficiarios, y descartar por eso seria un falso positivo.
+_BDNS_BENEFICIARY_SUBJECT = (
+    r"(?:las?\s+|los\s+)?(?:empresas|pymes|pyme|micropymes|autonomos|"
+    r"personas\s+(?:empresarias|trabajadoras)|establecimientos|comercios|entidades)"
+)
+_BDNS_CHAMBER_DEMARCATION = (
+    r"demarcacion\s+territorial\s+de\s+la\s+camara\s+de\s+comercio"
+    r"[a-z,\s]{0,70}?\s+de\s+"
+)
+_BDNS_TERRITORY_CONNECTOR = (
+    r"(?:\s+y\s+autonomos)?\s+(?:de|del|en)\s+"
+    r"(?:la\s+)?(?:provincia\s+de\s+|comunidad\s+autonoma\s+de\s+|"
+    r"comunitat\s+autonoma\s+de\s+|" + _BDNS_CHAMBER_DEMARCATION + r"|"
+    r"isla\s+de\s+|ciudad\s+de\s+|municipio\s+de\s+|cc\.?\s?aa\.?\s+de\s+)?"
+)
+
+
+def _bdns_beneficiary_territory_outside_aragon(title: str) -> str | None:
+    """Territorio ajeno a Aragon al que el titulo limita los beneficiarios.
+
+    Medido el 03/09/2026 sobre las 36 convocatorias de ferias, misiones e
+    internacionalizacion del historico: caza 18, y **cero** de las 31 fichas
+    vivas del producto publicado. Esa segunda cifra es la que importa, porque un
+    falso positivo aqui tiraria una oportunidad buena en silencio.
+    """
+    folded = _fold_text(title)
+    # Aragon manda: si el titulo la nombra, no se descarta por territorio.
+    if re.search(r"\b(?:aragon|zaragoza|huesca|teruel)\b", folded):
+        return None
+    if re.search(r"\b(?:territorio nacional|ambito nacional|todo el estado)\b", folded):
+        return None
+    for gentilic in BDNS_GENTILICS_OUTSIDE_ARAGON:
+        if re.search(rf"{_BDNS_BENEFICIARY_SUBJECT}\s+{gentilic}\b", folded):
+            return gentilic
+    for territory in BDNS_TERRITORIES_OUTSIDE_ARAGON:
+        if re.search(
+            rf"{_BDNS_BENEFICIARY_SUBJECT}{_BDNS_TERRITORY_CONNECTOR}"
+            rf"{re.escape(territory)}\b",
+            folded,
+        ):
+            return territory
+    return None
+
 
 BDNS_PRIOR_LOCAL_PRESENCE_PATTERNS = (
     r"domicilio social y fiscal.{0,80}municipio.{0,180}actividad principal.{0,80}municipio",
@@ -414,6 +498,26 @@ def _bdns_intrinsic_exclusion(conv: dict, extra_text: str = "") -> dict | None:
             "reject", "existing_establishment_outside_kalfrisa_location",
             "La ayuda local exige que la actividad o establecimiento ya figure "
             "en un municipio distinto de la ubicacion conocida de Kalfrisa.",
+        )
+
+    # El territorio dicho en el propio titulo, que es como lo escriben las
+    # Camaras de Comercio: «para empresas de la provincia de Jaen», «a pymes de
+    # CC.AA. de Extremadura». Ni el campo oficial `bdns_regions` ni el regex de
+    # «termino municipal de X» de arriba entienden esa forma, asi que se
+    # escapaba (AGENTS.md 63).
+    #
+    # Es la regla que permite retirar los cuatro terminos de ferias y misiones
+    # sin abrir la puerta a 27 convocatorias ajenas: descarta por DONDE se
+    # aplica la ayuda, no por DE QUE va, que es un criterio comprobable y sirve
+    # igual para cualquier otra materia.
+    foreign_territory = _bdns_beneficiary_territory_outside_aragon(
+        str(conv.get("title", ""))
+    )
+    if foreign_territory:
+        return _bdns_gate_result(
+            "reject", "beneficiary_territory_outside_aragon",
+            "El titulo limita los beneficiarios a empresas de un territorio "
+            f"ajeno a Aragon ({foreign_territory}).",
         )
 
     if evidence_folded:

@@ -56,15 +56,19 @@ desactualizado si no se mantiene junto a ellos.
 >
 > ---
 >
-> **Estado del código al cerrar el 03/09/2026 (tarde):** 42 módulos, **752
-> pruebas en verde**. Verificación `--no-claude` completa: **921 detectadas, 87
-> vigentes**, prefiltro `retain=35, ambiguous=5, hold_manual=80, reject=801`.
-> **Sin regresión**: idéntico al de esta mañana salvo un `reject` (802→801), que
-> es deriva de la ventana deslizante de BDNS, no del cambio.
+> **Estado del código al cerrar el 03/09/2026 (noche):** 42 módulos, **760
+> pruebas en verde**. Verificación `--no-claude` completa: **921 detectadas, 92
+> vigentes**, prefiltro `retain=35, ambiguous=5, hold_manual=84, reject=797`.
 >
-> Pendientes de analizar **87** —eran 84— porque el cambio de prompt **invalidó
-> la caché a propósito**: **2,23 USD instantáneo o ~1,11 USD por lotes**. Cifras
-> de referencia en **AGENTS.md 62**.
+> Suben de 87 a 92 **por el relevo territorial de la sección 63**, no por deriva:
+> las cinco nuevas son convocatorias de ferias y misiones que antes se
+> descartaban por el tema y ahora se juzgan por el territorio. **No desapareció
+> ninguna.**
+>
+> Pendientes de analizar **92** —eran 84 por la mañana— porque el cambio de
+> prompt **invalidó la caché a propósito** y la regla nueva admite cinco más:
+> **2,36 USD instantáneo o ~1,18 USD por lotes**. Cifras de referencia en
+> **AGENTS.md 63.4**.
 >
 > **Cada ficha publicada lleva ahora `stable_key`** (AGENTS.md 60.2), y es lo
 > que hay que usar para referirse a una convocatoria desde fuera del JSON. El
@@ -284,8 +288,24 @@ desactualizado si no se mantiene junto a ellos.
 > No queda orden de extracción pendiente. Si una sesión futura busca «lo
 > siguiente de la modularización», la respuesta es que no hay.
 >
-> **Arranque en frío: AGENTS.md secciones 54 a 62**, que cierran el 01-03/09/2026.
-> La **62** es la última, y es la que más ahorra trabajo: el diagnóstico que
+> **La internacionalización ya NO se descarta por el tema** (AGENTS.md 63). Los
+> seis términos de ferias y misiones comerciales —`programa pyme global`,
+> `mision comercial`, `visita a la feria`…— se **retiraron** de
+> `BDNS_ALWAYS_OUT_OF_SCOPE_TERMS`, y su trabajo lo hace
+> `_bdns_beneficiary_territory_outside_aragon()`, que descarta por **dónde tiene
+> que estar la empresa**, no por de qué va la ayuda. Se apoya en la lista cerrada
+> de provincias españolas, no en un catálogo de ferias que caduque.
+> **No vuelvas a añadir esos términos**: hay una prueba que lo prohíbe.
+>
+> La regla exige el **sujeto beneficiario** delante del topónimo a propósito.
+> Sin él, «Misión Comercial a México» descartaría por el destino del viaje y
+> «con socios de Cataluña» por la procedencia de un socio, que no es donde tiene
+> que estar Kalfrisa.
+>
+> **Arranque en frío: AGENTS.md secciones 54 a 63**, que cierran el 01-03/09/2026.
+> La **63** es la última: el relevo territorial, que **invierte la recomendación
+> de 62.6** —ese apartado se conserva porque explica por qué cambió el número, no
+> porque siga valiendo—. La **62** es la que más ahorra trabajo: el diagnóstico que
 > canceló medio paso 2 con cifras —por qué motivo se rebaja el encaje (62.2), que
 > `fit_score` está aplanado y no arrastrado (62.3), y que ampliar la taxonomía no
 > puede funcionar (62.4 y 62.5)—. Antes, la **61**: modo por lotes, notas para el

@@ -189,5 +189,116 @@ class FechaDePublicacionTests(unittest.TestCase):
         self.assertEqual(_bdns_call_publication_date({}), "")
 
 
+class BeneficiaryTerritoryTests(unittest.TestCase):
+    """El territorio dicho en el titulo, que es como lo escriben las Camaras.
+
+    Nace de retirar los seis terminos de ferias y misiones comerciales del
+    03/09/2026 (AGENTS.md 63). Aquellos descartaban por el TEMA —«mision
+    comercial», «visita a la feria»— y contradecian el perfil, que dice que la
+    internacionalizacion interesa. Esta regla descarta por un hecho comprobable
+    —donde tiene que estar la empresa— y por eso sirve para cualquier materia,
+    no solo para ferias.
+
+    Los titulos de abajo son REALES, del historico de exclusiones.
+    """
+
+    def _territorio(self, titulo):
+        from grant_radar.bdns_rules import (
+            _bdns_beneficiary_territory_outside_aragon,
+        )
+        return _bdns_beneficiary_territory_outside_aragon(titulo)
+
+    def test_la_provincia_en_el_titulo_descarta(self):
+        casos = {
+            "CONVOCATORIA PYME GLOBAL 2026 VISITA A FERIA IMTS CHICAGO 2026 "
+            "PARA EMPRESAS DE LA PROVINCIA DE JAEN": "jaen",
+            "Convocatoria Pyme Global 2026 Visita Feria SIAL Paris para "
+            "empresas de la provincia de Sevilla": "sevilla",
+            "Convocatoria Pyme Global 2026 - Visita a la Feria WTM (Londres) "
+            "para empresas y autonomos de la provincia de Cadiz": "cadiz",
+            "CONVOCATORIA DE AYUDAS A PYMES DE CC.AA. DE EXTREMADURA PARA LA "
+            "PARTICIPACION EN VISITA PROFESIONAL FERIA BULK WINE 2026": "extremadura",
+            "Ayudas 2026 a empresas extremenas para el acceso a mercados "
+            "exteriores denominadas Cheque Exporta": "extremenas",
+        }
+        for titulo, esperado in casos.items():
+            with self.subTest(titulo=titulo[:40]):
+                self.assertEqual(self._territorio(titulo), esperado)
+
+    def test_la_demarcacion_de_una_camara_tambien(self):
+        """La formula lleva comas dentro y la primera version no la cazaba."""
+        titulo = (
+            "CONVOCATORIA PYME GLOBAL 2026 PARTICIPACION VISITA FERIA SIAL "
+            "PARIS 2026 PARA EMPRESAS DE LA DEMARCACION TERRITORIAL DE LA "
+            "CAMARA DE COMERCIO,INDUSTRIA, SERVICIOS Y NAVEGACION DE GRANADA"
+        )
+        self.assertEqual(self._territorio(titulo), "granada")
+
+    def test_aragon_manda_sobre_cualquier_otro_toponimo(self):
+        titulo = (
+            "Subvenciones para la participacion en ferias internacionales "
+            "para empresas de la provincia de Zaragoza"
+        )
+        self.assertIsNone(self._territorio(titulo))
+
+    def test_un_destino_de_viaje_no_es_el_territorio_del_beneficiario(self):
+        """El falso positivo que la regla tiene que evitar.
+
+        «Mision Comercial a Mexico» nombra el destino, no donde debe estar la
+        empresa. Por eso se exige el sujeto beneficiario delante: sin
+        «para empresas de», un toponimo suelto no descarta nada.
+        """
+        for titulo in (
+            "Convocatoria Pyme Global 2026, Mision comercial a Peru",
+            "Convocatoria Pyme Global 2026. Mision Comercial Directa a "
+            "Camerun, Senegal y Gambia",
+            "Ayudas a proyectos de I+D industrial con socios de Cataluna y "
+            "Galicia en consorcio",
+        ):
+            with self.subTest(titulo=titulo[:44]):
+                self.assertIsNone(self._territorio(titulo))
+
+    def test_no_toca_ninguna_convocatoria_de_id_industrial_nacional(self):
+        """La comprobacion que no se puede fallar: cero falsos positivos.
+
+        Medido el 03/09 sobre las 31 fichas vivas del producto publicado: la
+        regla no descarta ninguna. Aqui quedan fijados los titulos del tipo que
+        mas dolería perder.
+        """
+        for titulo in (
+            "Proyectos Transferencia Tecnologica Cervera (ventanilla abierta)",
+            "Convocatoria de 2026 de ayudas para la realizacion de proyectos "
+            "de I+D+i_Innovacion_Proceso",
+            "INNTERCONECTA - STEP 2026",
+            "Programa INNOVAE",
+            "Full-scale demonstration of heat upgrade solutions in industrial "
+            "processes",
+        ):
+            with self.subTest(titulo=titulo[:44]):
+                self.assertIsNone(self._territorio(titulo))
+
+    def test_los_terminos_de_ferias_ya_no_estan_en_la_lista_de_siempre_fuera(self):
+        """No volver a anadirlos: descartaban por tema, no por hecho."""
+        from grant_radar.bdns_rules import BDNS_ALWAYS_OUT_OF_SCOPE_TERMS
+        for termino in (
+            "programa pyme global", "convocatoria pyme global",
+            "mision comercial", "visita a la feria", "participacion en feria",
+            "encuentros empresariales internacionales",
+        ):
+            with self.subTest(termino=termino):
+                self.assertNotIn(termino, BDNS_ALWAYS_OUT_OF_SCOPE_TERMS)
+
+    def test_la_lista_sigue_excluyendo_lo_que_debe(self):
+        """Retirar seis terminos no puede haber aflojado el resto."""
+        from grant_radar.bdns_rules import BDNS_ALWAYS_OUT_OF_SCOPE_TERMS
+        for termino in (
+            "promocion turistica", "comercio minorista", "beca de formacion",
+            "beca de colaboracion", "edificios residenciales",
+            "convocatoria de premios",
+        ):
+            with self.subTest(termino=termino):
+                self.assertIn(termino, BDNS_ALWAYS_OUT_OF_SCOPE_TERMS)
+
+
 if __name__ == "__main__":
     unittest.main()
