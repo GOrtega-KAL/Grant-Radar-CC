@@ -19,11 +19,16 @@ desactualizado si no se mantiene junto a ellos.
 > convirtió el desfase en una fecha límite y empujó a publicar; el usuario lo
 > corrigió. **No conviertas el desfase en urgencia por tu cuenta.**
 >
-> El desfase, para informar sin empujar: producto del **21/08**, cuatro fichas
-> ya vencidas y doce que vencen en catorce días; entre ellas tres topics de
-> Horizon de máximo encaje que cierran el 15/09. Detalle en AGENTS.md 54.2.
-> Cuando el usuario decida publicar, cuesta **~2,07 USD sobre 81
-> convocatorias** y requiere autorización expresa.
+> **Al día 03/09/2026 por la noche el usuario YA autorizó el análisis, y está
+> enviado por lotes** (92 convocatorias, ~1,18 USD). Eso NO deroga la prioridad
+> de arriba: fue una decisión suya después de que el paso 2 cerrara, no una
+> urgencia que empujara una sesión. La fase 2 y la publicación siguen siendo
+> **suyas**; ver «PRIMERO DE TODO» más abajo.
+>
+> El desfase, para informar sin empujar: producto del **21/08**. Detalle en
+> AGENTS.md 54.2. **Cualquier análisis de pago posterior a este lote vuelve a
+> requerir autorización expresa** — que se haya dado una vez no abre la puerta a
+> la siguiente.
 >
 > ### Qué hacer mientras tanto: trabajo gratis que reduce fallos
 >
@@ -80,9 +85,99 @@ desactualizado si no se mantiene junto a ellos.
 > `grant-radar-favoritos.favoritos-worker.workers.dev`. La URL y el id del
 > namespace KV van versionados y no son secretos.
 >
-> ## POR DÓNDE SEGUIR, al cerrar el 03/09/2026 (tarde)
+> ## PRIMERO DE TODO, si arrancas en frío el 04/09/2026 o después
 >
-> El usuario fijó tres pasos. **El 1 y el 2 están hechos. Queda el 3.**
+> **HAY UN LOTE DE PAGO EN VUELO, enviado el 03/09/2026 por la noche.** Antes de
+> tocar nada, mira dónde está — es gratis y no toca la red:
+>
+> ```
+> poetry run python "Grant-Radar-prueba.py" --batch-status
+> ```
+>
+> **El usuario dejó dicho que la fase 2 se ejecuta «mañana», es decir el
+> 04/09.** No hace falta prisa: las 24 h de la API son de **procesamiento**, no
+> de recogida, y lo ya procesado queda disponible **29 días** (AGENTS.md 61.12).
+>
+> ### SONDEADO el 04/09/2026 a las 05:50 UTC: la fase 1 está entera y esperando
+>
+> `--batch-status` dice `phase1_running`, pero eso es solo el marcador local —
+> significa «nadie ha sondeado desde el envío», **no** «sigue corriendo». Un
+> `messages.batches.retrieve` de solo lectura, que cuesta **0 USD**, dice la
+> verdad:
+>
+> ```
+> processing_status: ended
+> succeeded: 92 · errored: 0 · expired: 0 · processing: 0
+> created_at  2026-09-03 13:23:35 UTC
+> ended_at    2026-09-03 13:26:04 UTC   ← 2 min 29 s
+> ```
+>
+> **La caída de los servidores de Anthropic del 03/09 no tocó el lote:** terminó
+> dos minutos y medio después de enviarse, mucho antes. Las 92 extracciones están
+> pagadas, completas y disponibles **29 días** (hasta el 02/10). El `expires_at`
+> del 04/09 a las 13:23 UTC **no aplica** — es el plazo de procesamiento, y el
+> procesamiento ya acabó.
+>
+> Lo que la caída sí rompió fue local: la sesión murió antes de commitear, y
+> este archivo con su aviso no llegó al remoto hasta el 04/09.
+>
+> **Hueco detectado, punto 45 del backlog:** `--batch-status` no puede distinguir
+> «procesando» de «terminado hace 16 h», porque no toca la red por diseño. Falta
+> un sondeo de solo lectura —gratis, sin recoger ni enviar nada— para saberlo sin
+> comprometer la fase 2.
+>
+> **Qué hacer, según lo que diga el estado:**
+>
+> | Dice | Qué hacer |
+> |---|---|
+> | `phase1_running` | Esperar. `--batch-collect` sale sin coste si aún procesa |
+> | `phase1_running` y **ya terminada** | `--batch-collect` recoge los hechos y **envía la fase 2**. Es la ejecución que el usuario espera |
+> | `phase2_running` | Otro `--batch-collect` cuando termine: ensambla y **guarda en caché** |
+> | No hay lote | Ya está recogido: una ejecución normal publica **sin llamar a Claude** |
+>
+> **La recogida final NO publica, a propósito** (61.3). Deja los análisis en la
+> caché; el producto lo publica la siguiente ejecución normal, que los encuentra
+> ahí y no paga nada.
+>
+> **Lo que NO se puede hacer mientras el lote vuela:** tocar el prompt, el
+> perfil o el catálogo de socios. `cache_key()` incluye sus versiones y la
+> recogida **se negaría**, diciendo cuál cambió (61.4). Es la salvaguarda
+> haciendo su trabajo, pero dejaría el lote bloqueado y ya pagado.
+>
+> ### Qué mirar al recoger, y por qué esas tres cosas
+>
+> El lote es la primera medición de los tres cambios de prompt del 03/09
+> (AGENTS.md 62.7). Ninguno se puede verificar sin pagar, así que este es el
+> momento:
+>
+> 1. **Si el montón del 45 se reparte.** Hoy 16 de las 77 fichas publicadas
+>    valen exactamente 45. Es una comprobación **de distribución**, no de
+>    ninguna nota concreta — y es la única que no deforma los criterios, que es
+>    la condición que el usuario puso el 02/09.
+> 2. **Si sube algo de las líneas que Kalfrisa QUIERE DESARROLLAR.** Hay 5-6
+>    casos entre las 92: «MODERNIZACIÓN DE LA ESTRUCTURA PRODUCTIVA Y DIGITAL DE
+>    LA ACTIVIDAD INDUSTRIAL», Apply AI, automatización de fábrica,
+>    electrificación del calor. Mirar **`recommended_role`**, no solo la nota:
+>    si sube pero el papel dice «fabricante» de algo que solo integra, es el
+>    error de EHEAT (61.13) por la otra puerta.
+> 3. **Que las municipales sigan bajas.** Breña Baja, Manresa, Cardona, el
+>    comercio de Lleida, la beca INAP-Fulbright. Si la instrucción de coherencia
+>    las empujara hacia arriba, está haciendo daño y **hay que revertirla**. La
+>    distancia entre ellas y las de I+D industrial vale más que cualquier cifra
+>    absoluta.
+>
+> **Lo que NO se va a poder comprobar, y está verificado sobre los 92 títulos:**
+> la mitad «lo que Kalfrisa **INTEGRA**» de la tercera instrucción. No hay
+> ninguna convocatoria de rotoconcentradores, COV ni filtros de mangas. No es un
+> fallo: este mes no las hay (AGENTS.md 62.5).
+>
+> **Y el criterio que manda al leer los resultados** (61.1, del usuario): nada
+> de ajustar para alcanzar una cifra. Las referencias —PowerUp 75-85, INNOVAE
+> 65-75— son **termómetro, no objetivo**.
+>
+> ## POR DÓNDE SEGUIR, al cerrar el 03/09/2026 (noche)
+>
+> El usuario fijó tres pasos. **Los tres están hechos o en marcha.**
 >
 > **PASO 2 — HECHO, y el diagnóstico canceló la mitad de lo que proponía.**
 > Todo el detalle en **AGENTS.md 62**; lo esencial, para no volver a intentarlo:
@@ -105,9 +200,6 @@ desactualizado si no se mantiene junto a ellos.
 >   encaje sino `confidence`; `fit_score` debe ser coherente con las cinco
 >   sub-puntuaciones que el propio modelo da; y **los tres encajes del perfil
 >   —fabrica, integra, quiere desarrollar— son encaje**, cada uno con su papel.
-> - **Ninguna de las tres se puede verificar sin pagar.** Las pruebas garantizan
->   que la instrucción está y está entera; que el modelo la obedezca solo se ve
->   en una ejecución real.
 >
 > **El hallazgo que manda sobre el paso 3:** medidos los 439 riesgos de los 80
 > análisis en disco, **el 65,9 % de los riesgos de la banda estancada en 45 son
@@ -117,16 +209,10 @@ desactualizado si no se mantiene junto a ellos.
 > cuatro bandas: no está arrastrado hacia abajo, está **aplanado** —16 de 77
 > fichas valen exactamente 45—. **45 es un atractor, no una valoración.**
 >
-> **PASO 3 — la ejecución completa. Es lo siguiente, y requiere autorización
-> expresa.** El cambio de prompt **invalidó la caché a propósito**, así que
-> ahora hay más pendientes que las 84 de esta mañana; la cifra exacta y el coste
-> los da `--no-claude` o `--staleness-report`, gratis. Dos precios:
-> **instantáneo** o **~la mitad por lotes** (`--batch`).
+> **PASO 3 — EN MARCHA. Autorizado por el usuario el 03/09 y enviado esa
+> noche**, por lotes: 92 convocatorias, **~1,18 USD** en vez de 2,36. La fase 2
+> queda para el 04/09, y es lo primero de este archivo.
 >
-> Es la única forma de saber si los tres cambios de prompt funcionan. Conviene
-> mirar **las cinco dimensiones y no solo el número global**, y comprobar dos
-> cosas concretas: si el 45 se despega, y si alguna convocatoria de algo que
-> Kalfrisa **integra** o **quiere desarrollar** sube.
 >
 > ## Lo que hay que saber para no repetir errores ya pagados
 >
@@ -384,8 +470,14 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
   quedar latente hasta la primera ejecución de pago: pasó de verdad con
   catorce funciones de `deterministic_rules` (AGENTS.md sección 29).
   `tests/test_grant_radar_script_names.py` vigila justamente eso.
+- **Con un lote en vuelo, NO se tocan `versions.py`, el perfil ni el catálogo
+  de socios.** `cache_key()` incluye esas versiones y la recogida se **negaría**,
+  dejando bloqueado un análisis ya pagado (AGENTS.md 61.4). Comprobar antes con
+  `--batch-status`, que es gratis y no toca la red. Es la salvaguarda haciendo
+  su trabajo, no un fallo, pero conviene no provocarla.
 - **Llamar a Claude/Haiku por API requiere SIEMPRE autorización expresa del
-  usuario**, sin excepción, porque cuesta dinero real. En cambio, el usuario
+  usuario**, sin excepción, porque cuesta dinero real. Que se haya autorizado
+  una vez —el lote del 03/09— no cubre la siguiente. En cambio, el usuario
   autorizó el 19/08/2026 a ejecutar `--no-claude` sin preguntar (tarda 10-15
   min, no consume tokens) y a hacer `commit` y `push` a `Grant-Radar-CC` sin
   pedir permiso, por ser esta una carpeta paralela de iteración.

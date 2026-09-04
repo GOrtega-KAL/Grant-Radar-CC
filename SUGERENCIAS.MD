@@ -1727,8 +1727,106 @@ mismo que el proyecto hizo el 01/09 con la regla de consorcio, y merece quedar
 escrito como norma y no como caso: **una autorización dada sobre una estimación
 no cubre lo que la medición desmienta después**.
 
+> **Y esa misma noche el usuario dio la vuelta al problema — ver sección 22.**
+> No aceptó ni rechazó: pidió buscar patrones que separasen las útiles de las
+> inútiles. Con un relevo territorial en el sitio de los términos, retirarlos
+> pasa a costar **0,05 USD** y se ejecutó. La medición de arriba era correcta;
+> **la recomendación estaba incompleta**, porque comparaba dos opciones cuando
+> había tres.
+
 Estado: **752 pruebas** en verde, 42 módulos, **0 USD** gastados en API en esta
 ronda. El producto publicado sigue siendo el del 21/08.
+
+## 22. Estado a 03/09/2026 (noche): la pregunta del cliente que invirtió una recomendación en horas
+
+Por la tarde, la sección 21 recomendó **no tocar** los términos de
+internacionalización: retirarlos costaba ~0,69 USD por ejecución para rescatar
+como mucho una convocatoria de 27. El razonamiento estaba bien hecho y el número
+era correcto.
+
+El usuario no aceptó ni rechazó. **Reformuló el problema:**
+
+> «Busca patrones que permitan distinguir de manera coherente y extrapolable
+> convocatorias útiles de inútiles: si se puede detectar fácilmente que no son
+> de foco industrial, descartar; si se puede encontrar fácilmente que la
+> localización de aplicación descarta a Kalfrisa, descartar.»
+
+Con el relevo puesto, retirarlos cuesta **0,05 USD**. La recomendación de la
+tarde no era incorrecta: **estaba incompleta**, porque daba por supuesto que
+nada ocuparía el lugar de los términos retirados.
+
+### Lo que esto añade al catálogo de defectos
+
+Las secciones anteriores describían defectos del código y del dato. Este es de
+otra clase, y es del análisis:
+
+**Una medición correcta puede sostener una recomendación equivocada si la
+alternativa que no se midió no estaba en la lista.**
+
+Su firma es característica: el número es exacto, el razonamiento es válido, y la
+conclusión se cae en cuanto alguien añade una opción. No lo detecta revisar la
+medición —está bien hecha— sino preguntar «¿y si hubiera una tercera vía?». Es
+el mismo hueco que el punto 38 del backlog, donde se iba a defender una decisión
+sobre dos opciones y **existía una tercera** (sección 60.7).
+
+Frente al punto **2.9**: la lección práctica es que una recomendación de no
+hacer nada merece la misma pregunta que una de hacer algo — *¿qué opciones he
+comparado?* Aquí se compararon dos (retirar o no retirar) cuando había tres
+(retirar **y** poner otra cosa en su sitio).
+
+### Por qué el patrón elegido es el bueno, y no el evidente
+
+El usuario ofreció dos vías. Se midieron las dos y **solo una sobrevive**:
+
+| Vía | Veredicto |
+|---|---|
+| Detectar que la feria no es de foco industrial | **Descartada.** El sector está en el nombre de la feria —SIAL alimentación, WTM turismo, COMPAMED médico, Metstrade náutica— y detectarlo exige un catálogo mantenido a mano: el punto 27 del backlog, que ya caducó en silencio con las URLs de CDTI |
+| Detectar que la localización excluye a Kalfrisa | **Adoptada.** Se apoya en las provincias españolas, una lista cerrada que no caduca |
+
+Y hay una razón de fondo que va más allá de este caso: **descartar por el tema
+es lo que había, y es lo que chocaba con el perfil.** Cuando el cliente cambió
+de intereses —la internacionalización pasó de irrelevante a deseada—, la regla
+temática se quedó obsoleta en silencio. Una regla de elegibilidad no: dónde
+tiene que estar la empresa no depende de qué le interese al cliente este año.
+
+**El criterio general que deja escrito: preferir reglas sobre hechos de
+elegibilidad antes que reglas sobre materia.** Las primeras envejecen con la
+convocatoria; las segundas, con el cliente.
+
+### La cifra que decide no es la que parece
+
+Retirar seis términos y añadir una regla nueva tiene dos números: cuántas caza
+(18 de 36) y cuánto cuesta lo que se escapa (0,05 USD). **Ninguno de los dos es
+el importante.**
+
+El importante es que la regla se probó contra las **31 fichas vivas** del
+producto y descarta **cero**. Un falso positivo aquí no produce un error
+visible: produce una oportunidad que nunca aparece, y el usuario no tiene forma
+de echarla en falta. Es la única clase de fallo de este proyecto que **no se
+detecta mirando el producto**, junto con el falso positivo cualificado del
+03/09 por la mañana (sección 21 y AGENTS.md 61.13).
+
+Conviene que quede como norma: **toda regla nueva que descarte se mide primero
+contra lo que hoy sobrevive**, y ese número se publica junto al beneficio.
+
+### Dos pruebas que fijaban la regla retirada
+
+`test_bdns_commercial_residential_and_training_scopes_are_rejected` y
+`test_residual_bdns_wording_variants_are_rejected` exigían que PYME Global
+saliera por «ámbito no industrial». **No se borraron**: se reescribieron para
+exigir el mismo resultado por el mecanismo nuevo, más una que comprueba lo
+contrario —que la misma convocatoria en Zaragoza ya **no** se descarta por ser
+de una feria—.
+
+Es la contrapartida del aviso del 03/09 por la mañana, cuando una prueba llevaba
+dos semanas afirmando algo falso sobre el cliente. Allí la lección fue que una
+prueba en verde no valida una suposición. Aquí es la simétrica: **cuando la
+regla cambia a propósito, la prueba se reescribe explicando por qué**. Borrarla
+habría perdido la mitad útil, que es que esas convocatorias sigan fuera.
+
+Estado: **760 pruebas** en verde, 42 módulos. El análisis de las 92 pendientes
+está **enviado por lotes** (~1,18 USD), autorizado expresamente por el usuario
+tras cerrarse el paso 2. La fase 2 y la publicación quedan para el 04/09.
 
 ## Nota de alcance
 

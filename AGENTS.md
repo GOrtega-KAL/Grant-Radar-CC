@@ -2463,6 +2463,7 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 41 | **Bloqueo entre procesos para `--batch-collect`.** Hoy no hay ninguno: con una recogida programada cada pocos minutos, dos procesos pueden leer `phase1_running` a la vez, recoger los dos y **enviar la fase 2 dos veces**, pagándola dos veces. Con ejecución manual el riesgo es bajo; **antes de dejarlo desatendido en un servidor hay que cerrarlo** | Sección 61.14. El arreglo es pequeño: un archivo de bloqueo con `O_EXCL` junto al de estado, liberado en un `finally`, y una recogida que salga en silencio si no lo consigue |
 | 42 | **«RTO» en singular etiqueta como `emissions` topics de Horizon que no lo son.** En el vocabulario de Kalfrisa `RTO` es un *Regenerative Thermal Oxidizer*; en Horizon es una *Research and Technology Organisation*. La guardia de plurales de 59.2 para el «RTOs» pero no el singular: 3 de 31 topics mal etiquetados (transferencia de tecnología, computación cuántica, filantropía). **Impacto medido hoy: cero** — los tres se descartan por otras reglas—, pero `emissions` está en `thermal_core`, que suprime cuatro exclusiones sectoriales del perfil | Sección 62.8. Latente, no activo. El arreglo natural es pasar `rto` de `strong_terms` a `contextual_terms`, que ya existe para vocabulario ambiguo; exige medir llamando a los conectores (59.1) y hoy el beneficio medido sería nulo |
 | 44 | **El territorio dicho en el ORGANISMO, no en el sujeto beneficiario.** `_bdns_beneficiary_territory_outside_aragon()` exige «para empresas de <territorio>» a propósito, para que «Misión Comercial a México» no descarte por el destino del viaje. Se le escapan las que lo dicen en el convocante: «Cámara Bahía de Algeciras», «Extremadura Avante». Medido el 03/09: **3 convocatorias, ~0,04 USD por ejecución** | Sección 63.4. **No perseguir a la ligera**: una Cámara de Comercio delimita territorio, pero «Cámara de España» no, y sobreajustar aquí es el modo de fallo que este proyecto lleva documentado desde el chip «Hornos» (55.1). Si se hace, medir contra las fichas vivas igual que en 63.4 |
+| 45 | **`--batch-status` no distingue «procesando» de «terminado hace 16 h».** Lee solo el archivo local, que dice `phase1_running` desde el envío porque nadie lo ha actualizado. El 04/09 el lote llevaba 16,5 h marcado así y en realidad había terminado a los 2 min 29 s. Para saberlo hay que llamar a `--batch-collect`, que **envía la fase 2 y paga**: no existe forma barata de mirar sin comprometerse | Sección 64.2. El arreglo es pequeño y **cuesta 0 USD**: `poll_batch()` ya hace un `messages.batches.retrieve` puro, sin tokens. Falta exponerlo como bandera —`--batch-poll`— que sondee, informe de `succeeded/errored/expired` y **no recoja ni envíe nada**. Es además la sonda que 61.14 quiere para el servidor |
 | 34 | Programar la recopilación `--no-claude` diaria en el Programador de tareas de Windows | Sección 47.6 tiene el comando. **Es una acción del usuario en su equipo**, no del agente: queda anotada para no darla por hecha |
 | 37 | **La ejecución completa**, ~2,02 USD sobre 79 convocatorias, **cuando el usuario lo decida** | Sección **54.9**. Los tres controles de 53.2 ya están ejercitados: presupuesto y elegibilidad de Horizon el 01/09 (54.4) y el territorial de Navarra el mismo día (54.10), por 0,1271 USD en total. No queda validación pendiente; lo que falta es publicar, y **la prioridad fijada por el usuario es depurar antes que publicar**: informar del desfase sí, convertirlo en urgencia no. **Requiere autorización expresa** |
 
@@ -7116,3 +7117,84 @@ cambia a propósito, la prueba se reescribe explicando por qué; borrarla habrí
 perdido la mitad útil, que es que esas convocatorias sigan fuera.
 
 **760 pruebas** (752 al empezar la noche).
+
+
+## 64. El lote sobrevivió a la caída, y el marcador que no lo sabía, a 04/09/2026
+
+Arranque en frío del día siguiente. Dos preguntas del usuario: en qué estado
+está la extracción, y si la caída de los servidores de Anthropic del 03/09
+afectó en algo.
+
+### 64.1. Qué rompió la caída, que no fue el lote
+
+**El lote está intacto.** Sondeado con un `messages.batches.retrieve` de solo
+lectura, que no gasta:
+
+```
+msgbatch_01WtMtqABULPghYFyj2F591D
+processing_status: ended
+succeeded: 92 · errored: 0 · expired: 0 · processing: 0
+created_at  2026-09-03 13:23:35 UTC
+ended_at    2026-09-03 13:26:04 UTC   ← 2 min 29 s
+```
+
+Terminó **dos minutos y medio** después de enviarse. Las 92 extracciones están
+pagadas, completas y disponibles 29 días —hasta el 02/10—, y el `expires_at` del
+04/09 no aplica: es el plazo de **procesamiento**, y el procesamiento ya acabó
+(61.12).
+
+**Lo que sí rompió fue local, y es de otra clase:** la sesión murió después de
+enviar el lote (15:23) pero **antes de commitear**. El último commit es de las
+15:11. Quedaron sin subir al remoto `CLAUDE.md` —justo el archivo con el aviso
+«HAY UN LOTE DE PAGO EN VUELO» y la tabla de qué hacer—, `SUGERENCIAS.MD` 22 y
+el `estado_recopilacion.json` con el bloque `batch` que ve el panel.
+
+O sea: **la caída no se llevó el trabajo pagado, se llevó el relevo**. Una
+sesión que hubiera arrancado desde el remoto no habría sabido que existía un
+lote. Se salvó porque `AGENTS.md` 63 sí se había commiteado a las 15:11 y porque
+`batch_state.json` es un archivo local, que era justo el argumento de 61.10.
+
+**La lección de método:** el relevo escrito no vale nada hasta que se commitea.
+En este proyecto el historial vive en los `.md` del repositorio, y entre
+escribirlos y publicarlos hay una ventana en la que una interrupción los borra
+del mundo. Commitear los `.md` **antes** de lanzar la operación cara, no después.
+
+### 64.2. El marcador local mentía, y no es un fallo suyo
+
+`--batch-status` decía `phase1_running · enviado hace 16,4 h`, y era falso
+—llevaba 16 h terminado—. No es un error: **el archivo dice lo que se sabía al
+enviarlo**, y nadie lo ha actualizado desde entonces porque `--batch-status` no
+toca la red por diseño (61.10).
+
+El problema es que **la única forma de averiguar la verdad era `--batch-collect`,
+que si la fase 1 terminó recoge y envía la fase 2, pagándola**. Para mirar había
+que comprometerse a gastar. Y el sondeo que resuelve la duda cuesta **0 USD**:
+`poll_batch()` ya existe y es un `retrieve` pelado, sin tokens.
+
+Abierto como **punto 45 del backlog**: exponerlo como `--batch-poll`, que
+sondee, informe de los recuentos y no recoja ni envíe nada. Es además la sonda
+de salud que 61.14 pide para cuando esto viva en un servidor.
+
+Conviene nombrar el patrón, porque el proyecto ya lo ha visto: **un estado que
+solo se actualiza al escribirlo envejece en silencio**. Es el mismo modo de
+fallo que las seis URLs muertas del catálogo de CDTI (44) y que la copia del
+perfil dentro del prompt (61.8). Aquí la consecuencia habría sido pagar por
+enterarse.
+
+### 64.3. Estado de la extracción a 04/09/2026
+
+Sin cambios respecto al cierre de 63.4, y verificado en frío:
+
+| | |
+|---|---|
+| Detectadas | **921** (recopilado el 03/09) |
+| Vigentes | **92** |
+| Embudo | `retain=35, ambiguous=5, hold_manual=84, reject=797` |
+| Pendientes de analizar | **92** — la fase 1 está pagada, la 2 no |
+| Producto publicado | el del **21/08**, 14 días de desfase |
+| Pruebas | **760**, en verde |
+
+**El bloqueo de versiones no bloquea nada:** las tres versiones del lote
+—`2026-09-v17`, `kalfrisa-2026-09-v9`, catálogo `2026-09-v2`— coinciden con
+`versions.py`. La recogida es posible cuando el usuario la autorice, y hasta
+entonces `versions.py`, el perfil y el catálogo no se tocan (61.4).
