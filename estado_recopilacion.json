@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-04T08:36:12.805804+00:00",
+  "generated_at": "2026-09-04T09:35:37.305627+00:00",
   "collected_on": "2026-09-04",
   "detected": 902,
   "active": 92,
@@ -8,6 +8,14 @@
   "estimated_cost_usd": 0.3072,
   "last_publication": "2026-08-21",
   "days_since_publication": 14,
-  "new_since_publication": 25,
-  "batch": null
+  "new_since_publication": null,
+  "batch": {
+    "state": "phase1_running",
+    "phase": 1,
+    "of_phases": 2,
+    "items": 10,
+    "submitted_at": "2026-09-04T09:35:37.070132+00:00",
+    "age_hours": 0.0,
+    "waiting_outside": 0
+  }
 }
