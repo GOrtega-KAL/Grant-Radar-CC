@@ -11,6 +11,7 @@ from grant_radar.claude_selection import (
     CLAUDE_MAX_ANALYSES_PER_RUN,
     CLAUDE_MAX_ESTIMATED_COST_USD,
     CLAUDE_OBSERVED_MEAN_USD_PER_ANALYSIS,
+    CLAUDE_OBSERVED_P05_USD_PER_ANALYSIS,
     build_claude_analysis_selection,
     claude_safety_preflight,
     prioritize_claude_candidates,
@@ -61,11 +62,41 @@ class SafetyPreflightTests(unittest.TestCase):
         self.assertEqual(CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS, 0.047)
 
     def test_the_barrier_cost_is_above_the_observed_mean(self):
-        # Una barrera calibrada con la media no protege de la cola: el 20/08 la
-        # media fue 0,0256 y el máximo observado 0,0550.
+        # Una barrera calibrada con la media no protege de la cola: en los dos
+        # corpus medidos el máximo superó la media con holgura (0,0550 el
+        # 20/08 sobre 76 análisis; 0,0575 el 04/09 sobre 94).
         self.assertGreater(
             CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS,
             CLAUDE_OBSERVED_MEAN_USD_PER_ANALYSIS,
+        )
+
+    def test_the_calibration_is_the_one_measured_on_04_09_2026(self):
+        """94 análisis reales con el prompt v17, a tarifa instantánea."""
+        self.assertEqual(CLAUDE_OBSERVED_MEAN_USD_PER_ANALYSIS, 0.0314)
+        self.assertEqual(CLAUDE_OBSERVED_P05_USD_PER_ANALYSIS, 0.0203)
+
+    def test_the_forecast_matches_the_invoice_it_was_calibrated_against(self):
+        """La prueba que da sentido a las otras dos.
+
+        El 04/09 el panel anunció 1,18 USD por lotes para 92 convocatorias y la
+        factura fue **1,4325**. Ese 22 % de desvío contribuyó a que se agotara
+        el saldo a mitad de una ejecución. Con la calibración nueva la misma
+        previsión da 1,4444: menos de un 1 % de error.
+
+        Si alguien vuelve a tocar la media, esto falla y hay que justificarlo
+        contra una factura, no contra una intuición.
+        """
+        prevision_por_lotes = 92 * CLAUDE_OBSERVED_MEAN_USD_PER_ANALYSIS / 2
+        self.assertAlmostEqual(prevision_por_lotes, 1.4325, delta=0.05)
+
+    def test_the_range_is_ordered_and_the_barrier_caps_it(self):
+        self.assertLess(
+            CLAUDE_OBSERVED_P05_USD_PER_ANALYSIS,
+            CLAUDE_OBSERVED_MEAN_USD_PER_ANALYSIS,
+        )
+        self.assertLess(
+            CLAUDE_OBSERVED_MEAN_USD_PER_ANALYSIS,
+            CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS,
         )
 
 

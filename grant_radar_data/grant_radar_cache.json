@@ -7,7 +7,7 @@
     "evaluator_version": "fit-2026-09-v11-coherent-score-and-three-fits",
     "partner_catalog_version": "2026-09-v2-nabladot-and-roles",
     "model_version": "claude-haiku-4-5",
-    "saved_at": "2026-09-04T07:27:03.353625+00:00"
+    "saved_at": "2026-09-04T08:48:35.888695+00:00"
   },
   "entries": {
     "03e220e6e50067f242f9a919fe2fde204d3823246204a4e3f50ee2595aa13b8b": {
@@ -980,7 +980,7 @@
         "match_score": 72,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "CNAE principal 2899 (Fabricación de maquinaria n.c.o.p.) encaja en «INDUSTRIA MANUFACTURERA». Ubicación: Kalfrisa está en Zaragoza (ES24 - La Rioja), NO en Navarra (ES22). La convocatoria restringe elegibilidad geográfica a ES22. Por tanto, Kalfrisa NO es elegible por ubicación.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -1689,7 +1689,7 @@
         "match_score": 15,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Convocatoria territorial limitada a ES612 - Cádiz; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). Kalfrisa es PYME según Reglamento (UE) 651/2014, está dada de alta en IAE, y cumple los requisitos formales de elegibilidad. Sin embargo, la convocatoria es una Misión Comercial Directa a Tokio, no una convocatoria de I+D, innovación, demostración o inversión industrial. El CNAE 2899 (Fabricación de maquinaria para otras industrias específicas) no aparece en la lista de CNAE elegibles, que se limita a comercio, transporte, actividades profesionales genéricas, edición, radiodifusión y entretenimiento. Kalfrisa no encaja en ninguno de esos CNAE declarados.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -2309,7 +2309,7 @@
         "match_score": 25,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Kalfrisa es PYME según Reglamento (UE) 651/2014, cumple con la condición de PYME exigida, está sujeta a norma de minimis, y su CNAE principal 2899 (Fabricación de maquinaria y equipo n.c.o.p.) encaja en la categoría 'INDUSTRIA MANUFACTURERA' admitida por la convocatoria. La ubicación es el único obstáculo: la convocatoria se limita a Gran Canaria (ES705) y Kalfrisa está domiciliada en Zaragoza (España peninsular). Por tanto, es inelegible por geografía, no por tipo de entidad ni CNAE.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -2840,7 +2840,7 @@
         "match_score": 62,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "El CNAE principal de Kalfrisa es 2899 (Fabricación de maquinaria n.c.o.p.), que encaja en INDUSTRIA MANUFACTURERA. Sin embargo, la convocatoria se limita geográficamente a ES53 - ILLES BALEARS, y Kalfrisa tiene sede en Zaragoza (ES24). No consta que Kalfrisa tenga instalaciones, actividad económica registrada ni domicilio fiscal en Baleares. La elegibilidad depende de si la convocatoria exige que el beneficiario esté domiciliado, constituido o tenga actividad en Baleares, dato que no figura en los hechos extraídos. Debe verificarse la interpretación de la restricción geográfica antes de descartar.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -3279,7 +3279,7 @@
         "match_score": 35,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "El consorcio mínimo de tres entidades de diferentes países es viable. La tasa de financiación del 70% para Innovation Actions es estándar. No hay restricción de CNAE ni de tipo de entidad que excluya a Kalfrisa.",
         "trl_min": 7,
         "trl_max": 8,
         "socio_consorcio": "",
@@ -3736,7 +3736,7 @@
         "match_score": 5,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "Kalfrisa no opera en el sector del transporte público de pasajeros ni de mercancías por carretera, ni es titular de autorizaciones de transporte público. La convocatoria exige explícitamente estar domiciliada en Euskadi, operar en transporte por carretera y poseer autorizaciones de transporte público. Kalfrisa es fabricante de equipos industriales térmicos (hornos, intercambiadores, recuperadores, oxidadores) con sede en Zaragoza (Aragón), CNAE 2899 (fabricación de maquinaria no clasificada). No hay conexión industrial térmica con el objeto de la convocatoria.",
+        "motivo_descarte": "Convocatoria territorial limitada a ES21 - PAIS VASCO; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). Kalfrisa no opera en el sector del transporte público de pasajeros ni de mercancías por carretera, ni es titular de autorizaciones de transporte público. La convocatoria exige explícitamente estar domiciliada en Euskadi, operar en transporte por carretera y poseer autorizaciones de transporte público. Kalfrisa es fabricante de equipos industriales térmicos (hornos, intercambiadores, recuperadores, oxidadores) con sede en Zaragoza (Aragón), CNAE 2899 (fabricación de maquinaria no clasificada). No hay conexión industrial térmica con el objeto de la convocatoria.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -4222,7 +4222,7 @@
         "match_score": 45,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "La convocatoria no publica lista de CNAE elegibles ni excluye explícitamente el CNAE 2899 (fabricación de maquinaria n.c.o.p.) de Kalfrisa. La estructura de datos oficial lista 37 CNAE genéricos, pero no especifica si son exhaustivos o ejemplares. Kalfrisa está en Zaragoza (ES50), no en Castilla-La Mancha (ES42): esto es un obstáculo potencial de elegibilidad geográfica que requiere verificación urgente. El perfil declara CNAE 2899 y ubicación en Zaragoza; la convocatoria exige ES42. No hay evidencia de que Kalfrisa tenga establecimiento, actividad o proyecto en Castilla-La Mancha.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -4600,7 +4600,7 @@
         "match_score": 45,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "La convocatoria HORIZON-CL6-2026-01-CIRCBIO-10 se titula 'Bio-based innovation in society: supporting the sustainable way of living' y pertenece al cluster de Economía Circular y Bioeconomía (CL6). No se publica el listado de temas admisibles (required_topics está vacío en los hechos extraídos). Sin acceso a esos temas, no es posible verificar si existe alguno compatible con las capacidades de Kalfrisa en procesos térmicos industriales, depuración de gases, recuperación de calor residual o electrificación. La ausencia de información sobre temas específicos, acciones elegibles y tipos de entidad elegibles impide concluir elegibilidad. Debe consultarse la convocatoria completa para identificar si algún tema admisible se refiere a tecnologías térmicas, circularidad en procesos industriales o valorización térmica de residuos.",
         "trl_min": 4,
         "trl_max": 5,
         "socio_consorcio": "",
@@ -5114,7 +5114,7 @@
         "match_score": 15,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "La convocatoria FEADER 2025-2028 financia exclusivamente proyectos de innovación agrícola, ganadera, silvícola o pesquera (CNAE: Agricultura, ganadería, silvicultura y pesca). Kalfrisa tiene CNAE principal 2899 (Fabricación de maquinaria y equipo n.c.o.p.) y CNAE accesorio 7112 (Ingeniería y otras actividades relacionadas). Ninguno de estos códigos coincide con los CNAE elegibles de la convocatoria. Aunque Kalfrisa fabrica equipos de tratamiento térmico que PODRÍAN aplicarse a procesos agroindustriales (por ejemplo, secado de productos agrícolas, tratamiento de residuos ganaderos), la convocatoria exige que el solicitante sea una entidad cuya actividad principal sea agrícola, ganadera, silvícola o pesquera. Kalfrisa es un fabricante de equipos industriales, no un operador agrícola. No hay vía de participación como proveedor tecnológico: la convocatoria financia agrupaciones de grupos operativos de la AEI, no consorcios mixtos de fabricantes e innovadores agrícolas.",
+        "motivo_descarte": "Convocatoria territorial limitada a ES3 - COMUNIDAD DE MADRID; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). La convocatoria FEADER 2025-2028 financia exclusivamente proyectos de innovación agrícola, ganadera, silvícola o pesquera (CNAE: Agricultura, ganadería, silvicultura y pesca). Kalfrisa tiene CNAE principal 2899 (Fabricación de maquinaria y equipo n.c.o.p.) y CNAE accesorio 7112 (Ingeniería y otras actividades relacionadas). Ninguno de estos códigos coincide con los CNAE elegibles de la convocatoria. Aunque Kalfrisa fabrica equipos de tratamiento térmico que PODRÍAN aplicarse a procesos agroindustriales (por ejemplo, secado de productos agrícolas, tratamiento de residuos ganaderos), la convocatoria exige que el solicitante sea una entidad cuya actividad principal sea agrícola, ganadera, silvícola o pesquera. Kalfrisa es un fabricante de equipos industriales, no un operador agrícola. No hay vía de participación como proveedor tecnológico: la convocatoria financia agrupaciones de grupos operativos de la AEI, no consorcios mixtos de fabricantes e innovadores agrícolas.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -5576,7 +5576,7 @@
         "match_score": 15,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "La ubicación (Zaragoza, Aragón) no coincide con la región elegible (Navarra ES22), pero la convocatoria no especifica si es requisito de ubicación del beneficiario o solo del proyecto. Sin embargo, el objeto de la convocatoria es incompatible con el perfil de Kalfrisa.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -6014,7 +6014,7 @@
         "match_score": 25,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "El objeto del proyecto es una 'media-intelligence pipeline para audio, vídeo y texto' —un sistema de procesamiento de datos multimedia— sin conexión explícita a procesos térmicos industriales, equipos de calor, depuración de gases, electrificación térmica ni ninguno de los ámbitos de Kalfrisa. Sin temas o líneas publicadas, no es posible determinar si existe algún encaje temático oculto; la evidencia disponible apunta a desalineación radical con el perfil industrial-térmico de la empresa.",
         "trl_min": 6,
         "trl_max": 8,
         "socio_consorcio": "",
@@ -6476,7 +6476,7 @@
         "match_score": 35,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Kalfrisa está establecida en España (EU Member State), es una entidad legal elegible, y Horizon Europe admite cualquier tipo de entidad. El consorcio mínimo requerido (tres entidades independientes de diferentes países, al menos una de un Estado Miembro) es alcanzable con socios del radar. La tasa de financiación del 70% para Innovation Actions es estándar. No hay restricción por tamaño, CNAE, ubicación ni tipo de entidad que excluya a Kalfrisa.",
         "trl_min": 5,
         "trl_max": 7,
         "socio_consorcio": "",
@@ -7238,8 +7238,8 @@
           ]
         },
         "tech_tags": [
-          "energy_efficiency",
-          "thermal_processes"
+          "thermal_processes",
+          "energy_efficiency"
         ],
         "data_pending": false,
         "data_gaps": [],
@@ -8179,7 +8179,7 @@
         "match_score": 15,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Convocatoria territorial limitada a ES212 - Gipuzkoa; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). Sin embargo, la línea 1 exige que la actividad principal haya iniciado entre octubre 2025 y septiembre 2026 (Kalfrisa fue fundada en 1965), y la línea 2 requiere traslado o modernización de instalaciones entre enero y diciembre 2026 en sectores específicos (comercial, hostelería, servicios) que no incluyen manufactura industrial. Kalfrisa no cumple los requisitos operacionales de ninguna línea.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -8749,7 +8749,7 @@
         "match_score": 15,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "Kalfrisa no encaja en ninguna de las dos líneas de financiación. Línea 1 (Fotovoltaica con actividad económica): requiere CNAE de 'SUMINISTRO DE ENERGIA ELECTRICA, GAS, VAPOR Y AIRE ACONDICIONADO' (sector energético); Kalfrisa tiene CNAE 2899 (fabricación de maquinaria industrial) y 7112 (ingeniería). Línea 2 (Fotovoltaica sin actividad económica): restringida a personas físicas. La convocatoria no admite empresas industriales que fabriquen equipos térmicos. Además, la acción elegible es exclusivamente 'instalación de sistemas fotovoltaicos', sin conexión con procesos térmicos industriales, recuperación de calor, depuración de gases ni electrificación de equipos de Kalfrisa.",
+        "motivo_descarte": "Convocatoria territorial limitada a ES42 - CASTILLA LA MANCHA; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). Kalfrisa no encaja en ninguna de las dos líneas de financiación. Línea 1 (Fotovoltaica con actividad económica): requiere CNAE de 'SUMINISTRO DE ENERGIA ELECTRICA, GAS, VAPOR Y AIRE ACONDICIONADO' (sector energético); Kalfrisa tiene CNAE 2899 (fabricación de maquinaria industrial) y 7112 (ingeniería). Línea 2 (Fotovoltaica sin actividad económica): restringida a personas físicas. La convocatoria no admite empresas industriales que fabriquen equipos térmicos. Además, la acción elegible es exclusivamente 'instalación de sistemas fotovoltaicos', sin conexión con procesos térmicos industriales, recuperación de calor, depuración de gases ni electrificación de equipos de Kalfrisa.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -9731,7 +9731,7 @@
         "match_score": 45,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Kalfrisa es PYME conforme a la Recomendación 2003/361/CE, establecida en España (EU Member State), con al menos un ejercicio cerrado y validado. La convocatoria exige consorcio de 2-3 empresas PYME; Kalfrisa tiene experiencia acreditada en consorcios de I+D y puede participar como miembro. No hay restricción de CNAE ni de ubicación que la excluya.",
         "trl_min": 6,
         "trl_max": 7,
         "socio_consorcio": "",
@@ -10338,7 +10338,7 @@
         "match_score": 45,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Sin embargo, la convocatoria está geográficamente restringida a ES614 (Granada), y Kalfrisa tiene sede en Zaragoza (ES503). No consta elegibilidad por ubicación.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -10932,7 +10932,7 @@
         "match_score": 25,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Sin embargo, la ubicación es Zaragoza (ES243 - Aragón), no Asturias (ES120), por lo que no cumple el requisito geográfico de elegibilidad territorial.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -11394,7 +11394,7 @@
         "match_score": 45,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Kalfrisa está establecida en España (Zaragoza), miembro de la UE, y es una entidad legal elegible para participar en Horizon Europe. La convocatoria admite cualquier entidad legal y requiere consorcio de al menos 3 entidades independientes de diferentes países, con al menos una de un Estado Miembro y dos de Estados Miembros o Países Asociados distintos: Kalfrisa puede formar parte de un consorcio que cumpla estos requisitos.",
         "trl_min": 6,
         "trl_max": 7,
         "socio_consorcio": "",
@@ -12557,7 +12557,7 @@
         "match_score": 15,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Kalfrisa cumple los requisitos formales de beneficiario (PYME según Recomendación 2003/361/CE) y su CNAE principal 2899 (Fabricación de maquinaria n.c.o.p.) está incluido en la lista de CNAE elegibles bajo 'INDUSTRIA MANUFACTURERA'. La convocatoria no exige consorcio. Sin embargo, la ubicación requerida es ES614 (Granada) y Kalfrisa está domiciliada en Zaragoza (ES503), lo que genera una barrera geográfica no salvable.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -13546,7 +13546,7 @@
         "match_score": 15,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "La convocatoria exige desarrollar actividades en Extremadura (Decreto 137/2024, art. 5). Kalfrisa no tiene constancia de operaciones, instalaciones ni actividades de transformación, fabricación o servicios en Extremadura. Sin verificación de presencia operativa en la región, no puede acreditarse el requisito territorial. Además, aunque CNAE 2899 (Fabricación de maquinaria) encaja en «INDUSTRIA MANUFACTURERA», la convocatoria es una misión comercial a Vietnam, no un programa de I+D, innovación o inversión industrial.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -14313,8 +14313,8 @@
           ]
         },
         "tech_tags": [
-          "circular_manufacturing",
-          "digital_thermal"
+          "digital_thermal",
+          "circular_manufacturing"
         ],
         "data_pending": true,
         "data_gaps": [
@@ -15148,7 +15148,7 @@
         "match_score": 5,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Convocatoria territorial limitada a ES70 - CANARIAS; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). Kalfrisa es PYME según la Recomendación 2003/361/CE. La convocatoria admite PYMEs y personas físicas que desarrollan actividad económica. Sin embargo, la convocatoria es de bonificación de tipo de interés sobre préstamos formalizados, no de I+D, innovación, demostración o inversión en mejora de eficiencia energética. No financia proyectos de desarrollo tecnológico, pilotos, equipos o procesos industriales.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -15697,7 +15697,7 @@
         "match_score": 5,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "Kalfrisa no es una nueva empresa constituida en 2026 ni cumple el requisito de iniciación de actividad económica nueva en ese año. Fundada en 1965 con actividad industrial consolidada en Zaragoza, no encaja en el objeto de esta convocatoria, que financia exclusivamente la creación de nuevas empresas en San Sebastián durante 2026. La convocatoria exige que la actividad económica sea nueva y no haya sido ejercida en los 6 meses anteriores; Kalfrisa lleva más de 60 años operando. Además, su domicilio fiscal y centro de trabajo están en Zaragoza (Polígono Industrial Malpica), no en San Sebastián, lo que incumple el requisito geográfico obligatorio.",
+        "motivo_descarte": "Convocatoria territorial limitada a ES212 - Gipuzkoa; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). Kalfrisa no es una nueva empresa constituida en 2026 ni cumple el requisito de iniciación de actividad económica nueva en ese año. Fundada en 1965 con actividad industrial consolidada en Zaragoza, no encaja en el objeto de esta convocatoria, que financia exclusivamente la creación de nuevas empresas en San Sebastián durante 2026. La convocatoria exige que la actividad económica sea nueva y no haya sido ejercida en los 6 meses anteriores; Kalfrisa lleva más de 60 años operando. Además, su domicilio fiscal y centro de trabajo están en Zaragoza (Polígono Industrial Malpica), no en San Sebastián, lo que incumple el requisito geográfico obligatorio.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -17396,7 +17396,7 @@
         "match_score": 35,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "El consorcio requerido (mínimo 3 entidades independientes de diferentes países, al menos 1 de Estado Miembro y 2 de diferentes Estados Miembros o Países Asociados) es viable con socios españoles y de otros países. La financiación al 100% y el presupuesto de 40M€ son compatibles con la elegibilidad formal.",
         "trl_min": 8,
         "trl_max": 8,
         "socio_consorcio": "",
@@ -17899,7 +17899,7 @@
         "match_score": 15,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "La convocatoria admite cualquier entidad legal. El requisito de consorcio (mínimo 3 entidades independientes de países distintos) es compatible con su experiencia acreditada en consorcios I+D. No hay restricción por CNAE, tamaño ni tipo de entidad que la excluya.",
         "trl_min": 4,
         "trl_max": 5,
         "socio_consorcio": "",
@@ -19481,7 +19481,7 @@
         "match_score": 45,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Kalfrisa está establecida en España (Zaragoza), miembro de Horizon Europe, y es una entidad legal elegible. El consorcio es obligatorio pero Kalfrisa tiene experiencia acreditada en consorcios de I+D. No hay restricción por tipo de entidad ni por geografía que la excluya.",
         "trl_min": 6,
         "trl_max": 8,
         "socio_consorcio": "",
@@ -21385,7 +21385,7 @@
         "match_score": 15,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "El consorcio requerido (3 entidades independientes, al menos 1 de Estado miembro, al menos 2 de países distintos) es viable. Sin embargo, la convocatoria trata exclusivamente de desarrollo de baterías avanzadas (litio-ión, sodio-ión, aplicaciones de movilidad eléctrica, aviación, almacenamiento estacionario), materiales de celdas, gestión térmica de baterías y reciclaje de baterías. Ninguna de las tres áreas (A: baterías de bajo coste para vehículos eléctricos y almacenamiento; B: baterías de alto rendimiento para aviación y marítima; C: materiales avanzados para almacenamiento estacionario) coincide con las capacidades, líneas de desarrollo ni experiencia I+D de Kalfrisa.",
         "trl_min": 4,
         "trl_max": 5,
         "socio_consorcio": "",
@@ -22737,7 +22737,7 @@
         "match_score": 5,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "No hay restricción por CNAE ni por tipo de entidad que la excluya.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -23861,8 +23861,8 @@
           ]
         },
         "tech_tags": [
-          "energy_efficiency",
-          "waste_heat"
+          "waste_heat",
+          "energy_efficiency"
         ],
         "data_pending": false,
         "data_gaps": [],
@@ -24207,7 +24207,7 @@
         "match_score": 5,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "Kalfrisa no cumple los tipos de beneficiario elegibles. La convocatoria FSE+ PFIS-CAIB / PFIC-CAIB financia contratos de formación de personal investigador (predoctorales y postdoctorales) en salud y biomedicina, dirigida a GRAN EMPRESA, PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA, y PERSONAS JURÍDICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA. La convocatoria no financia I+D industrial en procesos térmicos, equipos de depuración de gases, hornos, intercambiadores ni electrificación industrial. El objeto es la contratación de personal investigador en centros de investigación o instituciones sanitarias para formación en salud pública, terapias avanzadas, medicina personalizada y biotecnología aplicada a la salud. Kalfrisa carece de capacidad, experiencia ni interés declarado en esos ámbitos. No hay encaje temático, sectorial ni de modelo de negocio.",
+        "motivo_descarte": "Convocatoria territorial limitada a ES53 - ILLES BALEARS; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). Kalfrisa no cumple los tipos de beneficiario elegibles. La convocatoria FSE+ PFIS-CAIB / PFIC-CAIB financia contratos de formación de personal investigador (predoctorales y postdoctorales) en salud y biomedicina, dirigida a GRAN EMPRESA, PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA, y PERSONAS JURÍDICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA. La convocatoria no financia I+D industrial en procesos térmicos, equipos de depuración de gases, hornos, intercambiadores ni electrificación industrial. El objeto es la contratación de personal investigador en centros de investigación o instituciones sanitarias para formación en salud pública, terapias avanzadas, medicina personalizada y biotecnología aplicada a la salud. Kalfrisa carece de capacidad, experiencia ni interés declarado en esos ámbitos. No hay encaje temático, sectorial ni de modelo de negocio.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -25261,7 +25261,7 @@
         "match_score": 25,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Kalfrisa está establecida en España (UE), es entidad legal elegible, y Horizon Europe admite cualquier tipo de entidad. El requisito de consorcio de tres entidades independientes de países distintos es compatible con su experiencia acreditada en consorcios de I+D. No hay restricción por tamaño, CNAE ni ubicación que la excluya.",
         "trl_min": null,
         "trl_max": 7,
         "socio_consorcio": "",
@@ -25404,8 +25404,8 @@
           ]
         },
         "tech_tags": [
-          "energy_efficiency",
-          "waste_heat"
+          "waste_heat",
+          "energy_efficiency"
         ],
         "data_pending": false,
         "data_gaps": [],
@@ -26222,7 +26222,7 @@
         "match_score": 72,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Convocatoria territorial limitada a ES21 - PAIS VASCO; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). No hay restricción por tamaño ni por ubicación que la excluya. El programa financia acciones de internacionalización y proyectos piloto internacionales con máximo 75.000 € al 70 % de gasto aprobado. Kalfrisa cumple los requisitos de elegibilidad de beneficiario.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -26854,7 +26854,7 @@
         "match_score": 25,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "La convocatoria admite cualquier tipo de entidad legal. Sin embargo, los tres temas requeridos (AI en sanidad, AI en fabricación avanzada, AI en conducción autónoma) no encajan con el perfil de Kalfrisa cuando se analizan en detalle.",
         "trl_min": 2,
         "trl_max": 5,
         "socio_consorcio": "",
@@ -27511,7 +27511,7 @@
         "match_score": 0,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "La convocatoria financia exclusivamente personal técnico en gestión de desarrollo local para entidades públicas y organismos sin actividad económica (CNAE O - Administración pública). Kalfrisa no cumple el requisito de tipo de beneficiario ni de CNAE elegible. Esta es una convocatoria de empleo público territorial, no de I+D industrial ni de innovación en procesos térmicos.",
+        "motivo_descarte": "Convocatoria territorial limitada a ES62 - REGION DE MURCIA; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). La convocatoria financia exclusivamente personal técnico en gestión de desarrollo local para entidades públicas y organismos sin actividad económica (CNAE O - Administración pública). Kalfrisa no cumple el requisito de tipo de beneficiario ni de CNAE elegible. Esta es una convocatoria de empleo público territorial, no de I+D industrial ni de innovación en procesos térmicos.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -28080,7 +28080,7 @@
         "match_score": 45,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Puede participar en consorcio cumpliendo el requisito de tres entidades de tres Estados miembros/EEA distintos. La convocatoria no restringe por CNAE ni tipo de entidad para Madrid. Plazo abierto hasta 2026-09-17.",
         "trl_min": 6,
         "trl_max": 8,
         "socio_consorcio": "",
@@ -29670,7 +29670,7 @@
         "match_score": 15,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Kalfrisa es PYME (mediana, 50-249 empleados) y encaja en los tipos de entidad admisibles (SME 50-249). Ubicación: España, país elegible. Tipo de entidad: cumple. No hay restricciones de CNAE ni sector en los hechos extraídos.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -30586,7 +30586,7 @@
         "match_score": 25,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "La convocatoria limita elegibilidad geográfica a empresas de Castilla-La Mancha (Albacete, Cuenca, Guadalajara, Toledo y Ciudad Real).",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -31218,7 +31218,7 @@
         "match_score": 15,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Sin embargo, la convocatoria está geográficamente restringida a ES12 (Principado de Asturias), demarcación de la Cámara de Comercio de Avilés. Kalfrisa tiene sede en Zaragoza (ES24). No consta elegibilidad por ubicación.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -31975,8 +31975,8 @@
           ]
         },
         "tech_tags": [
-          "energy_efficiency",
-          "hydrogen_combustion"
+          "hydrogen_combustion",
+          "energy_efficiency"
         ],
         "data_pending": true,
         "data_gaps": [
@@ -32496,7 +32496,7 @@
         "match_score": 35,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "La ubicación en Zaragoza no coincide con la geografía elegible (ES614 - Granada), pero la convocatoria no excluye explícitamente a empresas de otras regiones españolas; sin embargo, la elegibilidad geográfica es un requisito determinante que no se cumple.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -33126,7 +33126,7 @@
         "match_score": 5,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "Kalfrisa no encaja en ninguna de las tres líneas de financiación. Todas exigen CNAE 'Comercio al por mayor y al por menor' y actividades en Cardona (nueva implantación, modernización de comercio existente o autoempleo en comercio). Kalfrisa tiene CNAE 2899 (fabricación de maquinaria industrial) y 7112 (ingeniería), está domiciliada en Zaragoza, y sus actividades son fabricación e integración de equipos térmicos industriales, no comercio. La convocatoria es de desarrollo local comercial en Cardona, completamente ajena al perfil industrial de Kalfrisa.",
+        "motivo_descarte": "Convocatoria territorial limitada a ES511 - Barcelona; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). Kalfrisa no encaja en ninguna de las tres líneas de financiación. Todas exigen CNAE 'Comercio al por mayor y al por menor' y actividades en Cardona (nueva implantación, modernización de comercio existente o autoempleo en comercio). Kalfrisa tiene CNAE 2899 (fabricación de maquinaria industrial) y 7112 (ingeniería), está domiciliada en Zaragoza, y sus actividades son fabricación e integración de equipos térmicos industriales, no comercio. La convocatoria es de desarrollo local comercial en Cardona, completamente ajena al perfil industrial de Kalfrisa.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -33688,7 +33688,7 @@
         "match_score": 35,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Cumple requisitos de entidad legal y geografía. La convocatoria admite cualquier entidad legal. Consortium_required=true es compatible con la experiencia acreditada de Kalfrisa en consorcios I+D.",
         "trl_min": 6,
         "trl_max": 8,
         "socio_consorcio": "",
@@ -34218,7 +34218,7 @@
         "match_score": 35,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Kalfrisa está ubicada en Zaragoza (ES24 - Aragón), pero la convocatoria se restringe a ES51 - Cataluña. La elegibilidad por ubicación no puede confirmarse sin verificar si la convocatoria admite participación desde otras regiones o si requiere presencia física en Cataluña.",
         "trl_min": null,
         "trl_max": 9,
         "socio_consorcio": "",
@@ -35433,7 +35433,7 @@
         "match_score": 25,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Kalfrisa no está en la geografía elegible (ES230 - La Rioja). Por tanto, es inelegible por ubicación, no por tipo de entidad ni tamaño.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -37606,7 +37606,7 @@
         "match_score": 75,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Sin embargo, la elegibilidad geográfica está restringida a Navarra (ES22). Kalfrisa está en Zaragoza (Aragón). Esta restricción geográfica hace que Kalfrisa NO sea elegible como solicitante principal. No obstante, podría participar como socio en un consorcio liderado por una entidad navarra si la convocatoria lo permite para socios de otras regiones. Los hechos no especifican si los socios pueden ser de otras regiones. Verificar: (1) si la restricción geográfica aplica solo al coordinador o a todos los socios; (2) si Kalfrisa puede participar como socio no coordinador desde Aragón.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -38464,8 +38464,8 @@
           "missing_fields": []
         },
         "tech_tags": [
-          "energy_efficiency",
-          "waste_heat"
+          "waste_heat",
+          "energy_efficiency"
         ],
         "data_pending": false,
         "data_gaps": [],
@@ -38777,7 +38777,7 @@
         "match_score": 5,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Kalfrisa es PYME ubicada en Aragón (ES24) y desarrolla actividad económica; la convocatoria admite PYMEs y personas físicas con actividad económica en Aragón. No hay restricción de CNAE que excluya a Kalfrisa (CNAE 2899 no está vetado; la convocatoria menciona educación y otros servicios como CNAE de referencia, pero no como requisito exclusivo de elegibilidad).",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -41695,7 +41695,7 @@
         "match_score": 35,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Sin embargo, ninguna de las cuatro líneas de financiación publicadas encaja con su modelo de negocio: la línea de movilidad sostenible excluye procesos industriales térmicos; la línea de sector industrial requiere mejora de tecnología en procesos propios que reduzca consumo de energía final en instalaciones de Kalfrisa (no en equipos que vende); la línea de edificios terciarios es ajena a la industria térmica; la línea de refrigeración por compresión no es aplicable. Kalfrisa es fabricante de equipos de tratamiento térmico, no operadora de procesos industriales que consuma energía final en sus instalaciones propias.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -42401,7 +42401,7 @@
         "match_score": 15,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Convocatoria territorial limitada a ES614 - Granada; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). Kalfrisa cumple los requisitos formales: es PYME según Reglamento (UE) 651/2014, está sujeta a norma de minimis, tiene CNAE 2899 (Fabricación de maquinaria) que encaja en 'INDUSTRIA MANUFACTURERA', y está ubicada en España. Sin embargo, la convocatoria financia exclusivamente participación en feria SIAL París 2026 (17-21 octubre), cuyo objeto es comercialización de productos agroalimentarios. Kalfrisa fabrica equipos industriales térmicos, no productos agroalimentarios para venta directa en feria de alimentos.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -42917,7 +42917,7 @@
         "match_score": 15,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Kalfrisa es PYME según la Recomendación 2003/361/CE, está legalmente establecida en España (país miembro de la UE y participante en SMP), y cumple los requisitos formales de elegibilidad de entidad. Sin embargo, la convocatoria está dirigida exclusivamente a empresas del sector textil (CNAE C13, C14, C15.12, C22.19, C38, y en Digital Innovations también J62, J63, C28.94). El CNAE principal de Kalfrisa es 2899 (fabricación de maquinaria no clasificada en otra parte), que NO figura en ninguna de las listas de CNAE elegibles. Aunque la línea Digital Innovations admite «SMEs from complementary sectors (e.g., tech, machinery)» siempre que su innovación contribuya directamente a la cadena de valor textil, Kalfrisa no opera en esa cadena ni sus equipos (intercambiadores, recuperadores, hornos industriales, scrubbers, oxidadores térmicos) están diseñados para procesos textiles. Por tanto, aunque formalmente elegible como PYME, Kalfrisa está fuera del alcance sectorial de esta convocatoria.",
         "trl_min": 5,
         "trl_max": 9,
         "socio_consorcio": "",
@@ -44540,7 +44540,7 @@
         "match_score": 0,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "La convocatoria es un programa de empleo (Talento 45+) cofinanciado por FSE+ cuyo objeto es la contratación de trabajadores desempleados mayores de 45 años. No financia I+D, innovación, demostración, pilotos ni inversión en equipos o procesos industriales. Kalfrisa no encaja en ninguno de los requisitos: (1) la acción elegible es exclusivamente la contratación de trabajadores que hayan participado en el programa Talento 45+ durante mínimo 6 meses; (2) la ayuda es de 5.000€ por trabajador contratado a tiempo completo, no para proyectos de I+D; (4) aunque la convocatoria admite CNAE de Industria Manufacturera, el objeto no es la innovación industrial sino el fomento del empleo mediante subvención a la contratación. Esta es una convocatoria de política activa de empleo, no de I+D industrial.",
+        "motivo_descarte": "Convocatoria territorial limitada a ES612 - Cádiz; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). La convocatoria es un programa de empleo (Talento 45+) cofinanciado por FSE+ cuyo objeto es la contratación de trabajadores desempleados mayores de 45 años. No financia I+D, innovación, demostración, pilotos ni inversión en equipos o procesos industriales. Kalfrisa no encaja en ninguno de los requisitos: (1) la acción elegible es exclusivamente la contratación de trabajadores que hayan participado en el programa Talento 45+ durante mínimo 6 meses; (2) la ayuda es de 5.000€ por trabajador contratado a tiempo completo, no para proyectos de I+D; (4) aunque la convocatoria admite CNAE de Industria Manufacturera, el objeto no es la innovación industrial sino el fomento del empleo mediante subvención a la contratación. Esta es una convocatoria de política activa de empleo, no de I+D industrial.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -45051,7 +45051,7 @@
         "match_score": 72,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Ubicación: Kalfrisa está en Zaragoza (ES13), fuera de la Comunidad Valenciana (ES52). La convocatoria limita elegibilidad geográfica a ES52. Por tanto, Kalfrisa NO es elegible por ubicación. Aunque la convocatoria admite su tipo de entidad y tamaño, la restricción territorial es determinante.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -47513,7 +47513,7 @@
         "match_score": 25,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Convocatoria territorial limitada a ES230 - La Rioja; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). Sin embargo, la acción es de digitalización genérica (software, hardware, e-commerce, realidad virtual, ciberseguridad, IA) sin conexión explícita con procesos térmicos industriales ni con los equipos que Kalfrisa fabrica o integra.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -47962,7 +47962,7 @@
         "match_score": 25,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Cumple los requisitos formales de beneficiario.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -49051,8 +49051,8 @@
           "missing_fields": []
         },
         "tech_tags": [
-          "energy_efficiency",
-          "waste_heat"
+          "waste_heat",
+          "energy_efficiency"
         ],
         "data_pending": false,
         "data_gaps": [],
@@ -49516,7 +49516,7 @@
         "match_score": 25,
         "priority": "low",
         "descartada": true,
-        "motivo_descarte": "",
+        "motivo_descarte": "Sin embargo, aunque es elegible formalmente, la convocatoria está geográficamente restringida a Granada (ES614) y Kalfrisa tiene sede en Zaragoza (ES503). La elegibilidad geográfica es el obstáculo determinante.",
         "trl_min": null,
         "trl_max": null,
         "socio_consorcio": "",
@@ -50778,6 +50778,1669 @@
       "partner_catalog_version": "2026-09-v2-nabladot-and-roles",
       "model_version": "claude-haiku-4-5",
       "cached_at": "2026-09-04T07:27:03.353601+00:00"
+    },
+    "0279652a0397aa51fc64a915da89c5fa2571c0910cd11492e469b280ea7bd326": {
+      "raw_document": {
+        "source": "HORIZON EUROPE",
+        "identifier": "HORIZON-CL5-2027-05-D4-09",
+        "title": "Demonstration of industrial excess/waste heat conversion to mechanical or electrical power",
+        "description": "Expected Outcome: Project results are expected to contribute to all of the following expected outcomes: Based on the results of the project, at least one industrial sector with a significant heating demand in the EU and Associated Countries develops pathways and business models to measurably increase the industrial excess/waste heat recovery and conversion to power. Measurable improvement of industrial excess/waste heat recovery and conversion to power, possibly combined with energy storage, in terms of energy efficiency, flexibility of electricity production, climate and environment protection, reliability and safety, physical and cyber security, and profitability. Scope: Better use of process excess/waste heat represents a significant source of energy savings for industries. The conversion of excess heat back to electricity, would improve energy efficiency, mitigate the increase of electricity consumption due to industrial electrification, as well as offer flexible electricity generation to stabilise the grid, if combined with thermal and/or electrical energy storage. Projects must address all the following items: Develop and validate novel excess/waste heat recovery and conversion systems. Demonstrate physically within one or more operational industrial site(s), the recovery of industrial excess/waste heat, possibly combined with energy storage, and its conversion to mechanical or electrical power. Maximise the replicability and deployment of the concept/solution in the EU and Associated Countries’ plants in the same industrial sector. Already before starting the design phase, the needs of most EU and Associated Countries’ factories in the same industrial sector(s) should be surveyed and analysed in order to design a solution that can be adapted to meet most of them. Identify common components, optimise and define a standardised version of them. Develop open technical and economical guidelines and open tools for integrating such systems into SCADA (Supervisory Control and Data Acquisition) and EMS (Energy Management System) infrastructures of existing plants, and for developing innovative business model of heat valorisation as a flexible electricity generation offered to stabilise the power grid. Disseminate results notably (but not only) to the relevant communities in cluster 4 ‘Digital, Industry and Space’ private-public partnerships. null Activities are expected to achieve TRL 7-8 by the end of the project – see General Annex B. Activities may start at any TRL.",
+        "deadline_days": 376,
+        "deadline_date": "2027-09-15",
+        "open_date": "2027-05-05",
+        "fecha_sin_confirmar": false,
+        "budget": "6.750.000 € por proyecto · 13.500.000 € en total · 2 proyectos previstos",
+        "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/HORIZON-CL5-2027-05-D4-09",
+        "keywords_found": [
+          "energy efficiency",
+          "heat recovery",
+          "industrial electrification",
+          "waste heat"
+        ],
+        "org": "Comisión Europea / Horizon Europe",
+        "source_type": "SEDIA API",
+        "types_of_action": "HORIZON Innovation Actions",
+        "horizon_budget": {
+          "grant_min_eur": 6750000,
+          "grant_max_eur": 6750000,
+          "call_budget_eur": 13500000,
+          "expected_grants": 2,
+          "deadline_model": "single-stage"
+        },
+        "programme_eligibility": {
+          "source_url": "https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/horizon/wp-call/2026-2027/wp-15-general-annexes_horizon-2026-2027_en.pdf",
+          "fingerprint": "c7adc8dbd22cc7d5",
+          "entities_eligible_to_participate": "Entities eligible to participate Any legal entity, regardless of its place of establishment, including legal entities from non - associated third countries or international organisations (including international European research organisations 4) is eligible to participate (whether it is eligible for funding or not), provided that the conditions laid down in the Horizon Europe Regulation5 have been met, along with any other conditions laid down in the specific call/topic. A ‘legal entity’ means any natural or legal person created and recognised as such under national law, EU law or international law, which has legal personality and which may, acting in its own name, exercise rights and be su",
+          "entities_eligible_for_funding": "Entities eligible for funding To become a beneficiary, legal entities must be eligible for funding. To be eligible for funding, applicants must be established in one of the following countries: – the Member States of the European Union, including their outermost regions: 25 Commission guidelines No 2013/C 205/05 on the eligibility of Israeli entities and their activities in the territories occupied by Israel since June 1967 for grants, prizes and financial instruments funded by the EU from 2014 onwards (OJEU C 205 of 19.07.2013, pp. 9-11). 26 (OJ L 229, 31.7.2014, p. 1–11). Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden. – the Overseas Countries and Territories (OCTs) linked to the Member States: Aruba (NL), Bonaire (NL), Curação (NL), French Polynesia (FR), French Southern and Antarctic Territories (FR), Greenland (DK), New Caledonia (FR), Saba (NL), Saint Barthélemy (FR), Sint Eustatius (NL), Sint Maarten (NL), St. Pierre and Miquelon (FR), Wallis and Futuna Islands (FR). – countries associated to Horizon Europe27; Albania, Arab Republic of Egypt, Armenia, Bosnia and Herzegovina, Canada, Faroe Islands, Georgia, Iceland, Israel, Kosovo28, Moldova, Montenegro, New Zealand, North Macedonia, Norway, Republic of Korea, Serbia, Switzerland, Tunisia, Türkiye, Ukraine , United Kingdom 29 .",
+          "consortium_composition": "Consortium composition Unless otherwise provided for in the specific call/topic conditions, only legal entities forming a consortium are eligible to participate in actions provided that the consortium includes , as beneficiaries, three legal entities independent from each other and each established in a different country as follows: 31 This designation shall not be construed as recognition of a State of Palestine and is without prejudice to the individual positions of the Member States on this issue. − at least one independent legal entity established in a Member State; and − at least two other independent legal entities, each established in different Member States or Associated Countries. As affiliated entities do not sign the grant agreement, they do not count towards the minimum eligibility criteria for consortium composition (if any). The J oint Research Centre, international European research organisations and legal entities created under EU law are deemed to be established in a Member State other than those in which the other legal entities participating in the action are established. Applications for ‘Training and mobility’ actions and for ‘Programme co -fund’ actions may be",
+          "funding_rates": "Form of grant, funding rate and maximum grant amount The grant parameters (maximum grant amount, funding rate, total eligible costs, etc.) will be fixed in the grant agreement (Data Sheet, point 3 and Article 5). The project budget is provided in EUR. The amount of the grant awarded may be lower than the amount requested. For actual cost grants, the grant will be a budget -based, mixed actual cost grant. This means that it will reimburse ONLY certain types of costs (eligible costs) and ONLY those costs actually incurred for the project (NOT the budgeted costs). The costs will be reimbursed at the funding rate fixed in the specific call/topic conditions and in the grant agreement. Such grants may NOT produce a profit. If there is a profit (i.e. surplus of revenues + EU grant over costs), it will be deducted from the final grant amount. Moreover, the final grant amount may be reduced in case of non -compliance (e.g. improper implementation, breach of obligations, etc.). 43 See Article 196 EU Financial Regulation 2024/2509. The maximum Horizon Europe funding rates are as follows: – Research and innovation action: 100% – Innovation action: 70% (except for non-profit legal entities, where a rate of up to 100% applies) – Coordination and support action: 100% – Programme co-fund action: between 30% and 70% – Innovation and market deployment: 70% (except for non -profit legal entities, where a rate of up to 100% applies) – Training and mobility action: 100% – Pre-commercial procurement action: 100% – Public procurement of innovative solutions action: 50% Other funding rates may be set out in the specific call/topic conditions. For lump sum and unit grants, the funding rate is already applied as part of the methodology for fixing the amounts and is therefore not shown in the grant agreement. Budget categories and cost eligibility rules The budget categories and cost eligibilit"
+        },
+        "bdns_id": "",
+        "document_role": "source_record",
+        "discovery_sources": [
+          "HORIZON EUROPE"
+        ],
+        "deterministic_prefilter": {
+          "decision": "retain",
+          "score": 12,
+          "signals": {
+            "tech_tags": [
+              "waste_heat",
+              "industrial_electrification"
+            ],
+            "industrial": [
+              "industrial sector"
+            ],
+            "funding": [],
+            "innovation": [
+              "demonstration"
+            ],
+            "enterprise": [
+              "business",
+              "industry"
+            ],
+            "own_investment": [],
+            "explicit_ineligible": [],
+            "unrelated_sector": []
+          },
+          "reason": "Conexión tecnológica e industrial suficiente.",
+          "reason_code": "generic_prefilter"
+        }
+      },
+      "extracted_facts": {
+        "call_status": "forthcoming",
+        "programme": "HORIZON EUROPE",
+        "action_type": "Innovation Action",
+        "applicant_types": [],
+        "eligible_geographies": [
+          "Austria",
+          "Belgium",
+          "Bulgaria",
+          "Croatia",
+          "Cyprus",
+          "Czechia",
+          "Denmark",
+          "Estonia",
+          "Finland",
+          "France",
+          "Germany",
+          "Greece",
+          "Hungary",
+          "Ireland",
+          "Italy",
+          "Latvia",
+          "Lithuania",
+          "Luxembourg",
+          "Malta",
+          "Netherlands",
+          "Poland",
+          "Portugal",
+          "Romania",
+          "Slovakia",
+          "Slovenia",
+          "Spain",
+          "Sweden",
+          "Aruba",
+          "Bonaire",
+          "Curação",
+          "French Polynesia",
+          "French Southern and Antarctic Territories",
+          "Greenland",
+          "New Caledonia",
+          "Saba",
+          "Saint Barthélemy",
+          "Sint Eustatius",
+          "Sint Maarten",
+          "St. Pierre and Miquelon",
+          "Wallis and Futuna Islands",
+          "Albania",
+          "Arab Republic of Egypt",
+          "Armenia",
+          "Bosnia and Herzegovina",
+          "Canada",
+          "Faroe Islands",
+          "Georgia",
+          "Iceland",
+          "Israel",
+          "Kosovo",
+          "Moldova",
+          "Montenegro",
+          "New Zealand",
+          "North Macedonia",
+          "Norway",
+          "Republic of Korea",
+          "Serbia",
+          "Switzerland",
+          "Tunisia",
+          "Türkiye",
+          "Ukraine",
+          "United Kingdom"
+        ],
+        "eligible_entity_types": [
+          "Any legal entity"
+        ],
+        "eligibility_evidence": [
+          "Entities eligible for funding must be established in Member States, OCTs linked to Member States, or Associated Countries to Horizon Europe (official_structured_data)"
+        ],
+        "budget_total_eur": 13500000.0,
+        "funding_rate_percent": 70.0,
+        "project_budget_eur": null,
+        "project_cost_min_eur": null,
+        "grant_max_eur": 6750000.0,
+        "deadline_date": "2027-09-15",
+        "trl_min": 7,
+        "trl_max": 8,
+        "trl_source": "General Annex B",
+        "consortium_required": true,
+        "consortium_evidence": "Consortium composition requires at least three independent legal entities from different countries: at least one from a Member State and at least two from different Member States or Associated Countries (official_structured_data)",
+        "required_topics": [],
+        "eligible_actions": [
+          "Develop and validate novel excess/waste heat recovery and conversion systems",
+          "Demonstrate recovery of industrial excess/waste heat and its conversion to mechanical or electrical power within operational industrial sites",
+          "Maximise replicability and deployment of the concept/solution in EU and Associated Countries plants",
+          "Survey and analyse needs of factories in the same industrial sector",
+          "Identify common components and define standardised versions",
+          "Develop open technical and economical guidelines and tools for integrating systems into SCADA and EMS infrastructures",
+          "Develop innovative business models of heat valorisation as flexible electricity generation"
+        ],
+        "expected_outcomes": [
+          "At least one industrial sector with significant heating demand in the EU and Associated Countries develops pathways and business models to measurably increase industrial excess/waste heat recovery and conversion to power",
+          "Measurable improvement of industrial excess/waste heat recovery and conversion to power in terms of energy efficiency, flexibility of electricity production, climate and environment protection, reliability and safety, physical and cyber security, and profitability"
+        ],
+        "funding_lines": [],
+        "evidence": [
+          "Deadline: 2027-09-15",
+          "Open date: 2027-05-05",
+          "Budget: 6,750,000 EUR per project, 13,500,000 EUR total, 2 projects planned",
+          "Action type: Innovation Action (70% funding rate per official_structured_data)",
+          "TRL 7-8 expected by project end",
+          "Dissemination to cluster 4 'Digital, Industry and Space' private-public partnerships"
+        ],
+        "missing_fields": [
+          "applicant_types",
+          "project_budget_eur",
+          "project_cost_min_eur"
+        ]
+      },
+      "evaluation": {
+        "fit_score": 82,
+        "actionability_score": 68,
+        "confidence": 75,
+        "decision": "pursue",
+        "eligibility": "eligible",
+        "eligibility_reason": "La convocatoria requiere consorcio de al menos tres entidades independientes de diferentes países, con al menos una de un Estado Miembro y dos de Estados Miembros o Países Asociados distintos. Kalfrisa puede participar como beneficiaria en tal consorcio. No hay restricción de tipo de entidad ni de CNAE que la excluya.",
+        "recommended_role": "industrial_demonstrator",
+        "scores": {
+          "technological_fit": 85,
+          "strategic_fit": 88,
+          "role_fit": 80,
+          "trl_fit": 75,
+          "consortium_readiness": 75
+        },
+        "evidence_quality": "medium",
+        "positive_evidence": [
+          "Kalfrisa fabrica recuperadores de calor residual (convectivos y radiación) para gases de escape de alta temperatura, incluyendo desarrollo propio del recuperador de doble camisa.",
+          "Experiencia acreditada en proyectos de I+D con validación experimental a escala piloto e industrial: DT4RAF (gemelo digital de recuperadores), RAFeRTO (tecnologías digitales en oxidadores térmicos regenerativos y recuperadores), HIGH2-FURNACES (hornos híbridos con hidrógeno).",
+          "Capacidad de integración de tecnologías de terceros (rotoconcentradores, filtros) con control y sensórica propios, aplicable a depuración de gases de proceso.",
+          "Nave piloto propia en Zaragoza (110 m², 100 kW disponibles) para ensayos de prototipos a escala no industrial; acceso a instalaciones de clientes para demostración industrial.",
+          "Línea de desarrollo declarada en electrificación de equipos, compatible con la conversión de calor residual a potencia eléctrica.",
+          "Experiencia en consorcios de I+D multinacionales (FORTISSIMO PLUS, LIFE ABATE, EHEAT, DT4RAF).",
+          "Deterministic tech tags confirman alineación: waste_heat e industrial_electrification."
+        ],
+        "risks_and_unknowns": [
+          "TRL requerido 7-8 al cierre del proyecto: Kalfrisa ha demostrado TRL 4-7 en proyectos anteriores, pero la escalada a TRL 8 (primera aplicación industrial) requiere validación en instalación operativa de cliente. Debe verificarse disponibilidad de sitio industrial para demostración final.",
+          "Presupuesto máximo por proyecto: 6.750.000 EUR (70% de financiación). No consta el presupuesto mínimo ni el desglose de costes elegibles. Debe verificarse si el alcance técnico de recuperación y conversión a potencia eléctrica en sector industrial específico requiere inversión en equipamiento que exceda o quede muy por debajo de ese rango.",
+          "Consorcio obligatorio: requiere al menos tres entidades independientes de diferentes países (mínimo una de Estado Miembro, dos de Estados Miembros o Países Asociados distintos). Kalfrisa no tiene socios preidentificados en el radar. Debe identificarse liderazgo técnico (centro de investigación o empresa de simulación/ingeniería) y al menos un socio industrial adicional de otro país.",
+          "Sector industrial objetivo no especificado en la convocatoria: los 'eligible_actions' mencionan 'factories in the same industrial sector' pero no declaran cuál. Debe verificarse si el sector prioritario (cerámica, siderurgia, química, etc.) coincide con los sectores de aplicación de Kalfrisa.",
+          "Plazo de ejecución no publicado: la convocatoria abre 2027-05-05 y cierra 2027-09-15. Debe estimarse duración típica de Innovation Action en Horizon para recuperación de calor residual (habitualmente 24-36 meses).",
+          "Requisitos de diseminación y replicabilidad: la convocatoria exige 'open technical and economical guidelines' y 'standardised versions' de componentes comunes. Kalfrisa debe evaluar si puede comprometerse a publicar especificaciones técnicas de su recuperador o si ello entra en conflicto con propiedad intelectual.",
+          "Modelo de negocio de valorización térmica: uno de los 'eligible_actions' es 'Develop innovative business models of heat valorisation as flexible electricity generation'. Kalfrisa debe definir su rol en ese aspecto (fabricante de equipos, integrador, operador, o combinación)."
+        ],
+        "partner_needs": [
+          "Liderazgo técnico en simulación y modelización de sistemas de recuperación de calor residual y conversión a potencia: CIRCE (Aragón, matching capabilities waste_heat) o TECNALIA (España, matching capabilities waste_heat e industrial_electrification) son candidatos naturales.",
+          "Socio industrial de otro país (Estado Miembro o Asociado) con experiencia en operación de plantas de recuperación de calor residual o en sectores de aplicación (cerámica, siderurgia, química, etc.) para co-demostración y validación industrial.",
+          "Posible socio en ingeniería de integración en SCADA/EMS si Kalfrisa no cubre completamente ese aspecto.",
+          "Socio en análisis de ciclo de vida (ACV) o sostenibilidad si la convocatoria exige evaluación de impacto ambiental más allá de eficiencia energética."
+        ],
+        "recommended_partners": [
+          {
+            "id": "circe",
+            "name": "CIRCE",
+            "matching_capabilities": [
+              "industrial_electrification",
+              "waste_heat"
+            ]
+          },
+          {
+            "id": "tecnalia",
+            "name": "TECNALIA",
+            "matching_capabilities": [
+              "industrial_electrification",
+              "waste_heat"
+            ]
+          }
+        ],
+        "resumen": "Encaje tecnológico y estratégico alto. Kalfrisa fabrica recuperadores de calor residual (convectivos, radiación, doble camisa propia) y tiene experiencia acreditada en proyectos de I+D con validación industrial (DT4RAF, RAFeRTO, HIGH2-FURNACES). La línea de electrificación de equipos declarada como desarrollo futuro se alinea con la conversión de calor residual a potencia eléctrica. Se presentaría como demostrador industrial en consorcio, aportando equipos, caso de uso industrial, validación experimental a escala piloto/industrial e integración de sensórica y control. Recomendación: perseguir. Limitaciones de actionability: (1) TRL 7-8 requiere validación en instalación operativa de cliente; debe verificarse disponibilidad. (2) Consorcio obligatorio sin socios preidentificados; CIRCE y TECNALIA (Aragón/España) son candidatos para liderazgo técnico, pero se necesita socio industrial de otro país. (3) Sector industrial objetivo no declarado en convocatoria; debe verificarse alineación con sectores de aplicación de Kalfrisa. (4) Plazo de ejecución no publicado; típicamente 24-36 meses en Innovation Actions de este tipo. (5) Requisitos de diseminación (directrices abiertas, componentes estandarizados) deben evaluarse respecto a propiedad intelectual. Confidence media (75%) por ausencia de detalles sobre presupuesto mínimo, sector prioritario, duración y elegibilidad de costes específicos.",
+        "accion": "1. Verificar disponibilidad de sitio industrial de cliente para demostración de recuperador de calor residual a TRL 7-8 (primera aplicación industrial) en sector compatible (cerámica, siderurgia, química, metalurgia, vidrio, etc.). 2. Contactar a CIRCE y TECNALIA para evaluar interés en liderazgo técnico de consorcio (simulación, modelización, validación). 3. Identificar socio industrial de otro país (Estado Miembro o Asociado) con experiencia en operación de plantas de recuperación de calor residual o en sector objetivo. 4. Solicitar a la Agencia Ejecutiva (CINEA) o a través de portal Funding & Tenders clarificación sobre: (a) sector industrial prioritario; (b) presupuesto mínimo esperado por proyecto; (c) desglose de costes elegibles (equipamiento, ingeniería, validación, diseminación); (d) duración típica de proyecto. 5. Evaluar compromiso de Kalfrisa respecto a publicación de directrices técnicas abiertas y especificaciones de componentes estandarizados (requisito de convocatoria) versus protección de propiedad intelectual del recuperador de doble camisa. 6. Preparar propuesta de modelo de negocio de valorización térmica como generación flexible de electricidad (uno de los 'eligible_actions'). 7. Monitorizar apertura oficial (2027-05-05) y preparar pre-propuesta 6-8 semanas antes del cierre (2027-09-15).",
+        "tags": [
+          "desc",
+          "ee"
+        ]
+      },
+      "analysis": {
+        "fit_score": 82,
+        "actionability_score": 68,
+        "confidence": 75,
+        "decision": "pursue",
+        "eligibility": "eligible",
+        "eligibility_reason": "La convocatoria requiere consorcio de al menos tres entidades independientes de diferentes países, con al menos una de un Estado Miembro y dos de Estados Miembros o Países Asociados distintos. Kalfrisa puede participar como beneficiaria en tal consorcio. No hay restricción de tipo de entidad ni de CNAE que la excluya.",
+        "recommended_role": "industrial_demonstrator",
+        "scores": {
+          "technological_fit": 85,
+          "strategic_fit": 88,
+          "role_fit": 80,
+          "trl_fit": 75,
+          "consortium_readiness": 75
+        },
+        "evidence_quality": "medium",
+        "positive_evidence": [
+          "Kalfrisa fabrica recuperadores de calor residual (convectivos y radiación) para gases de escape de alta temperatura, incluyendo desarrollo propio del recuperador de doble camisa.",
+          "Experiencia acreditada en proyectos de I+D con validación experimental a escala piloto e industrial: DT4RAF (gemelo digital de recuperadores), RAFeRTO (tecnologías digitales en oxidadores térmicos regenerativos y recuperadores), HIGH2-FURNACES (hornos híbridos con hidrógeno).",
+          "Capacidad de integración de tecnologías de terceros (rotoconcentradores, filtros) con control y sensórica propios, aplicable a depuración de gases de proceso.",
+          "Nave piloto propia en Zaragoza (110 m², 100 kW disponibles) para ensayos de prototipos a escala no industrial; acceso a instalaciones de clientes para demostración industrial.",
+          "Línea de desarrollo declarada en electrificación de equipos, compatible con la conversión de calor residual a potencia eléctrica.",
+          "Experiencia en consorcios de I+D multinacionales (FORTISSIMO PLUS, LIFE ABATE, EHEAT, DT4RAF).",
+          "Deterministic tech tags confirman alineación: waste_heat e industrial_electrification."
+        ],
+        "risks_and_unknowns": [
+          "TRL requerido 7-8 al cierre del proyecto: Kalfrisa ha demostrado TRL 4-7 en proyectos anteriores, pero la escalada a TRL 8 (primera aplicación industrial) requiere validación en instalación operativa de cliente. Debe verificarse disponibilidad de sitio industrial para demostración final.",
+          "Presupuesto máximo por proyecto: 6.750.000 EUR (70% de financiación). No consta el presupuesto mínimo ni el desglose de costes elegibles. Debe verificarse si el alcance técnico de recuperación y conversión a potencia eléctrica en sector industrial específico requiere inversión en equipamiento que exceda o quede muy por debajo de ese rango.",
+          "Consorcio obligatorio: requiere al menos tres entidades independientes de diferentes países (mínimo una de Estado Miembro, dos de Estados Miembros o Países Asociados distintos). Kalfrisa no tiene socios preidentificados en el radar. Debe identificarse liderazgo técnico (centro de investigación o empresa de simulación/ingeniería) y al menos un socio industrial adicional de otro país.",
+          "Sector industrial objetivo no especificado en la convocatoria: los 'eligible_actions' mencionan 'factories in the same industrial sector' pero no declaran cuál. Debe verificarse si el sector prioritario (cerámica, siderurgia, química, etc.) coincide con los sectores de aplicación de Kalfrisa.",
+          "Plazo de ejecución no publicado: la convocatoria abre 2027-05-05 y cierra 2027-09-15. Debe estimarse duración típica de Innovation Action en Horizon para recuperación de calor residual (habitualmente 24-36 meses).",
+          "Requisitos de diseminación y replicabilidad: la convocatoria exige 'open technical and economical guidelines' y 'standardised versions' de componentes comunes. Kalfrisa debe evaluar si puede comprometerse a publicar especificaciones técnicas de su recuperador o si ello entra en conflicto con propiedad intelectual.",
+          "Modelo de negocio de valorización térmica: uno de los 'eligible_actions' es 'Develop innovative business models of heat valorisation as flexible electricity generation'. Kalfrisa debe definir su rol en ese aspecto (fabricante de equipos, integrador, operador, o combinación)."
+        ],
+        "partner_needs": [
+          "Liderazgo técnico en simulación y modelización de sistemas de recuperación de calor residual y conversión a potencia: CIRCE (Aragón, matching capabilities waste_heat) o TECNALIA (España, matching capabilities waste_heat e industrial_electrification) son candidatos naturales.",
+          "Socio industrial de otro país (Estado Miembro o Asociado) con experiencia en operación de plantas de recuperación de calor residual o en sectores de aplicación (cerámica, siderurgia, química, etc.) para co-demostración y validación industrial.",
+          "Posible socio en ingeniería de integración en SCADA/EMS si Kalfrisa no cubre completamente ese aspecto.",
+          "Socio en análisis de ciclo de vida (ACV) o sostenibilidad si la convocatoria exige evaluación de impacto ambiental más allá de eficiencia energética."
+        ],
+        "recommended_partner_ids": [
+          "circe",
+          "tecnalia"
+        ],
+        "objeto_y_actuaciones": "Convocatoria de Horizon Europe (Innovation Action, 70% de financiación) que financia el desarrollo, validación y demostración de sistemas innovadores de recuperación de calor residual industrial y su conversión a potencia mecánica o eléctrica en plantas operativas. Acciones elegibles incluyen: desarrollo y validación de sistemas novedosos; demostración en sitios industriales operativos; maximización de replicabilidad y despliegue en plantas de UE y Países Asociados; análisis de necesidades sectoriales; identificación de componentes comunes y versiones estandarizadas; desarrollo de directrices técnicas y económicas abiertas para integración en infraestructuras SCADA/EMS; desarrollo de modelos de negocio innovadores de valorización térmica como generación flexible de electricidad. Presupuesto total: 13.500.000 EUR (dos proyectos de 6.750.000 EUR cada uno al 70%). TRL esperado al cierre: 7-8. Plazo de apertura: 2027-05-05; cierre: 2027-09-15. Consorcio obligatorio: mínimo tres entidades independientes de diferentes países (al menos una de Estado Miembro, dos de Estados Miembros o Países Asociados distintos). No se especifican en la fuente costes elegibles detallados ni sector industrial prioritario.",
+        "resumen": "Encaje tecnológico y estratégico alto. Kalfrisa fabrica recuperadores de calor residual (convectivos, radiación, doble camisa propia) y tiene experiencia acreditada en proyectos de I+D con validación industrial (DT4RAF, RAFeRTO, HIGH2-FURNACES). La línea de electrificación de equipos declarada como desarrollo futuro se alinea con la conversión de calor residual a potencia eléctrica. Se presentaría como demostrador industrial en consorcio, aportando equipos, caso de uso industrial, validación experimental a escala piloto/industrial e integración de sensórica y control. Recomendación: perseguir. Limitaciones de actionability: (1) TRL 7-8 requiere validación en instalación operativa de cliente; debe verificarse disponibilidad. (2) Consorcio obligatorio sin socios preidentificados; CIRCE y TECNALIA (Aragón/España) son candidatos para liderazgo técnico, pero se necesita socio industrial de otro país. (3) Sector industrial objetivo no declarado en convocatoria; debe verificarse alineación con sectores de aplicación de Kalfrisa. (4) Plazo de ejecución no publicado; típicamente 24-36 meses en Innovation Actions de este tipo. (5) Requisitos de diseminación (directrices abiertas, componentes estandarizados) deben evaluarse respecto a propiedad intelectual. Confidence media (75%) por ausencia de detalles sobre presupuesto mínimo, sector prioritario, duración y elegibilidad de costes específicos.",
+        "accion": "1. Verificar disponibilidad de sitio industrial de cliente para demostración de recuperador de calor residual a TRL 7-8 (primera aplicación industrial) en sector compatible (cerámica, siderurgia, química, metalurgia, vidrio, etc.). 2. Contactar a CIRCE y TECNALIA para evaluar interés en liderazgo técnico de consorcio (simulación, modelización, validación). 3. Identificar socio industrial de otro país (Estado Miembro o Asociado) con experiencia en operación de plantas de recuperación de calor residual o en sector objetivo. 4. Solicitar a la Agencia Ejecutiva (CINEA) o a través de portal Funding & Tenders clarificación sobre: (a) sector industrial prioritario; (b) presupuesto mínimo esperado por proyecto; (c) desglose de costes elegibles (equipamiento, ingeniería, validación, diseminación); (d) duración típica de proyecto. 5. Evaluar compromiso de Kalfrisa respecto a publicación de directrices técnicas abiertas y especificaciones de componentes estandarizados (requisito de convocatoria) versus protección de propiedad intelectual del recuperador de doble camisa. 6. Preparar propuesta de modelo de negocio de valorización térmica como generación flexible de electricidad (uno de los 'eligible_actions'). 7. Monitorizar apertura oficial (2027-05-05) y preparar pre-propuesta 6-8 semanas antes del cierre (2027-09-15).",
+        "tags": [
+          "desc",
+          "ee"
+        ],
+        "match_score": 82,
+        "priority": "medium",
+        "descartada": false,
+        "motivo_descarte": "",
+        "trl_min": 7,
+        "trl_max": 8,
+        "socio_consorcio": "CIRCE, TECNALIA",
+        "recommended_partners": [
+          {
+            "id": "circe",
+            "name": "CIRCE",
+            "matching_capabilities": [
+              "industrial_electrification",
+              "waste_heat"
+            ]
+          },
+          {
+            "id": "tecnalia",
+            "name": "TECNALIA",
+            "matching_capabilities": [
+              "industrial_electrification",
+              "waste_heat"
+            ]
+          }
+        ],
+        "dimensiones": [
+          {
+            "name": "Alineación tecnológica",
+            "val": 85
+          },
+          {
+            "name": "Capacidad de consorcio",
+            "val": 75
+          },
+          {
+            "name": "Encaje TRL",
+            "val": 75
+          },
+          {
+            "name": "Encaje de rol",
+            "val": 80
+          },
+          {
+            "name": "Oportunidad estratégica",
+            "val": 88
+          }
+        ],
+        "call_facts": {
+          "call_status": "forthcoming",
+          "programme": "HORIZON EUROPE",
+          "action_type": "Innovation Action",
+          "applicant_types": [],
+          "eligible_geographies": [
+            "Austria",
+            "Belgium",
+            "Bulgaria",
+            "Croatia",
+            "Cyprus",
+            "Czechia",
+            "Denmark",
+            "Estonia",
+            "Finland",
+            "France",
+            "Germany",
+            "Greece",
+            "Hungary",
+            "Ireland",
+            "Italy",
+            "Latvia",
+            "Lithuania",
+            "Luxembourg",
+            "Malta",
+            "Netherlands",
+            "Poland",
+            "Portugal",
+            "Romania",
+            "Slovakia",
+            "Slovenia",
+            "Spain",
+            "Sweden",
+            "Aruba",
+            "Bonaire",
+            "Curação",
+            "French Polynesia",
+            "French Southern and Antarctic Territories",
+            "Greenland",
+            "New Caledonia",
+            "Saba",
+            "Saint Barthélemy",
+            "Sint Eustatius",
+            "Sint Maarten",
+            "St. Pierre and Miquelon",
+            "Wallis and Futuna Islands",
+            "Albania",
+            "Arab Republic of Egypt",
+            "Armenia",
+            "Bosnia and Herzegovina",
+            "Canada",
+            "Faroe Islands",
+            "Georgia",
+            "Iceland",
+            "Israel",
+            "Kosovo",
+            "Moldova",
+            "Montenegro",
+            "New Zealand",
+            "North Macedonia",
+            "Norway",
+            "Republic of Korea",
+            "Serbia",
+            "Switzerland",
+            "Tunisia",
+            "Türkiye",
+            "Ukraine",
+            "United Kingdom"
+          ],
+          "eligible_entity_types": [
+            "Any legal entity"
+          ],
+          "eligibility_evidence": [
+            "Entities eligible for funding must be established in Member States, OCTs linked to Member States, or Associated Countries to Horizon Europe (official_structured_data)"
+          ],
+          "budget_total_eur": 13500000.0,
+          "funding_rate_percent": 70.0,
+          "project_budget_eur": null,
+          "project_cost_min_eur": null,
+          "grant_max_eur": 6750000.0,
+          "deadline_date": "2027-09-15",
+          "trl_min": 7,
+          "trl_max": 8,
+          "trl_source": "General Annex B",
+          "consortium_required": true,
+          "consortium_evidence": "Consortium composition requires at least three independent legal entities from different countries: at least one from a Member State and at least two from different Member States or Associated Countries (official_structured_data)",
+          "required_topics": [],
+          "eligible_actions": [
+            "Develop and validate novel excess/waste heat recovery and conversion systems",
+            "Demonstrate recovery of industrial excess/waste heat and its conversion to mechanical or electrical power within operational industrial sites",
+            "Maximise replicability and deployment of the concept/solution in EU and Associated Countries plants",
+            "Survey and analyse needs of factories in the same industrial sector",
+            "Identify common components and define standardised versions",
+            "Develop open technical and economical guidelines and tools for integrating systems into SCADA and EMS infrastructures",
+            "Develop innovative business models of heat valorisation as flexible electricity generation"
+          ],
+          "expected_outcomes": [
+            "At least one industrial sector with significant heating demand in the EU and Associated Countries develops pathways and business models to measurably increase industrial excess/waste heat recovery and conversion to power",
+            "Measurable improvement of industrial excess/waste heat recovery and conversion to power in terms of energy efficiency, flexibility of electricity production, climate and environment protection, reliability and safety, physical and cyber security, and profitability"
+          ],
+          "funding_lines": [],
+          "evidence": [
+            "Deadline: 2027-09-15",
+            "Open date: 2027-05-05",
+            "Budget: 6,750,000 EUR per project, 13,500,000 EUR total, 2 projects planned",
+            "Action type: Innovation Action (70% funding rate per official_structured_data)",
+            "TRL 7-8 expected by project end",
+            "Dissemination to cluster 4 'Digital, Industry and Space' private-public partnerships"
+          ],
+          "missing_fields": [
+            "applicant_types",
+            "project_budget_eur",
+            "project_cost_min_eur"
+          ]
+        },
+        "tech_tags": [
+          "industrial_electrification",
+          "waste_heat"
+        ],
+        "data_pending": false,
+        "data_gaps": [],
+        "monitoring_flags": [],
+        "review_required": false,
+        "review_reasons": [],
+        "token_usage": {
+          "extraction": {
+            "stage": "extracción factual",
+            "api_calls": 1,
+            "retry_api_calls": 0,
+            "input_tokens": 4820,
+            "output_tokens": 873,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 0,
+            "total_tokens": 5693,
+            "estimated_cost_usd": 0.009185,
+            "attempts": [
+              {
+                "stage": "extracción factual",
+                "attempt": 1,
+                "valid_output": true,
+                "api_calls": 1,
+                "retry_api_calls": 0,
+                "input_tokens": 4820,
+                "output_tokens": 873,
+                "cache_write_tokens": 0,
+                "cache_read_tokens": 0,
+                "total_tokens": 5693,
+                "estimated_cost_usd": 0.009185,
+                "max_tokens": 5000,
+                "service_tier": "standard"
+              }
+            ]
+          },
+          "evaluation": {
+            "stage": "evaluación de encaje",
+            "api_calls": 1,
+            "retry_api_calls": 0,
+            "input_tokens": 9470,
+            "output_tokens": 2554,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 0,
+            "total_tokens": 12024,
+            "estimated_cost_usd": 0.02224,
+            "attempts": [
+              {
+                "stage": "evaluación de encaje",
+                "attempt": 1,
+                "valid_output": true,
+                "api_calls": 1,
+                "retry_api_calls": 0,
+                "input_tokens": 9470,
+                "output_tokens": 2554,
+                "cache_write_tokens": 0,
+                "cache_read_tokens": 0,
+                "total_tokens": 12024,
+                "estimated_cost_usd": 0.02224,
+                "max_tokens": 3000,
+                "service_tier": "standard"
+              }
+            ]
+          },
+          "api_calls": 2,
+          "retry_api_calls": 0,
+          "input_tokens": 14290,
+          "output_tokens": 3427,
+          "cache_write_tokens": 0,
+          "cache_read_tokens": 0,
+          "total_tokens": 17717,
+          "estimated_cost_usd": 0.031425
+        }
+      },
+      "token_usage": {
+        "extraction": {
+          "stage": "extracción factual",
+          "api_calls": 1,
+          "retry_api_calls": 0,
+          "input_tokens": 4820,
+          "output_tokens": 873,
+          "cache_write_tokens": 0,
+          "cache_read_tokens": 0,
+          "total_tokens": 5693,
+          "estimated_cost_usd": 0.009185,
+          "attempts": [
+            {
+              "stage": "extracción factual",
+              "attempt": 1,
+              "valid_output": true,
+              "api_calls": 1,
+              "retry_api_calls": 0,
+              "input_tokens": 4820,
+              "output_tokens": 873,
+              "cache_write_tokens": 0,
+              "cache_read_tokens": 0,
+              "total_tokens": 5693,
+              "estimated_cost_usd": 0.009185,
+              "max_tokens": 5000,
+              "service_tier": "standard"
+            }
+          ]
+        },
+        "evaluation": {
+          "stage": "evaluación de encaje",
+          "api_calls": 1,
+          "retry_api_calls": 0,
+          "input_tokens": 9470,
+          "output_tokens": 2554,
+          "cache_write_tokens": 0,
+          "cache_read_tokens": 0,
+          "total_tokens": 12024,
+          "estimated_cost_usd": 0.02224,
+          "attempts": [
+            {
+              "stage": "evaluación de encaje",
+              "attempt": 1,
+              "valid_output": true,
+              "api_calls": 1,
+              "retry_api_calls": 0,
+              "input_tokens": 9470,
+              "output_tokens": 2554,
+              "cache_write_tokens": 0,
+              "cache_read_tokens": 0,
+              "total_tokens": 12024,
+              "estimated_cost_usd": 0.02224,
+              "max_tokens": 3000,
+              "service_tier": "standard"
+            }
+          ]
+        },
+        "api_calls": 2,
+        "retry_api_calls": 0,
+        "input_tokens": 14290,
+        "output_tokens": 3427,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 17717,
+        "estimated_cost_usd": 0.031425
+      },
+      "source_hash": "50480f6fe331d7d74a89d04b5d68b735b21d2cdc9db3f4e3bab5ac831c2040b0",
+      "retrieved_at": "2026-09-04T08:36:42.548253+00:00",
+      "extractor_version": "facts-2026-08-v9-programme-annexes-and-budget",
+      "evaluator_version": "fit-2026-09-v11-coherent-score-and-three-fits",
+      "profile_version": "kalfrisa-2026-09-v9-builds-integrates-wants",
+      "partner_catalog_version": "2026-09-v2-nabladot-and-roles",
+      "model_version": "claude-haiku-4-5",
+      "cached_at": "2026-09-04T08:47:54.177053+00:00"
+    },
+    "2bd816a3572c61e98e7a6edd247333c517135ba7b485fc861606715dd3868bcd": {
+      "raw_document": {
+        "source": "BDNS",
+        "identifier": "926906",
+        "bdns_id": "926906",
+        "bdns_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/926906",
+        "title": "CONVOCATORIA PARA LAS AYUDAS CON DESTINO A MINIMIZAR EL IMPACTO ECONÓMICO POR LA CRISIS ENERGÉTICA PARA PYMES, MICROPYMES, AUTÓNOMOS Y PROFESIONALES CON DOMICILIO FISCAL EN CALP, ANUALIDAD 2026",
+        "description": "CONVOCATORIA PARA LAS AYUDAS CON DESTINO A MINIMIZAR EL IMPACTO ECONÓMICO POR LA CRISIS ENERGÉTICA PARA PYMES, MICROPYMES, AUTÓNOMOS Y PROFESIONALES CON DOMICILIO FISCAL EN CALP, ANUALIDAD 2026 BASES REGULADORAS DE LA CONCESIÓN DE AYUDAS DESTINADAS A MINIMIZAR EL IMPACTO ECONÓMICO DE LA CRISIS ENERGÉTICA EN CALP. Comercio, Turismo y Pymes A partir del día siguiente a la publicación del extracto de la convocatoria en el BOPA 10 días hábiles a partir del día siguiente a la publicación de la convocatoria en el BOPA Concurrencia competitiva - canónica [{\"descripcion\": \"PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA\"}] [{\"descripcion\": \"SUBVENCIÓN Y ENTREGA DINERARIA SIN CONTRAPRESTACIÓN \"}] [{\"descripcion\": \"ES521 - Alicante / Alacant\"}] [{\"descripcion\": \"COMERCIO AL POR MAYOR Y AL POR MENOR\", \"codigo\": \"G\"}, {\"descripcion\": \"SUMINISTRO DE ENERGIA ELECTRICA, GAS, VAPOR Y AIRE ACONDICIONADO\", \"codigo\": \"D\"}] [{\"id\": 1514224, \"descripcion\": \"Documento de la convocatoria en español\", \"nombreFic\": \"DECRETO TA07 2026-0205.pdf\", \"long\": 1198577, \"datMod\": \"2026-08-28\", \"datPublicacion\": \"2026-08-28\"}]",
+        "deadline_days": 7,
+        "deadline_date": "2026-09-11",
+        "open_date": "",
+        "fecha_sin_confirmar": true,
+        "budget": "€300,000",
+        "url": "https://calp.sedelectronica.es/info.0",
+        "keywords_found": [],
+        "org": "LOCAL · CALP · AYUNTAMIENTO DE CALP",
+        "source_type": "API REST SNPSAP",
+        "funding_mechanism": "direct",
+        "document_role": "call",
+        "discovery_sources": [
+          "BDNS"
+        ],
+        "bdns_filter_ready": true,
+        "bdns_active_status": "confirmed_deadline",
+        "bdns_api_open_flag": false,
+        "bdns_received_date": "2026-08-28",
+        "bdns_call_publication_date": "2026-08-28",
+        "bdns_admin_type": "LOCAL",
+        "bdns_admin_levels": {
+          "nivel1": "LOCAL",
+          "nivel2": "CALP",
+          "nivel3": "AYUNTAMIENTO DE CALP"
+        },
+        "bdns_regions": [
+          "ES521 - Alicante / Alacant"
+        ],
+        "bdns_beneficiary_types": [
+          "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+        ],
+        "bdns_company_eligible": true,
+        "bdns_nace_codes": [
+          "COMERCIO AL POR MAYOR Y AL POR MENOR",
+          "SUMINISTRO DE ENERGIA ELECTRICA, GAS, VAPOR Y AIRE ACONDICIONADO"
+        ],
+        "bdns_nace_sections": [],
+        "bdns_finality": "Comercio, Turismo y Pymes",
+        "bdns_objectives": "",
+        "bdns_instruments": [
+          "SUBVENCIÓN Y ENTREGA DINERARIA SIN CONTRAPRESTACIÓN"
+        ],
+        "bdns_award_mode": "Concurrencia competitiva - canónica",
+        "bdns_call_access": "open_or_unknown",
+        "bdns_territorial_requirement": "unknown",
+        "bdns_explicit_outside_aragon": false,
+        "bdns_project_execution_days": null,
+        "bdns_is_open_ended": false,
+        "bdns_state_aid_reference": "",
+        "bdns_is_mrr": false,
+        "bdns_documents": [
+          {
+            "title": "Documento de la convocatoria en español",
+            "url": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1514224",
+            "kind": "document",
+            "source_key": "id",
+            "published_date": "2026-08-28"
+          }
+        ],
+        "opportunity_role": "direct_beneficiary",
+        "opportunity_labels": [],
+        "deterministic_prefilter": {
+          "decision": "ambiguous",
+          "reason_code": "verified_hold_still_unresolved",
+          "reason": "La evidencia focalizada no resuelve la causa; debe continuar al análisis general y nunca convertirse en descarte silencioso.",
+          "score": 0,
+          "signals": {
+            "hold_reason": "territorial_eligibility_unverified"
+          }
+        },
+        "related_document_contents": [
+          {
+            "source": "BDNS",
+            "title": "Metadatos estructurados SNPSAP",
+            "url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/926906",
+            "document_role": "regulatory_bases",
+            "description": "METADATOS SNPSAP CON ETIQUETAS: {\"beneficiarios\": [\"PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA\"], \"codigo_bdns\": \"926906\", \"estado_calculado\": \"confirmed_deadline\", \"fecha_fin_solicitud\": \"2026-09-11\", \"fecha_inicio_solicitud\": \"\", \"fecha_publicacion_convocatoria\": \"2026-08-28\", \"fecha_recepcion\": \"2026-08-28\", \"finalidad\": \"Comercio, Turismo y Pymes\", \"indicador_abierto_api_no_concluyente\": false, \"instrumentos\": [\"SUBVENCIÓN Y ENTREGA DINERARIA SIN CONTRAPRESTACIÓN\"], \"modo_concesion\": \"Concurrencia competitiva - canónica\", \"objetivos\": \"\", \"regiones\": [\"ES521 - Alicante / Alacant\"], \"tipo_administracion\": \"LOCAL\", \"titulo\": \"CONVOCATORIA PARA LAS AYUDAS CON DESTINO A MINIMIZAR EL IMPACTO ECONÓMICO POR LA CRISIS ENERGÉTICA PARA PYMES, MICROPYMES, AUTÓNOMOS Y PROFESIONALES CON DOMICILIO FISCAL EN CALP, ANUALIDAD 2026\"} CONTENIDO ADICIONAL: CONVOCATORIA PARA LAS AYUDAS CON DESTINO A MINIMIZAR EL IMPACTO ECONÓMICO POR LA CRISIS ENERGÉTICA PARA PYMES, MICROPYMES, AUTÓNOMOS Y PROFESIONALES CON DOMICILIO FISCAL EN CALP, ANUALIDAD 2026 BASES REGULADORAS DE LA CONCESIÓN DE AYUDAS DESTINADAS A MINIMIZAR EL IMPACTO ECONÓMICO DE LA CRISIS ENERGÉTICA EN CALP. Comercio, Turismo y Pymes A partir del día siguiente a la publicación del extracto de la convocatoria en el BOPA 10 días hábiles a partir del día siguiente a la publicación de la convocatoria en el BOPA Concurrencia competitiva - canónica [{\"descripcion\": \"PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA\"}] [{\"descripcion\": \"SUBVENCIÓN Y ENTREGA DINERARIA SIN CONTRAPRESTACIÓN \"}] [{\"descripcion\": \"ES521 - Alicante / Alacant\"}] [{\"descripcion\": \"COMERCIO AL POR MAYOR Y AL POR MENOR\", \"codigo\": \"G\"}, {\"descripcion\": \"SUMINISTRO DE ENERGIA ELECTRICA, GAS, VAPOR Y AIRE ACONDICIONADO\", \"codigo\": \"D\"}] [{\"id\": 1514224, \"descripcion\": \"Documento de la convocatoria en español\", \"nombreFic\": \"DECRETO TA07 2026-0205.pdf\", \"long\": 1198577, \"datMod\": \"2026-08-28\", \"datPublicacion\": \"2026-08-28\"}]"
+          },
+          {
+            "source": "BDNS",
+            "title": "Documento de la convocatoria en español",
+            "url": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1514224",
+            "document_role": "regulatory_bases",
+            "description": "DECRETO 7535/2026Expediente nº: Resolución con número y fecha establecidos al margen Subvenciones por Concurrencia CompetitivaProcedimiento: CONVOCATORIA DE AYUDAS CON DESTINO A MINIMIZAR EL Asunto del Expediente: IMPACTO ECONÓMICO QUE LA CRISIS ENERGÉTICA ESTÁ SUPONIENDO SOBRE PYMES, MICROPYMES, PEQUEÑOS EMPRESARIOS AUTÓNOMOS Y PROFESIONALES DE CALP SÉPTIMO TENIENTE DE ALCALDESA DEL AYUNTAMIENTO DE CALP HECHOS Y FUNDAMENTOS DE DERECHO En relación a la convocatoria de ayudas con destino a minimizar el impacto económico por la crisis energética para pymes, micropymes, autónomos y profesionales con domicilio fiscal en Calp, anualidad 2026: A) ANTECEDENTES PRIMERO.- Por la Concejalía de Promoción económica se desea realizar la convocatoria para la concesión de ayudas con destino a minimizar el impacto económico por la crisis energética para pymes, micropymes, autónomos y profesionales con domicilio fiscal en Calp, anualidad 2026, reguladas por las bases aprobadas definitivamente y publicadas en el Boletín Oficial de la Provincia de Alicante núm. 151, de 12 de agosto de 2026. SEGUNDO.- Consta en el expediente providencia de inicio firmada por la Alcaldesa-Presidenta y el Jefe del Área  […] de 12 de agosto de 2026. 2.-Crédito disponible: El expediente cuenta con Retención de Crédito n.º 220260009086 consignado en la partida presupuestaria: 1406/4314/4790001 AYUDAS A PALIAR INCREMENTO COSTES ENERGÍA Y COMBUSTIBLE por importe de 300.000,00 euros para CONVOCATORIA DE AYUDAS PARA MINIMIZAR EL IMPACTO ECONÓMICO DE LA CRISIS ENERGÉTICA EN CALP. 3.- Naturaleza jurídica y régimen aplicable: Las ayudas que se concedan tendrán el carácter de subvención y se regirán, en aquello no dispuesto en las presentes bases, por la Ley 38/2003, de 17 de noviembre, General de Subvenciones, y su normativa de desarrollo, por la Ordenanza General de Subvenciones del Ayuntamiento de Calp, las bases de Ejecución del Presupuesto municipal de 2026 y las bases reguladoras de pymes, micropymes, autónomos y profesionales, que tengan su domicilio fiscal en Calp; al objeto de minimizar el impacto económico que la crisis energética está suponiendo sobre el tejido productivo local de conformidad con las bases aprobadas definitivamente y publicadas en el BOP 151 de 12 de agosto de 2026. La presentación de la solicitud supondrá la aceptación incondicional del contenido de la convocatoria. 4.- Personas beneficiarias y ámbito de aplicación: Podrán ser beneficiarias las personas físicas o jurídicas, que siendo pymes, micropymes, autónomos u otros colectivos sujetos a mutualidades, tengan su sede fiscal en Calp y cumplan los requisitos establecidos en la Base 2.1 de las Bases Reguladoras publicadas en el BOP 151 de 12 de agosto de 2026. De acuerdo a las definiciones contenidas en el Anexo I, art. 2.3 del Reglamento de la U.E., número 651 de la Comisión de 17 de junio de 2014, la pequeña empresa queda definida como, pyme, microempresa y autónomos cuyo volumen de negocios actual o cuyo balance general anual no supera los 10 millones de euros. Quedan excluidas las entidades del sector público, las asociaciones, fundaciones y entidades sin ánimo de lucro, comunidades de bienes, así como cualquier otro tipo de agrupación de personas físicas o jurídicas, públicas o privadas, sin personalidad jurídica. Cód. Validación: 5ALEQFAMATHL9M47LPF249SC7 Verificación: https://calp.sedelectronica.es/ Documento firmado electrónicamente desde la plataforma esPublico Gestiona | Página 3 de 10 DECRETO TA07 Número: 2026-0205 Fecha: 18/08/2026 No obstante, podrán ser personas beneficiarias, los socios y socias autónomos comuneros de las comunidades de bienes de forma individual. 5.- Requisitos generales para solicitar las ayudas: 5.1. Requisitos: a) Que no estén incursas en ninguna de las prohibiciones para ser beneficiarias de subvenciones, establecidas en el artículo 13 de la Ley 38/2003. b) Que se encuentren al corriente en el cumplimiento de sus obligaciones tributarias con la Agencia Estatal de la Administración Tributaria (AEAT). c) Que se encuentren al corriente en el cumplimiento de sus obligaciones frente a la Seguridad Social. d) Que no tengan deudas o sanciones de naturaleza tributaria municipal frente al Ayuntamiento de Calp e) Que, en su caso, se encuentren al corriente en el pago de sus obligaciones por reintegro de subvenciones y no tengan pendiente de justificación subvenciones anteriores concedidas por el Ayuntamiento de Calp cuyo plazo de justificación haya concluido. f) Que su domicilio social radique en el municipio de Calp. h) Que cumplan el objetivo, ejecuten el proyecto o realicen las actividades que tienen el carácter de subvencionables en la convocatoria. i) Que sean personas físicas o jurídicas, que siendo pymes, micropymes, autónomos u otros colectivos sujetos a mutualidades, tengan su sede fiscal en Calp. 6.- Importe individual de la ayuda y pago: Serán subvencionables, hasta un 50%, los gastos efectivamente acreditados por los solicitantes en consumo de energía eléctrica, gas y carburantes . La ayuda, previa solicitud de las personas o entidadesentre el 1 de marzo y el 31 de julio de 2026 beneficiarias, podrá alcanzar los 4.000,00 euros por solicitante. Para el supuesto de que el importe de las ayudas a conceder supere el importe existente en la convocatoria, el Ayuntamiento podrá distribuir a prorrata este último importe entre todos los beneficiarios, una vez finalizado el periodo de presentación de solicitudes y a propuesta de la Comisión de Valoración. 7.- Publicidad de las convocatorias: La convocatoria se publicará en el Boletín Oficial de la Provincia de Alicante, así como en la página web municipal. La información se trasladará a la Base de Datos Nacional de Subvenciones, de conformidad con lo establecido en el artículo 20.8 a) LGS. Sin perjuicio de lo dispuesto en los apartados anteriores, la información sobre la convocatoria podrá ser también difundida a través de otros medios publicitarios, al objeto de garantizar que llegue al mayor número de destinatarios posible. 8.- Plazo y lugar de presentación de solicitudes: Las solicitudes se presentarán en el registro electrónico del Ayuntamiento de Calp en impreso normalizado de solicitud (SUB 09) que estará disponible en la web municipal. Cód. Validación: 5ALEQFAMATHL9M47LPF249SC7 Verificación: https://calp.sedelectronica.es/ Documento firmado electrónicamente desde la plataforma esPublico Gestiona | Página 4 de 10 DECRETO TA07 Número: 2026-0205 Fecha: 18/08/2026 El plazo de presentación de solicitudes a partir del día siguiente a laserá de 10 días hábiles publicación del extracto de la convocatoria en el Boletín Oficial de la Provincia de Alicante. En la página web municipal estará disponible la información y documentación de la convocatoria y se habilitará el acceso a la sede electrónica para formular la solicitud. La presentación de la solicitud de subvención fuera del plazo establecido o siguiendo un procedimiento distinto al aquí descrito, así como la no utilización de los formularios normalizados de uso obligatorio, serán causas de inadmisión. 9.- Documentación a presentar: 9.1: La solicitud normalizada (SUB 09) deberá estar firmada por la persona interesada o su representante legal y debe acompañarse obligatoriamente de la siguiente documentación: A) Personas físicas • DNI o NIE, por ambas caras. • En su caso, documento acreditativo de la representación otorgada a la persona que presenta la instancia de solicitud. • Resolución/certificación del alta en el Régimen Especial de Trabajadores Autónomos o la Mutua profesional correspondiente. B) En caso de personas jurídicas: • CIF • Las personas jurídicas se identifican a través de sus certificados de representante. En caso de utilizar el representante firma de persona física se adjuntará el documento donde conste la representación legal, junto con el documento de identificación del representado: NIF de la persona jurídica, sociedad civil, comunidad de bienes u otras entidades económicas sin personalidad jurídica. En caso de autorizar a otra persona distinta para la presentación en Sede, se presentará además, el documento de autorización junto con los documentos de identificación del solicitante. ▪ Escritura de constitución y los estatutos de la persona jurídica actualizados, inscritos en el correspondiente Registro. ▪ Alta en el régimen de la Seguridad Social correspondiente de la persona administradora. A y B) Común: personas físicas y jurídicas: - Certificación de situación en el censo de actividades económicas de la Agencia Estatal de la Administración Tributaria, en el que indique la actividad económica con su fecha de alta, el domicilio fiscal y en su caso el del local de desarrollo de la actividad. - Facturas u otros documentos acreditativos de los gastos para los que se solicita la ayuda, acompañadas de memoria justificativa de los gastos efectuados, donde conste declaración Cód. Validación: 5ALEQFAMATHL9M47LPF249SC7 Verificación: https://calp.sedelectronica.es/ Documento firmado electrónicamente desde la plataforma esPublico Gestiona | Página 5 de 10 DECRETO TA07 Número: 2026-0205 Fecha: 18/08/2026 responsable en las que se especifique que estas facturas no han sido presentadas como justificantes en ninguna otra subvención, y que correspondan al periodo establecido e incluido en los gastos de la base cuarta de la convocatoria. - Las facturas deberán cumplir con el Real decreto 1.619/2012, de 30 de noviembre (BOE de 01/12 /2012), con indicación del número, el lugar y la fecha de emisión, el NIF, el domicilio del expendedor y del destinatario, la descripción de la operación realizada (que deberá deducirse indubitablemente que se relacionan directamente con la actividad empresarial ), el importe y la referencia del IVA aplicado, incluido o exento. No podrán sustituirse por simples recibos, albaranes u otros documentos parecidos. No se admitirán como justificantes de pago, de los conceptos anteriores, los pagos en efectivo. Los solicitantes, no obligados a cumplir con el Real Decreto 1619/2012, de 30 de noviembre, por el que se regulan las obligaciones de facturación, entenderán los requisitos de facturación requeridos, como volumen de ingresos de la actividad económica. Los gastos justificados deberán estar pagados en el momento de la solicitud, acreditando este extremo mediante copia de la transferencia o cargo bancario en la cuenta indicada […]  […] ciaria tuviese concedido un aplazamiento/fraccionamiento de deudas con la Tesorería General de la Seguridad Social, o con cualquiera de las Administraciones Tributarias o con la Tesorería Municipal, deberá presentar con la solicitud, la resolución de concesión del mismo junto al último certificado de carecer de deudas posterior a la concesión del aplazamiento. - Declaración Responsable firmada por la persona interesada o representante legal de la persona o entidad solicitante que contendrá el pronunciamiento expreso sobre las siguientes cuestiones: • Que la persona solicitante asume el compromiso de destinar la subvención a la finalidad prevista. • Mantener su actividad económica durante al menos los seis meses posteriores a la publicación de la resolución de la concesión. • Que no se halla incursa en las prohibiciones para obtener la condición de beneficiario recogidas en el art. 13 de la Ley 38/2003, de 17 de noviembre, General de subvenciones. • Que se halla al corriente de las obligaciones tributarias con la Hacienda Estatal, con la Hacienda municipal y con la Seguridad Social. • Que la persona solicitante se compromete al cumplimiento de las obligaciones de las personas beneficiarias de subvenciones, establecidas en el artículo 14 de la Ley General de Subvenciones. • Que la persona solicitante se compromete a declarar las ayudas de minimis que le hubiesen sido concedidas por cualquier proyecto durante los tres últimos ejercicios fiscales, con indicación de importe, organismo, fecha de concesión y régimen de ayudas en que se ampara, o en su caso, declaración "
+          },
+          {
+            "source": "BDNS",
+            "title": "Sede electrónica",
+            "url": "https://calp.sedelectronica.es/info.0",
+            "document_role": "regulatory_bases",
+            "description": "Saltar al contenido principal SEDE ELECTRÓNICA Identifícate Inicio Trámites Mi carpeta Buzón electrónico Consulta de expedientes Registros presentados Registro de apoderamientos Solicitudes en borrador Solicitudes pendientes de pago Consulta de facturas Portafirmas Mis datos Servicios en línea Proveedores Validación de documentos Perfil de contratante Registro de Apoderamientos Órganos colegiados Empleados y cargos públicos Publicidad Tablón de anuncios Portal de transparencia ES Castellano Valenciano SEDE ELECTRÓNICA Menú 4 de septiembre 2026, 10:46:22 Catálogo de trámites Saltar contenido 1 Trámites destacados Instancia General *SAC25 - Solicitud de Expedición de Documentos Tipo General *Formalización de la matrícula para el Campamento de Verano *I02 - Solicitud Admisión Pruebas Selectivas. SUB13 - Solicitud y justificación de ayudas individuales para sufragar los gastos de transporte a estudiantes que cursen estudios fuera de Calp. SUB09 – SOLICITUD DE AYUDAS CON DESTINO A MINIMIZAR EL IMPACTO ECONÓMICO POR LA CRISIS ENERGÉTICA PARA PYMES, MICROPYMES, AUTÓNOMOS Y PROFESIONALES CON DOMICILIO FISCAL EN CALP Agencia de Desarrollo Local Calidad Urbana Centro Cívico Comercio Cultura Deportes Educación Escuela Infantil Intervención Otros trámites Padrón de Habitantes Política Social Política Territorial Recursos Humanos Rentas y Exacciones Sanidad Secretaría Servicio de Atención al Ciudadano (OAC) Subvenciones Tesorería Enlaces de interés Saltar contenido 2 PAGO DE LIQUIDACIONES Y RECIBOS Pago de liquidaciones y recibos OAC - CITA PREVIA Solicitar Cita Previa para la OAC Cancelar Cita Previa de la OAC Soporte Soporte Técnico al Ciudadano Mi carpeta electrónica Saltar contenido 3 Buzón electrónico Mis expedientes Portafirmas Registros presentados Mis apoderamientos Mis datos Servicios en línea Saltar contenido 4 Órganos colegiados Factura electrónica Perfil de contratante Portal de transparencia Validación de documentos Empleados y cargos públicos Tablón de anuncios sep 04 Edicto provisional apoyo sept dic EDICTO Relación provisional de personas beneficiarias del programa “La Tribu apoyo escolar” correspondiente al curso escolar 2026-2027 para el periodo comprendido entre el 7 de septiembre y el 18 de diciembre de 2026, ambos inclusives sep 03 Anuncio de la convocatoria Pleno ordinario día 8 de septiembre de 2026. sep 03 BOE Nº 215 DE 01/09/2026 - X1649095H Anuncio de notificación de 27 de agosto de 2026 en procedimiento Protección de la Legalidad Urbanística (Exp. 5462/2026). Interesado: X1649095H. Más publicaciones Acerca de esta página La sede Titularidad y Directorio de Oficinas Normativa Calendario y cómputo de plazos Fecha y hora oficial Información de interés Política de Privacidad Esquema Nacional de Seguridad Política de Cookies Canal de Denuncias Certificados Sistemas de identificación Sistemas de Firma Certificados Electrónicos Usabilidad Accesibilidad Mapa web Ayuda Preguntas frecuentes ¿Tienes algún problema? Escríbenos o llama al 965833600"
+          }
+        ],
+        "bdns_initial_hold_reason": "territorial_eligibility_unverified",
+        "bdns_hold_resolution": {
+          "decision": "unresolved",
+          "reason_code": "semantic_evidence_required",
+          "resolved_by": "deterministic"
+        }
+      },
+      "extracted_facts": {
+        "call_status": "open",
+        "programme": "Ayudas para minimizar el impacto económico de la crisis energética",
+        "action_type": "Subvención",
+        "applicant_types": [
+          "PYME",
+          "Micropyme",
+          "Autónomo",
+          "Persona física que desarrolla actividad económica"
+        ],
+        "eligible_geographies": [
+          "ES521 - Alicante / Alacant",
+          "Calp"
+        ],
+        "eligible_entity_types": [
+          "Persona física",
+          "Persona jurídica",
+          "PYME",
+          "Micropyme",
+          "Autónomo"
+        ],
+        "eligibility_evidence": [
+          "Domicilio fiscal en Calp",
+          "No estar incurso en prohibiciones del artículo 13 de la Ley 38/2003",
+          "Estar al corriente de obligaciones tributarias con AEAT",
+          "Estar al corriente de obligaciones con Seguridad Social",
+          "No tener deudas o sanciones tributarias municipales",
+          "Estar al corriente en reintegro de subvenciones anteriores",
+          "Volumen de negocios o balance anual no superior a 10 millones de euros"
+        ],
+        "budget_total_eur": 300000.0,
+        "funding_rate_percent": 50.0,
+        "project_budget_eur": null,
+        "project_cost_min_eur": null,
+        "grant_max_eur": 4000.0,
+        "deadline_date": "2026-09-11",
+        "trl_min": null,
+        "trl_max": null,
+        "trl_source": null,
+        "consortium_required": false,
+        "consortium_evidence": "No se requiere consorcio para esta convocatoria de ayudas individuales",
+        "required_topics": [],
+        "eligible_actions": [
+          "Gastos en consumo de energía eléctrica",
+          "Gastos en consumo de gas",
+          "Gastos en consumo de carburantes"
+        ],
+        "expected_outcomes": [],
+        "funding_lines": [],
+        "evidence": [
+          "Decreto TA07 2026-0205 de 18/08/2026",
+          "Publicación en Boletín Oficial de la Provincia de Alicante núm. 151 de 12 de agosto de 2026",
+          "Metadatos SNPSAP: beneficiarios PYME y personas físicas que desarrollan actividad económica",
+          "Metadatos SNPSAP: CNAE G (Comercio) y D (Suministro de energía)",
+          "Metadatos SNPSAP: región ES521 Alicante",
+          "Bases reguladoras publicadas en BOP 151 de 12 de agosto de 2026",
+          "Plazo de presentación: 10 días hábiles a partir del día siguiente a la publicación en BOPA",
+          "Ayuda máxima: 4.000 euros por solicitante",
+          "Tasa de financiación: hasta 50% de gastos acreditados"
+        ],
+        "missing_fields": [
+          "open_date",
+          "trl_source"
+        ]
+      },
+      "evaluation": {
+        "fit_score": 15,
+        "actionability_score": 8,
+        "confidence": 25,
+        "decision": "discard_ineligible",
+        "eligibility": "ineligible",
+        "eligibility_reason": "Kalfrisa tiene sede en Zaragoza (50016). La convocatoria se restringe a beneficiarios con domicilio fiscal en Calp (ES521 - Alicante). No hay evidencia de que Kalfrisa tenga establecimiento, sucursal o domicilio fiscal en Calp. La elegibilidad geográfica es un requisito determinante y no se cumple.",
+        "recommended_role": "not_applicable",
+        "scores": {
+          "technological_fit": 5,
+          "strategic_fit": 10,
+          "role_fit": 0,
+          "trl_fit": 0,
+          "consortium_readiness": 0
+        },
+        "evidence_quality": "low",
+        "positive_evidence": [
+          "Kalfrisa es PYME, categoría admitida en la convocatoria",
+          "La convocatoria admite personas jurídicas como tipo de entidad",
+          "No hay restricción de CNAE explícita que excluya a Kalfrisa (CNAE 2899 no está vetado)"
+        ],
+        "risks_and_unknowns": [
+          "Inelegibilidad geográfica: domicilio fiscal requerido en Calp; Kalfrisa está en Zaragoza",
+          "Objeto de la convocatoria: reembolso de gastos en consumo de energía eléctrica, gas y carburantes ya incurridos, no I+D ni inversión en equipos",
+          "Ayuda máxima de 4.000 € por solicitante: importe muy reducido, sin relación con proyectos de I+D industrial",
+          "Tasa de financiación del 50%: cobertura baja para proyectos de innovación",
+          "Plazo de presentación: 10 días hábiles desde publicación (12 de agosto); a fecha de referencia (4 de septiembre) la convocatoria está cerrada",
+          "No hay temas de I+D, TRL, líneas de actuación ni requisitos técnicos publicados: la convocatoria es de reembolso de gastos operacionales, no de desarrollo tecnológico"
+        ],
+        "partner_needs": [],
+        "recommended_partners": [],
+        "resumen": "Kalfrisa no encaja: (1) inelegibilidad geográfica —sede en Zaragoza, no en Calp—; (2) objeto fuera de foco —reembolso de consumo energético operacional, no I+D, inversión ni demostración tecnológica—; (3) importe máximo (4.000 €) y tasa (50 %) incompatibles con proyectos de innovación industrial; (4) plazo cerrado a fecha de referencia. No hay línea de I+D, TRL ni temas técnicos aplicables. Descartar.",
+        "accion": "Descartar por restricción regional expresa. Reconsiderar solo si unas bases futuras admiten ejecución en Aragón o participación financiada directa sin establecimiento previo en la región convocante.",
+        "tags": []
+      },
+      "analysis": {
+        "fit_score": 15,
+        "actionability_score": 8,
+        "confidence": 25,
+        "decision": "discard_ineligible",
+        "eligibility": "ineligible",
+        "eligibility_reason": "Kalfrisa tiene sede en Zaragoza (50016). La convocatoria se restringe a beneficiarios con domicilio fiscal en Calp (ES521 - Alicante). No hay evidencia de que Kalfrisa tenga establecimiento, sucursal o domicilio fiscal en Calp. La elegibilidad geográfica es un requisito determinante y no se cumple.",
+        "recommended_role": "not_applicable",
+        "scores": {
+          "technological_fit": 5,
+          "strategic_fit": 10,
+          "role_fit": 0,
+          "trl_fit": 0,
+          "consortium_readiness": 0
+        },
+        "evidence_quality": "low",
+        "positive_evidence": [
+          "Kalfrisa es PYME, categoría admitida en la convocatoria",
+          "La convocatoria admite personas jurídicas como tipo de entidad",
+          "No hay restricción de CNAE explícita que excluya a Kalfrisa (CNAE 2899 no está vetado)"
+        ],
+        "risks_and_unknowns": [
+          "Inelegibilidad geográfica: domicilio fiscal requerido en Calp; Kalfrisa está en Zaragoza",
+          "Objeto de la convocatoria: reembolso de gastos en consumo de energía eléctrica, gas y carburantes ya incurridos, no I+D ni inversión en equipos",
+          "Ayuda máxima de 4.000 € por solicitante: importe muy reducido, sin relación con proyectos de I+D industrial",
+          "Tasa de financiación del 50%: cobertura baja para proyectos de innovación",
+          "Plazo de presentación: 10 días hábiles desde publicación (12 de agosto); a fecha de referencia (4 de septiembre) la convocatoria está cerrada",
+          "No hay temas de I+D, TRL, líneas de actuación ni requisitos técnicos publicados: la convocatoria es de reembolso de gastos operacionales, no de desarrollo tecnológico"
+        ],
+        "partner_needs": [],
+        "recommended_partner_ids": [],
+        "objeto_y_actuaciones": "Subvención para reembolso de gastos acreditados en consumo de energía eléctrica, gas natural y carburantes ya incurridos por PYME y personas físicas con domicilio fiscal en Calp (Alicante). Tasa de financiación hasta el 50 % de los gastos acreditados. Ayuda máxima de 4.000 € por solicitante. No se especifican gastos excluidos ni condiciones de elegibilidad técnica más allá de la ubicación geográfica y la condición de PYME o persona física.",
+        "resumen": "Kalfrisa no encaja: (1) inelegibilidad geográfica —sede en Zaragoza, no en Calp—; (2) objeto fuera de foco —reembolso de consumo energético operacional, no I+D, inversión ni demostración tecnológica—; (3) importe máximo (4.000 €) y tasa (50 %) incompatibles con proyectos de innovación industrial; (4) plazo cerrado a fecha de referencia. No hay línea de I+D, TRL ni temas técnicos aplicables. Descartar.",
+        "accion": "Descartar por restricción regional expresa. Reconsiderar solo si unas bases futuras admiten ejecución en Aragón o participación financiada directa sin establecimiento previo en la región convocante.",
+        "tags": [],
+        "match_score": 15,
+        "priority": "low",
+        "descartada": true,
+        "motivo_descarte": "Kalfrisa tiene sede en Zaragoza (50016). La convocatoria se restringe a beneficiarios con domicilio fiscal en Calp (ES521 - Alicante). No hay evidencia de que Kalfrisa tenga establecimiento, sucursal o domicilio fiscal en Calp. La elegibilidad geográfica es un requisito determinante y no se cumple.",
+        "trl_min": null,
+        "trl_max": null,
+        "socio_consorcio": "",
+        "recommended_partners": [],
+        "dimensiones": [
+          {
+            "name": "Alineación tecnológica",
+            "val": 5
+          },
+          {
+            "name": "Capacidad de consorcio",
+            "val": 0
+          },
+          {
+            "name": "Encaje TRL",
+            "val": 0
+          },
+          {
+            "name": "Encaje de rol",
+            "val": 0
+          },
+          {
+            "name": "Oportunidad estratégica",
+            "val": 10
+          }
+        ],
+        "call_facts": {
+          "call_status": "open",
+          "programme": "Ayudas para minimizar el impacto económico de la crisis energética",
+          "action_type": "Subvención",
+          "applicant_types": [
+            "PYME",
+            "Micropyme",
+            "Autónomo",
+            "Persona física que desarrolla actividad económica"
+          ],
+          "eligible_geographies": [
+            "ES521 - Alicante / Alacant",
+            "Calp"
+          ],
+          "eligible_entity_types": [
+            "Persona física",
+            "Persona jurídica",
+            "PYME",
+            "Micropyme",
+            "Autónomo"
+          ],
+          "eligibility_evidence": [
+            "Domicilio fiscal en Calp",
+            "No estar incurso en prohibiciones del artículo 13 de la Ley 38/2003",
+            "Estar al corriente de obligaciones tributarias con AEAT",
+            "Estar al corriente de obligaciones con Seguridad Social",
+            "No tener deudas o sanciones tributarias municipales",
+            "Estar al corriente en reintegro de subvenciones anteriores",
+            "Volumen de negocios o balance anual no superior a 10 millones de euros"
+          ],
+          "budget_total_eur": 300000.0,
+          "funding_rate_percent": 50.0,
+          "project_budget_eur": null,
+          "project_cost_min_eur": null,
+          "grant_max_eur": 4000.0,
+          "deadline_date": "2026-09-11",
+          "trl_min": null,
+          "trl_max": null,
+          "trl_source": null,
+          "consortium_required": false,
+          "consortium_evidence": "No se requiere consorcio para esta convocatoria de ayudas individuales",
+          "required_topics": [],
+          "eligible_actions": [
+            "Gastos en consumo de energía eléctrica",
+            "Gastos en consumo de gas",
+            "Gastos en consumo de carburantes"
+          ],
+          "expected_outcomes": [],
+          "funding_lines": [],
+          "evidence": [
+            "Decreto TA07 2026-0205 de 18/08/2026",
+            "Publicación en Boletín Oficial de la Provincia de Alicante núm. 151 de 12 de agosto de 2026",
+            "Metadatos SNPSAP: beneficiarios PYME y personas físicas que desarrollan actividad económica",
+            "Metadatos SNPSAP: CNAE G (Comercio) y D (Suministro de energía)",
+            "Metadatos SNPSAP: región ES521 Alicante",
+            "Bases reguladoras publicadas en BOP 151 de 12 de agosto de 2026",
+            "Plazo de presentación: 10 días hábiles a partir del día siguiente a la publicación en BOPA",
+            "Ayuda máxima: 4.000 euros por solicitante",
+            "Tasa de financiación: hasta 50% de gastos acreditados"
+          ],
+          "missing_fields": [
+            "open_date",
+            "trl_source"
+          ]
+        },
+        "tech_tags": [],
+        "data_pending": false,
+        "data_gaps": [],
+        "monitoring_flags": [],
+        "review_required": false,
+        "review_reasons": [],
+        "token_usage": {
+          "extraction": {
+            "stage": "extracción factual",
+            "api_calls": 1,
+            "retry_api_calls": 0,
+            "input_tokens": 8686,
+            "output_tokens": 712,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 0,
+            "total_tokens": 9398,
+            "estimated_cost_usd": 0.012246,
+            "attempts": [
+              {
+                "stage": "extracción factual",
+                "attempt": 1,
+                "valid_output": true,
+                "api_calls": 1,
+                "retry_api_calls": 0,
+                "input_tokens": 8686,
+                "output_tokens": 712,
+                "cache_write_tokens": 0,
+                "cache_read_tokens": 0,
+                "total_tokens": 9398,
+                "estimated_cost_usd": 0.012246,
+                "max_tokens": 5000,
+                "service_tier": "standard"
+              }
+            ]
+          },
+          "evaluation": {
+            "stage": "evaluación de encaje",
+            "api_calls": 1,
+            "retry_api_calls": 0,
+            "input_tokens": 7973,
+            "output_tokens": 974,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 0,
+            "total_tokens": 8947,
+            "estimated_cost_usd": 0.012843,
+            "attempts": [
+              {
+                "stage": "evaluación de encaje",
+                "attempt": 1,
+                "valid_output": true,
+                "api_calls": 1,
+                "retry_api_calls": 0,
+                "input_tokens": 7973,
+                "output_tokens": 974,
+                "cache_write_tokens": 0,
+                "cache_read_tokens": 0,
+                "total_tokens": 8947,
+                "estimated_cost_usd": 0.012843,
+                "max_tokens": 3000,
+                "service_tier": "standard"
+              }
+            ]
+          },
+          "api_calls": 2,
+          "retry_api_calls": 0,
+          "input_tokens": 16659,
+          "output_tokens": 1686,
+          "cache_write_tokens": 0,
+          "cache_read_tokens": 0,
+          "total_tokens": 18345,
+          "estimated_cost_usd": 0.025089
+        }
+      },
+      "token_usage": {
+        "extraction": {
+          "stage": "extracción factual",
+          "api_calls": 1,
+          "retry_api_calls": 0,
+          "input_tokens": 8686,
+          "output_tokens": 712,
+          "cache_write_tokens": 0,
+          "cache_read_tokens": 0,
+          "total_tokens": 9398,
+          "estimated_cost_usd": 0.012246,
+          "attempts": [
+            {
+              "stage": "extracción factual",
+              "attempt": 1,
+              "valid_output": true,
+              "api_calls": 1,
+              "retry_api_calls": 0,
+              "input_tokens": 8686,
+              "output_tokens": 712,
+              "cache_write_tokens": 0,
+              "cache_read_tokens": 0,
+              "total_tokens": 9398,
+              "estimated_cost_usd": 0.012246,
+              "max_tokens": 5000,
+              "service_tier": "standard"
+            }
+          ]
+        },
+        "evaluation": {
+          "stage": "evaluación de encaje",
+          "api_calls": 1,
+          "retry_api_calls": 0,
+          "input_tokens": 7973,
+          "output_tokens": 974,
+          "cache_write_tokens": 0,
+          "cache_read_tokens": 0,
+          "total_tokens": 8947,
+          "estimated_cost_usd": 0.012843,
+          "attempts": [
+            {
+              "stage": "evaluación de encaje",
+              "attempt": 1,
+              "valid_output": true,
+              "api_calls": 1,
+              "retry_api_calls": 0,
+              "input_tokens": 7973,
+              "output_tokens": 974,
+              "cache_write_tokens": 0,
+              "cache_read_tokens": 0,
+              "total_tokens": 8947,
+              "estimated_cost_usd": 0.012843,
+              "max_tokens": 3000,
+              "service_tier": "standard"
+            }
+          ]
+        },
+        "api_calls": 2,
+        "retry_api_calls": 0,
+        "input_tokens": 16659,
+        "output_tokens": 1686,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 18345,
+        "estimated_cost_usd": 0.025089
+      },
+      "source_hash": "9859ad8883d396b31ce38456bdc82f34e5b6866faab2007246268d98eb06c9cd",
+      "retrieved_at": "2026-09-04T08:36:42.548253+00:00",
+      "extractor_version": "facts-2026-08-v9-programme-annexes-and-budget",
+      "evaluator_version": "fit-2026-09-v11-coherent-score-and-three-fits",
+      "profile_version": "kalfrisa-2026-09-v9-builds-integrates-wants",
+      "partner_catalog_version": "2026-09-v2-nabladot-and-roles",
+      "model_version": "claude-haiku-4-5",
+      "cached_at": "2026-09-04T08:48:14.473197+00:00"
+    },
+    "dc5e8a6ccf5507b5cf3d0617b6bde29fbaa7139b58150a7b690c32f3e2204a98": {
+      "raw_document": {
+        "source": "BDNS",
+        "identifier": "927746",
+        "bdns_id": "927746",
+        "bdns_url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/927746",
+        "title": "BASES DE CONVOCATORIA AYUDAS A LA INVESTIGACIÓN SOBRE TEMAS ABULENSES, 2026",
+        "description": "BASES DE CONVOCATORIA AYUDAS A LA INVESTIGACIÓN SOBRE TEMAS ABULENSES, 2026 ORDENANZA GENERAL DE SUBVENCIONES Educación A PARTIR DEL DÍA SIGUIENTE DE PUBLICACIÓN EN BOP 15 DÍAS NATURALES DESDE EL INICIO DE LA SOLICITUD Concurrencia competitiva - canónica [{\"descripcion\": \"PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA\"}, {\"descripcion\": \"PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA\"}] [{\"descripcion\": \"SUBVENCIÓN Y ENTREGA DINERARIA SIN CONTRAPRESTACIÓN \"}] [{\"descripcion\": \"ES411 - Ávila\"}] [{\"descripcion\": \"EDUCACIÓN\", \"codigo\": \"Q\"}] [{\"id\": 1517319, \"descripcion\": \"Documento de la convocatoria en español\", \"nombreFic\": \"CONVOCATORIA AYUDAS A LA INVESTIGACION TEMAS ABULENSES.pdf\", \"long\": 608054, \"datMod\": \"2026-09-03\", \"datPublicacion\": \"2026-09-03\"}]",
+        "deadline_days": 14,
+        "deadline_date": "2026-09-18",
+        "open_date": "",
+        "fecha_sin_confirmar": false,
+        "budget": "€55,000",
+        "url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/927746",
+        "keywords_found": [],
+        "org": "LOCAL · DIPUTACIÓN PROV. DE AVILA · DIPUTACIÓN PROVINCIAL DE ÁVILA",
+        "source_type": "API REST SNPSAP",
+        "funding_mechanism": "direct",
+        "document_role": "call",
+        "discovery_sources": [
+          "BDNS"
+        ],
+        "bdns_filter_ready": true,
+        "bdns_active_status": "confirmed_deadline",
+        "bdns_api_open_flag": false,
+        "bdns_received_date": "2026-09-03",
+        "bdns_call_publication_date": "2026-09-03",
+        "bdns_admin_type": "LOCAL",
+        "bdns_admin_levels": {
+          "nivel1": "LOCAL",
+          "nivel2": "DIPUTACIÓN PROV. DE AVILA",
+          "nivel3": "DIPUTACIÓN PROVINCIAL DE ÁVILA"
+        },
+        "bdns_regions": [
+          "ES411 - Ávila"
+        ],
+        "bdns_beneficiary_types": [
+          "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA",
+          "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+        ],
+        "bdns_company_eligible": true,
+        "bdns_nace_codes": [
+          "EDUCACIÓN"
+        ],
+        "bdns_nace_sections": [],
+        "bdns_finality": "Educación",
+        "bdns_objectives": "",
+        "bdns_instruments": [
+          "SUBVENCIÓN Y ENTREGA DINERARIA SIN CONTRAPRESTACIÓN"
+        ],
+        "bdns_award_mode": "Concurrencia competitiva - canónica",
+        "bdns_call_access": "open_or_unknown",
+        "bdns_territorial_requirement": "unknown",
+        "bdns_explicit_outside_aragon": false,
+        "bdns_project_execution_days": null,
+        "bdns_is_open_ended": false,
+        "bdns_state_aid_reference": "",
+        "bdns_is_mrr": false,
+        "bdns_documents": [
+          {
+            "title": "Documento de la convocatoria en español",
+            "url": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1517319",
+            "kind": "document",
+            "source_key": "id",
+            "published_date": "2026-09-03"
+          }
+        ],
+        "opportunity_role": "direct_beneficiary",
+        "opportunity_labels": [],
+        "deterministic_prefilter": {
+          "decision": "ambiguous",
+          "reason_code": "verified_hold_still_unresolved",
+          "reason": "La evidencia focalizada no resuelve la causa; debe continuar al análisis general y nunca convertirse en descarte silencioso.",
+          "score": 0,
+          "signals": {
+            "hold_reason": "territorial_eligibility_unverified"
+          }
+        },
+        "related_document_contents": [
+          {
+            "source": "BDNS",
+            "title": "Metadatos estructurados SNPSAP",
+            "url": "https://www.pap.hacienda.gob.es/bdnstrans/GE/es/convocatorias/927746",
+            "document_role": "regulatory_bases",
+            "description": "METADATOS SNPSAP CON ETIQUETAS: {\"beneficiarios\": [\"PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA\", \"PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA\"], \"codigo_bdns\": \"927746\", \"estado_calculado\": \"confirmed_deadline\", \"fecha_fin_solicitud\": \"2026-09-18\", \"fecha_inicio_solicitud\": \"\", \"fecha_publicacion_convocatoria\": \"2026-09-03\", \"fecha_recepcion\": \"2026-09-03\", \"finalidad\": \"Educación\", \"indicador_abierto_api_no_concluyente\": false, \"instrumentos\": [\"SUBVENCIÓN Y ENTREGA DINERARIA SIN CONTRAPRESTACIÓN\"], \"modo_concesion\": \"Concurrencia competitiva - canónica\", \"objetivos\": \"\", \"regiones\": [\"ES411 - Ávila\"], \"tipo_administracion\": \"LOCAL\", \"titulo\": \"BASES DE CONVOCATORIA AYUDAS A LA INVESTIGACIÓN SOBRE TEMAS ABULENSES, 2026\"} CONTENIDO ADICIONAL: BASES DE CONVOCATORIA AYUDAS A LA INVESTIGACIÓN SOBRE TEMAS ABULENSES, 2026 ORDENANZA GENERAL DE SUBVENCIONES Educación A PARTIR DEL DÍA SIGUIENTE DE PUBLICACIÓN EN BOP 15 DÍAS NATURALES DESDE EL INICIO DE LA SOLICITUD Concurrencia competitiva - canónica [{\"descripcion\": \"PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA\"}, {\"descripcion\": \"PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA\"}] [{\"descripcion\": \"SUBVENCIÓN Y ENTREGA DINERARIA SIN CONTRAPRESTACIÓN \"}] [{\"descripcion\": \"ES411 - Ávila\"}] [{\"descripcion\": \"EDUCACIÓN\", \"codigo\": \"Q\"}] [{\"id\": 1517319, \"descripcion\": \"Documento de la convocatoria en español\", \"nombreFic\": \"CONVOCATORIA AYUDAS A LA INVESTIGACION TEMAS ABULENSES.pdf\", \"long\": 608054, \"datMod\": \"2026-09-03\", \"datPublicacion\": \"2026-09-03\"}]"
+          },
+          {
+            "source": "BDNS",
+            "title": "Documento de la convocatoria en español",
+            "url": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/documentos?idDocumento=1517319",
+            "document_role": "regulatory_bases",
+            "description": "Plaza Corral de las Campanas, s/n 05001 Ávila. España. Tel. (+34) 920 352 126 www.diputacionavila.es BASES DE CONVOCATORIA AYUDAS A LA INVESTIGACIÓN SOBRE TEMAS ABULENSES, 2026 (MODALIDAD GENERAL Y JÓVENES INVESTIGADORES) OBJETO La Diputación de Ávila, considerando de gran interés el fomento de la investigación sobre temas abulenses, y de acuerdo con lo expresado en el artículo 36.1, d) de la Ley 7/1985, de 2 de abril, Reguladora de las Bases del Régimen Local y los artículos 1.1 y 2.1 de los Estatutos de la Institución Gran Duque de Alba, convoca para el año 2026, en régimen de concurrencia competitiva, Investigadores para la realización de proyectos de investigación de tema libre sobre la provincia de Ávila. Los proyectos de investigación deberán tratar de un tema abulense en su más amplio sentido, en su totalidad o mayor parte ser originales, propios e inéditos, y podrán corresponderse con la investigación en curso de una tesis doctoral, sin que en tal caso ello suponga preferencia alguna respecto a las investigaciones que no tengan dicha naturaleza. La concesión de estas ayudas no implica ninguna relación laboral, ni vinculación administrativa, ni prestación de servicios de nin […] . BENEFICIARIOS Podrán resultar beneficiarios de estas ayudas, en la Modalidad General, investigadores de cualquier nacionalidad, individualmente o formando equipo, que, como mínimo, posean el título de Grado o Licenciatura. Podrán resultar beneficiarios de estas ayudas, en la Modalidad Jóvenes Investigadores, aquellos solicitantes que, además de cumplir los requisitos anteriores, sean menores de treinta y cinco años en la fecha de presentación de su solicitud. En el caso de los equipos de investigación, todos sus integrantes deben cumplir esta condición. Para obtener la condición de beneficiario es necesario estar al corriente de las obligaciones tributarias y frente a la Seguridad Social y no estar incurso en alguna de las prohibiciones para obtener la condición de beneficiario de subvenciones que se señalan en los apartados 2 y 3 del artículo 13 de la Ley 38/2003, de 17 de noviembre, General de Subvenciones. INCOMPATIBILIDADES No podrán solicitar las ayudas reguladas en la presente convocatoria aquellas personas que hayan recibido otras ayudas para el mismo proyecto de investigación o lo hayan presentado en otras instancias, estando pendiente su resolución. No podrán resultar beneficiarios de estas ayudas aquellos solicitantes que hayan sido beneficiarios de ala la investidurante las tres últimas convocatorias, en cualquiera de sus modalidades. Plaza Corral de las Campanas, s/n 05001 Ávila. España. Tel. (+34) 920 352 126 www.diputacionavila.es Un mismo solicitante no podrá ser beneficiario de dos ayudas reguladas en la presente convocatoria, en cualquiera de sus modalidades. CRÉDITO PRESUPUESTARIO El importe total de las ayudas que se concedan no podrá exceder del crédito que se consigne en el Presupuesto Ordinario de la Diputación, ejercicio 2026, partida 3340/48101, que ascenderá a cincuenta y cinco mil euros (). La cuantía de cada una de las diez ayudas, en la Modalidad General, ascenderá a cuatro mil euros (), y de cada una de las cinco, en la Modalidad Jóvenes Investigadores, a tres mil euros (), y queda condicionada a la existencia de crédito adecuado y suficiente en el momento de la resolución de la convocatoria. La convocatoria de ayudas podrá quedar desierta, en parte o en su totalidad, si la falta de calidad de los proyectos de investigación así lo aconseja. SOLICITUDES Y DOCUMENTACIÓN Las solicitudes se presentarán mediante instancia dirigida al Ilmo. Sr. Presidente de la Diputación de Ávila, conforme a los modelos que figuran como Anexo I y Anexo II en estas bases, en el Registro General de la Diputación de Ávila en los términos previstos y por los medios establecidos en el art. 16 de la Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones Públicas. Las presentes bases y sus anexos se encuentran disponibles en la Sede Electrónica de la Diputación de Ávila (http://diputacionavila.sedeelectronica.es) y en la Base de Datos Nacional de Subvenciones. El plazo de presentación de solicitudes será de quince días naturales, contados a partir del día siguiente a la publicación del extracto de estas bases en el Boletín Oficial de la Provincia de Ávila. Solamente se admitirá una instancia por solicitante, exceptuando los menores de treinta y cinco años, que podrán concurrir a las dos modalidades (General o Jóvenes Investigadores) con el mismo proyecto de investigación o con uno diferente, debiendo presentar una solicitud por cada modalidad (Anexo I y Anexo II). En el caso de los equipos de investigación, solamente será necesaria la presentación de una solicitud (Anexo I y/o Anexo II). Un solicitante componente de un equipo de investigación no podrá solicitar una ayuda individualmente ni como componente de otro equipo. En el caso de que un mismo solicitante presente dos instancias a la misma modalidad, solamente se tendrá en cuenta la que haya sido recibida en primer lugar, a no ser que junto a la segunda solicitud haga constar su voluntad de anular la primera. La solicitud (Anexo I y/o II) deberá ir acompañada de la siguiente documentación: Proyecto de investigación, anonimizado, en el que no conste la autoría de manera explícita ni referencias que puedan indicarla implícitamente, debiendo incluir, en este orden, el siguiente contenido mínimo: Interés de la investigación que se plantea. Objetivos que se propone alcanzar. Materiales a emplear y metodología a seguir. Esquema de trabajo planteado. Plaza Corral de las Campanas, s/n 05001 Ávila. España. Tel. (+34) 920 352 126 www.diputacionavila.es Estado de los estudios existentes sobre el tema que se propone. Bibliografía básica inicial para el estudio. Copia del DNI del solicitante o de cada uno de los miembros que, en su caso, integren el equipo de investigación. Curriculum vitae en castellano del solicitante principal y de cada uno de los miembros que, en su caso, integren el equipo de investigación, atendiendo al modelo CVA (FECYT) o similar. Declaración responsable (por cada uno de los solicitantes en caso de los equipos de investigación), conforme al modelo que figura como Anexo III en estas bases. Certificados acreditativos de encontrarse al corriente de sus obligaciones tributarias y con la Seguridad Social a efectos de obtener una subvención otorgada por las Administraciones Públicas, de acuerdo con lo establecido por la Ley 38/2003, de 17 de noviembre, General de Subvenciones (uno por cada solicitante en caso de los equipos de investigación). Si se aprecian errores en las solicitudes o en la documentación que la acompaña, se requerirá al interesado para que subsane la falta o aporte […] de Valoración estará formada por el Diputado Delegado del Área de Cultura, Patrimonio, Juventud y Deporte, que será quien la presida, dos técnicos del Área, que actuarán como vocales y la Jefe de Servicio del Área, que actuará como secretaria. El órgano encargado de la resolución será el Ilmo Sr. Presidente de la Diputación de Ávila, que lo hará en un plazo máximo de tres meses, contado a partir del vencimiento del plazo de presentación de solicitudes, conforme al principio de concurrencia competitiva y estimando las solicitudes de acuerdo a los criterios de valoración. La resolución se notificará a los interesados en la forma establecida en los artículos 40 y ss. de la Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones Públicas. Los beneficiarios a los que se conceda la ayuda económica vendrán obligados a comunicar cualquier alteración de los datos que sirvieron de base para la concesión, pudiendo la Diputación de Ávila, mediante resolución motivada del órgano competente, modificar el acuerdo de concesión total o parcialmente. REVOCACIÓN Se revocará la concesión de la ayuda si, posteriormente a la concesión válida y ajustada a derecho, el beneficiario incumple total o parcialmente las obligaciones o los compromisos adquiridos a los que está condicionada la eficacia del acto de concesión. INTERPRETACIÓN DE LAS BASES El órgano competente para la interpretación de las bases objeto de la convocatoria será el Ilmo. Sr. Presidente de la Diputación de Ávila. INFRACCIONES Y SANCIONES ADMINISTRATIVAS Constituyen infracciones administrativas en materia de subvenciones las acciones y omisiones tipificadas en los artículos 56 a 58 de la Ley 38/2003, de 17 de noviembre, General de Subvenciones. El régimen de sanciones y su graduación, será el establecido en el capítulo II del título IV de la referida Ley, incoándose en su caso el correspondiente procedimiento sancionador. RÉGIMEN JURÍDICO Sin perjuicio de lo que dispongan las Bases de la presente convocatoria, esta subvención se regirá por lo dispuesto en la Ley 38/2003, de 17 de noviembre, General de Subvenciones, el Reglamento de dicha Ley, aprobado por Real Decreto 887/2006 de 21 de julio y la Ordenanza General de Subvenciones de la Diputación Provincial de Plaza Corral de las Campanas, s/n 05001 Ávila. España. Tel. (+34) 920 352 126 www.diputacionavila.es Ávila, aprobada el 24 de octubre de 2016 y publicada en el Boletín Oficial de la Provincia n.º 252 de 31 de diciembre de 2016 y, supletoriamente, por la restante normativa reguladora de dicha materia. ACEPTACIÓN DE LAS BASES La participación en la convocatoria supone la aceptación de las bases, así como de la resolución que en su caso se dicte por el órgano competente. PROTECCIÓN DE DATOS De conformidad con la normativa vigente en materia de protección de datos, se informa que los datos personales facilitados por los solicitantes para participar son responsabilidad de la Diputación Provincial de Ávila. Estos datos son recogidos y tratados por la Diputación Provincial de Ávila, con la finalidad de tramitar y gestionar la solicitud y concesión de las Ayudas para la investigación sobre temas abulenses, siendo la licitud del tratamiento el cumplimiento de una obligación legal y de un interés público aplicable al responsable del tratamiento (artículo 6.1.c, 6.1.e) del Reglamento (UE) 2016/679 General de Protección de Datos). Los datos personales se conservarán durante el tiempo necesario para cumplir con la finalidad para la que se recabaron y para determinar las posibles responsabilidades que se pudieran derivar de dicha fi […] ecto de investigación titulado 6 Fdo.: PROTECCIÓN DE DATOS Responsable del tratamiento: Diputación Provincial de Ávila | Finalidad: Los datos recabados a través del formulario, así como otra documentación que pueda ser adjuntada, será tratada con la finalidad de tramitar y gestionar la solicitud de subvención. | Derechos: Puede acceder, rectificar y suprimir los datos, así como ejercitar otros derechos, cuando procedan, ante Diputación Provincial de Ávila Plaza Corral de las Campanas, s/n, 05001, Ávila indicando en el asunto Ref. Protección de Datos o a través de la Sede Electrónica de la Diputación (http://diputacionavila.sedelectronica.es). indicando en el asunto: Ref. Protección de Datos. | Información adicional sobre protección de datos en las bases de la convocatoria. ILMO. SR. PRESIDENTE DE LA DIPUTACIÓN DE ÁVILA Plaza Corral de las Campanas, s/n 05001 Ávila. España. Tel. (+34) 920 352 126 www.diputacionavila.es CONVOCATORIA DE AYUDAS A LA INVESTIGACIÓN SOBRE TEMAS ABULENSES, 2026 (MODALIDAD GENERAL Y JÓVENES INVESTIGADORES) ANEXO III (Declaración responsable) Don/Doña* , con NIF y con domicilio (calle, n.º, piso, ciudad y código postal) en .. TeléfoCorreo electrónico Al objeto de obtener la cción sobre temas abulenses, 2026al artículo 13.7 de la Ley 38/2003, de 17 de noviembre, General de Subvenciones y lo dispuesto en la presente convocatoria, el solicitante arriba indicado, DECLARA: - No estar incurso en alguna de las prohibiciones para obtener la condición de beneficiario de subvenciones, que se señalan en los apartados 2 y 3 del artículo 13 de la Ley 3"
+          }
+        ],
+        "bdns_initial_hold_reason": "territorial_eligibility_unverified",
+        "bdns_hold_resolution": {
+          "decision": "unresolved",
+          "reason_code": "semantic_evidence_required",
+          "resolved_by": "deterministic"
+        }
+      },
+      "extracted_facts": {
+        "call_status": "open",
+        "programme": "AYUDAS A LA INVESTIGACIÓN SOBRE TEMAS ABULENSES, 2026",
+        "action_type": "Research grants",
+        "applicant_types": [
+          "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA",
+          "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+        ],
+        "eligible_geographies": [
+          "ES411 - Ávila"
+        ],
+        "eligible_entity_types": [
+          "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA",
+          "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+        ],
+        "eligibility_evidence": [
+          "Beneficiarios de cualquier nacionalidad con título de Grado o Licenciatura como mínimo",
+          "Estar al corriente de obligaciones tributarias y Seguridad Social",
+          "No estar incurso en prohibiciones del artículo 13 de la Ley 38/2003"
+        ],
+        "budget_total_eur": 55000.0,
+        "funding_rate_percent": 100.0,
+        "project_budget_eur": null,
+        "project_cost_min_eur": null,
+        "grant_max_eur": 4000.0,
+        "deadline_date": "2026-09-18",
+        "trl_min": null,
+        "trl_max": null,
+        "trl_source": null,
+        "consortium_required": false,
+        "consortium_evidence": "Se permite investigación individual o en equipo; no se exige consorcio",
+        "required_topics": [
+          "Temas abulenses"
+        ],
+        "eligible_actions": [],
+        "expected_outcomes": [
+          "Proyectos de investigación originales, propios e inéditos sobre la provincia de Ávila"
+        ],
+        "funding_lines": [
+          {
+            "name": "Modalidad General",
+            "scope": "Investigadores de cualquier nacionalidad con título de Grado o Licenciatura",
+            "applicant_types": [
+              "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA",
+              "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+            ],
+            "eligible_entity_types": [
+              "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA",
+              "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+            ],
+            "eligible_cnae": [],
+            "eligible_actions": [],
+            "requirements": [
+              "Poseer título de Grado o Licenciatura",
+              "Estar al corriente de obligaciones tributarias y Seguridad Social",
+              "No haber recibido otras ayudas para el mismo proyecto",
+              "No haber sido beneficiario en las tres últimas convocatorias",
+              "Proyecto anonimizado con contenido mínimo especificado"
+            ],
+            "budget_total_eur": 40000.0,
+            "project_cost_min_eur": null,
+            "grant_max_eur": 4000.0,
+            "funding_rate_percent": 100.0,
+            "deadline_date": "2026-09-18",
+            "consortium_required": false,
+            "evidence": [
+              "Diez ayudas de cuatro mil euros cada una en Modalidad General"
+            ]
+          },
+          {
+            "name": "Modalidad Jóvenes Investigadores",
+            "scope": "Investigadores menores de treinta y cinco años con título de Grado o Licenciatura",
+            "applicant_types": [
+              "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA",
+              "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+            ],
+            "eligible_entity_types": [
+              "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA",
+              "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+            ],
+            "eligible_cnae": [],
+            "eligible_actions": [],
+            "requirements": [
+              "Ser menor de treinta y cinco años en la fecha de presentación",
+              "Poseer título de Grado o Licenciatura",
+              "Estar al corriente de obligaciones tributarias y Seguridad Social",
+              "No haber recibido otras ayudas para el mismo proyecto",
+              "No haber sido beneficiario en las tres últimas convocatorias",
+              "En equipos, todos los integrantes deben cumplir la condición de edad",
+              "Proyecto anonimizado con contenido mínimo especificado"
+            ],
+            "budget_total_eur": 15000.0,
+            "project_cost_min_eur": null,
+            "grant_max_eur": 3000.0,
+            "funding_rate_percent": 100.0,
+            "deadline_date": "2026-09-18",
+            "consortium_required": false,
+            "evidence": [
+              "Cinco ayudas de tres mil euros cada una en Modalidad Jóvenes Investigadores"
+            ]
+          }
+        ],
+        "evidence": [
+          "Presupuesto total de cincuenta y cinco mil euros",
+          "Plazo de presentación de quince días naturales desde publicación en BOP",
+          "Resolución en plazo máximo de tres meses",
+          "Concurrencia competitiva",
+          "Subvención sin contraprestación",
+          "Diputación Provincial de Ávila como órgano convocante"
+        ],
+        "missing_fields": [
+          "eligible_actions",
+          "trl_source"
+        ]
+      },
+      "evaluation": {
+        "fit_score": 5,
+        "actionability_score": 2,
+        "confidence": 15,
+        "decision": "discard_ineligible",
+        "eligibility": "ineligible",
+        "eligibility_reason": "Convocatoria territorial limitada a ES411 - Ávila; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). La convocatoria está dirigida a investigadores individuales (personas físicas) con título de Grado o Licenciatura, no a empresas. La ayuda máxima es de 4.000 € (Modalidad General) o 3.000 € (Jóvenes), con presupuesto total de 55.000 €, dirigida a investigadores con formación universitaria, no a empresas que ejecuten proyectos de I+D industrial. Kalfrisa no encaja en el perfil de solicitante esperado ni en el objeto de la convocatoria.",
+        "recommended_role": "not_applicable",
+        "scores": {
+          "technological_fit": 0,
+          "strategic_fit": 0,
+          "role_fit": 0,
+          "trl_fit": 0,
+          "consortium_readiness": 0
+        },
+        "evidence_quality": "high",
+        "positive_evidence": [],
+        "risks_and_unknowns": [
+          "La convocatoria no especifica qué se entiende por «temas abulenses»; podría incluir investigación sobre procesos térmicos o industriales de la provincia, pero la estructura de la ayuda (máximo 4.000 € por investigador individual) y el perfil de solicitante (personas físicas con título universitario) indican que es investigación académica, no I+D industrial empresarial.",
+          "Kalfrisa es una empresa con actividad económica, no un investigador individual o equipo de investigadores académicos.",
+          "El importe máximo (4.000 €) es incompatible con proyectos de I+D industrial de Kalfrisa."
+        ],
+        "partner_needs": [],
+        "recommended_partners": [],
+        "resumen": "Kalfrisa no encaja. La convocatoria está dirigida a investigadores individuales (personas físicas) con formación universitaria que ejecuten proyectos de investigación académica sobre temas abulenses, no a empresas industriales que desarrollen I+D aplicada. Kalfrisa no es un investigador individual ni un equipo de investigadores académicos, sino una empresa industrial. No hay línea aplicable ni tema admisible que permita presentar un proyecto de I+D industrial de Kalfrisa bajo esta convocatoria.",
+        "accion": "Descartar por restricción regional expresa. Reconsiderar solo si unas bases futuras admiten ejecución en Aragón o participación financiada directa sin establecimiento previo en la región convocante.",
+        "tags": []
+      },
+      "analysis": {
+        "fit_score": 5,
+        "actionability_score": 2,
+        "confidence": 15,
+        "decision": "discard_ineligible",
+        "eligibility": "ineligible",
+        "eligibility_reason": "Convocatoria territorial limitada a ES411 - Ávila; Kalfrisa tiene su establecimiento en Zaragoza (ES243, Aragón). La convocatoria está dirigida a investigadores individuales (personas físicas) con título de Grado o Licenciatura, no a empresas. La ayuda máxima es de 4.000 € (Modalidad General) o 3.000 € (Jóvenes), con presupuesto total de 55.000 €, dirigida a investigadores con formación universitaria, no a empresas que ejecuten proyectos de I+D industrial. Kalfrisa no encaja en el perfil de solicitante esperado ni en el objeto de la convocatoria.",
+        "recommended_role": "not_applicable",
+        "scores": {
+          "technological_fit": 0,
+          "strategic_fit": 0,
+          "role_fit": 0,
+          "trl_fit": 0,
+          "consortium_readiness": 0
+        },
+        "evidence_quality": "high",
+        "positive_evidence": [],
+        "risks_and_unknowns": [
+          "La convocatoria no especifica qué se entiende por «temas abulenses»; podría incluir investigación sobre procesos térmicos o industriales de la provincia, pero la estructura de la ayuda (máximo 4.000 € por investigador individual) y el perfil de solicitante (personas físicas con título universitario) indican que es investigación académica, no I+D industrial empresarial.",
+          "Kalfrisa es una empresa con actividad económica, no un investigador individual o equipo de investigadores académicos.",
+          "El importe máximo (4.000 €) es incompatible con proyectos de I+D industrial de Kalfrisa."
+        ],
+        "partner_needs": [],
+        "recommended_partner_ids": [],
+        "objeto_y_actuaciones": "La Diputación Provincial de Ávila financia proyectos de investigación originales, propios e inéditos sobre temas abulenses, dirigidos a investigadores de cualquier nacionalidad con título de Grado o Licenciatura como mínimo. La ayuda es a fondo perdido (100 %) con máximo de 4.000 € en Modalidad General y 3.000 € en Modalidad Jóvenes Investigadores (menores de 35 años). Se permite investigación individual o en equipo sin exigencia de consorcio. La convocatoria no especifica gastos elegibles ni excluye expresamente ninguna categoría, pero el objeto es investigación sobre la provincia de Ávila, no demostración industrial ni desarrollo de equipos.",
+        "resumen": "Kalfrisa no encaja. La convocatoria está dirigida a investigadores individuales (personas físicas) con formación universitaria que ejecuten proyectos de investigación académica sobre temas abulenses, no a empresas industriales que desarrollen I+D aplicada. Kalfrisa no es un investigador individual ni un equipo de investigadores académicos, sino una empresa industrial. No hay línea aplicable ni tema admisible que permita presentar un proyecto de I+D industrial de Kalfrisa bajo esta convocatoria.",
+        "accion": "Descartar por restricción regional expresa. Reconsiderar solo si unas bases futuras admiten ejecución en Aragón o participación financiada directa sin establecimiento previo en la región convocante.",
+        "tags": [],
+        "match_score": 5,
+        "priority": "low",
+        "descartada": true,
+        "motivo_descarte": "La convocatoria está dirigida a investigadores individuales (personas físicas) con título de Grado o Licenciatura, no a empresas. La ayuda máxima es de 4.000 € (Modalidad General) o 3.000 € (Jóvenes), con presupuesto total de 55.000 €, dirigida a investigadores con formación universitaria, no a empresas que ejecuten proyectos de I+D industrial. Kalfrisa no encaja en el perfil de solicitante esperado ni en el objeto de la convocatoria.",
+        "trl_min": null,
+        "trl_max": null,
+        "socio_consorcio": "",
+        "recommended_partners": [],
+        "dimensiones": [
+          {
+            "name": "Alineación tecnológica",
+            "val": 0
+          },
+          {
+            "name": "Capacidad de consorcio",
+            "val": 0
+          },
+          {
+            "name": "Encaje TRL",
+            "val": 0
+          },
+          {
+            "name": "Encaje de rol",
+            "val": 0
+          },
+          {
+            "name": "Oportunidad estratégica",
+            "val": 0
+          }
+        ],
+        "call_facts": {
+          "call_status": "open",
+          "programme": "AYUDAS A LA INVESTIGACIÓN SOBRE TEMAS ABULENSES, 2026",
+          "action_type": "Research grants",
+          "applicant_types": [
+            "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA",
+            "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+          ],
+          "eligible_geographies": [
+            "ES411 - Ávila"
+          ],
+          "eligible_entity_types": [
+            "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA",
+            "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+          ],
+          "eligibility_evidence": [
+            "Beneficiarios de cualquier nacionalidad con título de Grado o Licenciatura como mínimo",
+            "Estar al corriente de obligaciones tributarias y Seguridad Social",
+            "No estar incurso en prohibiciones del artículo 13 de la Ley 38/2003"
+          ],
+          "budget_total_eur": 55000.0,
+          "funding_rate_percent": 100.0,
+          "project_budget_eur": null,
+          "project_cost_min_eur": null,
+          "grant_max_eur": 4000.0,
+          "deadline_date": "2026-09-18",
+          "trl_min": null,
+          "trl_max": null,
+          "trl_source": null,
+          "consortium_required": false,
+          "consortium_evidence": "Se permite investigación individual o en equipo; no se exige consorcio",
+          "required_topics": [
+            "Temas abulenses"
+          ],
+          "eligible_actions": [],
+          "expected_outcomes": [
+            "Proyectos de investigación originales, propios e inéditos sobre la provincia de Ávila"
+          ],
+          "funding_lines": [
+            {
+              "name": "Modalidad General",
+              "scope": "Investigadores de cualquier nacionalidad con título de Grado o Licenciatura",
+              "applicant_types": [
+                "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA",
+                "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+              ],
+              "eligible_entity_types": [
+                "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA",
+                "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+              ],
+              "eligible_cnae": [],
+              "eligible_actions": [],
+              "requirements": [
+                "Poseer título de Grado o Licenciatura",
+                "Estar al corriente de obligaciones tributarias y Seguridad Social",
+                "No haber recibido otras ayudas para el mismo proyecto",
+                "No haber sido beneficiario en las tres últimas convocatorias",
+                "Proyecto anonimizado con contenido mínimo especificado"
+              ],
+              "budget_total_eur": 40000.0,
+              "project_cost_min_eur": null,
+              "grant_max_eur": 4000.0,
+              "funding_rate_percent": 100.0,
+              "deadline_date": "2026-09-18",
+              "consortium_required": false,
+              "evidence": [
+                "Diez ayudas de cuatro mil euros cada una en Modalidad General"
+              ]
+            },
+            {
+              "name": "Modalidad Jóvenes Investigadores",
+              "scope": "Investigadores menores de treinta y cinco años con título de Grado o Licenciatura",
+              "applicant_types": [
+                "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA",
+                "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+              ],
+              "eligible_entity_types": [
+                "PERSONAS FÍSICAS QUE NO DESARROLLAN ACTIVIDAD ECONÓMICA",
+                "PYME Y PERSONAS FÍSICAS QUE DESARROLLAN ACTIVIDAD ECONÓMICA"
+              ],
+              "eligible_cnae": [],
+              "eligible_actions": [],
+              "requirements": [
+                "Ser menor de treinta y cinco años en la fecha de presentación",
+                "Poseer título de Grado o Licenciatura",
+                "Estar al corriente de obligaciones tributarias y Seguridad Social",
+                "No haber recibido otras ayudas para el mismo proyecto",
+                "No haber sido beneficiario en las tres últimas convocatorias",
+                "En equipos, todos los integrantes deben cumplir la condición de edad",
+                "Proyecto anonimizado con contenido mínimo especificado"
+              ],
+              "budget_total_eur": 15000.0,
+              "project_cost_min_eur": null,
+              "grant_max_eur": 3000.0,
+              "funding_rate_percent": 100.0,
+              "deadline_date": "2026-09-18",
+              "consortium_required": false,
+              "evidence": [
+                "Cinco ayudas de tres mil euros cada una en Modalidad Jóvenes Investigadores"
+              ]
+            }
+          ],
+          "evidence": [
+            "Presupuesto total de cincuenta y cinco mil euros",
+            "Plazo de presentación de quince días naturales desde publicación en BOP",
+            "Resolución en plazo máximo de tres meses",
+            "Concurrencia competitiva",
+            "Subvención sin contraprestación",
+            "Diputación Provincial de Ávila como órgano convocante"
+          ],
+          "missing_fields": [
+            "eligible_actions",
+            "trl_source"
+          ]
+        },
+        "tech_tags": [],
+        "data_pending": false,
+        "data_gaps": [],
+        "monitoring_flags": [],
+        "review_required": false,
+        "review_reasons": [],
+        "token_usage": {
+          "extraction": {
+            "stage": "extracción factual",
+            "api_calls": 1,
+            "retry_api_calls": 0,
+            "input_tokens": 7248,
+            "output_tokens": 1234,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 0,
+            "total_tokens": 8482,
+            "estimated_cost_usd": 0.013418,
+            "attempts": [
+              {
+                "stage": "extracción factual",
+                "attempt": 1,
+                "valid_output": true,
+                "api_calls": 1,
+                "retry_api_calls": 0,
+                "input_tokens": 7248,
+                "output_tokens": 1234,
+                "cache_write_tokens": 0,
+                "cache_read_tokens": 0,
+                "total_tokens": 8482,
+                "estimated_cost_usd": 0.013418,
+                "max_tokens": 5000,
+                "service_tier": "standard"
+              }
+            ]
+          },
+          "evaluation": {
+            "stage": "evaluación de encaje",
+            "api_calls": 1,
+            "retry_api_calls": 0,
+            "input_tokens": 8485,
+            "output_tokens": 1010,
+            "cache_write_tokens": 0,
+            "cache_read_tokens": 0,
+            "total_tokens": 9495,
+            "estimated_cost_usd": 0.013535,
+            "attempts": [
+              {
+                "stage": "evaluación de encaje",
+                "attempt": 1,
+                "valid_output": true,
+                "api_calls": 1,
+                "retry_api_calls": 0,
+                "input_tokens": 8485,
+                "output_tokens": 1010,
+                "cache_write_tokens": 0,
+                "cache_read_tokens": 0,
+                "total_tokens": 9495,
+                "estimated_cost_usd": 0.013535,
+                "max_tokens": 3000,
+                "service_tier": "standard"
+              }
+            ]
+          },
+          "api_calls": 2,
+          "retry_api_calls": 0,
+          "input_tokens": 15733,
+          "output_tokens": 2244,
+          "cache_write_tokens": 0,
+          "cache_read_tokens": 0,
+          "total_tokens": 17977,
+          "estimated_cost_usd": 0.026953
+        }
+      },
+      "token_usage": {
+        "extraction": {
+          "stage": "extracción factual",
+          "api_calls": 1,
+          "retry_api_calls": 0,
+          "input_tokens": 7248,
+          "output_tokens": 1234,
+          "cache_write_tokens": 0,
+          "cache_read_tokens": 0,
+          "total_tokens": 8482,
+          "estimated_cost_usd": 0.013418,
+          "attempts": [
+            {
+              "stage": "extracción factual",
+              "attempt": 1,
+              "valid_output": true,
+              "api_calls": 1,
+              "retry_api_calls": 0,
+              "input_tokens": 7248,
+              "output_tokens": 1234,
+              "cache_write_tokens": 0,
+              "cache_read_tokens": 0,
+              "total_tokens": 8482,
+              "estimated_cost_usd": 0.013418,
+              "max_tokens": 5000,
+              "service_tier": "standard"
+            }
+          ]
+        },
+        "evaluation": {
+          "stage": "evaluación de encaje",
+          "api_calls": 1,
+          "retry_api_calls": 0,
+          "input_tokens": 8485,
+          "output_tokens": 1010,
+          "cache_write_tokens": 0,
+          "cache_read_tokens": 0,
+          "total_tokens": 9495,
+          "estimated_cost_usd": 0.013535,
+          "attempts": [
+            {
+              "stage": "evaluación de encaje",
+              "attempt": 1,
+              "valid_output": true,
+              "api_calls": 1,
+              "retry_api_calls": 0,
+              "input_tokens": 8485,
+              "output_tokens": 1010,
+              "cache_write_tokens": 0,
+              "cache_read_tokens": 0,
+              "total_tokens": 9495,
+              "estimated_cost_usd": 0.013535,
+              "max_tokens": 3000,
+              "service_tier": "standard"
+            }
+          ]
+        },
+        "api_calls": 2,
+        "retry_api_calls": 0,
+        "input_tokens": 15733,
+        "output_tokens": 2244,
+        "cache_write_tokens": 0,
+        "cache_read_tokens": 0,
+        "total_tokens": 17977,
+        "estimated_cost_usd": 0.026953
+      },
+      "source_hash": "7651b01d98adc5ab1f27ba0594256d1efa9a8e69835b43a2c77c8279680492d8",
+      "retrieved_at": "2026-09-04T08:36:42.548253+00:00",
+      "extractor_version": "facts-2026-08-v9-programme-annexes-and-budget",
+      "evaluator_version": "fit-2026-09-v11-coherent-score-and-three-fits",
+      "profile_version": "kalfrisa-2026-09-v9-builds-integrates-wants",
+      "partner_catalog_version": "2026-09-v2-nabladot-and-roles",
+      "model_version": "claude-haiku-4-5",
+      "cached_at": "2026-09-04T08:48:35.888042+00:00"
     }
   }
 }

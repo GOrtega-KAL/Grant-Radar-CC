@@ -2529,8 +2529,9 @@ frío. No hay que buscarlos en las tablas de arriba: ya no están.
 
 | # | Qué era | Cerrado en |
 |---|---|---|
+| 46 | El reintento clasificaba los errores de la API por su etiqueta —`529`, `overloaded`, `rate`— y no por si repetir podía funcionar | Sección **66.3**: **abierto y cerrado el 04/09**, tras agotarse el saldo a mitad de una ejecución de pago. Fallaba en las dos direcciones: un 500 abortaba la ejecución entera y un saldo agotado lo hacía sin decir por qué. `classify_api_error()` devuelve `auth`, `credit`, `transient` o `fatal`, con 11 pruebas sin red |
 | 45 | `--batch-status` no distinguía «procesando» de «terminado hace 16 h», y averiguarlo obligaba a `--batch-collect`, que paga | Sección **64.4**: `--batch-poll`, **cerrado el mismo día que se abrió**. Sondea sin coste y además **lista los lotes que Anthropic tiene**, que es lo que ve un lote huérfano si se pierde `batch_state.json`. Puesto en el `.bat` diario, antes de la recopilación |
-| 23 | Recalibrar `CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS` con datos de una ejecución completa, en vez de con la muestra de agosto | Sección 42.3: 76 análisis reales, barrera 0,035 → 0,047 USD |
+| 23 | Recalibrar `CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS` con datos de una ejecución completa, en vez de con la muestra de agosto | Sección 42.3: 76 análisis reales, barrera 0,035 → 0,047 USD. **Reabierto y vuelto a cerrar el 04/09 (sección 66.2)**: la media seguía siendo la de agosto y el prompt había cambiado dos veces, así que anunciaba 1,18 USD para una factura de 1,4325. Recalibrada sobre 94 análisis con el prompt v17: media 0,0256 → **0,0314**, p05 0,0155 → **0,0203**. La barrera **no se toca**, porque su p95 bajó pero la cola engordó |
 | 18 | `coverage_watch.py` sin ninguna prueba: la alarma que avisa cuando un programa recurrente deja de aparecer era una red de seguridad sin red | Sección 46: 18 pruebas, incluidos los cinco estados de la sonda y la forma del catálogo real |
 | 22 | La densidad del test de la ventana de BDNS (44 filas/día) era optimista y no habría detectado una caída por debajo del mínimo de 60 días | Sección 48.6: medición real de hoy (67 días, 52,2 filas/día) y el test fijado en la densidad más alta observada, 54 |
 | 24 | Endurecer la instrucción contra presunciones en `objeto_y_actuaciones` | Sección 48.5: la frase prohíbe ahora la fórmula («se presume», «previsiblemente»…), no solo la invención. Agrupado con la caché ya invalidada, así que no costó nada |
@@ -7428,3 +7429,125 @@ rotoconcentradores, COV ni filtros de mangas este mes (62.5).
 
 **788 pruebas** (778 al empezar). El producto publicado **sigue siendo el del
 21/08**: la recogida no publica a propósito, y publicar es decisión del usuario.
+
+
+## 66. El saldo agotado, y las dos cosas que lo hicieron caro, a 04/09/2026 (tarde)
+
+La publicación del producto falló a mitad. Ninguna de las dos causas era el
+error en sí: fueron una previsión de coste corta y un clasificador de errores
+que no sabía nombrar lo que pasaba.
+
+### 66.1. Qué ocurrió
+
+Con las 91 fichas del lote ya en caché, el pipeline normal debía publicar. De
+las 92 vigentes de la mañana, **80 estaban en caché y 12 eran nuevas** —la
+ventana de BDNS se había movido—, así que se analizaron al vuelo. Abortó en la
+cuarta:
+
+```
+[1/12] ✓  [2/12] ✓  [3/12] ✓  [4/12] ✗  → PIPELINE ABORTADO
+claude_usage: analyzed 3, failed 1, input_tokens 0, retry_api_calls 0
+```
+
+**`input_tokens: 0` y `retry_api_calls: 0`** son toda la historia: la petición
+se rechazó antes de consumir nada, y no se reintentó. Era el saldo de la clave,
+agotado. Lo confirmó el usuario; el programa no lo dijo.
+
+Nada se perdió: los tres análisis completos quedaron en caché, y el producto
+—que solo se escribe al final— no llegó a tocarse.
+
+### 66.2. La previsión iba un 22 % corta, y esa es la causa de fondo
+
+| | Previsto | Real |
+|---|---|---|
+| Lote de 92, por lotes | **$1,18** | **$1,4325** |
+| Por análisis | $0,01282 | $0,01574 |
+
+El usuario presupuestó contra 1,18. La constante venía de la calibración del
+20/08 sobre 76 análisis con el evaluador **v6**; el prompt ha cambiado dos veces
+desde entonces y las llamadas engordaron.
+
+**Recalibrado sobre 94 análisis reales** con el prompt v17 —los 91 del lote,
+normalizados a tarifa instantánea multiplicando por dos, que es exacto (61.9),
+más los 3 instantáneos—:
+
+| | medido 04/09 | anterior | desvío |
+|---|---|---|---|
+| media | **0,0314** | 0,0256 | +22,5 % |
+| p05 | **0,0203** | 0,0155 | +31 % |
+| p95 | 0,0410 | 0,0470 | −12,7 % |
+| máximo | **0,0575** | 0,0550 | |
+
+Contraste que valida la calibración: con la media nueva, la previsión para las
+92 habría sido **$1,4444** frente a la factura de **$1,4325** — menos de un 1 %
+de error, contra el 22 % anterior. Hay una prueba que ata la constante a esa
+factura, para que nadie la retoque contra una intuición.
+
+**La barrera se queda en 0,047, y eso es deliberado.** El p95 medido baja, pero
+rebajar una salvaguarda porque un corpus nuevo da un percentil menor sería
+relajarla con una sola medición — y además la cola engordó, de 0,0550 a 0,0575.
+
+Y conviene dejar dicho qué **es** esa constante, porque su nombre engaña: **no
+es un techo por análisis**. Ya el 20/08 el máximo observado superaba el 0,047.
+Es la cifra de planificación con la que `claude_safety_preflight()` decide si
+una ejecución cabe en los 5 USD autorizados; sobre decenas de análisis el total
+real se acerca a la media, no al máximo.
+
+### 66.3. El clasificador de errores: la distinción no era «grave o leve»
+
+El código decía:
+
+```python
+if "529" not in err_str and "overloaded" not in err_str and "rate" not in err_str:
+    raise ClaudeAnalysisError(...)   # aborta en el primer intento
+```
+
+Dos fallos de una vez, y en direcciones opuestas:
+
+- **Un 500, un 502 o una conexión cortada abortaban una ejecución de pago
+  entera** en el primer intento, cuando el reintento existía justo para eso.
+- **Un saldo agotado abortaba sin decir por qué.** Diagnosticarlo costó media
+  hora leyendo la auditoría, porque solo quedaban `input_tokens: 0` y
+  `retry_api_calls: 0`.
+
+`classify_api_error()` devuelve `auth`, `credit`, `transient` o `fatal`. **La
+pregunta que separa las familias no es la gravedad, es si repetir puede
+funcionar:** reintentar un saldo agotado es tan inútil como no reintentar un
+502, y las dos cosas cuestan dinero o tiempo del usuario.
+
+El saldo sigue siendo fatal —repetir no recarga la clave— pero ahora dice:
+
+> SALDO AGOTADO en la clave de Anthropic: la petición se rechazó antes de
+> consumir tokens. Los análisis ya completados están en caché y no se
+> repetirán. Recarga la clave y vuelve a lanzar.
+
+**El orden importa y hay una prueba que lo fija:** `auth` y `credit` se evalúan
+antes que `transient`, porque un mensaje de saldo que dijera «try again» se
+reintentaría en vano. También hay una que comprueba que ningún código HTTP cae
+en dos familias, donde el orden decidiría en silencio.
+
+De paso, la espera larga entre intentos (30 s × intento) pasa a aplicarse a
+**toda** la familia transitoria, no solo al 529; una salida inválida sigue
+esperando poco, porque no depende de que el servicio se calme.
+
+**11 pruebas nuevas**, todas sin red. **802 pruebas** (788 al empezar).
+
+### 66.4. Lo que quedó en marcha al cerrar la sesión
+
+**HAY UN LOTE EN VUELO.** Fase 1 de 2, enviado a las 09:35 UTC con las 10
+convocatorias que faltaban:
+
+```
+msgbatch_01EAu4dQzrjdTXMki8QFCRQ1 · phase1_running · 10 convocatorias
+ventana de procesamiento hasta el 05/09 09:35 UTC
+```
+
+A las 13:47 locales llevaba **2,2 h encolado sin resolver ni una**, muy por
+encima de los precedentes —92 peticiones en 2,5 min y en 14 min—. No hay nada que hacer:
+es cola de Anthropic, el lote está pagado y lo que se procese dura 29 días.
+
+**Gasto acumulado medido:** $1,4325 del lote grande + $0,0835 de la ejecución
+instantánea + $0,0048 del humo = **~$1,52**.
+
+**El producto sigue siendo el del 21/08.** Publicar sigue pendiente y es lo
+último del ciclo.

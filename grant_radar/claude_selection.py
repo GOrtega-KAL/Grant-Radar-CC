@@ -31,18 +31,39 @@ log = logging.getLogger("grant_radar")
 CLAUDE_MAX_ANALYSES_PER_RUN = 200
 CLAUDE_MAX_ESTIMATED_COST_USD = 5.0
 
-# Calibración del 20/08/2026 sobre una ejecución completa de 76 análisis, la
-# primera con la evidencia enriquecida del extractor v7. La anterior salía de
-# una muestra de dos convocatorias: acertaba en la media pero subestimaba la
-# cola, que es justo lo que debe cubrir una barrera de seguridad.
+# Recalibración del 04/09/2026 sobre 94 análisis reales con el prompt v17 y el
+# perfil v9 —los vigentes—, normalizados a tarifa instantánea: los 91 del lote
+# se pagaron al 50 % y se multiplican por dos, que es exacto (AGENTS.md 61.9).
+# Sustituye a la del 20/08 (76 análisis, evaluador v6).
 #
-# El valor de la barrera es el percentil 95 observado (0,0464), redondeado
-# hacia arriba. Con él, el límite de 5 USD permite 106 análisis por ejecución
-# en vez de los 142 que autorizaba el 0,035 anterior: menos margen nominal,
-# pero un margen que ahora refleja el coste real de las convocatorias caras.
+#            medido 04/09   anterior   desvío
+#   media        0,0314      0,0256    +22,5 %
+#   p05          0,0203      0,0155    +31 %
+#   p95          0,0410      0,0470    −12,7 %
+#   máximo       0,0575         —
+#
+# **Por qué la media sube y el techo NO baja.** La media estaba subestimada un
+# 22 %, y esa es la cifra contra la que el usuario presupuesta: el 04/09 el
+# panel anunció 1,18 USD por lotes y la factura fue 1,4325. Con 0,0314 la misma
+# previsión habría dado 1,44. Ese error tuvo consecuencias reales —se agotó el
+# saldo de la clave a mitad de una ejecución (AGENTS.md 66)—, así que corregirla
+# es el objetivo de esta ronda.
+#
+# El p95 medido ha bajado, pero **la barrera se queda en 0,047**. Rebajarla
+# porque un corpus nuevo da un percentil menor sería relajar una salvaguarda
+# con una sola medición, y además la cola ha engordado: el máximo observado
+# pasa de 0,0550 a 0,0575. Una barrera solo se afloja con motivo, no por
+# simetría estadística.
+#
+# Y conviene decir qué ES esta constante, porque su nombre engaña: **no es un
+# techo por análisis** —ya el 20/08 el máximo observado (0,0550) superaba el
+# 0,047— sino la cifra de planificación con la que `claude_safety_preflight()`
+# decide si una ejecución cabe en los 5 USD autorizados. Sobre decenas de
+# análisis el total real se acerca a la media, no al máximo. Con 0,047 el
+# límite permite 106 análisis por ejecución.
 CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS = 0.047
-CLAUDE_OBSERVED_MEAN_USD_PER_ANALYSIS = 0.0256
-CLAUDE_OBSERVED_P05_USD_PER_ANALYSIS = 0.0155
+CLAUDE_OBSERVED_MEAN_USD_PER_ANALYSIS = 0.0314
+CLAUDE_OBSERVED_P05_USD_PER_ANALYSIS = 0.0203
 
 
 def _candidate_cache_identity_tokens(conv: dict) -> set[str]:

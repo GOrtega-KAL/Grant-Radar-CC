@@ -450,25 +450,92 @@ def _structured_claude_call(
                     "estimated_cost_usd": 0.0,
                     "error_type": type(exc).__name__,
                 })
-            err_str = str(exc).lower()
-            status_code = getattr(exc, "status_code", None)
-            if status_code in (401, 403) or "invalid x-api-key" in err_str:
+            familia = classify_api_error(exc)
+            if familia == "auth":
                 raise ClaudeAnalysisError(
                     "Claude rechazó la autenticación. Revisa CLAUDE_API_KEY.",
                     partial_usages=attempt_usages,
                 ) from exc
-            if "529" not in err_str and "overloaded" not in err_str and "rate" not in err_str:
+            if familia == "credit":
+                # Repetir no lo arregla, así que se aborta igual que antes —
+                # pero diciendo exactamente qué pasa, que es lo que faltaba.
+                raise ClaudeAnalysisError(
+                    "SALDO AGOTADO en la clave de Anthropic: la petición se "
+                    "rechazó antes de consumir tokens. Los análisis ya "
+                    "completados están en caché y no se repetirán. Recarga la "
+                    f"clave y vuelve a lanzar. Detalle: {exc}",
+                    partial_usages=attempt_usages,
+                ) from exc
+            if familia == "fatal":
                 raise ClaudeAnalysisError(
                     f"Claude falló en {stage} para '{title[:50]}': {exc}",
                     partial_usages=attempt_usages,
                 ) from exc
+            log.warning(
+                f"Error transitorio de la API en {stage} para '{title[:50]}' "
+                f"(intento {attempt + 1}/{max_retries}): {exc}"
+            )
         if attempt < max_retries - 1:
-            time.sleep(30 * (attempt + 1) if "529" in str(last_error) else CLAUDE_SLEEP_S)
+            # Espera larga para sobrecarga y errores de servidor; corta para
+            # una salida inválida, que no depende de que el servicio se calme.
+            sobrecargado = classify_api_error(last_error) == "transient" if isinstance(
+                last_error, Exception
+            ) else False
+            time.sleep(30 * (attempt + 1) if sobrecargado else CLAUDE_SLEEP_S)
     raise ClaudeAnalysisError(
         f"Claude no completó {stage} para '{title[:50]}' tras "
         f"{max_retries} intentos: {last_error}",
         partial_usages=attempt_usages,
     )
+
+
+# Familias de error de la API, y qué hacer con cada una. Escrito el 04/09/2026
+# después de que un rechazo por saldo tumbara una ejecución de pago entera
+# (AGENTS.md 66): la clasificación anterior solo reconocía como transitorios
+# `529`, `overloaded` y `rate`, así que un 500 o una conexión cortada —que sí
+# se arreglan repitiendo— abortaban en el primer intento, y un saldo agotado
+# —que no se arregla nunca— lo hacía sin decir por qué.
+#
+# La distinción que importa no es «grave o leve», es **si repetir puede
+# funcionar**. Reintentar un saldo agotado es tan inútil como no reintentar un
+# 502, y las dos cosas cuestan dinero o tiempo del usuario.
+TRANSIENT_API_MARKERS = (
+    "529", "overloaded", "rate", "timeout", "timed out", "connection",
+    "500", "502", "503", "504", "internal server error", "api_error",
+    "temporarily", "try again",
+)
+TRANSIENT_API_STATUS = (408, 429, 500, 502, 503, 504, 529)
+
+# Un saldo agotado es definitivo hasta que alguien recargue: no se reintenta,
+# pero se dice con todas las letras. Que el 04/09 costara media hora de
+# diagnóstico fue por no tener este mensaje.
+CREDIT_API_MARKERS = (
+    "credit balance", "insufficient", "billing", "quota", "payment",
+    "saldo",
+)
+CREDIT_API_STATUS = (402,)
+
+AUTH_API_MARKERS = ("invalid x-api-key", "authentication", "unauthorized")
+AUTH_API_STATUS = (401, 403)
+
+
+def classify_api_error(exc: Exception) -> str:
+    """`auth`, `credit`, `transient` o `fatal`. Pura: no toca la red.
+
+    El orden importa. `auth` y `credit` van primero porque son definitivos y
+    porque sus mensajes pueden contener palabras que parecen transitorias; solo
+    después se pregunta si repetir tendría sentido.
+    """
+    texto = str(exc).lower()
+    estado = getattr(exc, "status_code", None)
+
+    if estado in AUTH_API_STATUS or any(m in texto for m in AUTH_API_MARKERS):
+        return "auth"
+    if estado in CREDIT_API_STATUS or any(m in texto for m in CREDIT_API_MARKERS):
+        return "credit"
+    if estado in TRANSIENT_API_STATUS or any(m in texto for m in TRANSIENT_API_MARKERS):
+        return "transient"
+    return "fatal"
 
 
 def _related_document_evidence(document: dict, budget: dict) -> dict | None:

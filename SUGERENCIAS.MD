@@ -1828,6 +1828,76 @@ Estado: **760 pruebas** en verde, 42 módulos. El análisis de las 92 pendientes
 está **enviado por lotes** (~1,18 USD), autorizado expresamente por el usuario
 tras cerrarse el paso 2. La fase 2 y la publicación quedan para el 04/09.
 
+## 23. Estado a 04/09/2026: dos defectos que solo aparecen cuando el código se ejecuta
+
+Día de ejecuciones de pago reales. Los tres defectos encontrados comparten algo
+que conviene nombrar, porque cambia dónde hay que buscar: **ninguno se veía
+leyendo el código, y ninguno lo cazaba una prueba en verde.**
+
+### 23.1. El ensamblado que nadie había ejecutado
+
+La recogida final del modo por lotes reventó con `AttributeError` en su primera
+ejecución real. Leía como lista un diccionario indexado por clave, y el
+docstring del productor lo decía explícitamente.
+
+**La firma del defecto:** las dos mitades eran correctas por separado. El módulo
+guardaba bien; el script leía mal. Ninguna prueba cubría la juntura porque cada
+lado tenía las suyas y el camino completo no se había recorrido nunca — la
+prueba de humo del 03/09 solo llegó a la fase 1.
+
+Es el mismo patrón que la sección 29 de `AGENTS.md` documentó con catorce
+funciones sin definir: **código escrito y revisado, jamás ejecutado**. La
+lección práctica es que un camino nuevo no está probado hasta que se recorre
+entero una vez, aunque cada pieza tenga cobertura.
+
+### 23.2. Una previsión de coste que envejeció sin avisar
+
+La constante de coste por análisis se calibró el 20/08 sobre 76 análisis. El
+prompt cambió dos veces después, las llamadas engordaron, y la constante siguió
+igual: el 04/09 anunciaba 1,18 USD para lo que costó 1,4325.
+
+**Nadie tocó nada para romperlo.** Es un dato medido que describe una versión
+del sistema que ya no existe, y no hay ninguna prueba que pueda fallar por eso,
+porque la constante seguía siendo internamente coherente.
+
+Es el mismo defecto que las seis URLs muertas del catálogo de CDTI y que la
+copia del perfil dentro del prompt: **un valor que solo se actualiza cuando
+alguien lo escribe a mano envejece en silencio**. La diferencia es que este
+tenía consecuencia económica directa — contribuyó a agotar el saldo de la clave
+a mitad de una ejecución de pago.
+
+**Lo que se hizo distinto esta vez:** la prueba nueva no fija el número, fija su
+distancia a una factura real. Si alguien lo cambia, tiene que justificarlo
+contra una medición, no contra una intuición.
+
+### 23.3. Una clasificación de errores que preguntaba lo que no era
+
+El reintento distinguía errores por su etiqueta —`529`, `overloaded`, `rate`—
+en vez de por **si repetir puede funcionar**. Con esa pregunta equivocada fallaba
+en las dos direcciones a la vez: no reintentaba un 500, que se arregla solo, y
+tampoco sabía nombrar un saldo agotado, que no se arregla nunca.
+
+Vale la pena anotarlo como categoría, porque se repite: **una taxonomía
+construida sobre los casos que uno ha visto, en vez de sobre la decisión que
+tiene que tomar.** La lista de tres marcadores era exactamente los tres errores
+que alguien se había encontrado. Funcionó hasta que apareció el cuarto.
+
+### 23.4. Lo que estos tres tienen en común, y dónde mirar la próxima vez
+
+Los defectos de las secciones anteriores eran del código y del dato. Estos tres
+son **de la frontera entre lo escrito y lo ejecutado**:
+
+| Defecto | Por qué ninguna prueba lo veía |
+|---|---|
+| El ensamblado | Cada lado de la juntura tenía cobertura; la juntura no |
+| La previsión de coste | El número era coherente consigo mismo, solo falso |
+| La clasificación de errores | Cubría los casos conocidos, y el problema eran los otros |
+
+**Dónde mirar:** en los caminos que solo se recorren pagando, en los valores
+medidos que nadie recalcula, y en las listas de casos conocidos que deciden
+comportamiento. Los tres se detectan igual —ejecutando de verdad— y ninguno
+aparece revisando el diff.
+
 ## Nota de alcance
 
 Este documento es una evaluación externa de solo lectura, ampliada con una

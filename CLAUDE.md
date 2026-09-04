@@ -61,9 +61,11 @@ desactualizado si no se mantiene junto a ellos.
 >
 > ---
 >
-> **Estado del código al cerrar el 03/09/2026 (noche):** 42 módulos, **760
-> pruebas en verde**. Verificación `--no-claude` completa: **921 detectadas, 92
-> vigentes**, prefiltro `retain=35, ambiguous=5, hold_manual=84, reject=797`.
+> **Estado del código al cerrar el 04/09/2026 (tarde):** **44 módulos** y 2.131
+> líneas en el script (14.999 en el paquete), **802 pruebas en verde**. Última
+> verificación `--no-claude` completa, del 04/09: **902 detectadas, 92
+> vigentes**. Las detectadas bajan de 921 por la ventana deslizante de BDNS, no
+> por un cambio de reglas; las vigentes son las mismas.
 >
 > Suben de 87 a 92 **por el relevo territorial de la sección 63**, no por deriva:
 > las cinco nuevas son convocatorias de ferias y misiones que antes se
@@ -87,17 +89,44 @@ desactualizado si no se mantiene junto a ellos.
 >
 > ## PRIMERO DE TODO, si arrancas en frío el 05/09/2026 o después
 >
-> **NO hay ningún lote en vuelo. El ciclo terminó el 04/09.** Los **91 análisis
-> están en la caché** y lo único que queda es **publicar**, que es decisión del
-> usuario y **no cuesta nada**: una ejecución normal los encuentra en caché y no
-> llama a Claude.
+> **HAY UN LOTE EN VUELO Y YA ESTÁ PAGADO.** Fase 1 de 2, enviado el 04/09 a las
+> 09:35 UTC con las 10 convocatorias que faltaban. Lo primero, y es gratis:
 >
 > ```
-> poetry run python "Grant-Radar-prueba.py"      # publica, sin coste
+> poetry run python "Grant-Radar-prueba.py" --batch-poll
 > ```
 >
-> Una de las 92 falló con JSON inválido y no entró en caché: la próxima
-> ejecución la volverá a seleccionar, y **esa sí costaría** (~0,013 USD).
+> ```
+> msgbatch_01EAu4dQzrjdTXMki8QFCRQ1 · phase1_running · 10 convocatorias
+> ```
+>
+> Al cerrar la sesión llevaba **2,2 h encolado sin resolver ni una**, muy por
+> encima de los precedentes (92 peticiones en 2,5 min y en 14 min). No es un
+> problema nuestro: es cola de Anthropic, y lo procesado dura 29 días.
+>
+> **La secuencia para cerrarlo, en orden:**
+>
+> | # | Cuando el sondeo diga | Comando | ¿Cuesta? |
+> |---|---|---|---|
+> | 1 | fase 1 `ended` | `--batch-collect` — recoge los hechos y **envía la fase 2** | **Sí**, la segunda mitad de ~$0,12 |
+> | 2 | fase 2 `ended` | `--batch-collect` — ensambla y guarda en caché | No |
+> | 3 | no hay lote | `poetry run python "Grant-Radar-prueba.py"` — **publica** | Solo lo que no esté en caché |
+>
+> El paso 1 **es una petición de análisis y requiere autorización expresa** del
+> usuario, aunque el lote esté empezado. El paso 3 recopila 10-12 min antes de
+> publicar, y su coste depende de cuántas convocatorias nuevas traiga la ventana
+> de BDNS ese día: no es cero por defecto.
+>
+> Si el lote hubiera **caducado** (más de 24 h sin procesarse, o sea después del
+> 05/09 09:35 UTC), lo no procesado vuelve como `expired` y esas 10 se vuelven a
+> seleccionar solas en la siguiente ejecución. No hay que hacer nada especial.
+>
+> **Estado del producto: sigue publicado el del 21/08.** En caché hay **94
+> análisis**; las 10 del lote son lo que falta para cubrir las vigentes de hoy.
+>
+> **Gasto acumulado medido: ~$1,52.** El 04/09 se agotó el saldo de la clave a
+> mitad de una ejecución y el usuario lo recargó; el detalle y sus dos causas
+> están en AGENTS.md 66.
 >
 > Los resultados de la primera medición del evaluador v11 están en **AGENTS.md
 > 65.5**, con la distribución completa para comparar. Resumen: el atractor del 45
@@ -108,21 +137,19 @@ desactualizado si no se mantiene junto a ellos.
 > El sondeo diario y la recogida de lo pagado están en el `.bat`
 > (`--batch-poll` y `--batch-collect --no-submit`): ver AGENTS.md 65.3 y 65.4.
 >
-> ## Cómo fue el ciclo del lote, del 03 al 04/09/2026
+> ## Cómo fue el ciclo del lote grande, del 03 al 04/09/2026
 >
-> **HAY UN LOTE DE PAGO EN VUELO: la FASE 2, enviada el 04/09/2026 a las 06:29
-> UTC.** Antes de tocar nada, mira dónde está de verdad — es gratis:
+> **HISTORIA, ya cerrada.** Se conserva porque explica de dónde salen los 94
+> análisis en caché y las lecciones de método. El lote que está vivo AHORA es
+> otro, y está arriba, en «PRIMERO DE TODO».
 >
-> ```
-> poetry run python "Grant-Radar-prueba.py" --batch-poll
-> ```
+> Dos reglas de este bloque que **siguen vigentes** y conviene no perder:
 >
-> Usa **`--batch-poll`, no `--batch-status`**: el segundo lee solo el archivo
-> local, que dice lo que se sabía al enviar y **no sabe si el lote ha
-> terminado** (AGENTS.md 64.2).
->
-> No hace falta prisa: las 24 h de la API son de **procesamiento**, no de
-> recogida, y lo ya procesado queda disponible **29 días** (AGENTS.md 61.12).
+> - Usa **`--batch-poll`, no `--batch-status`**: el segundo lee solo el archivo
+>   local, que dice lo que se sabía al enviar y **no sabe si el lote ha
+>   terminado** (AGENTS.md 64.2).
+> - No hace falta prisa: las 24 h de la API son de **procesamiento**, no de
+>   recogida, y lo ya procesado queda disponible **29 días** (AGENTS.md 61.12).
 >
 > ### RESUELTO el 04/09/2026: fase 1 recogida y fase 2 en vuelo
 >
@@ -510,7 +537,7 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
      —un segundo, señala módulo y nombre exactos si falta un import. Desde el
      31/08 comprueba también cada módulo del paquete, no solo el script;
   2. `poetry run python -m py_compile "Grant-Radar-prueba.py"`;
-  3. `poetry run python -m unittest discover -s tests` —**666 pruebas**. Una,
+  3. `poetry run python -m unittest discover -s tests` —**802 pruebas**. Una,
      `FrontendLayoutTests::test_consortium_role_is_visible...`, es intermitente
      bajo carga porque conduce Chromium de verdad: repetir antes de investigar
      (AGENTS.md 44.7, nota sobre pruebas intermitentes);
@@ -531,11 +558,21 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
 - **Con un lote en vuelo, NO se tocan `versions.py`, el perfil ni el catálogo
   de socios.** `cache_key()` incluye esas versiones y la recogida se **negaría**,
   dejando bloqueado un análisis ya pagado (AGENTS.md 61.4). Comprobar antes con
-  `--batch-status`, que es gratis y no toca la red. Es la salvaguarda haciendo
-  su trabajo, no un fallo, pero conviene no provocarla.
+  `--batch-poll`, que es gratis. Es la salvaguarda haciendo su trabajo, no un
+  fallo, pero conviene no provocarla. Recalibrar el estimador de coste o tocar
+  el manejo de errores **sí es seguro** con un lote en vuelo: `cache_key()` no
+  los mira.
+- **La previsión de coste que enseña el panel es una estimación, no un
+  presupuesto cerrado.** El 04/09 anunció 1,18 USD y la factura fue 1,4325, y
+  eso contribuyó a agotar el saldo de la clave a mitad de una ejecución. Está
+  recalibrada sobre 94 análisis reales (AGENTS.md 66.2) y ahora acierta con
+  menos de un 1 % de error, pero **sigue siendo una media**: si la ejecución
+  lleva pocas convocatorias y son caras, se irá por encima.
 - **Llamar a Claude/Haiku por API requiere SIEMPRE autorización expresa del
   usuario**, sin excepción, porque cuesta dinero real. Que se haya autorizado
-  una vez —el lote del 03/09— no cubre la siguiente. En cambio, el usuario
+  una vez —el lote del 03/09, la fase 2 del 04/09, el lote de las 10— no cubre
+  la siguiente. **Recoger una fase 2 terminada sí es gratis** (se pagó al
+  enviarla); enviar una fase 2 no lo es. En cambio, el usuario
   autorizó el 19/08/2026 a ejecutar `--no-claude` sin preguntar (tarda 10-15
   min, no consume tokens) y a hacer `commit` y `push` a `Grant-Radar-CC` sin
   pedir permiso, por ser esta una carpeta paralela de iteración.
@@ -568,8 +605,8 @@ remoto: `https://github.com/GOrtega-KAL/Grant-Radar-CC`.
 
 `Grant-Radar-prueba.py` sigue siendo el punto de entrada — se ejecuta
 directamente, no se importa (su nombre con guiones no es válido para
-`import`). Recuento verificado con `wc -l` el 01/09/2026: **1.595 líneas en el
-script y 13.345 en los 41 módulos del paquete**. El script tenía 9.199 líneas
+`import`). Recuento verificado con `wc -l` el 04/09/2026: **2.131 líneas en el
+script y 14.999 en los 44 módulos del paquete**. El script tenía 9.199 líneas
 antes de las nueve rondas del 19/08/2026, 4.086 al empezar el 31/08, 2.362 tras
 la mañana del 01/09, y hoy conserva **solo cuatro funciones**: `run_pipeline()`,
 `parse_args()`, `build_gap_reports()` y `publish_collection_state()`. **Ninguna
