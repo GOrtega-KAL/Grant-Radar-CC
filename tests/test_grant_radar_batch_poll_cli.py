@@ -80,6 +80,46 @@ class BatchPollWiringTests(unittest.TestCase):
         self.assertIn("sys.exit(run_batch_poll())", CODE)
 
 
+class CollectWithoutSubmittingTests(unittest.TestCase):
+    """La separacion del 04/09/2026 entre recoger (gratis) y enviar (paga).
+
+    Estaban soldadas: la rama de la fase 1 recogia los hechos y en la linea
+    siguiente enviaba la fase 2. Mientras fue asi, la recogida no podia entrar
+    en un .bat diario sin arriesgarse a lanzar una peticion de pago.
+    """
+
+    def test_submitting_is_guarded_by_the_flag(self):
+        cuerpo = _funcion("run_batch_collect")
+        self.assertIn("allow_submit", cuerpo)
+        antes = cuerpo.index("if not allow_submit")
+        self.assertLess(
+            antes, cuerpo.index("submit_batch("),
+            "la guarda tiene que ir ANTES del envio, no despues",
+        )
+
+    def test_the_paid_facts_are_saved_before_deciding(self):
+        """Si el proceso muriera entre recoger y decidir, se perderian.
+
+        Los hechos de la fase 1 ya estan pagados cuando llegan: se guardan
+        primero y se decide despues.
+        """
+        cuerpo = _funcion("run_batch_collect")
+        self.assertLess(
+            cuerpo.index("store_phase1_results("),
+            cuerpo.index("if not allow_submit"),
+        )
+
+    def test_the_flag_requires_batch_collect(self):
+        """Sola no significa nada, y en silencio no haria lo que parece."""
+        parse = _funcion("parse_args")
+        self.assertIn("--no-submit solo tiene sentido junto a --batch-collect", parse)
+
+    def test_the_default_still_submits(self):
+        """La ejecucion manual autorizada no cambia de comportamiento."""
+        self.assertIn("def run_batch_collect(allow_submit: bool = True)", CODE)
+        self.assertIn("allow_submit=not args.no_submit", CODE)
+
+
 class DailyBatFileTests(unittest.TestCase):
     """La red diaria que pidio el usuario el 04/09/2026."""
 
@@ -88,9 +128,37 @@ class DailyBatFileTests(unittest.TestCase):
 
     def test_the_daily_script_still_never_pays(self):
         """El .bat es de coste cero por contrato. Ninguna bandera que gaste."""
-        for bandera in ("--batch-collect", "--max-claude", "--hold-pilot"):
+        for bandera in ("--max-claude", "--hold-pilot", "--force-reanalysis"):
             self.assertNotIn(bandera, BAT)
         self.assertIn("--no-claude", BAT)
+
+    def test_the_daily_script_collects_but_never_submits(self):
+        """Lo que pidio el usuario el 04/09: recoger lo pagado, no lanzar nada.
+
+        `--batch-collect` a secas envia la fase 2 si la 1 acaba de terminar, y
+        eso cuesta dinero. En el .bat tiene que ir SIEMPRE con `--no-submit`.
+        """
+        invocaciones = [
+            linea.strip() for linea in BAT.splitlines()
+            if linea.strip().startswith('"%PYTHON%"')
+        ]
+        recogidas = [l for l in invocaciones if "--batch-collect" in l]
+        self.assertTrue(recogidas, "el .bat diario tiene que recoger lo pagado")
+        for linea in recogidas:
+            self.assertIn(
+                "--no-submit", linea,
+                "--batch-collect sin --no-submit enviaria la fase 2 y pagaria",
+            )
+
+    def test_the_daily_script_never_opens_a_batch(self):
+        """`--batch` a secas recopila y ENVIA la fase 1. Nunca desde aqui."""
+        for linea in BAT.splitlines():
+            if not linea.strip().startswith('"%PYTHON%"'):
+                continue
+            self.assertNotIn(
+                "--batch ", linea + " ",
+                "el .bat no puede abrir un lote: eso es una peticion de pago",
+            )
 
     def test_the_poll_runs_before_the_long_collection(self):
         """La recopilacion tarda 11-15 min y el usuario se va de la ventana.

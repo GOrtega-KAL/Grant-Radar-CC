@@ -11,7 +11,8 @@ rem  convocatorias.json. Solo recopila y publica estado_recopilacion.json, que e
 rem  lo que hace que el panel avise de cuantas convocatorias esperan analisis.
 rem  El analisis de pago sigue siendo manual y discrecional, como debe ser.
 rem
-rem  Ademas SONDEA los lotes en Anthropic (--batch-poll) antes de recopilar.
+rem  Ademas SONDEA los lotes en Anthropic (--batch-poll) y RECOGE lo que ya
+rem  este pagado (--batch-collect --no-submit) antes de recopilar.
 rem  Tampoco cuesta nada: es un listado de solo lectura, no recoge ni envia.
 rem  Esta aqui como red diaria. El 04/09/2026 un lote paso 16,5 horas marcado
 rem  como "procesando" cuando habia terminado a los 2 min 29 s, porque el
@@ -121,6 +122,13 @@ rem segundos y no cuesta nada.
 rem
 rem Su codigo de salida NO se mira: es informativo, y un fallo de red no puede
 rem impedir la recopilacion diaria, que es lo que de verdad hace este archivo.
+rem
+rem Y DESPUES RECOGE lo que ya este pagado, con --no-submit. Esa bandera es la
+rem que hace que esto pueda ir en un .bat diario: recoge la fase 2 terminada
+rem -ensambla y guarda en cache, sin coste, porque se pago al enviarla- y, si lo
+rem que ha terminado es la fase 1, guarda sus hechos y SE PARA. Enviar la fase 2
+rem es una peticion de analisis, cuesta dinero y solo se lanza a mano con
+rem autorizacion expresa. Este archivo NUNCA la envia.
 set "VIRTUAL_ENV="
 
 echo(
@@ -128,6 +136,11 @@ echo ------------------------------------------------------------
 echo  Sondeo de lotes en Anthropic (solo lectura, sin coste)
 echo ------------------------------------------------------------
 "%PYTHON%" "%SCRIPT%" --batch-poll
+echo(
+echo ------------------------------------------------------------
+echo  Recogida de lo ya pagado (nunca envia analisis nuevos)
+echo ------------------------------------------------------------
+"%PYTHON%" "%SCRIPT%" --batch-collect --no-submit
 echo(
 
 if "%SOLO_LOTES%"=="1" (
@@ -170,7 +183,7 @@ echo  Para ver el desfase acumulado, sin red y sin coste:
 echo    .venv\Scripts\python.exe "Grant-Radar-prueba.py" --staleness-report
 echo(
 echo  El analisis con Claude sigue siendo manual y requiere autorizacion
-echo  expresa: este archivo no lo lanza nunca.
+echo  expresa: este archivo no lo lanza nunca. Solo RECOGE lo ya pagado.
 goto fin
 
 :informar_error

@@ -7282,3 +7282,149 @@ su contrato desde que se escribió.
 parámetro, así que las situaciones que no se pueden provocar en vivo sin gastar
 —terminado sin recoger, con errores, con caducadas, el huérfano— se prueban
 todas. **778 pruebas** (760 al empezar).
+
+
+## 65. La primera recogida final, que reventó; y el .bat que ya recoge, a 04/09/2026 (tarde)
+
+Encargo del usuario, en dos partes: recoger el lote, y que el `.bat` diario
+recoja lo ya pagado **sin lanzar nunca** una petición de análisis.
+
+### 65.1. El fallo: `AttributeError` en el primer ensamblado que llegó a correr
+
+`--batch-collect` recogió las 91 evaluaciones válidas y murió al ensamblar:
+
+```
+Fase 2 recogida: 91 evaluaciones, 1 fallos
+AttributeError: 'str' object has no attribute 'get'
+```
+
+La causa, en una sola expresión:
+
+```python
+consumos_fase1 = {
+    registro.get("custom_id", ""): registro
+    for registro in (state.get("usage") or [])   # ← itera CLAVES, no registros
+}
+```
+
+`store_phase1_results()` guarda el consumo **indexado por clave** —su docstring
+lo dice: «Indexado por clave, no aplanado»— igual que lo devuelve
+`collect_batch()`. El ensamblado lo leía como una lista de registros con
+`custom_id` dentro. Recorrer un diccionario da sus claves, que son cadenas, y
+`.get` sobre una cadena revienta. El arreglo es quitar la comprensión entera:
+`consumos_fase1 = state.get("usage") or {}`.
+
+**Es exactamente el fallo de la sección 29:** código que nadie había ejecutado
+nunca. La prueba de humo del 03/09 (61.9) solo llegó a la fase 1, así que **el
+ensamblado final se estrenó con el lote de verdad**. Ninguna prueba lo cubría
+porque vive en el script y consume una forma que define el módulo: cada mitad
+era correcta por separado.
+
+**No se perdió nada, y eso no fue suerte.** El estado se retira al final —
+`clear_batch_state()` va después de `cache_save()`—, así que el archivo
+sobrevivió intacto y los resultados siguen en Anthropic 29 días. Reintentar tras
+el arreglo **no costó un céntimo**: recuperar resultados ya pagados es gratis.
+Es el mismo orden que 61.4 defendía para otra cosa, y aquí pagó su seguro.
+
+Cuatro pruebas nuevas fijan la forma —`Phase1UsageContractTests`—, incluida una
+que documenta el error literal: recorrer ese diccionario da cadenas.
+
+### 65.2. Lo que recogió
+
+```
+91 evaluaciones válidas · 1 fallo (JSON inválido)
+Análisis guardados en caché: 91
+Coste del lote: $1,4325   (tarifa de lote, 50 %)
+```
+
+El fallo no se reintenta a propósito (61.4): no entra en caché y la siguiente
+ejecución lo vuelve a seleccionar sin código nuevo.
+
+### 65.3. Recoger y enviar estaban soldados, y por eso no se podía automatizar
+
+El encargo del usuario topó con un detalle de diseño: `--batch-collect`, si la
+fase 1 acaba de terminar, recoge los hechos **y en la línea siguiente envía la
+fase 2**, que es una petición de análisis y cuesta dinero. Meterlo tal cual en
+el `.bat` diario habría convertido una tarea gratuita en una que paga sola.
+
+Se separan las dos cosas. La bandera **`--no-submit`** hace que la recogida se
+quede en lo pagado:
+
+| Situación | Con `--no-submit` |
+|---|---|
+| Fase 2 terminada | **Recoge, ensambla y guarda en caché.** Gratis: se pagó al enviarla |
+| Fase 1 terminada | Recoge los hechos, los guarda como `phase1_done` y **se para** |
+| Aún procesando | Lo dice y sale |
+
+El cambio estructural es que **`phase1_done` pasa a ser un estado reanudable**.
+Antes existía solo como marca interna entre dos líneas; ahora la recogida puede
+terminar ahí y un `--batch-collect` manual posterior rehidrata los hechos del
+archivo y envía la fase 2.
+
+**Dos decisiones dentro:**
+
+1. **Los hechos se guardan antes de decidir si se envía.** Ya están pagados
+   cuando llegan; si el proceso muriera entre recoger y decidir, se perderían.
+2. **El envío rehidrata desde el estado, no reutiliza los objetos en memoria.**
+   Así el camino es idéntico venga de una recogida recién hecha o de una sesión
+   posterior. Es la lección de 61.2: dos caminos que hacen lo mismo acaban
+   divergiendo, y aquí el segundo no se probaría nunca.
+
+### 65.4. En el `.bat` diario
+
+```
+"%PYTHON%" "%SCRIPT%" --batch-poll
+"%PYTHON%" "%SCRIPT%" --batch-collect --no-submit
+"%PYTHON%" "%SCRIPT%" --no-claude
+```
+
+Sondear, recoger lo pagado, recopilar. El contrato del archivo —**coste cero**—
+sigue intacto, y ahora hay pruebas que lo vigilan de verdad: una comprueba que
+**cada** `--batch-collect` del `.bat` lleva `--no-submit`, y otra que ninguna
+invocación usa `--batch` a secas, que es la que abre un lote.
+
+Esa segunda prueba importa más de lo que parece: el día que alguien quiera
+«automatizar del todo» el ciclo, el `.bat` es donde lo intentará.
+
+### 65.5. La primera medición del evaluador v11, que era el motivo de todo
+
+Los tres cambios de prompt de 62.7 no se podían verificar sin pagar. Ya están
+pagados. Las tres comprobaciones que 64 dejó apuntadas:
+
+**1. El atractor del 45 se ha aflojado.**
+
+| | v6 (77 fichas, 21/08) | **v11 (91 análisis, 04/09)** |
+|---|---|---|
+| Valen exactamente 45 | 16 de 77 — **21 %** | **11 de 91 — 12 %** |
+| Valores fuera del múltiplo de 5 | ninguno | **62, 78, 82** |
+
+Lo segundo es lo que de verdad indica que la instrucción llegó: el prompt pide
+coherencia con las cinco sub-puntuaciones, y por primera vez el modelo devuelve
+notas que no son redondas. **Aviso honesto: no es un A/B limpio** —son corpus
+distintos, 91 convocatorias nuevas frente a 77 viejas—, así que la comparación
+describe una tendencia, no mide un efecto aislado.
+
+**2. Lo alto es industrial, y el papel es el correcto.** Las mejores son
+recuperación de calor residual, descarbonización de industrias intensivas y
+demostración de bombas de calor industriales, con `recommended_role`
+`industrial_demonstrator` o `technology_partner`. **Ninguna presenta a Kalfrisa
+como fabricante de algo que solo integra**, que era el error de 61.13 por la
+otra puerta.
+
+**3. Las municipales siguen abajo**, que era la condición de que la instrucción
+de coherencia no estuviera haciendo daño: 25 y 5.
+
+Distribución completa, para que la próxima sesión tenga contra qué comparar:
+
+```
+  0: 5    5: 21   15: 14   25: 12   35: 7
+ 45: 11  55: 1   60: 1    62: 1    72: 9
+ 75: 5   78: 3   82: 1                      (n=91)
+```
+
+**Lo que sigue sin poderse comprobar**, y estaba previsto: la mitad «lo que
+Kalfrisa INTEGRA» de la tercera instrucción. No hay ninguna convocatoria de
+rotoconcentradores, COV ni filtros de mangas este mes (62.5).
+
+**788 pruebas** (778 al empezar). El producto publicado **sigue siendo el del
+21/08**: la recogida no publica a propósito, y publicar es decisión del usuario.

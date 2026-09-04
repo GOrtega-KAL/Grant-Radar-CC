@@ -85,7 +85,30 @@ desactualizado si no se mantiene junto a ellos.
 > `grant-radar-favoritos.favoritos-worker.workers.dev`. La URL y el id del
 > namespace KV van versionados y no son secretos.
 >
-> ## PRIMERO DE TODO, si arrancas en frío el 04/09/2026 o después
+> ## PRIMERO DE TODO, si arrancas en frío el 05/09/2026 o después
+>
+> **NO hay ningún lote en vuelo. El ciclo terminó el 04/09.** Los **91 análisis
+> están en la caché** y lo único que queda es **publicar**, que es decisión del
+> usuario y **no cuesta nada**: una ejecución normal los encuentra en caché y no
+> llama a Claude.
+>
+> ```
+> poetry run python "Grant-Radar-prueba.py"      # publica, sin coste
+> ```
+>
+> Una de las 92 falló con JSON inválido y no entró en caché: la próxima
+> ejecución la volverá a seleccionar, y **esa sí costaría** (~0,013 USD).
+>
+> Los resultados de la primera medición del evaluador v11 están en **AGENTS.md
+> 65.5**, con la distribución completa para comparar. Resumen: el atractor del 45
+> bajó del 21 % al 12 %, aparecieron notas fuera del múltiplo de cinco —62, 78,
+> 82—, lo alto es industrial con el papel correcto y las municipales siguen
+> abajo. Las tres comprobaciones previstas, pasadas.
+>
+> El sondeo diario y la recogida de lo pagado están en el `.bat`
+> (`--batch-poll` y `--batch-collect --no-submit`): ver AGENTS.md 65.3 y 65.4.
+>
+> ## Cómo fue el ciclo del lote, del 03 al 04/09/2026
 >
 > **HAY UN LOTE DE PAGO EN VUELO: la FASE 2, enviada el 04/09/2026 a las 06:29
 > UTC.** Antes de tocar nada, mira dónde está de verdad — es gratis:

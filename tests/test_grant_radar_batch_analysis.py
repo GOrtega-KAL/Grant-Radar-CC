@@ -31,10 +31,13 @@ from grant_radar.batch_analysis import (
     format_batch_poll,
     list_recent_batches,
     load_batch_state,
+    new_batch_state,
     save_batch_state,
+    store_phase1_results,
     submit_batch,
     summarize_batch_state,
 )
+from grant_radar.analysis import merge_stage_usage
 from grant_radar.cache import cache_key
 from grant_radar.claude_schemas import CallFacts
 from tests.test_grant_radar_claude_schemas import _minimal_call_facts
@@ -344,6 +347,85 @@ class DashboardStateTests(unittest.TestCase):
     def test_age_is_measured_in_hours(self):
         estado = self._estado(["a"], hace_horas=3)
         self.assertAlmostEqual(batch_age_hours(estado), 3.0, places=1)
+
+
+class Phase1UsageContractTests(unittest.TestCase):
+    """La forma del consumo de la fase 1, que el ensamblado final leyó mal.
+
+    El 04/09/2026, en la **primera recogida final que llegó a ejecutarse**, la
+    recogida reventó con `AttributeError: 'str' object has no attribute 'get'`.
+    `store_phase1_results()` guarda el consumo **indexado por clave** —lo dice
+    su propio docstring— y el ensamblado lo recorría como si fuera una lista de
+    registros con `custom_id` dentro, así que iteraba sus claves, que son
+    cadenas.
+
+    Es la clase de fallo de la sección 29: código que nadie había ejecutado. La
+    prueba de humo del 03/09 solo llegó a la fase 1, así que este camino no se
+    había recorrido nunca. No se perdió nada —el estado se retira al final y el
+    fallo fue antes—, pero conviene fijar la forma.
+    """
+
+    def _usage(self, clave, coste):
+        return {clave: {
+            "stage": "extracción factual", "attempt": 1, "valid_output": True,
+            "api_calls": 1, "retry_api_calls": 0,
+            "input_tokens": 3568, "output_tokens": 462,
+            "cache_write_tokens": 0, "cache_read_tokens": 0,
+            "total_tokens": 4030, "estimated_cost_usd": coste,
+            "max_tokens": None, "service_tier": "batch",
+        }}
+
+    def _estado_con_fase1(self):
+        conv = _conv("Recuperación de calor en horno industrial")
+        clave = cache_key(conv)
+        estado = new_batch_state([conv], "msgbatch_x")
+        hechos = {clave: _minimal_call_facts()}
+        store_phase1_results(estado, hechos, self._usage(clave, 0.002939), [])
+        return estado, clave
+
+    def test_usage_is_a_mapping_keyed_by_cache_key(self):
+        estado, clave = self._estado_con_fase1()
+        self.assertIsInstance(estado["usage"], dict)
+        self.assertIn(clave, estado["usage"])
+        self.assertEqual(estado["usage"][clave]["estimated_cost_usd"], 0.002939)
+
+    def test_iterating_it_yields_keys_which_is_what_broke(self):
+        """Documenta el error exacto, para que nadie lo reintroduzca.
+
+        Recorrer el diccionario da CADENAS. Si el ensamblado vuelve a hacerlo,
+        `.get` sobre ellas revienta igual que el 04/09.
+        """
+        estado, clave = self._estado_con_fase1()
+        for elemento in estado["usage"]:
+            self.assertIsInstance(elemento, str)
+            self.assertFalse(hasattr(elemento, "get"))
+
+    def test_it_survives_the_json_round_trip_still_addressable(self):
+        """El estado viaja por disco entre dos invocaciones distintas."""
+        estado, clave = self._estado_con_fase1()
+        directorio = tempfile.mkdtemp()
+        ruta = os.path.join(directorio, "batch_state.json")
+        save_batch_state(estado, ruta)
+        recargado = load_batch_state(ruta)
+        self.assertEqual(
+            recargado["usage"][clave]["estimated_cost_usd"], 0.002939
+        )
+
+    def test_the_two_phases_are_merged_per_call_not_per_batch(self):
+        """El motivo de que esté indexado: cada ficha suma SUS dos fases."""
+        estado, clave = self._estado_con_fase1()
+        evaluacion = {
+            "stage": "evaluación de encaje", "attempt": 1, "valid_output": True,
+            "api_calls": 1, "retry_api_calls": 0,
+            "input_tokens": 4100, "output_tokens": 700,
+            "cache_write_tokens": 0, "cache_read_tokens": 0,
+            "total_tokens": 4800, "estimated_cost_usd": 0.004,
+            "max_tokens": None, "service_tier": "batch",
+        }
+        unido = merge_stage_usage(estado["usage"][clave], evaluacion)
+        self.assertAlmostEqual(
+            unido["estimated_cost_usd"], 0.002939 + 0.004, places=6
+        )
 
 
 class BatchPollTests(unittest.TestCase):

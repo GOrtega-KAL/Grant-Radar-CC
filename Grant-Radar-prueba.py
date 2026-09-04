@@ -183,6 +183,7 @@ from grant_radar.batch_analysis import (
     BatchStateError,
     PHASE_EVALUATION,
     PHASE_EXTRACTION,
+    STATE_PHASE1_DONE,
     STATE_PHASE1_RUNNING,
     STATE_PHASE2_RUNNING,
     STATE_FAILED,
@@ -1659,6 +1660,15 @@ def parse_args():
         ),
     )
     parser.add_argument(
+        "--no-submit",
+        action="store_true",
+        help=(
+            "Con --batch-collect: recoge todo lo que ya esta pagado pero NO "
+            "envia la fase 2, que es una peticion de analisis y cuesta dinero. "
+            "Es lo que permite que la recogida entre en el .bat diario."
+        ),
+    )
+    parser.add_argument(
         "--batch-poll",
         action="store_true",
         help=(
@@ -1740,6 +1750,8 @@ def parse_args():
         parser.error(
             "los modos de lote no pueden combinarse con otros modos de ejecucion"
         )
+    if args.no_submit and not args.batch_collect:
+        parser.error("--no-submit solo tiene sentido junto a --batch-collect")
     if args.source and not args.no_claude:
         # Deliberadamente estricto. Una selección parcial produce un catálogo
         # incompleto, y dejarla llegar al análisis publicaría un producto al
@@ -1846,7 +1858,7 @@ def run_batch_poll() -> int:
     return 0
 
 
-def run_batch_collect() -> int:
+def run_batch_collect(allow_submit: bool = True) -> int:
     """Recoge un lote enviado con `--batch` y avanza al siguiente paso.
 
     Es la otra mitad del modo diferido. **No recopila fuentes**: todo lo que
@@ -1897,7 +1909,12 @@ def run_batch_collect() -> int:
 
     convocatorias = batch_items(state)
 
-    # ── Fase 1 terminada: recoger hechos y lanzar la fase 2 ──────────────────
+    # ── Fase 1 terminada: recoger los hechos, que ya están pagados ───────────
+    #
+    # Recoger y enviar estaban soldados en una sola rama. Se separaron el
+    # 04/09/2026 para que el .bat diario pueda quedarse con lo pagado sin
+    # lanzar nunca una petición nueva (AGENTS.md 65.3): el estado se guarda
+    # como `phase1_done` y el envío es un paso aparte, más abajo.
     if state["state"] == STATE_PHASE1_RUNNING:
         hechos, consumo, fallos = collect_batch(
             client, state["batch_id"], CallFacts, "extracción factual",
@@ -1910,7 +1927,24 @@ def run_batch_collect() -> int:
             state["state"] = STATE_FAILED
             save_batch_state(state, BATCH_STATE_FILE)
             return 1
+        # Guardar ANTES de decidir si se envía: estos hechos ya están pagados y
+        # recogidos, y si el proceso muriera aquí se perderían.
         store_phase1_results(state, hechos, consumo, fallos)
+        save_batch_state(state, BATCH_STATE_FILE)
+        refresh_published_batch_block()
+
+    # ── Enviar la fase 2: el único paso de esta función que cuesta dinero ────
+    if state["state"] == STATE_PHASE1_DONE:
+        if not allow_submit:
+            print("\n  Fase 1 recogida y guardada. Queda enviar la fase 2, que")
+            print("  es una petición de análisis y CUESTA DINERO, así que no se")
+            print("  lanza desde aquí.")
+            print("  Cuando lo autorices: --batch-collect (sin --no-submit).")
+            return 0
+        # Se rehidratan del estado en vez de reutilizar los de memoria: así el
+        # envío es idéntico venga de una recogida recién hecha o de una sesión
+        # posterior, y no hay dos caminos que puedan divergir.
+        hechos = restore_facts(state, CallFacts)
         nuevo_id = submit_batch(
             client, convocatorias, PHASE_EVALUATION, hechos,
         )
@@ -1936,10 +1970,13 @@ def run_batch_collect() -> int:
     for fallo in fallos[:5]:
         print(f"    · {fallo['custom_id'][:12]}… {fallo['reason'][:70]}")
 
-    consumos_fase1 = {
-        registro.get("custom_id", ""): registro
-        for registro in (state.get("usage") or [])
-    }
+    # `state["usage"]` ya viene **indexado por clave** desde
+    # `store_phase1_results()`, que es la misma forma que devuelve
+    # `collect_batch()`. Recorrerlo como si fuera una lista de registros con
+    # `custom_id` dentro iteraba sus CLAVES —cadenas— y reventaba al pedirles
+    # `.get`. Ocurrió de verdad el 04/09/2026, en la primera recogida final que
+    # llegó a ejecutarse (AGENTS.md 65).
+    consumos_fase1 = state.get("usage") or {}
     cache = cache_load(CACHE_FILE)
     guardadas = 0
     coste_total = 0.0
@@ -2047,7 +2084,7 @@ if __name__ == "__main__":
         print("  Estado retirado.")
         sys.exit(0)
     if args.batch_collect:
-        sys.exit(run_batch_collect())
+        sys.exit(run_batch_collect(allow_submit=not args.no_submit))
     if args.gap_report:
         reports = build_gap_reports()
         print(format_gap_report(reports, datetime.now().date().isoformat()))
