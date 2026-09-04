@@ -7146,12 +7146,21 @@ pagadas, completas y disponibles 29 días —hasta el 02/10—, y el `expires_at
 **Lo que sí rompió fue local, y es de otra clase:** la sesión murió después de
 enviar el lote (15:23) pero **antes de commitear**. El último commit es de las
 15:11. Quedaron sin subir al remoto `CLAUDE.md` —justo el archivo con el aviso
-«HAY UN LOTE DE PAGO EN VUELO» y la tabla de qué hacer—, `SUGERENCIAS.MD` 22 y
-el `estado_recopilacion.json` con el bloque `batch` que ve el panel.
+«HAY UN LOTE DE PAGO EN VUELO» y la tabla de qué hacer— y `SUGERENCIAS.MD` 22.
 
-O sea: **la caída no se llevó el trabajo pagado, se llevó el relevo**. Una
-sesión que hubiera arrancado desde el remoto no habría sabido que existía un
-lote. Se salvó porque `AGENTS.md` 63 sí se había commiteado a las 15:11 y porque
+**El panel sí se enteró, y eso es 61.10 funcionando.** `--batch` publica el
+estado por su cuenta al enviar la fase 1, por la ruta de `github_upload` y no por
+git: hay un commit `b929ddd` en el remoto, de las **15:23:37**, con el bloque
+`batch` dentro, que el repositorio local no tenía. Era exactamente el hueco que
+61.10 abrió y cerró —«quien enviaba un lote y cerraba el editor dejaba un
+análisis pagado en marcha del que el panel no sabía nada»—, y la caída lo puso a
+prueba de verdad catorce horas después de arreglarlo.
+
+O sea: **la caída no se llevó el trabajo pagado ni el aviso del panel, se llevó
+el relevo escrito**. Una sesión que hubiera arrancado desde el remoto habría
+visto el lote en el estado publicado, pero no las tres cosas que hay que mirar al
+recogerlo ni la prohibición de tocar `versions.py` mientras vuela. Se salvó
+porque `AGENTS.md` 63 sí se había commiteado a las 15:11 y porque
 `batch_state.json` es un archivo local, que era justo el argumento de 61.10.
 
 **La lección de método:** el relevo escrito no vale nada hasta que se commitea.
