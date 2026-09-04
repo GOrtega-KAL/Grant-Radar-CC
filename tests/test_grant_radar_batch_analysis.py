@@ -28,6 +28,8 @@ from grant_radar.batch_analysis import (
     clear_batch_state,
     collect_batch,
     current_versions,
+    format_batch_poll,
+    list_recent_batches,
     load_batch_state,
     save_batch_state,
     submit_batch,
@@ -342,6 +344,125 @@ class DashboardStateTests(unittest.TestCase):
     def test_age_is_measured_in_hours(self):
         estado = self._estado(["a"], hace_horas=3)
         self.assertAlmostEqual(batch_age_hours(estado), 3.0, places=1)
+
+
+class BatchPollTests(unittest.TestCase):
+    """El sondeo de solo lectura, que es la red diaria del 04/09/2026.
+
+    Existe por un fallo concreto: `--batch-status` lee solo el archivo local,
+    que dice lo que se sabía al enviar y nadie actualiza. Un lote pasó 16,5 h
+    marcado «phase1_running» habiendo terminado a los 2 min 29 s, y descubrirlo
+    obligaba a llamar a `--batch-collect`, que **paga** (AGENTS.md 64.2).
+
+    `format_batch_poll()` es pura, así que aquí se prueban las situaciones que
+    no se pueden provocar en vivo sin gastar: el lote terminado sin recoger, el
+    que devuelve errores y el huérfano que el archivo local no conoce.
+    """
+
+    def _estado(self, estado=STATE_PHASE1_RUNNING, hace_horas=16.5, lote="msgbatch_x"):
+        enviado = datetime.now(timezone.utc) - timedelta(hours=hace_horas)
+        return {
+            "schema_version": 1, "state": estado, "batch_id": lote,
+            "submitted_at": enviado.isoformat(),
+            "versions": current_versions(),
+            "items": {"a": {"title": "A"}, "b": {"title": "B"}},
+        }
+
+    def _remoto(self, estado="ended", **recuentos):
+        base = {"processing": 0, "succeeded": 2, "errored": 0,
+                "canceled": 0, "expired": 0}
+        base.update(recuentos)
+        return {
+            "id": "msgbatch_x", "processing_status": estado,
+            "ended": estado == "ended", "counts": base,
+            "created_at": datetime(2026, 9, 3, 13, 23, tzinfo=timezone.utc),
+            "ended_at": datetime(2026, 9, 3, 13, 26, tzinfo=timezone.utc),
+            "expires_at": datetime(2026, 9, 4, 13, 23, tzinfo=timezone.utc),
+        }
+
+    def test_a_finished_batch_nobody_collected_is_said_out_loud(self):
+        """El caso exacto que motivó el comando: dinero pagado y parado."""
+        texto = "\n".join(format_batch_poll(self._estado(), self._remoto()))
+        self.assertIn("LOTE TERMINADO Y SIN RECOGER", texto)
+        self.assertIn("--batch-collect", texto)
+        self.assertIn("2026-09-03 13:26", texto)
+
+    def test_a_batch_still_processing_does_not_shout(self):
+        texto = "\n".join(format_batch_poll(
+            self._estado(), self._remoto("in_progress", processing=2, succeeded=0)
+        ))
+        self.assertNotIn("SIN RECOGER", texto)
+        self.assertIn("Sigue procesándose", texto)
+        self.assertIn(str(BATCH_RESULTS_DAYS), texto)
+
+    def test_errors_and_expiries_are_reported_when_collecting_is_due(self):
+        texto = "\n".join(format_batch_poll(
+            self._estado(), self._remoto(succeeded=0, errored=1, expired=1)
+        ))
+        self.assertIn("1 con error", texto)
+        self.assertIn("1 caducadas", texto)
+
+    def test_a_batch_the_local_file_does_not_know_is_flagged(self):
+        """El caso de `batch_state.json` perdido: está en .gitignore.
+
+        Es el motivo de preguntar a la API en vez de fiarse del archivo: si el
+        marcador local desaparece, el trabajo pagado sigue en Anthropic y nadie
+        sabría recogerlo.
+        """
+        recientes = [{
+            "id": "msgbatch_huerfano", "processing_status": "in_progress",
+            "counts": {"processing": 40},
+            "created_at": datetime(2026, 9, 4, 6, 0, tzinfo=timezone.utc),
+            "ended_at": None,
+        }]
+        texto = "\n".join(format_batch_poll(None, None, recientes))
+        self.assertIn("QUE EL ARCHIVO LOCAL NO CONOCE", texto)
+        self.assertIn("msgbatch_huerfano", texto)
+
+    def test_the_batch_we_already_know_is_not_reported_as_orphan(self):
+        """Sin esto, el lote propio se denunciaría a sí mismo cada día."""
+        recientes = [{
+            "id": "msgbatch_x", "processing_status": "in_progress",
+            "counts": {"processing": 2}, "created_at": None, "ended_at": None,
+        }]
+        texto = "\n".join(format_batch_poll(
+            self._estado(), self._remoto("in_progress"), recientes
+        ))
+        self.assertNotIn("NO CONOCE", texto)
+
+    def test_an_ended_unknown_batch_is_not_an_alarm(self):
+        """Un lote terminado y ya recogido sigue existiendo 29 días.
+
+        Denunciarlo daría una alarma falsa cada día, y una alarma que siempre
+        suena deja de leerse. Solo se avisa de los que siguen procesándose.
+        """
+        recientes = [{
+            "id": "msgbatch_viejo", "processing_status": "ended",
+            "counts": {"succeeded": 2}, "created_at": None, "ended_at": None,
+        }]
+        texto = "\n".join(format_batch_poll(None, None, recientes))
+        self.assertNotIn("NO CONOCE", texto)
+
+    def test_no_batch_at_all_is_a_clean_report(self):
+        texto = "\n".join(format_batch_poll(None, None, []))
+        self.assertIn("No hay ningún lote en vuelo", texto)
+        self.assertNotIn(">>>", texto)
+
+    def test_an_unreachable_api_says_so_without_losing_the_batch(self):
+        """El sondeo diario no puede convertir un fallo de red en una alarma."""
+        texto = "\n".join(format_batch_poll(self._estado(), None, []))
+        self.assertIn("No se pudo consultar", texto)
+        self.assertIn("NO se pierde", texto)
+
+    def test_listing_failures_are_swallowed_not_raised(self):
+        """`list_recent_batches` se llama a diario y sin vigilancia."""
+        class ClienteRoto:
+            class messages:
+                class batches:
+                    @staticmethod
+                    def list(limit=20):
+                        raise RuntimeError("sin red")
+        self.assertEqual(list_recent_batches(ClienteRoto()), [])
 
 
 if __name__ == "__main__":

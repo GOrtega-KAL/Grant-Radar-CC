@@ -192,6 +192,8 @@ from grant_radar.batch_analysis import (
     clear_batch_state,
     collect_batch,
     empty_stage_usage,
+    format_batch_poll,
+    list_recent_batches,
     load_batch_state,
     new_batch_state,
     poll_batch,
@@ -1657,6 +1659,16 @@ def parse_args():
         ),
     )
     parser.add_argument(
+        "--batch-poll",
+        action="store_true",
+        help=(
+            "Sondea en Anthropic el estado real de los lotes: si el que hay en "
+            "vuelo ya termino y espera recogida, y si existe alguno que el "
+            "archivo local no conoce. NO recoge ni envia nada, asi que no "
+            "cuesta dinero y puede ejecutarse a diario."
+        ),
+    )
+    parser.add_argument(
         "--batch-abandon",
         action="store_true",
         help=(
@@ -1713,11 +1725,12 @@ def parse_args():
         )
     modos_lote = [
         args.batch, args.batch_collect, args.batch_status, args.batch_abandon,
+        args.batch_poll,
     ]
     if sum(1 for activo in modos_lote if activo) > 1:
         parser.error(
-            "--batch, --batch-collect, --batch-status y --batch-abandon son "
-            "modos distintos y no pueden combinarse entre si"
+            "--batch, --batch-collect, --batch-status, --batch-poll y "
+            "--batch-abandon son modos distintos y no pueden combinarse entre si"
         )
     if any(modos_lote) and (
         args.no_claude or args.max_claude is not None or args.hold_pilot is not None
@@ -1782,6 +1795,55 @@ def refresh_published_batch_block() -> None:
             f"{datetime.now().strftime('%Y-%m-%d %H:%M')} UTC"
         ),
     )
+
+
+def run_batch_poll() -> int:
+    """Sondea en Anthropic el estado real de los lotes. **No cuesta nada.**
+
+    La diferencia con `--batch-status`, que es la razón de que exista: aquel
+    lee solo `batch_state.json`, que dice lo que se sabía **al enviar** y nadie
+    actualiza después. El 04/09/2026 ese archivo llevaba 16,5 h diciendo
+    «phase1_running» de un lote que había terminado a los 2 min 29 s, y la única
+    forma de descubrirlo era `--batch-collect`, que si la fase 1 terminó envía
+    la fase 2 y **paga** (AGENTS.md 64.2). Había que comprometerse a gastar para
+    poder mirar.
+
+    Sondea dos cosas, y la segunda es la que cierra el caso de verdad:
+
+    1. El lote que el archivo local conoce: ¿sigue procesándose o lleva horas
+       terminado y esperando?
+    2. **El listado completo de lotes en Anthropic.** `batch_state.json` es
+       local y está en `.gitignore`: si se pierde, un sondeo que solo lo leyera
+       diría «no hay nada» con trabajo pagado esperando. Preguntárselo a la API
+       es lo único que no depende de nuestro propio estado.
+
+    Pensado para ejecutarse a diario sin vigilancia, así que **nunca falla por
+    no poder consultar**: si la red o la clave fallan, lo dice y sale con 0. Un
+    sondeo que rompiera la recopilación diaria sería peor que no tenerlo.
+    """
+    print("Grant-Radar — sondeo de lotes en Anthropic (sin coste)")
+    state = load_batch_state(BATCH_STATE_FILE)
+
+    if not claude_key_format_is_valid(CLAUDE_API_KEY):
+        print("  CLAUDE_API_KEY ausente o con formato inválido: no se puede sondear.")
+        print("  " + summarize_batch_state(state))
+        return 0
+
+    client = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
+
+    remoto = None
+    if state and state.get("batch_id"):
+        try:
+            remoto = poll_batch(client, state["batch_id"])
+        except Exception as exc:  # noqa: BLE001 — informar, no reventar
+            print(f"  No se pudo consultar el lote {state['batch_id']}: {exc}")
+    recientes = list_recent_batches(client)
+
+    for linea in format_batch_poll(state, remoto, recientes):
+        print(linea)
+    print()
+    print("  El sondeo no recoge ni envía nada: no se ha gastado un céntimo.")
+    return 0
 
 
 def run_batch_collect() -> int:
@@ -1969,6 +2031,8 @@ if __name__ == "__main__":
             print("  Recoger con: --batch-collect")
         print("  No se llamó a Claude ni se tocó la red.")
         sys.exit(0)
+    if args.batch_poll:
+        sys.exit(run_batch_poll())
     if args.batch_abandon:
         estado = load_batch_state(BATCH_STATE_FILE)
         if not estado:

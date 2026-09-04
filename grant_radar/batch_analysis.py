@@ -231,7 +231,16 @@ def submit_batch(client, items: list[dict], phase: int, facts_by_key: dict | Non
 
 
 def poll_batch(client, batch_id: str) -> dict:
-    """El estado del lote, sin interpretarlo."""
+    """El estado del lote, sin interpretarlo.
+
+    Es un `retrieve` pelado: **no consume tokens y no cuesta nada**. Esa
+    propiedad es la que permite sondear a diario sin decidir nada, así que
+    conviene no meter aquí ninguna llamada que sí pague.
+
+    Las tres marcas de tiempo se devuelven porque son la única forma de
+    distinguir «sigue procesando» de «terminó hace horas y nadie lo ha
+    recogido»: el archivo de estado local no puede saberlo (sección 64.2).
+    """
     lote = client.messages.batches.retrieve(batch_id)
     recuentos = getattr(lote, "request_counts", None)
     return {
@@ -242,7 +251,150 @@ def poll_batch(client, batch_id: str) -> dict:
             nombre: int(getattr(recuentos, nombre, 0) or 0)
             for nombre in ("processing", "succeeded", "errored", "canceled", "expired")
         } if recuentos else {},
+        "created_at": getattr(lote, "created_at", None),
+        "ended_at": getattr(lote, "ended_at", None),
+        "expires_at": getattr(lote, "expires_at", None),
     }
+
+
+def list_recent_batches(client, limit: int = 20) -> list[dict]:
+    """Los lotes que Anthropic tiene registrados, del más reciente al más viejo.
+
+    Existe por un motivo concreto: `batch_state.json` es **local y está en
+    `.gitignore`**, así que es un punto único de fallo. Si se pierde —un equipo
+    nuevo, un borrado, una carpeta que no se sincroniza—, un sondeo que solo
+    leyera ese archivo diría «no hay ningún lote» mientras hay trabajo pagado
+    esperando en los servidores de Anthropic. Preguntárselo a la API es lo
+    único que no depende de nuestro propio estado.
+
+    Como `poll_batch()`, es un listado y **no cuesta nada**.
+    """
+    try:
+        pagina = client.messages.batches.list(limit=limit)
+    except Exception as exc:  # noqa: BLE001 — el sondeo informa, no revienta
+        log.warning("  No se pudo listar los lotes en Anthropic: %s", exc)
+        return []
+    lotes = []
+    for lote in getattr(pagina, "data", []) or []:
+        recuentos = getattr(lote, "request_counts", None)
+        lotes.append({
+            "id": getattr(lote, "id", "?"),
+            "processing_status": getattr(lote, "processing_status", "unknown"),
+            "counts": {
+                nombre: int(getattr(recuentos, nombre, 0) or 0)
+                for nombre in (
+                    "processing", "succeeded", "errored", "canceled", "expired"
+                )
+            } if recuentos else {},
+            "created_at": getattr(lote, "created_at", None),
+            "ended_at": getattr(lote, "ended_at", None),
+        })
+    return lotes
+
+
+def _marca(momento) -> str:
+    """Una fecha UTC legible, o `?` si no la hay."""
+    if not momento:
+        return "?"
+    if isinstance(momento, str):
+        return momento[:16].replace("T", " ")
+    return momento.strftime("%Y-%m-%d %H:%M")
+
+
+def _recuentos_legibles(counts: dict | None) -> str:
+    return ", ".join(f"{k}={v}" for k, v in sorted((counts or {}).items()) if v)
+
+
+def format_batch_poll(
+    state: dict | None,
+    remote: dict | None,
+    recent: list[dict] | None = None,
+    now: datetime | None = None,
+) -> list[str]:
+    """El informe del sondeo, como lista de líneas. Función pura.
+
+    Se separa de la invocación a propósito: así se puede probar cada situación
+    —terminado sin recoger, caducado, un lote que el archivo local no conoce—
+    sin red y sin inventar un cliente falso para cada caso.
+
+    `state` es el marcador local, `remote` lo que dice la API de ese lote y
+    `recent` el listado completo. Cualquiera de los tres puede faltar.
+    """
+    lineas: list[str] = []
+    conocido = (state or {}).get("batch_id")
+
+    if not state:
+        lineas.append("  No hay ningún lote en vuelo según el archivo local.")
+    else:
+        lineas.append("  " + summarize_batch_state(state, now))
+        lineas.append(f"  Identificador: {conocido}")
+
+    if state and remote:
+        estado_api = remote.get("processing_status", "unknown")
+        recuentos = _recuentos_legibles(remote.get("counts"))
+        lineas.append(
+            f"  En Anthropic: {estado_api}"
+            + (f" · {recuentos}" if recuentos else "")
+        )
+        if remote.get("ended"):
+            lineas.append(f"  Terminó el {_marca(remote.get('ended_at'))} UTC.")
+            # El caso que motivó este comando: el archivo local sigue diciendo
+            # «running» porque nadie lo ha actualizado, y el trabajo lleva horas
+            # pagado y esperando. Se dice fuerte, porque es dinero parado.
+            lineas.append("")
+            lineas.append("  >>> LOTE TERMINADO Y SIN RECOGER <<<")
+            lineas.append("      Recógelo con: --batch-collect")
+            fallidas = (remote.get("counts") or {}).get("errored", 0)
+            caducadas = (remote.get("counts") or {}).get("expired", 0)
+            if fallidas or caducadas:
+                lineas.append(
+                    f"      AVISO: {fallidas} con error y {caducadas} caducadas; "
+                    "esas volverán a seleccionarse en la próxima ejecución."
+                )
+        else:
+            lineas.append(
+                f"  Sigue procesándose. Los resultados duran "
+                f"{BATCH_RESULTS_DAYS} días desde que termine: no hay prisa."
+            )
+    elif state and remote is None:
+        lineas.append(
+            "  No se pudo consultar el estado en Anthropic. El lote NO se "
+            "pierde por esto: vuelve a sondear más tarde."
+        )
+
+    # ── El listado, que es lo que ve un lote huérfano ────────────────────────
+    huerfanos = [
+        lote for lote in (recent or [])
+        if lote.get("id") != conocido
+        and lote.get("processing_status") == "in_progress"
+    ]
+    if huerfanos:
+        lineas.append("")
+        lineas.append(
+            f"  >>> {len(huerfanos)} LOTE(S) PROCESÁNDOSE QUE EL ARCHIVO LOCAL "
+            "NO CONOCE <<<"
+        )
+        lineas.append(
+            "      Es trabajo pagado que este equipo no sabe recoger. Suele "
+            "significar que se perdió batch_state.json."
+        )
+        for lote in huerfanos:
+            lineas.append(
+                f"      {lote['id']} · enviado {_marca(lote.get('created_at'))} UTC"
+            )
+    if recent:
+        lineas.append("")
+        lineas.append(f"  Últimos {len(recent)} lotes registrados en Anthropic:")
+        for lote in recent:
+            marca = "→" if lote.get("id") == conocido else " "
+            recuentos = _recuentos_legibles(lote.get("counts"))
+            lineas.append(
+                f"    {marca} {lote['id']} · {lote['processing_status']}"
+                + (f" · {recuentos}" if recuentos else "")
+                + f" · {_marca(lote.get('created_at'))}"
+            )
+
+    return lineas
 
 
 def collect_batch(client, batch_id: str, schema, stage: str) -> tuple[dict, dict, list]:

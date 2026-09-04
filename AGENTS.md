@@ -2463,7 +2463,6 @@ Con más razón conviene no introducir a la vez un cambio de reglas.
 | 41 | **Bloqueo entre procesos para `--batch-collect`.** Hoy no hay ninguno: con una recogida programada cada pocos minutos, dos procesos pueden leer `phase1_running` a la vez, recoger los dos y **enviar la fase 2 dos veces**, pagándola dos veces. Con ejecución manual el riesgo es bajo; **antes de dejarlo desatendido en un servidor hay que cerrarlo** | Sección 61.14. El arreglo es pequeño: un archivo de bloqueo con `O_EXCL` junto al de estado, liberado en un `finally`, y una recogida que salga en silencio si no lo consigue |
 | 42 | **«RTO» en singular etiqueta como `emissions` topics de Horizon que no lo son.** En el vocabulario de Kalfrisa `RTO` es un *Regenerative Thermal Oxidizer*; en Horizon es una *Research and Technology Organisation*. La guardia de plurales de 59.2 para el «RTOs» pero no el singular: 3 de 31 topics mal etiquetados (transferencia de tecnología, computación cuántica, filantropía). **Impacto medido hoy: cero** — los tres se descartan por otras reglas—, pero `emissions` está en `thermal_core`, que suprime cuatro exclusiones sectoriales del perfil | Sección 62.8. Latente, no activo. El arreglo natural es pasar `rto` de `strong_terms` a `contextual_terms`, que ya existe para vocabulario ambiguo; exige medir llamando a los conectores (59.1) y hoy el beneficio medido sería nulo |
 | 44 | **El territorio dicho en el ORGANISMO, no en el sujeto beneficiario.** `_bdns_beneficiary_territory_outside_aragon()` exige «para empresas de <territorio>» a propósito, para que «Misión Comercial a México» no descarte por el destino del viaje. Se le escapan las que lo dicen en el convocante: «Cámara Bahía de Algeciras», «Extremadura Avante». Medido el 03/09: **3 convocatorias, ~0,04 USD por ejecución** | Sección 63.4. **No perseguir a la ligera**: una Cámara de Comercio delimita territorio, pero «Cámara de España» no, y sobreajustar aquí es el modo de fallo que este proyecto lleva documentado desde el chip «Hornos» (55.1). Si se hace, medir contra las fichas vivas igual que en 63.4 |
-| 45 | **`--batch-status` no distingue «procesando» de «terminado hace 16 h».** Lee solo el archivo local, que dice `phase1_running` desde el envío porque nadie lo ha actualizado. El 04/09 el lote llevaba 16,5 h marcado así y en realidad había terminado a los 2 min 29 s. Para saberlo hay que llamar a `--batch-collect`, que **envía la fase 2 y paga**: no existe forma barata de mirar sin comprometerse | Sección 64.2. El arreglo es pequeño y **cuesta 0 USD**: `poll_batch()` ya hace un `messages.batches.retrieve` puro, sin tokens. Falta exponerlo como bandera —`--batch-poll`— que sondee, informe de `succeeded/errored/expired` y **no recoja ni envíe nada**. Es además la sonda que 61.14 quiere para el servidor |
 | 34 | Programar la recopilación `--no-claude` diaria en el Programador de tareas de Windows | Sección 47.6 tiene el comando. **Es una acción del usuario en su equipo**, no del agente: queda anotada para no darla por hecha |
 | 37 | **La ejecución completa**, ~2,02 USD sobre 79 convocatorias, **cuando el usuario lo decida** | Sección **54.9**. Los tres controles de 53.2 ya están ejercitados: presupuesto y elegibilidad de Horizon el 01/09 (54.4) y el territorial de Navarra el mismo día (54.10), por 0,1271 USD en total. No queda validación pendiente; lo que falta es publicar, y **la prioridad fijada por el usuario es depurar antes que publicar**: informar del desfase sí, convertirlo en urgencia no. **Requiere autorización expresa** |
 
@@ -2530,6 +2529,7 @@ frío. No hay que buscarlos en las tablas de arriba: ya no están.
 
 | # | Qué era | Cerrado en |
 |---|---|---|
+| 45 | `--batch-status` no distinguía «procesando» de «terminado hace 16 h», y averiguarlo obligaba a `--batch-collect`, que paga | Sección **64.4**: `--batch-poll`, **cerrado el mismo día que se abrió**. Sondea sin coste y además **lista los lotes que Anthropic tiene**, que es lo que ve un lote huérfano si se pierde `batch_state.json`. Puesto en el `.bat` diario, antes de la recopilación |
 | 23 | Recalibrar `CLAUDE_ESTIMATED_UPPER_USD_PER_ANALYSIS` con datos de una ejecución completa, en vez de con la muestra de agosto | Sección 42.3: 76 análisis reales, barrera 0,035 → 0,047 USD |
 | 18 | `coverage_watch.py` sin ninguna prueba: la alarma que avisa cuando un programa recurrente deja de aparecer era una red de seguridad sin red | Sección 46: 18 pruebas, incluidos los cinco estados de la sonda y la forma del catálogo real |
 | 22 | La densidad del test de la ventana de BDNS (44 filas/día) era optimista y no habría detectado una caída por debajo del mínimo de 60 días | Sección 48.6: medición real de hoy (67 días, 52,2 filas/día) y el test fijado en la densidad más alta observada, 54 |
@@ -7207,3 +7207,78 @@ Sin cambios respecto al cierre de 63.4, y verificado en frío:
 —`2026-09-v17`, `kalfrisa-2026-09-v9`, catálogo `2026-09-v2`— coinciden con
 `versions.py`. La recogida es posible cuando el usuario la autorice, y hasta
 entonces `versions.py`, el perfil y el catálogo no se tocan (61.4).
+
+### 64.4. La fase 2, lanzada; y `--batch-poll`, la red que faltaba
+
+Encargo del usuario esa mañana, en dos partes.
+
+**La fase 2, autorizada y enviada.** `--batch-collect` recogió la fase 1 —**92
+hechos, 0 fallos**— y envió la evaluación:
+
+```
+fase 1  msgbatch_01WtMtqABULPghYFyj2F591D  ended · succeeded=92 · errored=0
+fase 2  msgbatch_01EYuyTWgccwamSBM8P1VaLz  in_progress · 92 peticiones
+```
+
+El estado se republicó solo, así que el panel enseña «fase 2 de 2». La recogida
+final **no publica** a propósito (61.3): deja los análisis en la caché y la
+siguiente ejecución normal los encuentra ahí sin llamar a Claude.
+
+**Y el sondeo, que es lo que pidió el usuario con sus palabras:** «una red diaria
+de comprobación del estado de los lotes en caso de que falle algún commit o
+actualización del estado de la herramienta que haga invisible algún lote».
+
+#### Por qué no bastaba con `--batch-status`
+
+`--batch-status` lee **solo el archivo local**, que dice lo que se sabía al
+enviar y nadie actualiza después. De ahí las 16,5 h de 64.2. Y la única forma de
+saber la verdad era `--batch-collect`, **que paga**: había que comprometerse a
+gastar para poder mirar.
+
+#### Las dos preguntas que hace, y la segunda es la que cierra el caso
+
+1. **¿Cómo está el lote que conocemos?** Un `retrieve` de solo lectura, sin
+   tokens. Si terminó y nadie lo ha recogido, lo dice **en mayúsculas**, porque
+   es dinero pagado y parado.
+2. **¿Qué lotes tiene Anthropic que nosotros no sepamos?** Ésta es la que
+   responde al encargo tal como se formuló. `batch_state.json` **es local y está
+   en `.gitignore`**: es un punto único de fallo. Si se pierde —equipo nuevo,
+   borrado, carpeta que no sincroniza—, un sondeo que solo leyera ese archivo
+   diría «no hay ningún lote» con trabajo pagado esperando en los servidores.
+   Preguntárselo a la API es **lo único que no depende de nuestro propio
+   estado**.
+
+#### La decisión que evita que la alarma se vuelva ruido
+
+Solo se denuncia como huérfano un lote **`in_progress`** que el archivo local no
+conoce. Los terminados **no**: un lote ya recogido sigue existiendo 29 días, y
+denunciarlo daría una alarma falsa cada día. Una alarma que siempre suena deja
+de leerse. Los terminados salen igualmente, pero en el listado informativo, no
+como aviso. Hay una prueba para cada mitad.
+
+#### En el `.bat` diario, y antes de recopilar
+
+Va **antes** de la recopilación a propósito: ésta tarda 11-15 minutos y el
+usuario se va de la ventana. Un aviso de «lote terminado sin recoger» impreso al
+final no lo leería nadie. El sondeo tarda segundos.
+
+Su código de salida **no se mira**, y `run_batch_poll()` devuelve siempre 0: un
+fallo de red no puede impedir la recopilación diaria, que es lo que de verdad
+hace ese archivo. Nuevo modo `/solo-lotes` para sondear sin recopilar.
+
+#### Lo que fijan las pruebas, que no es lo obvio
+
+Lo que hay que proteger no es que el sondeo funcione, sino que **siga sin
+costar**. `BatchPollIsFreeTests` lee el código de `run_batch_poll()` y falla si
+aparece dentro `collect_batch`, `submit_batch` o `analyze_with_claude`. Es la
+misma técnica de `test_grant_radar_source_selection.py`, y protege la propiedad
+por la que el comando existe: si alguien la rompe con buena intención, el .bat
+diario empezaría a gastar dinero sin que nadie lo pidiera.
+
+Otra comprueba que el `.bat` **no contiene ninguna bandera que pague**, que es
+su contrato desde que se escribió.
+
+`format_batch_poll()` es pura y recibe el estado local y el remoto por
+parámetro, así que las situaciones que no se pueden provocar en vivo sin gastar
+—terminado sin recoger, con errores, con caducadas, el huérfano— se prueban
+todas. **778 pruebas** (760 al empezar).

@@ -11,12 +11,23 @@ rem  convocatorias.json. Solo recopila y publica estado_recopilacion.json, que e
 rem  lo que hace que el panel avise de cuantas convocatorias esperan analisis.
 rem  El analisis de pago sigue siendo manual y discrecional, como debe ser.
 rem
+rem  Ademas SONDEA los lotes en Anthropic (--batch-poll) antes de recopilar.
+rem  Tampoco cuesta nada: es un listado de solo lectura, no recoge ni envia.
+rem  Esta aqui como red diaria. El 04/09/2026 un lote paso 16,5 horas marcado
+rem  como "procesando" cuando habia terminado a los 2 min 29 s, porque el
+rem  archivo de estado es local y solo se escribe al enviarlo; si ademas ese
+rem  archivo se pierde -esta en .gitignore-, el trabajo pagado se vuelve
+rem  invisible. El sondeo pregunta a la API, que es lo unico que no depende de
+rem  nuestro propio estado (AGENTS.md 64.2).
+rem
 rem  USO
 rem    Doble clic                      -> abre VS Code y recopila
 rem    "Grant-Radar diario.bat" /q     -> recopila sin abrir VS Code, util si
 rem                                       algun dia se programa la tarea
 rem    "Grant-Radar diario.bat" /log   -> ademas guarda la salida en
 rem                                       grant_radar_data\logs\
+rem    "Grant-Radar diario.bat" /solo-lotes -> solo sondea el estado de los
+rem                                       lotes y sale, sin recopilar. Segundos
 rem
 rem  POR QUE NO LLAMA A "poetry"
 rem    1. En una tarea programada el PATH no es el de tu sesion interactiva y
@@ -51,10 +62,12 @@ set "SCRIPT=%PROYECTO%\Grant-Radar-prueba.py"
 
 set "ABRIR_VSCODE=1"
 set "GUARDAR_LOG=0"
+set "SOLO_LOTES=0"
 :leer_args
 if "%~1"=="" goto fin_args
-if /i "%~1"=="/q"   set "ABRIR_VSCODE=0"
-if /i "%~1"=="/log" set "GUARDAR_LOG=1"
+if /i "%~1"=="/q"          set "ABRIR_VSCODE=0"
+if /i "%~1"=="/log"        set "GUARDAR_LOG=1"
+if /i "%~1"=="/solo-lotes" set "SOLO_LOTES=1" & set "ABRIR_VSCODE=0"
 shift
 goto leer_args
 :fin_args
@@ -100,9 +113,30 @@ if exist "%ProgramFiles%\Microsoft VS Code\Code.exe" (
 echo AVISO: no se encontro VS Code; se continua solo con la recopilacion.
 :sin_vscode
 
-rem --- Recopilacion --------------------------------------------------------
-rem Se limpia por si acaso, aunque no usemos poetry.
+rem --- Sondeo de lotes -----------------------------------------------------
+rem Va ANTES de la recopilacion, y a proposito: la recopilacion tarda 11-15
+rem minutos y el usuario suele irse de la ventana. Si el aviso de "hay un lote
+rem terminado sin recoger" saliera al final, se lo perderia. El sondeo tarda
+rem segundos y no cuesta nada.
+rem
+rem Su codigo de salida NO se mira: es informativo, y un fallo de red no puede
+rem impedir la recopilacion diaria, que es lo que de verdad hace este archivo.
 set "VIRTUAL_ENV="
+
+echo(
+echo ------------------------------------------------------------
+echo  Sondeo de lotes en Anthropic (solo lectura, sin coste)
+echo ------------------------------------------------------------
+"%PYTHON%" "%SCRIPT%" --batch-poll
+echo(
+
+if "%SOLO_LOTES%"=="1" (
+    echo Solo se pidio el sondeo: no se recopila.
+    popd
+    exit /b 0
+)
+
+rem --- Recopilacion --------------------------------------------------------
 
 rem La marca de tiempo se calcula AQUI y no dentro de un bloque "if": cmd
 rem expande las variables al parsear el bloque entero, asi que dentro saldria

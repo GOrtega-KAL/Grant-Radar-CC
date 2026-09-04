@@ -19,11 +19,11 @@ desactualizado si no se mantiene junto a ellos.
 > convirtió el desfase en una fecha límite y empujó a publicar; el usuario lo
 > corrigió. **No conviertas el desfase en urgencia por tu cuenta.**
 >
-> **Al día 03/09/2026 por la noche el usuario YA autorizó el análisis, y está
-> enviado por lotes** (92 convocatorias, ~1,18 USD). Eso NO deroga la prioridad
-> de arriba: fue una decisión suya después de que el paso 2 cerrara, no una
-> urgencia que empujara una sesión. La fase 2 y la publicación siguen siendo
-> **suyas**; ver «PRIMERO DE TODO» más abajo.
+> **El usuario autorizó el análisis el 03/09 y la fase 2 el 04/09; las dos están
+> pagadas y en marcha** (92 convocatorias, ~1,18 USD). Eso NO deroga la prioridad
+> de arriba: fueron decisiones suyas después de que el paso 2 cerrara, no una
+> urgencia que empujara una sesión. **La publicación sigue siendo suya**; ver
+> «PRIMERO DE TODO» más abajo.
 >
 > El desfase, para informar sin empujar: producto del **21/08**. Detalle en
 > AGENTS.md 54.2. **Cualquier análisis de pago posterior a este lote vuelve a
@@ -87,18 +87,55 @@ desactualizado si no se mantiene junto a ellos.
 >
 > ## PRIMERO DE TODO, si arrancas en frío el 04/09/2026 o después
 >
-> **HAY UN LOTE DE PAGO EN VUELO, enviado el 03/09/2026 por la noche.** Antes de
-> tocar nada, mira dónde está — es gratis y no toca la red:
+> **HAY UN LOTE DE PAGO EN VUELO: la FASE 2, enviada el 04/09/2026 a las 06:29
+> UTC.** Antes de tocar nada, mira dónde está de verdad — es gratis:
 >
 > ```
-> poetry run python "Grant-Radar-prueba.py" --batch-status
+> poetry run python "Grant-Radar-prueba.py" --batch-poll
 > ```
 >
-> **El usuario dejó dicho que la fase 2 se ejecuta «mañana», es decir el
-> 04/09.** No hace falta prisa: las 24 h de la API son de **procesamiento**, no
-> de recogida, y lo ya procesado queda disponible **29 días** (AGENTS.md 61.12).
+> Usa **`--batch-poll`, no `--batch-status`**: el segundo lee solo el archivo
+> local, que dice lo que se sabía al enviar y **no sabe si el lote ha
+> terminado** (AGENTS.md 64.2).
 >
-> ### SONDEADO el 04/09/2026 a las 05:50 UTC: la fase 1 está entera y esperando
+> No hace falta prisa: las 24 h de la API son de **procesamiento**, no de
+> recogida, y lo ya procesado queda disponible **29 días** (AGENTS.md 61.12).
+>
+> ### RESUELTO el 04/09/2026: fase 1 recogida y fase 2 en vuelo
+>
+> El usuario autorizó la fase 2 esa mañana. `--batch-collect` recogió la fase 1
+> —**92 hechos, 0 fallos**— y envió la evaluación:
+>
+> ```
+> fase 1  msgbatch_01WtMtqABULPghYFyj2F591D  ended · succeeded=92
+> fase 2  msgbatch_01EYuyTWgccwamSBM8P1VaLz  in_progress · 92 peticiones
+> ```
+>
+> **Lo que toca ahora:** sondear con `--batch-poll` —gratis— y, cuando la fase 2
+> haya terminado, `--batch-collect` otra vez: ensambla, guarda en caché y retira
+> el estado. **Eso ya no cuesta nada**, porque la fase 2 está pagada desde que se
+> envió. Después, una ejecución normal publica sin llamar a Claude.
+>
+> Las tres cosas que hay que mirar al leer los resultados siguen siendo las de
+> más abajo, y el criterio de 61.1 sigue mandando: nada de ajustar para alcanzar
+> una cifra.
+>
+> ### El sondeo diario, desde el 04/09/2026
+>
+> ```
+> poetry run python "Grant-Radar-prueba.py" --batch-poll
+> ```
+>
+> **No cuesta nada** y hace dos preguntas: cómo está el lote que conocemos, y
+> **qué lotes tiene Anthropic que nosotros no sepamos** —porque
+> `batch_state.json` es local y está en `.gitignore`, así que perderlo dejaría
+> trabajo pagado invisible—. Está en `scripts\Grant-Radar diario.bat`, antes de
+> la recopilación; `/solo-lotes` sondea sin recopilar. Detalle en AGENTS.md 64.4.
+>
+> `--batch-status` sigue existiendo y sigue sin tocar la red, pero **no sabe si
+> un lote terminó**: para eso está el sondeo.
+>
+> ### Cómo se llegó aquí: el sondeo del 04/09 a las 05:50 UTC
 >
 > `--batch-status` dice `phase1_running`, pero eso es solo el marcador local —
 > significa «nadie ha sondeado desde el envío», **no** «sigue corriendo». Un
@@ -121,19 +158,17 @@ desactualizado si no se mantiene junto a ellos.
 > Lo que la caída sí rompió fue local: la sesión murió antes de commitear, y
 > este archivo con su aviso no llegó al remoto hasta el 04/09.
 >
-> **Hueco detectado, punto 45 del backlog:** `--batch-status` no puede distinguir
-> «procesando» de «terminado hace 16 h», porque no toca la red por diseño. Falta
-> un sondeo de solo lectura —gratis, sin recoger ni enviar nada— para saberlo sin
-> comprometer la fase 2.
+> **Hueco cerrado el mismo día, punto 45 del backlog:** ese sondeo ya existe,
+> es `--batch-poll`, y está en el `.bat` diario. Ver AGENTS.md 64.4.
 >
-> **Qué hacer, según lo que diga el estado:**
+> **Qué hacer, según lo que diga el sondeo:**
 >
 > | Dice | Qué hacer |
 > |---|---|
-> | `phase1_running` | Esperar. `--batch-collect` sale sin coste si aún procesa |
-> | `phase1_running` y **ya terminada** | `--batch-collect` recoge los hechos y **envía la fase 2**. Es la ejecución que el usuario espera |
-> | `phase2_running` | Otro `--batch-collect` cuando termine: ensambla y **guarda en caché** |
+> | `phase2_running` · `in_progress` | Esperar. Sondear cuando quieras: no cuesta |
+> | `phase2_running` · **`ended`** | `--batch-collect`: ensambla, guarda en caché y retira el estado. **Ya está pagado, esto no cuesta** |
 > | No hay lote | Ya está recogido: una ejecución normal publica **sin llamar a Claude** |
+> | Un lote que el archivo local no conoce | Se perdió `batch_state.json` con trabajo pagado dentro. Ver 64.4 |
 >
 > **La recogida final NO publica, a propósito** (61.3). Deja los análisis en la
 > caché; el producto lo publica la siguiente ejecución normal, que los encuentra
