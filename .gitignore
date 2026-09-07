@@ -1,0 +1,11 @@
+# Repositorio PUBLICO: solo el panel.
+#
+# Lista blanca a proposito. Todo queda fuera salvo lo que se autorice aqui
+# explicitamente, para que un archivo nuevo no acabe publicado por descuido.
+# La herramienta vive en GOrtega-KAL/Grant-Radar-CC-tool (privado).
+/*
+!/.gitignore
+!/README.md
+!/index.html
+!/convocatorias.json
+!/estado_recopilacion.json
