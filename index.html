@@ -1443,14 +1443,43 @@
       background: none;
       backdrop-filter: none;
     }
-    body.print-detail .modal-card {
+    /* La tarjeta se llamaba `.detail-modal`, no `.modal-card`: la primera
+       version apuntaba a un selector inexistente, asi que ninguna de estas
+       restricciones se soltaba y el PDF salia cortado a una pagina.
+       Las tres que cortaban, y hay que quitar las tres:
+         height: min(91vh, 940px)  -> altura fija
+         overflow: hidden          -> recorta lo que sobresale
+         transform: translateY()   -> crea bloque contenedor y rompe el paginado */
+    body.print-detail .detail-modal {
+      display: block;
+      width: 100%;
+      height: auto;
       max-height: none;
+      overflow: visible;
+      transform: none;
+      /* Sin esto, la transicion de .22s sigue corriendo al imprimir y el PDF
+         puede salir con la tarjeta a media animacion -escalada al 99,6 % y
+         desplazada 4 px-. Lo cazo una prueba que leyo el transform antes de
+         que terminara. */
+      transition: none;
       box-shadow: none;
       border: 0;
+      border-radius: 0;
     }
     body.print-detail .modal-body {
+      flex: none;
       overflow: visible;
       padding: 0;
+    }
+    body.print-detail .modal-header {
+      position: static;
+      padding: 0 0 10px;
+    }
+    /* `body.modal-open` pone `overflow: hidden` para que el fondo no se mueva
+       mientras la ficha esta abierta. En papel eso recorta el documento. */
+    body.print-detail {
+      overflow: visible !important;
+      height: auto !important;
     }
     /* Los botones son interfaz, no documento. */
     body.print-detail .modal-actions,
@@ -1477,9 +1506,6 @@
         <span>Monitorización activa</span>
       </div>
       <div class="updated-pill" id="ts">Datos sin actualizar</div>
-      <button class="icon-btn" type="button" onclick="printCurrentConv()" title="Imprimir la convocatoria abierta" aria-label="Imprimir la convocatoria abierta">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 8V4h10v4M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v6H7z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
     </div>
   </header>
 
@@ -3588,10 +3614,41 @@
   // clase del body; se retira en `finally` y también en `afterprint`, porque
   // algunos navegadores devuelven el control antes de terminar el diálogo y
   // dejar la clase puesta rompería la vista en pantalla.
+  // El navegador propone el nombre del PDF a partir de `document.title`, asi
+  // que se cambia justo antes de imprimir y se restaura despues. Formato
+  // pedido por el usuario: «260907, <convocatoria>, Grant-Radar», para poder
+  // saber que es un documento sin abrirlo.
+  function nombrePdf(c) {
+    const d = new Date();
+    const dosDigitos = n => String(n).padStart(2, '0');
+    const fecha = `${dosDigitos(d.getFullYear() % 100)}${dosDigitos(d.getMonth() + 1)}${dosDigitos(d.getDate())}`;
+    const titulo = String(c?.title || c?.titulo || 'convocatoria')
+      // Windows y macOS rechazan estos caracteres en un nombre de archivo. El
+      // navegador los sustituiria por su cuenta, pero por guiones bajos, que
+      // se lee peor que un espacio.
+      .replace(/[\\/:*?"<>|]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      // Windows corta la ruta entera en 260 caracteres. Un titulo de Horizon
+      // puede pasar de 200, asi que se acota dejando margen para la carpeta.
+      .slice(0, 150)
+      .trim();
+    return `${fecha}, ${titulo}, Grant-Radar`;
+  }
+
   function printCurrentConv() {
     if (currentOverlayId == null) { window.print(); return; }
+    const c = convocatorias.find(item => item.id === currentOverlayId);
+    const tituloOriginal = document.title;
+    document.title = nombrePdf(c);
     document.body.classList.add('print-detail');
-    const limpia = () => document.body.classList.remove('print-detail');
+    // Se restaura TODO en la limpieza: si el titulo se quedara cambiado, la
+    // pestana del navegador mostraria el nombre de una convocatoria para
+    // siempre.
+    const limpia = () => {
+      document.body.classList.remove('print-detail');
+      document.title = tituloOriginal;
+    };
     window.addEventListener('afterprint', limpia, { once: true });
     try { window.print(); } finally { setTimeout(limpia, 1200); }
   }
