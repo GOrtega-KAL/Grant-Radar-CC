@@ -1194,7 +1194,17 @@
   .dimension-fill { height: 100%; border-radius: inherit; }
   .dimension-value { color: var(--text); font-size: 10.5px; font-family: var(--font-mono); font-weight: 750; text-align: right; }
 
-  .two-col-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  /* `align-items: start` es la mitad del arreglo: sin él, la rejilla estira
+     las dos tarjetas a la altura de la más alta, y «Temáticas detectadas»
+     -que son cuatro chips- quedaba con tres cuartos de rectángulo vacío al
+     lado de «Socios técnicos recomendados».
+     La otra mitad es `.two-col-grid.uneven`, para las parejas en las que se
+     sabe de antemano que una columna lleva mucho menos: ahí además se estrecha. */
+  .two-col-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; align-items: start; }
+  .two-col-grid.uneven { grid-template-columns: 1.6fr 1fr; }
+  @media (max-width: 720px) {
+    .two-col-grid, .two-col-grid.uneven { grid-template-columns: 1fr; }
+  }
   .detail-list { margin: 0; padding-left: 18px; color: var(--text-2); font-size: 12px; line-height: 1.6; }
   .detail-list li + li { margin-top: 5px; }
 
@@ -1245,7 +1255,7 @@
   details.technical-details > summary::-webkit-details-marker { display: none; }
   details.technical-details > summary::after { content: "+"; color: var(--brand); font-size: 18px; }
   details.technical-details[open] > summary::after { content: "−"; }
-  .technical-content { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 12px 12px; }
+  .technical-content { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 12px 12px; align-items: start; }
 
   .modal-tags { display: flex; flex-wrap: wrap; gap: 5px; }
   .analysis-badge {
@@ -1421,6 +1431,33 @@
     .results-panel { border: 0; box-shadow: none; }
     .panel-header { padding-left: 0; padding-right: 0; }
     .conv-item { box-shadow: none !important; break-inside: avoid; }
+
+    /* Impresión de UNA convocatoria: se oculta el panel entero y la ventana
+       flotante deja de flotar para convertirse en el documento. */
+    body.print-detail .app-shell { display: none !important; }
+    body.print-detail .modal-overlay {
+      display: block !important;
+      position: static;
+      opacity: 1;
+      padding: 0;
+      background: none;
+      backdrop-filter: none;
+    }
+    body.print-detail .modal-card {
+      max-height: none;
+      box-shadow: none;
+      border: 0;
+    }
+    body.print-detail .modal-body {
+      overflow: visible;
+      padding: 0;
+    }
+    /* Los botones son interfaz, no documento. */
+    body.print-detail .modal-actions,
+    body.print-detail .favorite-block { display: none !important; }
+    body.print-detail .content-card,
+    body.print-detail .decision-card,
+    body.print-detail section { break-inside: avoid; }
   }
 </style>
 </head>
@@ -1440,7 +1477,7 @@
         <span>Monitorización activa</span>
       </div>
       <div class="updated-pill" id="ts">Datos sin actualizar</div>
-      <button class="icon-btn" type="button" onclick="window.print()" title="Imprimir vista" aria-label="Imprimir vista">
+      <button class="icon-btn" type="button" onclick="printCurrentConv()" title="Imprimir la convocatoria abierta" aria-label="Imprimir la convocatoria abierta">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 8V4h10v4M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v6H7z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
@@ -1567,7 +1604,6 @@
               <button class="download-option" type="button" role="menuitem" onclick="downloadExport('csv', this)"><span class="download-format">CSV</span><span>Texto delimitado<span class="download-description">Compatible con Excel y otros sistemas</span></span></button>
             </div>
           </div>
-          <button class="ghost-btn" type="button" onclick="window.print()">Imprimir</button>
         </div>
       </div>
     </div>
@@ -1703,6 +1739,11 @@
                 onclick="toggleCurrentFavorite()">
           <svg width="15" height="15" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="m12 3.6 2.6 5.27 5.82.85-4.21 4.1.99 5.79L12 16.88l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85z"/></svg>
         </button>
+        <button class="ghost-btn" type="button" id="ov-print" onclick="printCurrentConv()"
+                title="Guardar esta convocatoria como PDF" aria-label="Imprimir o guardar como PDF">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          PDF
+        </button>
         <button class="primary-btn" type="button" id="ov-open-link" onclick="openCurrentConvUrl()">Abrir convocatoria ↗</button>
         <button class="ghost-btn" type="button" onclick="closeOverlay()" id="close-modal-btn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
@@ -1751,7 +1792,7 @@
         <div class="content-card"><h3>Riesgos e incógnitas</h3><div id="ov-risks">—</div></div>
       </section>
 
-      <section class="two-col-grid">
+      <section class="two-col-grid uneven">
         <div class="content-card"><h3>Socios técnicos recomendados</h3><div id="ov-partners">—</div></div>
         <div class="content-card"><h3>Temáticas detectadas</h3><div class="modal-tags" id="ov-tags"></div></div>
       </section>
@@ -1835,6 +1876,14 @@
     discard_closed: 'Cerrada', discard_ineligible: 'No elegible', discard_irrelevant: 'Fuera de alcance',
     discard_out_of_scope: 'Fuera de alcance'
   };
+  // La calidad de evidencia llegaba cruda del modelo —«high», «medium»,
+  // «low»— y se enseñaba tal cual. El panel está en español.
+  const evidenceMap = { high: 'Alta', medium: 'Media', low: 'Baja' };
+  function evidenceLabel(valor) {
+    const clave = String(valor || '').toLowerCase();
+    return evidenceMap[clave] || (clave ? clave : 'No consta');
+  }
+
   const reviewReasonMap = {
     high_fit_low_confidence: 'encaje alto con confianza baja', eligibility_unknown: 'elegibilidad sin confirmar',
     deadline_under_15_days: 'plazo inferior a 15 días', budget_missing: 'presupuesto no localizado',
@@ -1879,8 +1928,17 @@
   }
 
   function safeExternalUrl(value) {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
     try {
-      const parsed = new URL(String(value || ''), window.location.href);
+      // SIN base a propósito. Con base, `new URL('', location.href)` NO lanza:
+      // devuelve la URL del propio panel, que es truthy. Por eso 34 de las 91
+      // fichas —las que no tienen registro en BDNS— mostraban «Registro
+      // oficial: ficha en la BDNS ↗» apuntando al propio panel, incluidas las
+      // de Horizon, que nunca están en BDNS.
+      // Un enlace EXTERNO tiene que ser absoluto, así que exigirlo arregla el
+      // fallo y además impide que una ruta relativa se cuele como externa.
+      const parsed = new URL(raw);
       return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : '';
     } catch { return ''; }
   }
@@ -3424,7 +3482,7 @@
       c.opportunity_role && c.opportunity_role !== 'unknown' ? `<span class="meta-pill">Papel detectado: ${escapeHtml({ direct_beneficiary: 'beneficiaria directa', consortium_partner: 'socio de consorcio', cluster_route: 'vía clúster' }[c.opportunity_role] || c.opportunity_role)}</span>` : '',
       `<span class="meta-pill">Rol: ${escapeHtml(roleMap[c.recommended_role] || c.recommended_role)}</span>`,
       `<span class="meta-pill">Decisión: ${escapeHtml(decisionMap[c.decision] || c.decision)}</span>`,
-      `<span class="meta-pill">Evidencia: ${escapeHtml(c.evidence_quality)}</span>`
+      `<span class="meta-pill">Evidencia: ${escapeHtml(evidenceLabel(c.evidence_quality))}</span>`
     ].join('');
 
     const reviewBlock = document.getElementById('ov-review-block');
@@ -3506,7 +3564,7 @@
     const registroBdns = safeExternalUrl(c.bdns_url);
     document.getElementById('ov-technical-meta').innerHTML = `
       <p><strong>Fuente:</strong> ${escapeHtml(c.source)}</p>
-      <p><strong>Calidad de evidencia:</strong> ${escapeHtml(c.evidence_quality)}</p>
+      <p><strong>Calidad de evidencia:</strong> ${escapeHtml(evidenceLabel(c.evidence_quality))}</p>
       ${Number.isFinite(documentos) && documentos > 0
         ? `<p><strong>Documentos oficiales leídos:</strong> ${documentos}</p>` : ''}
       ${registroBdns
@@ -3524,6 +3582,18 @@
     document.getElementById('ai-overlay').classList.add('visible');
     document.body.classList.add('modal-open');
     setTimeout(() => document.getElementById('close-modal-btn').focus(), 30);
+  }
+
+  // Imprime SOLO la ficha abierta. El `@media print` de abajo se apoya en la
+  // clase del body; se retira en `finally` y también en `afterprint`, porque
+  // algunos navegadores devuelven el control antes de terminar el diálogo y
+  // dejar la clase puesta rompería la vista en pantalla.
+  function printCurrentConv() {
+    if (currentOverlayId == null) { window.print(); return; }
+    document.body.classList.add('print-detail');
+    const limpia = () => document.body.classList.remove('print-detail');
+    window.addEventListener('afterprint', limpia, { once: true });
+    try { window.print(); } finally { setTimeout(limpia, 1200); }
   }
 
   function closeOverlay() {
