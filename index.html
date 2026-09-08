@@ -1844,7 +1844,7 @@
 
       <section class="content-card radar-card">
         <div class="radar-visual">
-          <svg id="ov-radar" width="240" height="240" viewBox="0 0 240 240" aria-label="Radar de dimensiones de encaje"></svg>
+          <svg id="ov-radar" width="256" height="240" viewBox="-12 -4 264 248" aria-label="Radar de dimensiones de encaje"></svg>
           <div class="radar-score-line"><span class="radar-score" id="ov-radar-score">—</span><span class="radar-score-label">encaje global</span></div>
         </div>
         <div><h3>Dimensiones de evaluación</h3><div class="dimension-list" id="ov-dims"></div></div>
@@ -3483,6 +3483,30 @@
     document.getElementById('footer-pipeline').textContent = `Pipeline ${dashboardMeta.versions?.pipeline || dashboardMeta.versions?.analysis || 'N/D'}`;
   }
 
+  // Parte el nombre de una dimension en como mucho dos lineas equilibradas.
+  //
+  // La version anterior solo partia con MAS de dos palabras, asi que
+  // «Oportunidad estratégica» -dos palabras, 23 caracteres- se dibujaba en una
+  // sola linea de ~105 px centrada cerca del borde y se veia cortada. El
+  // criterio correcto es la LONGITUD, no cuantas palabras haya.
+  function etiquetaRadar(nombre) {
+    const texto = String(nombre || '').trim();
+    const palabras = texto.split(/\s+/).filter(Boolean);
+    if (palabras.length < 2 || texto.length <= 13) return [texto];
+    // Se corta por el punto que deja las dos mitades mas parecidas, en vez de
+    // siempre tras la segunda palabra: «Capacidad de / consorcio» se lee mejor
+    // que «Capacidad / de consorcio». En caso de empate gana el corte mas
+    // tardio, que deja la particula con lo que la precede.
+    let mejor = 1;
+    let menorDiferencia = Infinity;
+    for (let k = 1; k < palabras.length; k++) {
+      const diferencia = Math.abs(
+        palabras.slice(0, k).join(' ').length - palabras.slice(k).join(' ').length);
+      if (diferencia <= menorDiferencia) { menorDiferencia = diferencia; mejor = k; }
+    }
+    return [palabras.slice(0, mejor).join(' '), palabras.slice(mejor).join(' ')];
+  }
+
   function drawRadar(svgElement, dims, color) {
     if (!Array.isArray(dims) || !dims.length) { svgElement.innerHTML = ''; return; }
     const cx = 120, cy = 120, radius = 78, count = dims.length;
@@ -3497,9 +3521,10 @@
       html += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#dfe5ed" stroke-width=".8"/>`;
     });
     dims.forEach((dimension, index) => {
-      const [x, y] = point(index, 1.27);
-      const words = String(dimension.name || '').split(' ');
-      const lines = words.length <= 2 ? [words.join(' ')] : [words.slice(0, 2).join(' '), words.slice(2).join(' ')];
+      // 1.27 dejaba los rotulos laterales centrados en x=26 y x=214: con una
+      // linea de 105 px, la mitad quedaba fuera del lienzo. Se acercan.
+      const [x, y] = point(index, 1.24);
+      const lines = etiquetaRadar(dimension.name);
       html += `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#7d899d" font-family="Inter,Segoe UI,Arial,sans-serif">${lines.map((line, lineIndex) => `<tspan x="${x}" dy="${lineIndex === 0 ? (lines.length > 1 ? -5 : 0) : 12}">${escapeHtml(line)}</tspan>`).join('')}</text>`;
     });
     const polygon = dims.map((dimension, index) => point(index, Math.max(0, Math.min(100, Number(dimension.val || 0))) / 100).join(',')).join(' ');
