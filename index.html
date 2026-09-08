@@ -1586,7 +1586,7 @@
       <button class="icon-btn" type="button" id="buzon-abrir" onclick="buzonAbrir()"
               title="Informar de un fallo o proponer una mejora"
               aria-label="Informar de un fallo o proponer una mejora">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <svg width="24" height="24" viewBox="1.5 1.5 21 21" fill="none" aria-hidden="true">
           <path d="M14.6 2.6H6.1a1.7 1.7 0 0 0-1.7 1.7v15.4a1.7 1.7 0 0 0 1.7 1.7h5.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M14.6 2.6 19 7v2.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M7.4 6.5h5.2M7.4 9.6h3.4M7.4 12.7h2.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".55"/>
@@ -4110,10 +4110,20 @@
   code { background: #f4f7fb; padding: 1px 4px; border-radius: 4px; font-size: 12px; }
 </style></head><body>
 <h1>Grant-Radar — partes de fallos y sugerencias</h1>
-<p class="sub">Exportado el ${new Date().toLocaleString('es-ES')} · ${incidencias.length} parte(s).</p>
+<p class="sub">Registro completo desde el ${new Date(incidencias[0].creado).toLocaleDateString('es-ES')}
+· ${incidencias.length} parte(s) · exportado el ${new Date().toLocaleString('es-ES')}.</p>
+<p class="sub">Cada exportación contiene <strong>todos</strong> los partes desde el principio:
+este archivo sustituye a los anteriores.</p>
 <table><thead><tr><th>Id</th><th>Fecha</th><th>Tipo</th><th>Informa</th><th>Resumen</th></tr></thead>
 <tbody>${filas}</tbody></table>
 ${fichas}
+<!-- Los mismos partes en crudo, para que un importador los lea sin
+     reinterpretar el documento. Antes se descargaban en un .json aparte, y
+     dos descargas a la vez disparan el bloqueo de «varios archivos» del
+     navegador (AGENTS.md 81). Dentro del HTML no molestan y no se pierden. -->
+<script type="application/json" id="grant-radar-partes">
+${JSON.stringify(incidencias, null, 2).replace(/<\//g, '<\\/')}
+<\/script>
 </body></html>`;
   }
 
@@ -4166,15 +4176,23 @@ ${fichas}
     if (!incidencias.length) { buzonAviso('No hay partes que exportar.'); return; }
     buzonBotonOcupado(boton, 'Exportando…');
     incidencias.sort((a, b) => String(a.creado).localeCompare(String(b.creado)));
+    // UN solo archivo, y es lo que arregla el fallo que el usuario encontró:
+    // dos descargas seguidas disparan el aviso de «varios archivos» del
+    // navegador, y si se deniega una vez, las siguientes se bloquean EN
+    // SILENCIO — parecía que el botón había dejado de funcionar.
+    //
+    // La hora va en el nombre porque una página no puede modificar un archivo
+    // que ya está en el disco: solo puede descargar uno nuevo. Con el nombre
+    // repetido, Windows creaba «(1)», «(2)»… y no se sabía cuál era el bueno.
     const d = new Date();
     const dd = n => String(n).padStart(2, '0');
-    const sello = `${dd(d.getFullYear() % 100)}${dd(d.getMonth() + 1)}${dd(d.getDate())}`;
+    const sello = `${dd(d.getFullYear() % 100)}${dd(d.getMonth() + 1)}${dd(d.getDate())}`
+                + `-${dd(d.getHours())}${dd(d.getMinutes())}`;
     buzonDescargar(`${sello}, Partes Grant-Radar.html`,
                    buzonDocumento(incidencias), 'text/html;charset=utf-8');
-    buzonDescargar(`${sello}, Partes Grant-Radar.json`,
-                   JSON.stringify(incidencias, null, 2), 'application/json');
     buzonBotonHecho(boton, 'Descargado ✓', 'Exportar documento');
-    buzonAviso(`Exportados ${incidencias.length} parte(s): documento HTML y datos JSON.`,
+    buzonAviso(`Documento con los ${incidencias.length} parte(s) acumulados. `
+             + 'Cada exportación los incluye todos, así que este archivo sustituye al anterior.',
                'success');
   }
 
