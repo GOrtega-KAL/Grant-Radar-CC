@@ -1270,6 +1270,13 @@
   }
   .notice.warning { color: #805011; background: var(--warning-soft); border: 1px solid rgba(189, 109, 15, .22); }
   .notice.danger { color: var(--danger); background: var(--danger-soft); border: 1px solid rgba(201, 52, 66, .18); }
+  /* Faltaba: `buzonAviso(..., 'success')` pintaba un recuadro sin estilo. */
+  .notice.success { color: var(--success); background: var(--success-soft); border: 1px solid rgba(23, 133, 82, .2); }
+
+  /* Confirmación en el propio botón. Un aviso debajo se lee si se busca; el
+     botón es donde está el dedo, así que es donde hay que responder. */
+  .btn-hecho { background: var(--success) !important; border-color: var(--success) !important; color: #fff !important; }
+  .btn-ocupado { opacity: .65; cursor: progress; }
 
   details.technical-details {
     margin-top: 12px;
@@ -1579,7 +1586,15 @@
       <button class="icon-btn" type="button" id="buzon-abrir" onclick="buzonAbrir()"
               title="Informar de un fallo o proponer una mejora"
               aria-label="Informar de un fallo o proponer una mejora">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.3-.6L3 21l1.7-5A8.2 8.2 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M14.6 2.6H6.1a1.7 1.7 0 0 0-1.7 1.7v15.4a1.7 1.7 0 0 0 1.7 1.7h5.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14.6 2.6 19 7v2.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M7.4 6.5h5.2M7.4 9.6h3.4M7.4 12.7h2.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".55"/>
+          <circle cx="15.5" cy="14.3" r="5.6" stroke="currentColor" stroke-width="1.5"/>
+          <path d="m19.6 18.4 2.2 2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <ellipse cx="15.5" cy="14.6" rx="2.2" ry="2.7" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M15.5 11.9v5.4M13.3 13.5h-1.7M13.3 15.8h-1.7M17.7 13.5h1.7M17.7 15.8h1.7M14.4 11.5l-.9-1.1M16.6 11.5l.9-1.1" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+        </svg>
       </button>
     </div>
   </header>
@@ -4013,52 +4028,93 @@
     };
 
     const boton = document.getElementById('buzon-enviar');
-    boton.disabled = true;
     try {
+      buzonBotonOcupado(boton, 'Enviando…');
       await buzonGuardar(registro);
+      buzonBotonHecho(boton, 'Enviado ✓', 'Enviar');
       buzonAviso(`Parte ${registro.id} guardado. Gracias.`, 'success');
       document.getElementById('buzon-texto').value = '';
       buzonCapturas = [];
       buzonPintarMiniaturas();
       await buzonContar();
     } catch (error) {
+      buzonBotonLibre(boton, 'Enviar');
       buzonAviso('No se pudo guardar el parte. Vuelve a intentarlo.');
-    } finally {
-      boton.disabled = false;
     }
   }
 
-  // Dos archivos a propósito: el Markdown es para leerlo, el JSON es lo que el
-  // servidor podrá importar el día que exista sin reinterpretar un documento
-  // escrito para humanos.
+  // El documento sale en HTML, no en Markdown, y el motivo es práctico: un .md
+  // con imágenes en base64 no se abre «de doble clic» en ningún sitio útil —el
+  // Bloc de notas enseña el texto crudo con miles de caracteres de imagen, y
+  // Word ni lo interpreta—. Un HTML autocontenido se abre en cualquier
+  // navegador, enseña las capturas, se imprime a PDF y **Word también lo abre**.
+  // Recomendé Markdown por costumbre de repositorio y era el formato
+  // equivocado para el uso real (AGENTS.md 80.2).
   function buzonDocumento(incidencias) {
-    const cabecera = [
-      '# Grant-Radar — partes de fallos y sugerencias',
-      '',
-      `Exportado el ${new Date().toLocaleString('es-ES')} · ${incidencias.length} parte(s).`,
-      '',
-      '| Id | Fecha | Tipo | Informa | Resumen |',
-      '|---|---|---|---|---|',
-    ];
-    const tabla = incidencias.map(i => {
-      const resumen = i.texto.replace(/\s+/g, ' ').slice(0, 70);
-      return `| ${i.id} | ${new Date(i.creado).toLocaleDateString('es-ES')} | ${i.tipo} | ${i.autor} | ${resumen}${i.texto.length > 70 ? '…' : ''} |`;
-    });
-    const detalle = incidencias.map(i => [
-      '',
-      `## ${i.id} — ${i.tipo === 'bug' ? 'Fallo' : 'Sugerencia'}`,
-      '',
-      `- **Fecha:** ${new Date(i.creado).toLocaleString('es-ES')}`,
-      `- **Informa:** ${i.autor}`,
-      `- **Versión de análisis:** ${i.contexto?.version_analisis || '—'}`,
-      i.contexto?.convocatoria_abierta ? `- **Convocatoria abierta:** \`${i.contexto.convocatoria_abierta}\`` : '',
-      `- **Ventana:** ${i.contexto?.ventana || '—'}`,
-      '',
-      i.texto,
-      '',
-      ...(i.capturas || []).map((c, n) => `![Captura ${n + 1} de ${i.id}](${c.datos})`),
-    ].filter(Boolean).join('\n'));
-    return cabecera.concat(tabla).join('\n') + '\n' + detalle.join('\n') + '\n';
+    const escapa = t => String(t ?? '').replace(/[&<>"']/g,
+      c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const parrafos = t => escapa(t).split(/\n{2,}/)
+      .map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+
+    const filas = incidencias.map(i => `
+        <tr>
+          <td><a href="#${escapa(i.id)}">${escapa(i.id)}</a></td>
+          <td>${new Date(i.creado).toLocaleDateString('es-ES')}</td>
+          <td><span class="etiqueta ${i.tipo}">${i.tipo === 'bug' ? 'Fallo' : 'Sugerencia'}</span></td>
+          <td>${escapa(i.autor)}</td>
+          <td>${escapa(i.texto.replace(/\s+/g, ' ').slice(0, 80))}${i.texto.length > 80 ? '…' : ''}</td>
+        </tr>`).join('');
+
+    const fichas = incidencias.map(i => `
+      <article class="parte" id="${escapa(i.id)}">
+        <h2>${escapa(i.id)} <span class="etiqueta ${i.tipo}">${i.tipo === 'bug' ? 'Fallo' : 'Sugerencia'}</span></h2>
+        <dl>
+          <dt>Fecha</dt><dd>${new Date(i.creado).toLocaleString('es-ES')}</dd>
+          <dt>Informa</dt><dd>${escapa(i.autor)}</dd>
+          <dt>Versión de análisis</dt><dd>${escapa(i.contexto?.version_analisis || '—')}</dd>
+          ${i.contexto?.convocatoria_abierta
+            ? `<dt>Convocatoria abierta</dt><dd><code>${escapa(i.contexto.convocatoria_abierta)}</code></dd>` : ''}
+          <dt>Ventana</dt><dd>${escapa(i.contexto?.ventana || '—')}</dd>
+        </dl>
+        <div class="texto">${parrafos(i.texto)}</div>
+        ${(i.capturas || []).map((c, n) =>
+          `<figure><img src="${c.datos}" alt="Captura ${n + 1} de ${escapa(i.id)}"><figcaption>Captura ${n + 1}</figcaption></figure>`).join('')}
+      </article>`).join('');
+
+    return `<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<title>Grant-Radar — partes de fallos y sugerencias</title>
+<style>
+  body { max-width: 900px; margin: 32px auto; padding: 0 20px;
+         font: 14px/1.6 "Segoe UI", Arial, sans-serif; color: #1f2733; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .sub { color: #667; font-size: 12px; margin-top: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 18px 0 28px; font-size: 13px; }
+  th, td { border: 1px solid #dfe5ed; padding: 7px 9px; text-align: left; vertical-align: top; }
+  th { background: #f4f7fb; font-size: 12px; }
+  .etiqueta { display: inline-block; padding: 1px 7px; border-radius: 999px;
+              font-size: 11px; font-weight: 700; }
+  .etiqueta.bug { background: #fdeff1; color: #c93442; }
+  .etiqueta.sugerencia { background: #e9f7f0; color: #178552; }
+  .parte { border-top: 2px solid #dfe5ed; padding-top: 14px; margin-top: 26px;
+           page-break-inside: avoid; }
+  .parte h2 { font-size: 16px; margin: 0 0 8px; }
+  dl { display: grid; grid-template-columns: 190px 1fr; gap: 3px 10px; margin: 0 0 12px;
+       font-size: 12px; }
+  dt { color: #667; }
+  dd { margin: 0; }
+  .texto p { margin: 0 0 8px; }
+  figure { margin: 12px 0; }
+  img { max-width: 100%; border: 1px solid #dfe5ed; border-radius: 6px; }
+  figcaption { font-size: 11px; color: #667; margin-top: 3px; }
+  code { background: #f4f7fb; padding: 1px 4px; border-radius: 4px; font-size: 12px; }
+</style></head><body>
+<h1>Grant-Radar — partes de fallos y sugerencias</h1>
+<p class="sub">Exportado el ${new Date().toLocaleString('es-ES')} · ${incidencias.length} parte(s).</p>
+<table><thead><tr><th>Id</th><th>Fecha</th><th>Tipo</th><th>Informa</th><th>Resumen</th></tr></thead>
+<tbody>${filas}</tbody></table>
+${fichas}
+</body></html>`;
   }
 
   function buzonDescargar(nombre, contenido, tipo) {
@@ -4072,7 +4128,34 @@
     setTimeout(() => URL.revokeObjectURL(url), 4000);
   }
 
+  // Tres estados del botón: ocupado mientras trabaja, hecho en verde un
+  // instante, y de vuelta a su texto. Sin esto el usuario no sabe si el clic
+  // ha entrado — la descarga la gestiona el navegador y puede no verse.
+  function buzonBotonOcupado(boton, texto) {
+    boton.dataset.original = boton.dataset.original || boton.textContent.trim();
+    boton.disabled = true;
+    boton.classList.add('btn-ocupado');
+    boton.classList.remove('btn-hecho');
+    boton.textContent = texto;
+  }
+
+  function buzonBotonLibre(boton, texto) {
+    boton.disabled = false;
+    boton.classList.remove('btn-ocupado', 'btn-hecho');
+    boton.textContent = texto || boton.dataset.original || boton.textContent;
+  }
+
+  function buzonBotonHecho(boton, textoHecho, textoFinal) {
+    boton.disabled = false;
+    boton.classList.remove('btn-ocupado');
+    boton.classList.add('btn-hecho');
+    boton.textContent = textoHecho;
+    clearTimeout(boton._volver);
+    boton._volver = setTimeout(() => buzonBotonLibre(boton, textoFinal), 2200);
+  }
+
   async function buzonExportar() {
+    const boton = document.getElementById('buzon-exportar');
     let incidencias;
     try {
       incidencias = await buzonLeerTodo();
@@ -4081,15 +4164,18 @@
       return;
     }
     if (!incidencias.length) { buzonAviso('No hay partes que exportar.'); return; }
+    buzonBotonOcupado(boton, 'Exportando…');
     incidencias.sort((a, b) => String(a.creado).localeCompare(String(b.creado)));
     const d = new Date();
     const dd = n => String(n).padStart(2, '0');
     const sello = `${dd(d.getFullYear() % 100)}${dd(d.getMonth() + 1)}${dd(d.getDate())}`;
-    buzonDescargar(`${sello}, Partes Grant-Radar.md`,
-                   buzonDocumento(incidencias), 'text/markdown;charset=utf-8');
+    buzonDescargar(`${sello}, Partes Grant-Radar.html`,
+                   buzonDocumento(incidencias), 'text/html;charset=utf-8');
     buzonDescargar(`${sello}, Partes Grant-Radar.json`,
                    JSON.stringify(incidencias, null, 2), 'application/json');
-    buzonAviso(`Exportados ${incidencias.length} parte(s).`, 'success');
+    buzonBotonHecho(boton, 'Descargado ✓', 'Exportar documento');
+    buzonAviso(`Exportados ${incidencias.length} parte(s): documento HTML y datos JSON.`,
+               'success');
   }
 
   document.addEventListener('paste', buzonPegar);
