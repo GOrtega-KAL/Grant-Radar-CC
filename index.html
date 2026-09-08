@@ -1223,6 +1223,8 @@
     border: 1px solid var(--border); border-radius: 50%;
     background: var(--surface); color: var(--text-2); font-size: 13px; line-height: 1;
   }
+  .buzon-sello { margin: 10px 0 0; font-size: 10px; color: var(--text-3); text-align: right; }
+  .buzon-enlace-respaldo { display: block; margin-top: 6px; font-weight: 700; }
   .buzon-pie { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .buzon-guardadas { flex: 1 1 auto; font-size: 11px; color: var(--text-3); }
   @media (max-width: 620px) { .buzon-fila { grid-template-columns: 1fr; } }
@@ -1480,7 +1482,13 @@
     /* Impresión de UNA convocatoria: se oculta el panel entero y la ventana
        flotante deja de flotar para convertirse en el documento. */
     body.print-detail .app-shell { display: none !important; }
-    body.print-detail .modal-overlay {
+    /* Cuando se escribieron estas reglas solo habia UN dialogo. Al anadir el
+       buzon (79) pasaron a ser dos, y `.modal-overlay` los cogia a los dos: el
+       del buzon va antes en el documento, asi que se colaba en la cabecera de
+       cada PDF ocupando 387 px de nada. Por eso las reglas apuntan ahora a
+       `#ai-overlay` y todo lo demas se oculta explicitamente (AGENTS.md 82). */
+    body.print-detail .modal-overlay { display: none !important; }
+    body.print-detail #ai-overlay {
       display: block !important;
       position: static;
       opacity: 1;
@@ -1495,7 +1503,7 @@
          height: min(91vh, 940px)  -> altura fija
          overflow: hidden          -> recorta lo que sobresale
          transform: translateY()   -> crea bloque contenedor y rompe el paginado */
-    body.print-detail .detail-modal {
+    body.print-detail #ai-overlay .detail-modal {
       display: block;
       width: 100%;
       height: auto;
@@ -1511,12 +1519,12 @@
       border: 0;
       border-radius: 0;
     }
-    body.print-detail .modal-body {
+    body.print-detail #ai-overlay .modal-body {
       flex: none;
       overflow: visible;
       padding: 0;
     }
-    body.print-detail .modal-header {
+    body.print-detail #ai-overlay .modal-header {
       position: static;
       padding: 0 0 10px;
     }
@@ -1527,32 +1535,32 @@
       height: auto !important;
     }
     /* Los botones son interfaz, no documento. */
-    body.print-detail .modal-actions,
-    body.print-detail .favorite-block { display: none !important; }
+    body.print-detail #ai-overlay .modal-actions,
+    body.print-detail #ai-overlay .favorite-block { display: none !important; }
     /* ESTO era lo que inflaba el PDF a ocho paginas. `break-inside: avoid`
        sobre CADA tarjeta y CADA seccion obliga a saltar de pagina en cuanto
        una caja no cabe en el hueco que queda, y con veinte cajas el documento
        se llena de blancos.
        Lo unico que de verdad no puede partirse es el poligono del radar: medio
        poligono en cada pagina no se lee. El resto fluye. */
-    body.print-detail .radar-card { break-inside: avoid; }
-    body.print-detail .radar-visual { break-inside: avoid; }
+    body.print-detail #ai-overlay .radar-card { break-inside: avoid; }
+    body.print-detail #ai-overlay .radar-visual { break-inside: avoid; }
 
     /* Compactado para papel: en pantalla el aire ayuda a leer, en un PDF de
        varias paginas solo gasta hojas. */
-    body.print-detail .content-card { padding: 9px 11px; margin: 0; }
-    body.print-detail .two-col-grid,
-    body.print-detail .technical-content { gap: 8px; margin-top: 8px; }
-    body.print-detail .modal-summary-grid { gap: 8px; margin-bottom: 8px; }
-    body.print-detail .decision-strip { gap: 6px; }
-    body.print-detail .content-card h3 { margin-bottom: 4px; }
-    body.print-detail .modal-body > * + * { margin-top: 8px; }
+    body.print-detail #ai-overlay .content-card { padding: 9px 11px; margin: 0; }
+    body.print-detail #ai-overlay .two-col-grid,
+    body.print-detail #ai-overlay .technical-content { gap: 8px; margin-top: 8px; }
+    body.print-detail #ai-overlay .modal-summary-grid { gap: 8px; margin-bottom: 8px; }
+    body.print-detail #ai-overlay .decision-strip { gap: 6px; }
+    body.print-detail #ai-overlay .content-card h3 { margin-bottom: 4px; }
+    body.print-detail #ai-overlay .modal-body > * + * { margin-top: 8px; }
     /* Los avisos de pantalla que no aportan nada en papel. */
-    body.print-detail .notice:not(.danger) { display: none !important; }
+    body.print-detail #ai-overlay .notice:not(.danger) { display: none !important; }
 
     /* Cabecera y pie del documento: solo existen al imprimir. */
-    body.print-detail .print-only { display: block !important; }
-    body.print-detail .print-footer {
+    body.print-detail #ai-overlay .print-only { display: block !important; }
+    body.print-detail #ai-overlay .print-footer {
       margin-top: 14px;
       padding-top: 8px;
       border-top: 1px solid #c8d0da;
@@ -1563,7 +1571,7 @@
       justify-content: space-between;
       gap: 12px;
     }
-    body.print-detail .print-footer strong { color: #1f2733; }
+    body.print-detail #ai-overlay .print-footer strong { color: #1f2733; }
   }
 </style>
 </head>
@@ -1894,6 +1902,10 @@
         <span class="buzon-guardadas" id="buzon-guardadas"></span>
         <button class="ghost-btn" type="button" id="buzon-exportar" onclick="buzonExportar()">Exportar documento</button>
       </div>
+      <!-- El sello existe para poder responder a «¿estoy viendo la version
+           nueva?» sin adivinar: GitHub Pages sirve con `max-age=600` y el
+           navegador puede tener una copia vieja. -->
+      <p class="buzon-sello">Buzón <span id="buzon-version">—</span></p>
     </div>
   </article>
 </div>
@@ -1971,14 +1983,6 @@
 
       <div class="notice danger" id="ov-descarte-block"><strong>Motivo de descarte:</strong> <span id="ov-descarte-motivo">—</span></div>
 
-      <!-- Solo aparece en el PDF. Va al final del cuerpo para que quede al pie
-           del documento, detras de los detalles tecnicos. -->
-      <div class="print-only print-footer" id="print-footer">
-        <span>Documento generado el <strong id="print-fecha">—</strong> por
-              <strong>Grant-Radar</strong>, sistema de vigilancia de financiación
-              de I+D de <strong>Kalfrisa S.A.</strong></span>
-        <span>◎ Grant-Radar · © <span id="print-anio">—</span> Kalfrisa S.A.</span>
-      </div>
 
       <details class="technical-details">
         <summary>Detalles técnicos y trazabilidad</summary>
@@ -1989,6 +1993,16 @@
           <div class="content-card soft"><h3>Información complementaria</h3><div class="content-copy" id="ov-technical-meta">—</div></div>
         </div>
       </details>
+
+      <!-- Solo aparece en el PDF, y va DESPUÉS de los detalles técnicos: antes
+           estaba delante y el «documento generado el…» quedaba a mitad del
+           papel, con contenido detrás. Un pie que no cierra no es un pie. -->
+      <div class="print-only print-footer" id="print-footer">
+        <span>Documento generado el <strong id="print-fecha">—</strong> por
+              <strong>Grant-Radar</strong>, sistema de vigilancia de financiación
+              de I+D de <strong>Kalfrisa S.A.</strong></span>
+        <span>◎ Grant-Radar · © <span id="print-anio">—</span> Kalfrisa S.A.</span>
+      </div>
     </div>
   </article>
 </div>
@@ -3843,6 +3857,10 @@
   // que la migración a servidor es sustituir esas dos por un `fetch` y no
   // tocar nada más. Ver AGENTS.md 79.
 
+  // Se sube a mano cuando cambia algo del buzón. Sirve para una sola cosa, y
+  // no es poco: distinguir «no funciona» de «tienes la versión vieja en caché».
+  const BUZON_VERSION = '2026-09-08-c';
+
   const BUZON_DB = 'grant-radar-buzon';
   const BUZON_ALMACEN = 'incidencias';
   const BUZON_MAX_CAPTURAS = 6;
@@ -3899,6 +3917,7 @@
         localStorage.getItem('grant-radar-buzon-autor') || '';
     } catch (e) { /* navegador sin almacenamiento: se pide cada vez */ }
     buzonContar();
+    document.getElementById('buzon-version').textContent = BUZON_VERSION;
     document.getElementById('buzon-overlay').classList.add('visible');
     document.body.classList.add('modal-open');
     setTimeout(() => document.getElementById('buzon-texto').focus(), 30);
@@ -4127,6 +4146,13 @@ ${JSON.stringify(incidencias, null, 2).replace(/<\//g, '<\\/')}
 </body></html>`;
   }
 
+  // Devuelve la URL del blob para poder ofrecerla como enlace visible.
+  //
+  // Una descarga automática puede fallar sin avisar: si el navegador tiene
+  // bloqueadas las descargas para el sitio —cosa que pasa al denegar una vez el
+  // aviso de «varios archivos»— el `click()` no hace nada y el código no se
+  // entera. Por eso, además de intentarla, se deja un enlace a la vista: un
+  // clic del usuario sobre un `<a download>` sí se respeta siempre.
   function buzonDescargar(nombre, contenido, tipo) {
     const url = URL.createObjectURL(new Blob([contenido], { type: tipo }));
     const enlace = document.createElement('a');
@@ -4135,7 +4161,10 @@ ${JSON.stringify(incidencias, null, 2).replace(/<\//g, '<\\/')}
     document.body.appendChild(enlace);
     enlace.click();
     enlace.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    // 5 min: el enlace de respaldo tiene que seguir sirviendo si el usuario
+    // tarda en darse cuenta de que no se ha descargado.
+    setTimeout(() => URL.revokeObjectURL(url), 300000);
+    return { url, nombre };
   }
 
   // Tres estados del botón: ocupado mientras trabaja, hecho en verde un
@@ -4188,12 +4217,18 @@ ${JSON.stringify(incidencias, null, 2).replace(/<\//g, '<\\/')}
     const dd = n => String(n).padStart(2, '0');
     const sello = `${dd(d.getFullYear() % 100)}${dd(d.getMonth() + 1)}${dd(d.getDate())}`
                 + `-${dd(d.getHours())}${dd(d.getMinutes())}`;
-    buzonDescargar(`${sello}, Partes Grant-Radar.html`,
-                   buzonDocumento(incidencias), 'text/html;charset=utf-8');
+    const descarga = buzonDescargar(`${sello}, Partes Grant-Radar.html`,
+                                    buzonDocumento(incidencias), 'text/html;charset=utf-8');
     buzonBotonHecho(boton, 'Descargado ✓', 'Exportar documento');
-    buzonAviso(`Documento con los ${incidencias.length} parte(s) acumulados. `
-             + 'Cada exportación los incluye todos, así que este archivo sustituye al anterior.',
-               'success');
+    const caja = document.getElementById('buzon-aviso');
+    caja.className = 'notice success';
+    caja.style.display = 'block';
+    caja.innerHTML =
+      `Documento con los ${incidencias.length} parte(s) acumulados. Cada exportación `
+      + 'los incluye todos, así que este archivo sustituye al anterior.'
+      + `<a class="buzon-enlace-respaldo" href="${descarga.url}" `
+      + `download="${escapeHtml(descarga.nombre)}">`
+      + '¿No se ha descargado? Pulsa aquí para guardarlo ↓</a>';
   }
 
   document.addEventListener('paste', buzonPegar);
