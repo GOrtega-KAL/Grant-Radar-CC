@@ -1194,6 +1194,39 @@
   .dimension-fill { height: 100%; border-radius: inherit; }
   .dimension-value { color: var(--text); font-size: 10.5px; font-family: var(--font-mono); font-weight: 750; text-align: right; }
 
+  /* ─── Buzón de fallos y sugerencias ─────────────────────────────────── */
+  .buzon-modal { width: min(92vw, 720px); height: auto; max-height: min(91vh, 900px); }
+  .buzon-fila { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 10px; }
+  .buzon-campo { display: block; margin-bottom: 12px; }
+  .buzon-campo > span {
+    display: block; margin-bottom: 5px; font-size: 11px; font-weight: 760; color: var(--text-2);
+  }
+  .buzon-campo select, .buzon-campo input, .buzon-campo textarea {
+    width: 100%; padding: 8px 10px; font: inherit; font-size: 13px;
+    color: var(--text-1); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 9px;
+  }
+  .buzon-campo textarea { resize: vertical; min-height: 96px; line-height: 1.5; }
+  .buzon-capturas-zona {
+    padding: 10px; border: 1px dashed var(--border); border-radius: 10px; margin-bottom: 12px;
+  }
+  .buzon-ayuda { margin: 0; font-size: 11px; color: var(--text-3); }
+  .buzon-miniaturas { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .buzon-miniatura { position: relative; }
+  .buzon-miniatura img {
+    display: block; width: 108px; height: 74px; object-fit: cover;
+    border: 1px solid var(--border); border-radius: 8px;
+  }
+  .buzon-quitar {
+    position: absolute; top: -6px; right: -6px; width: 20px; height: 20px;
+    display: grid; place-items: center; cursor: pointer;
+    border: 1px solid var(--border); border-radius: 50%;
+    background: var(--surface); color: var(--text-2); font-size: 13px; line-height: 1;
+  }
+  .buzon-pie { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .buzon-guardadas { flex: 1 1 auto; font-size: 11px; color: var(--text-3); }
+  @media (max-width: 620px) { .buzon-fila { grid-template-columns: 1fr; } }
+
   /* Piezas que solo existen en el PDF. La regla vive aqui y NO dentro de
      la consulta de impresion: alli no se aplica en pantalla, y el pie del
      documento aparecia dentro de la ventana flotante. Lo cazo una prueba. */
@@ -1543,6 +1576,11 @@
         <span>Monitorización activa</span>
       </div>
       <div class="updated-pill" id="ts">Datos sin actualizar</div>
+      <button class="icon-btn" type="button" id="buzon-abrir" onclick="buzonAbrir()"
+              title="Informar de un fallo o proponer una mejora"
+              aria-label="Informar de un fallo o proponer una mejora">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.3-.6L3 21l1.7-5A8.2 8.2 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
     </div>
   </header>
 
@@ -1787,6 +1825,62 @@
     <div>Grant-Radar · Herramienta interna de vigilancia I+D para Kalfrisa</div>
     <div class="footer-right"><time id="footer-updated">Última actualización de datos: —</time><span aria-hidden="true">·</span><span id="footer-schema">Esquema —</span><span id="footer-pipeline">Pipeline —</span></div>
   </footer>
+</div>
+
+<!-- BUZÓN DE FALLOS Y SUGERENCIAS
+     Fase local: lo que se envía se guarda en el navegador (IndexedDB) y se
+     exporta a documento con el botón de abajo. Cuando la herramienta viva en
+     un servidor, lo ÚNICO que cambia es `buzonGuardar()`; ver AGENTS.md 79. -->
+<div class="modal-overlay" id="buzon-overlay" role="dialog" aria-modal="true" aria-labelledby="buzon-titulo">
+  <article class="detail-modal buzon-modal">
+    <header class="modal-header">
+      <div>
+        <div class="modal-source">Mejora de la herramienta</div>
+        <h2 class="modal-title" id="buzon-titulo">Fallos y sugerencias</h2>
+      </div>
+      <div class="modal-actions">
+        <button class="ghost-btn" type="button" onclick="buzonCerrar()" id="buzon-cerrar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+          Cerrar
+        </button>
+      </div>
+    </header>
+
+    <div class="modal-body">
+      <div class="buzon-fila">
+        <label class="buzon-campo">
+          <span>Tipo</span>
+          <select id="buzon-tipo">
+            <option value="bug">Fallo</option>
+            <option value="sugerencia">Sugerencia</option>
+          </select>
+        </label>
+        <label class="buzon-campo buzon-campo-ancho">
+          <span>Quién informa</span>
+          <input type="text" id="buzon-autor" maxlength="80" placeholder="Nombre o iniciales">
+        </label>
+      </div>
+
+      <label class="buzon-campo">
+        <span>Qué ocurre, o qué propones</span>
+        <textarea id="buzon-texto" rows="6" maxlength="4000"
+                  placeholder="Describe el fallo o la mejora. Puedes pegar capturas con Ctrl+V."></textarea>
+      </label>
+
+      <div class="buzon-capturas-zona" id="buzon-zona">
+        <p class="buzon-ayuda">Pega capturas con <strong>Ctrl+V</strong> en cualquier punto de esta ventana.</p>
+        <div class="buzon-miniaturas" id="buzon-miniaturas"></div>
+      </div>
+
+      <div class="notice warning" id="buzon-aviso"></div>
+
+      <div class="buzon-pie">
+        <button class="primary-btn" type="button" id="buzon-enviar" onclick="buzonEnviar()">Enviar</button>
+        <span class="buzon-guardadas" id="buzon-guardadas"></span>
+        <button class="ghost-btn" type="button" id="buzon-exportar" onclick="buzonExportar()">Exportar documento</button>
+      </div>
+    </div>
+  </article>
 </div>
 
 <div class="modal-overlay" id="ai-overlay" role="dialog" aria-modal="true" aria-labelledby="ov-title">
@@ -3720,6 +3814,285 @@
       .trim();
     return `${fecha}, ${titulo}, Grant-Radar`;
   }
+
+  // ═══ BUZÓN DE FALLOS Y SUGERENCIAS ═══════════════════════════════════
+  //
+  // FASE LOCAL. Lo que se envía se guarda en IndexedDB, dentro del navegador
+  // de quien escribe, y se saca con «Exportar documento». Eso significa que
+  // HOY solo sirve para quien lo usa en su propio equipo: lo que escriba otra
+  // persona se queda en su navegador. Es deliberado y está entendido — lo que
+  // se valida ahora es la forma del parte, no el transporte.
+  //
+  // LA COSTURA: todo el almacenamiento pasa por `buzonGuardar()` y
+  // `buzonLeerTodo()`. Ninguna otra función sabe dónde acaban los datos, así
+  // que la migración a servidor es sustituir esas dos por un `fetch` y no
+  // tocar nada más. Ver AGENTS.md 79.
+
+  const BUZON_DB = 'grant-radar-buzon';
+  const BUZON_ALMACEN = 'incidencias';
+  const BUZON_MAX_CAPTURAS = 6;
+  const BUZON_MAX_LADO = 1600;      // px; una captura 4K pesa de más sin aportar
+  const BUZON_MAX_BYTES = 2_000_000;
+
+  let buzonCapturas = [];
+
+  function buzonAbrirDb() {
+    return new Promise((resolve, reject) => {
+      const peticion = indexedDB.open(BUZON_DB, 1);
+      peticion.onupgradeneeded = () => {
+        const db = peticion.result;
+        if (!db.objectStoreNames.contains(BUZON_ALMACEN)) {
+          db.createObjectStore(BUZON_ALMACEN, { keyPath: 'id' });
+        }
+      };
+      peticion.onsuccess = () => resolve(peticion.result);
+      peticion.onerror = () => reject(peticion.error);
+    });
+  }
+
+  // ── LA COSTURA. Sustituir por un POST el día del servidor. ──────────────
+  async function buzonGuardar(registro) {
+    const db = await buzonAbrirDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(BUZON_ALMACEN, 'readwrite');
+      tx.objectStore(BUZON_ALMACEN).add(registro);
+      tx.oncomplete = () => { db.close(); resolve(registro); };
+      tx.onerror = () => { db.close(); reject(tx.error); };
+    });
+  }
+
+  async function buzonLeerTodo() {
+    const db = await buzonAbrirDb();
+    return new Promise((resolve, reject) => {
+      const peticion = db.transaction(BUZON_ALMACEN, 'readonly')
+        .objectStore(BUZON_ALMACEN).getAll();
+      peticion.onsuccess = () => { db.close(); resolve(peticion.result || []); };
+      peticion.onerror = () => { db.close(); reject(peticion.error); };
+    });
+  }
+  // ── Fin de la costura ───────────────────────────────────────────────────
+
+  function buzonAbrir() {
+    buzonCapturas = [];
+    document.getElementById('buzon-texto').value = '';
+    document.getElementById('buzon-aviso').style.display = 'none';
+    buzonPintarMiniaturas();
+    // El nombre se recuerda: preguntarlo en cada parte cansa y se acaba dejando
+    // en blanco, que es justo el dato que hace falta para poder repreguntar.
+    try {
+      document.getElementById('buzon-autor').value =
+        localStorage.getItem('grant-radar-buzon-autor') || '';
+    } catch (e) { /* navegador sin almacenamiento: se pide cada vez */ }
+    buzonContar();
+    document.getElementById('buzon-overlay').classList.add('visible');
+    document.body.classList.add('modal-open');
+    setTimeout(() => document.getElementById('buzon-texto').focus(), 30);
+  }
+
+  function buzonCerrar() {
+    document.getElementById('buzon-overlay').classList.remove('visible');
+    if (!document.getElementById('ai-overlay').classList.contains('visible')) {
+      document.body.classList.remove('modal-open');
+    }
+  }
+
+  function buzonAviso(texto, clase) {
+    const caja = document.getElementById('buzon-aviso');
+    caja.className = 'notice ' + (clase || 'warning');
+    caja.textContent = texto;
+    caja.style.display = texto ? 'block' : 'none';
+  }
+
+  // Reduce la captura antes de guardarla. Sin esto, pegar una pantalla 4K mete
+  // varios MB por incidencia y el documento exportado se vuelve inmanejable.
+  function buzonReducir(blob) {
+    return new Promise((resolve, reject) => {
+      const lector = new FileReader();
+      lector.onerror = () => reject(lector.error);
+      lector.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('imagen ilegible'));
+        img.onload = () => {
+          const escala = Math.min(1, BUZON_MAX_LADO / Math.max(img.width, img.height));
+          const lienzo = document.createElement('canvas');
+          lienzo.width = Math.round(img.width * escala);
+          lienzo.height = Math.round(img.height * escala);
+          lienzo.getContext('2d').drawImage(img, 0, 0, lienzo.width, lienzo.height);
+          resolve({
+            datos: lienzo.toDataURL('image/jpeg', 0.82),
+            ancho: lienzo.width,
+            alto: lienzo.height,
+          });
+        };
+        img.src = lector.result;
+      };
+      lector.readAsDataURL(blob);
+    });
+  }
+
+  function buzonPintarMiniaturas() {
+    const caja = document.getElementById('buzon-miniaturas');
+    caja.innerHTML = buzonCapturas.map((captura, indice) => `
+      <div class="buzon-miniatura">
+        <img src="${captura.datos}" alt="Captura ${indice + 1}">
+        <button type="button" class="buzon-quitar" title="Quitar esta captura"
+                aria-label="Quitar la captura ${indice + 1}"
+                onclick="buzonQuitarCaptura(${indice})">×</button>
+      </div>`).join('');
+  }
+
+  function buzonQuitarCaptura(indice) {
+    buzonCapturas.splice(indice, 1);
+    buzonPintarMiniaturas();
+  }
+
+  async function buzonPegar(evento) {
+    if (!document.getElementById('buzon-overlay').classList.contains('visible')) return;
+    const elementos = [...(evento.clipboardData?.items || [])]
+      .filter(item => item.type && item.type.startsWith('image/'));
+    if (!elementos.length) return;
+    evento.preventDefault();
+    for (const elemento of elementos) {
+      if (buzonCapturas.length >= BUZON_MAX_CAPTURAS) {
+        buzonAviso(`Máximo ${BUZON_MAX_CAPTURAS} capturas por parte.`);
+        break;
+      }
+      try {
+        const reducida = await buzonReducir(elemento.getAsFile());
+        if (reducida.datos.length > BUZON_MAX_BYTES) {
+          buzonAviso('La captura pesa demasiado incluso reducida; recorta la zona útil.');
+          continue;
+        }
+        buzonCapturas.push(reducida);
+        buzonAviso('');
+      } catch (error) {
+        buzonAviso('No se pudo leer la captura pegada.');
+      }
+    }
+    buzonPintarMiniaturas();
+  }
+
+  async function buzonContar() {
+    try {
+      const guardadas = await buzonLeerTodo();
+      document.getElementById('buzon-guardadas').textContent = guardadas.length
+        ? `${guardadas.length} parte(s) guardado(s) en este navegador`
+        : 'Todavía no hay partes guardados';
+      document.getElementById('buzon-exportar').disabled = !guardadas.length;
+    } catch (error) {
+      document.getElementById('buzon-guardadas').textContent =
+        'No se pudo leer el almacén local';
+    }
+  }
+
+  async function buzonEnviar() {
+    const texto = document.getElementById('buzon-texto').value.trim();
+    if (texto.length < 10) {
+      buzonAviso('Cuenta un poco más: con menos de diez caracteres no se puede reproducir nada.');
+      return;
+    }
+    const autor = document.getElementById('buzon-autor').value.trim();
+    try { localStorage.setItem('grant-radar-buzon-autor', autor); } catch (e) {}
+
+    const ahora = new Date();
+    const registro = {
+      id: `INC-${ahora.toISOString().replace(/[-:T.]/g, '').slice(0, 14)}-${Math.random().toString(36).slice(2, 6)}`,
+      tipo: document.getElementById('buzon-tipo').value,
+      autor: autor || 'sin identificar',
+      texto,
+      capturas: buzonCapturas.slice(),
+      creado: ahora.toISOString(),
+      // Contexto que cuesta cero y ahorra la mitad de las repreguntas.
+      contexto: {
+        version_analisis: versionCorta(dashboardMeta.versions?.analysis),
+        convocatoria_abierta: currentOverlayId != null
+          ? (convocatorias.find(c => c.id === currentOverlayId)?.stable_key || '') : '',
+        ventana: `${window.innerWidth}x${window.innerHeight}`,
+        navegador: navigator.userAgent,
+      },
+    };
+
+    const boton = document.getElementById('buzon-enviar');
+    boton.disabled = true;
+    try {
+      await buzonGuardar(registro);
+      buzonAviso(`Parte ${registro.id} guardado. Gracias.`, 'success');
+      document.getElementById('buzon-texto').value = '';
+      buzonCapturas = [];
+      buzonPintarMiniaturas();
+      await buzonContar();
+    } catch (error) {
+      buzonAviso('No se pudo guardar el parte. Vuelve a intentarlo.');
+    } finally {
+      boton.disabled = false;
+    }
+  }
+
+  // Dos archivos a propósito: el Markdown es para leerlo, el JSON es lo que el
+  // servidor podrá importar el día que exista sin reinterpretar un documento
+  // escrito para humanos.
+  function buzonDocumento(incidencias) {
+    const cabecera = [
+      '# Grant-Radar — partes de fallos y sugerencias',
+      '',
+      `Exportado el ${new Date().toLocaleString('es-ES')} · ${incidencias.length} parte(s).`,
+      '',
+      '| Id | Fecha | Tipo | Informa | Resumen |',
+      '|---|---|---|---|---|',
+    ];
+    const tabla = incidencias.map(i => {
+      const resumen = i.texto.replace(/\s+/g, ' ').slice(0, 70);
+      return `| ${i.id} | ${new Date(i.creado).toLocaleDateString('es-ES')} | ${i.tipo} | ${i.autor} | ${resumen}${i.texto.length > 70 ? '…' : ''} |`;
+    });
+    const detalle = incidencias.map(i => [
+      '',
+      `## ${i.id} — ${i.tipo === 'bug' ? 'Fallo' : 'Sugerencia'}`,
+      '',
+      `- **Fecha:** ${new Date(i.creado).toLocaleString('es-ES')}`,
+      `- **Informa:** ${i.autor}`,
+      `- **Versión de análisis:** ${i.contexto?.version_analisis || '—'}`,
+      i.contexto?.convocatoria_abierta ? `- **Convocatoria abierta:** \`${i.contexto.convocatoria_abierta}\`` : '',
+      `- **Ventana:** ${i.contexto?.ventana || '—'}`,
+      '',
+      i.texto,
+      '',
+      ...(i.capturas || []).map((c, n) => `![Captura ${n + 1} de ${i.id}](${c.datos})`),
+    ].filter(Boolean).join('\n'));
+    return cabecera.concat(tabla).join('\n') + '\n' + detalle.join('\n') + '\n';
+  }
+
+  function buzonDescargar(nombre, contenido, tipo) {
+    const url = URL.createObjectURL(new Blob([contenido], { type: tipo }));
+    const enlace = document.createElement('a');
+    enlace.href = url;
+    enlace.download = nombre;
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+
+  async function buzonExportar() {
+    let incidencias;
+    try {
+      incidencias = await buzonLeerTodo();
+    } catch (error) {
+      buzonAviso('No se pudo leer el almacén local.');
+      return;
+    }
+    if (!incidencias.length) { buzonAviso('No hay partes que exportar.'); return; }
+    incidencias.sort((a, b) => String(a.creado).localeCompare(String(b.creado)));
+    const d = new Date();
+    const dd = n => String(n).padStart(2, '0');
+    const sello = `${dd(d.getFullYear() % 100)}${dd(d.getMonth() + 1)}${dd(d.getDate())}`;
+    buzonDescargar(`${sello}, Partes Grant-Radar.md`,
+                   buzonDocumento(incidencias), 'text/markdown;charset=utf-8');
+    buzonDescargar(`${sello}, Partes Grant-Radar.json`,
+                   JSON.stringify(incidencias, null, 2), 'application/json');
+    buzonAviso(`Exportados ${incidencias.length} parte(s).`, 'success');
+  }
+
+  document.addEventListener('paste', buzonPegar);
 
   function printCurrentConv() {
     if (currentOverlayId == null) { window.print(); return; }
