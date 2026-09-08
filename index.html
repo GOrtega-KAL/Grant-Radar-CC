@@ -1194,6 +1194,11 @@
   .dimension-fill { height: 100%; border-radius: inherit; }
   .dimension-value { color: var(--text); font-size: 10.5px; font-family: var(--font-mono); font-weight: 750; text-align: right; }
 
+  /* Piezas que solo existen en el PDF. La regla vive aqui y NO dentro de
+     la consulta de impresion: alli no se aplica en pantalla, y el pie del
+     documento aparecia dentro de la ventana flotante. Lo cazo una prueba. */
+  .print-only { display: none; }
+
   /* `align-items: start` es la mitad del arreglo: sin él, la rejilla estira
      las dos tarjetas a la altura de la más alta, y «Temáticas detectadas»
      -que son cuatro chips- quedaba con tres cuartos de rectángulo vacío al
@@ -1484,9 +1489,41 @@
     /* Los botones son interfaz, no documento. */
     body.print-detail .modal-actions,
     body.print-detail .favorite-block { display: none !important; }
-    body.print-detail .content-card,
-    body.print-detail .decision-card,
-    body.print-detail section { break-inside: avoid; }
+    /* ESTO era lo que inflaba el PDF a ocho paginas. `break-inside: avoid`
+       sobre CADA tarjeta y CADA seccion obliga a saltar de pagina en cuanto
+       una caja no cabe en el hueco que queda, y con veinte cajas el documento
+       se llena de blancos.
+       Lo unico que de verdad no puede partirse es el poligono del radar: medio
+       poligono en cada pagina no se lee. El resto fluye. */
+    body.print-detail .radar-card { break-inside: avoid; }
+    body.print-detail .radar-visual { break-inside: avoid; }
+
+    /* Compactado para papel: en pantalla el aire ayuda a leer, en un PDF de
+       varias paginas solo gasta hojas. */
+    body.print-detail .content-card { padding: 9px 11px; margin: 0; }
+    body.print-detail .two-col-grid,
+    body.print-detail .technical-content { gap: 8px; margin-top: 8px; }
+    body.print-detail .modal-summary-grid { gap: 8px; margin-bottom: 8px; }
+    body.print-detail .decision-strip { gap: 6px; }
+    body.print-detail .content-card h3 { margin-bottom: 4px; }
+    body.print-detail .modal-body > * + * { margin-top: 8px; }
+    /* Los avisos de pantalla que no aportan nada en papel. */
+    body.print-detail .notice:not(.danger) { display: none !important; }
+
+    /* Cabecera y pie del documento: solo existen al imprimir. */
+    body.print-detail .print-only { display: block !important; }
+    body.print-detail .print-footer {
+      margin-top: 14px;
+      padding-top: 8px;
+      border-top: 1px solid #c8d0da;
+      font-size: 9px;
+      line-height: 1.5;
+      color: #55606f;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    body.print-detail .print-footer strong { color: #1f2733; }
   }
 </style>
 </head>
@@ -1825,6 +1862,15 @@
 
       <div class="notice danger" id="ov-descarte-block"><strong>Motivo de descarte:</strong> <span id="ov-descarte-motivo">—</span></div>
 
+      <!-- Solo aparece en el PDF. Va al final del cuerpo para que quede al pie
+           del documento, detras de los detalles tecnicos. -->
+      <div class="print-only print-footer" id="print-footer">
+        <span>Documento generado el <strong id="print-fecha">—</strong> por
+              <strong>Grant-Radar</strong>, sistema de vigilancia de financiación
+              de I+D de <strong>Kalfrisa S.A.</strong></span>
+        <span>◎ Grant-Radar · © <span id="print-anio">—</span> Kalfrisa S.A.</span>
+      </div>
+
       <details class="technical-details">
         <summary>Detalles técnicos y trazabilidad</summary>
         <div class="technical-content">
@@ -1904,6 +1950,16 @@
   };
   // La calidad de evidencia llegaba cruda del modelo —«high», «medium»,
   // «low»— y se enseñaba tal cual. El panel está en español.
+  // «2026-09-v18-four-fits-with-investment» -> «2026-09-v18». Se queda con la
+  // fecha y el numero de version, que es lo que identifica; lo demas describe
+  // el cambio y ya vive en AGENTS.md.
+  function versionCorta(valor) {
+    const bruto = String(valor || '').trim();
+    if (!bruto) return 'formato compatible';
+    const m = bruto.match(/^(\d{4}-\d{2}-v\d+)/);
+    return m ? m[1] : bruto;
+  }
+
   const evidenceMap = { high: 'Alta', medium: 'Media', low: 'Baja' };
   function evidenceLabel(valor) {
     const clave = String(valor || '').toLowerCase();
@@ -3231,8 +3287,12 @@
     document.getElementById('urgent-title').textContent = urgent ? urgent.title : 'Sin cierres confirmados';
     document.getElementById('urgent-card').style.cursor = urgent ? 'pointer' : 'default';
 
-    const version = dashboardMeta.versions?.analysis || 'formato compatible';
-    document.getElementById('analysis-version').textContent = version;
+    // La version del prompt lleva una coletilla descriptiva que es util en el
+    // repositorio y ruido en el panel: «2026-09-v18-four-fits-with-investment»
+    // se muestra como «2026-09-v18». Se recorta al mostrar, no en el dato: el
+    // JSON sigue publicando la version completa y trazable.
+    document.getElementById('analysis-version').textContent =
+      versionCorta(dashboardMeta.versions?.analysis);
     const top = [...active].sort((a, b) => (b.actionability_score - a.actionability_score) || (b.fit_score - a.fit_score))[0];
     const urgentCount = active.filter(c => Number.isFinite(c.deadline) && c.deadline > 0 && c.deadline < 30).length;
     document.getElementById('executive-summary').innerHTML = `
@@ -3641,6 +3701,22 @@
     const c = convocatorias.find(item => item.id === currentOverlayId);
     const tituloOriginal = document.title;
     document.title = nombrePdf(c);
+
+    // El PDF es el documento de la convocatoria, y un documento no se entrega
+    // a medias porque el lector no hubiera hecho clic en un desplegable. Se
+    // abre para imprimir y se devuelve como estaba: si el usuario lo tenia
+    // cerrado, cerrado se queda al volver a la pantalla.
+    const detalles = document.querySelector('details.technical-details');
+    const estabaAbierto = detalles ? detalles.open : null;
+    if (detalles) detalles.open = true;
+
+    const hoy = new Date();
+    const fecha = document.getElementById('print-fecha');
+    const anio = document.getElementById('print-anio');
+    if (fecha) fecha.textContent = hoy.toLocaleDateString('es-ES',
+      { day: '2-digit', month: 'long', year: 'numeric' });
+    if (anio) anio.textContent = hoy.getFullYear();
+
     document.body.classList.add('print-detail');
     // Se restaura TODO en la limpieza: si el titulo se quedara cambiado, la
     // pestana del navegador mostraria el nombre de una convocatoria para
@@ -3648,6 +3724,7 @@
     const limpia = () => {
       document.body.classList.remove('print-detail');
       document.title = tituloOriginal;
+      if (detalles && estabaAbierto !== null) detalles.open = estabaAbierto;
     };
     window.addEventListener('afterprint', limpia, { once: true });
     try { window.print(); } finally { setTimeout(limpia, 1200); }
