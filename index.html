@@ -1272,6 +1272,62 @@
     background: var(--surface); color: var(--text-2); font-size: 13px; line-height: 1;
   }
   .buzon-sello { margin: 10px 0 0; font-size: 10px; color: var(--text-3); text-align: right; }
+
+  /* ── NOTAS POR CONVOCATORIA ──────────────────────────────────────────
+     Un hilo, no un campo: cada nota se añade a las anteriores, como los
+     comentarios de Word. Vive DENTRO de la ficha y no en un diálogo propio,
+     a propósito: ya hay dos (`#ai-overlay` y `#buzon-overlay`) y un tercero
+     multiplicaría la trampa de `querySelector` sin acotar (AGENTS.md 82.1). */
+  .notas-bloque {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface-2); padding: 14px 16px; margin-top: 12px;
+  }
+  .notas-cabecera {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: 10px;
+  }
+  .notas-titulo { font-size: 13px; font-weight: 700; color: var(--text); }
+  .notas-vacio { font-size: 12px; color: var(--text-3); margin: 0 0 10px; }
+  .nota {
+    border-left: 3px solid var(--brand); background: var(--surface);
+    border-radius: 0 8px 8px 0; padding: 9px 11px; margin-bottom: 8px;
+  }
+  .nota-meta {
+    display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+    font-size: 11px; color: var(--text-3); margin-bottom: 4px;
+  }
+  .nota-autor { font-weight: 700; color: var(--text-2); font-size: 12px; }
+  .nota-editada { font-style: italic; }
+  .nota-texto { font-size: 13px; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+  .nota-acciones { display: flex; gap: 6px; margin-left: auto; }
+  .nota-accion {
+    border: 0; background: none; cursor: pointer; padding: 2px 4px;
+    font-size: 11px; color: var(--text-3); border-radius: 5px;
+  }
+  .nota-accion:hover { color: var(--brand); background: var(--brand-soft-2); }
+  .nota-accion.peligro:hover { color: var(--danger); background: var(--danger-soft, #fdecea); }
+  .notas-form { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .notas-form input, .notas-form textarea {
+    padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); color: var(--text); font: inherit; width: 100%;
+  }
+  .notas-form textarea { min-height: 66px; resize: vertical; }
+  .notas-form-pie { display: flex; align-items: center; gap: 10px; }
+  .notas-aviso { font-size: 12px; color: var(--text-3); }
+  /* El contador del boton, para saber que hay notas sin abrir la ficha. */
+  .notas-contador {
+    display: inline-block; min-width: 16px; padding: 0 4px; margin-left: 5px;
+    border-radius: 9px; background: var(--brand); color: #fff;
+    font-size: 10px; font-weight: 700; line-height: 16px; text-align: center;
+  }
+  /* Un `display` explicito gana al `[hidden]` de la hoja del navegador, asi que
+     poner el atributo no bastaba: el contador se quedaba visible con un 0.
+     Comprobado con Chromium al escribir esto. */
+  .notas-contador[hidden] { display: none; }
+  .conv-notas {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 11px; color: var(--text-3);
+  }
   .buzon-enlace-respaldo { display: block; margin-top: 6px; font-weight: 700; }
   .buzon-pie { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .buzon-guardadas { flex: 1 1 auto; font-size: 11px; color: var(--text-3); }
@@ -1971,6 +2027,21 @@
                 onclick="toggleCurrentFavorite()">
           <svg width="15" height="15" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="m12 3.6 2.6 5.27 5.82.85-4.21 4.1.99 5.79L12 16.88l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85z"/></svg>
         </button>
+        <!-- El icono es el que pidio el usuario -libreta y lapiz-, redibujado
+             a linea con `currentColor` como el del buzon: una ilustracion con
+             relleno se convierte en una mancha a este tamano (AGENTS.md 80.1). -->
+        <button class="ghost-btn" type="button" id="ov-notas-btn" onclick="notasIrAlHilo()"
+                title="Notas del equipo sobre esta convocatoria"
+                aria-label="Notas del equipo sobre esta convocatoria">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M15.5 20.5H6.8a2.3 2.3 0 0 1-2.3-2.3V5.8a2.3 2.3 0 0 1 2.3-2.3h8.9a2.3 2.3 0 0 1 2.3 2.3v3.4"
+                  stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 3.5v2M12 3.5v2M16 3.5v2M4.5 7.6h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M7.6 11h5.2M7.6 14h3.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".6"/>
+            <path d="m20.2 11.4 1.5 1.5-5.3 5.3-2 .5.5-2z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Notas<span class="notas-contador" id="ov-notas-contador" hidden>0</span>
+        </button>
         <button class="ghost-btn" type="button" id="ov-print" onclick="printCurrentConv()"
                 title="Guardar esta convocatoria como PDF" aria-label="Imprimir o guardar como PDF">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -2041,6 +2112,31 @@
           <div class="content-card soft"><h3>Información complementaria</h3><div class="content-copy" id="ov-technical-meta">—</div></div>
         </div>
       </details>
+
+      <!-- NOTAS DEL EQUIPO. Un hilo, no un campo: cada nota se añade a las
+           anteriores. Va dentro de la ficha y no en un diálogo propio, para no
+           añadir un tercer overlay al panel (AGENTS.md 82.1 y 91).
+           No confundir con la nota de favoritos de arriba, que es una línea
+           suelta ligada a la estrella. -->
+      <section class="notas-bloque" id="ov-notas" aria-label="Notas del equipo">
+        <div class="notas-cabecera">
+          <span class="notas-titulo">Notas del equipo</span>
+          <span class="notas-aviso" id="ov-notas-estado"></span>
+        </div>
+        <div id="ov-notas-lista"></div>
+        <!-- El formulario no se imprime: en el PDF interesan las notas, no la
+             caja para escribirlas. -->
+        <form class="notas-form no-print" id="ov-notas-form" onsubmit="notasAnadir(event)">
+          <input type="text" id="ov-notas-autor" maxlength="60" placeholder="Tu nombre"
+                 aria-label="Tu nombre" autocomplete="name">
+          <textarea id="ov-notas-texto" maxlength="2000" placeholder="Escribe una nota sobre esta convocatoria"
+                    aria-label="Texto de la nota"></textarea>
+          <div class="notas-form-pie">
+            <button class="primary-btn" type="submit" id="ov-notas-guardar">Añadir nota</button>
+            <span class="notas-aviso" id="ov-notas-ayuda"></span>
+          </div>
+        </form>
+      </section>
 
       <!-- Solo aparece en el PDF, y va DESPUÉS de los detalles técnicos: antes
            estaba delante y el «documento generado el…» quedaba a mitad del
@@ -3226,8 +3322,12 @@
     }
     loadCollectionState();
     // Después de pintar, no antes: la lista de favoritos es opcional y su
-    // demora no debe retrasar lo que el usuario ha venido a ver.
+    // demora no debe retrasar lo que el usuario ha venido a ver. Las notas
+    // van con ellos, por lo mismo y porque el contador de la tarjeta las
+    // necesita en memoria: las tarjetas se pintan en bucle y de forma
+    // síncrona, y no pueden esperar a IndexedDB una por una.
     await loadFavorites();
+    await notasRefrescar();
     renderConvs();
   }
 
@@ -3541,7 +3641,7 @@
             <div class="conv-eyebrow">
               <span class="conv-source">${escapeHtml(c.source)}</span>
               <span class="status-label ${priorityClass}">${escapeHtml(priorityLabel(c))}</span>
-              ${opportunityLabels}${reviewLabel}${discardLabel}
+              ${opportunityLabels}${reviewLabel}${discardLabel}${notasEtiqueta(c)}
             </div>
             <h3 class="conv-title">${title}</h3>
             <div class="conv-analysis-line">
@@ -3874,6 +3974,16 @@
       discardBlock.style.display = 'none';
     }
 
+    // Las notas del equipo, con el nombre de quien las escribe recordado de
+    // la vez anterior: pedirlo cada vez cansa y se acaba dejando en blanco.
+    try {
+      document.getElementById('ov-notas-autor').value =
+        localStorage.getItem('grant-radar-notas-autor') || '';
+    } catch (e) { /* navegador sin almacenamiento: se pide cada vez */ }
+    document.getElementById('ov-notas-texto').value = '';
+    document.getElementById('ov-notas-ayuda').textContent = '';
+    notasPintar();
+
     document.getElementById('ai-overlay').classList.add('visible');
     document.body.classList.add('modal-open');
     setTimeout(() => document.getElementById('close-modal-btn').focus(), 30);
@@ -3903,6 +4013,229 @@
       .slice(0, 150)
       .trim();
     return `${fecha}, ${titulo}, Grant-Radar`;
+  }
+
+  // ═══ NOTAS POR CONVOCATORIA ══════════════════════════════════════════
+  //
+  // Un hilo de notas por convocatoria, como los comentarios de Word: cada una
+  // se añade a las anteriores en vez de pisarlas, con su autor y su hora, y se
+  // puede editar o borrar. Sin permisos: es un departamento pequeño.
+  //
+  // NO TOCA EL ANÁLISIS, y es una regla, no un descuido. Una nota no cambia
+  // `fit_score`, ni `decision`, ni el orden de la lista. El encaje se corrige
+  // de forma generalista, afinando los criterios cuando se ve una convocatoria
+  // que debería encajar y no encaja; anotar y puntuar son cosas distintas
+  // (decisión del usuario, AGENTS.md 91).
+  //
+  // FASE LOCAL, y aquí duele más que en el buzón: las notas se guardan en
+  // IndexedDB, o sea en el navegador de quien escribe. **Hoy solo las ve quien
+  // las escribió.** El buzón al menos exporta un documento; esto no. Es
+  // deliberado —lo que se valida ahora es la forma: campos, hilo, edición,
+  // contador— y **hay que cambiarlo Y COMPROBARLO al migrar al servidor**,
+  // que es cuando de verdad sirven (decisión del usuario, 09/09/2026).
+  //
+  // LA COSTURA: todo el almacenamiento pasa por `notasGuardar()`,
+  // `notasLeerTodo()` y `notasBorrar()`. Ninguna otra función sabe dónde
+  // acaban los datos. Las tres son `async` desde el primer día para que un
+  // `fetch` quepa sin tocar a quien las llama.
+
+  const NOTAS_DB = 'grant-radar-notas';
+  const NOTAS_ALMACEN = 'notas';
+  const NOTAS_MAX_CHARS = 2000;
+
+  // Se leen una vez y se mantienen en memoria: las tarjetas se pintan en
+  // bucle y de forma sincrona, y no pueden esperar a IndexedDB por cada una.
+  let notasCache = [];
+
+  function notasAbrirDb() {
+    return new Promise((resolve, reject) => {
+      const peticion = indexedDB.open(NOTAS_DB, 1);
+      peticion.onupgradeneeded = () => {
+        const db = peticion.result;
+        if (!db.objectStoreNames.contains(NOTAS_ALMACEN)) {
+          db.createObjectStore(NOTAS_ALMACEN, { keyPath: 'id' });
+        }
+      };
+      peticion.onsuccess = () => resolve(peticion.result);
+      peticion.onerror = () => reject(peticion.error);
+    });
+  }
+
+  // ── LA COSTURA. Sustituir por un POST el día del servidor. ──────────────
+  async function notasGuardar(nota) {
+    const db = await notasAbrirDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(NOTAS_ALMACEN, 'readwrite');
+      // `put` y no `add`: la misma función sirve para crear y para editar.
+      tx.objectStore(NOTAS_ALMACEN).put(nota);
+      tx.oncomplete = () => { db.close(); resolve(nota); };
+      tx.onerror = () => { db.close(); reject(tx.error); };
+    });
+  }
+
+  async function notasLeerTodo() {
+    const db = await notasAbrirDb();
+    return new Promise((resolve, reject) => {
+      const peticion = db.transaction(NOTAS_ALMACEN, 'readonly')
+        .objectStore(NOTAS_ALMACEN).getAll();
+      peticion.onsuccess = () => { db.close(); resolve(peticion.result || []); };
+      peticion.onerror = () => { db.close(); reject(peticion.error); };
+    });
+  }
+
+  async function notasBorrar(id) {
+    const db = await notasAbrirDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(NOTAS_ALMACEN, 'readwrite');
+      tx.objectStore(NOTAS_ALMACEN).delete(id);
+      tx.oncomplete = () => { db.close(); resolve(id); };
+      tx.onerror = () => { db.close(); reject(tx.error); };
+    });
+  }
+  // ── Fin de la costura de notas ──────────────────────────────────────────
+
+  async function notasRefrescar() {
+    try {
+      notasCache = await notasLeerTodo();
+    } catch (e) {
+      notasCache = [];
+    }
+  }
+
+  // Se indexan por `stable_key` y NO por `id`: el `id` es un contador
+  // posicional que cambia en cada publicación, así que atar una nota a él la
+  // pegaría a una convocatoria distinta mañana (AGENTS.md 60.2).
+  function notasDe(stableKey) {
+    if (!stableKey) return [];
+    return notasCache
+      .filter(n => n.stable_key === stableKey)
+      .sort((a, b) => String(a.creado).localeCompare(String(b.creado)));
+  }
+
+  function notasFechaLegible(iso) {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    const dd = n => String(n).padStart(2, '0');
+    return `${dd(d.getDate())}/${dd(d.getMonth() + 1)}/${d.getFullYear()} ${dd(d.getHours())}:${dd(d.getMinutes())}`;
+  }
+
+  function notasPintar() {
+    const c = convocatorias.find(x => x.id === currentOverlayId);
+    const lista = document.getElementById('ov-notas-lista');
+    const contador = document.getElementById('ov-notas-contador');
+    const estado = document.getElementById('ov-notas-estado');
+    if (!lista) return;
+    const notas = notasDe(c?.stable_key);
+
+    contador.hidden = notas.length === 0;
+    contador.textContent = String(notas.length);
+    estado.textContent = notas.length
+      ? `${notas.length} ${notas.length === 1 ? 'nota' : 'notas'}`
+      : '';
+
+    if (!notas.length) {
+      lista.innerHTML = '<p class="notas-vacio">Todavía no hay notas sobre esta convocatoria.</p>';
+      return;
+    }
+    lista.innerHTML = notas.map(n => {
+      const editada = n.editado
+        ? `<span class="nota-editada">· editada el ${escapeHtml(notasFechaLegible(n.editado))}</span>`
+        : '';
+      return `
+        <div class="nota">
+          <div class="nota-meta">
+            <span class="nota-autor">${escapeHtml(n.autor || 'Sin firmar')}</span>
+            <span>${escapeHtml(notasFechaLegible(n.creado))}</span>
+            ${editada}
+            <span class="nota-acciones no-print">
+              <button class="nota-accion" type="button" onclick="notasEditar('${escapeHtml(n.id)}')">Editar</button>
+              <button class="nota-accion peligro" type="button" onclick="notasEliminar('${escapeHtml(n.id)}')">Eliminar</button>
+            </span>
+          </div>
+          <div class="nota-texto">${escapeHtml(n.texto)}</div>
+        </div>`;
+    }).join('');
+  }
+
+  // Lo que ve la tarjeta sin abrirla. Una nota que no se sabe que existe es
+  // una nota que no sirve: sin esto, el hilo solo lo encuentra quien ya sabía
+  // que estaba ahí.
+  function notasEtiqueta(c) {
+    const cuantas = notasDe(c?.stable_key).length;
+    if (!cuantas) return '';
+    return `<span class="conv-notas" title="${cuantas} ${cuantas === 1 ? 'nota' : 'notas'} del equipo">`
+      + `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">`
+      + `<path d="M20 15.5a2.5 2.5 0 0 1-2.5 2.5H8l-4 3V5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5z"`
+      + ` stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>${cuantas}</span>`;
+  }
+
+  function notasIrAlHilo() {
+    const bloque = document.getElementById('ov-notas');
+    if (!bloque) return;
+    bloque.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    setTimeout(() => document.getElementById('ov-notas-texto')?.focus(), 260);
+  }
+
+  async function notasAnadir(evento) {
+    if (evento) evento.preventDefault();
+    const c = convocatorias.find(x => x.id === currentOverlayId);
+    if (!c?.stable_key) return;
+    const autor = document.getElementById('ov-notas-autor').value.trim();
+    const texto = document.getElementById('ov-notas-texto').value.trim();
+    const ayuda = document.getElementById('ov-notas-ayuda');
+    if (!texto) {
+      ayuda.textContent = 'Escribe algo antes de guardar.';
+      return;
+    }
+    ayuda.textContent = '';
+    // El nombre se recuerda, igual que en el buzón: pedirlo en cada nota cansa
+    // y se acaba dejando en blanco, que es justo el dato que hace falta para
+    // saber a quién preguntar.
+    try { localStorage.setItem('grant-radar-notas-autor', autor); } catch (e) { /* sin almacenamiento */ }
+    await notasGuardar({
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      stable_key: c.stable_key,
+      autor,
+      texto: texto.slice(0, NOTAS_MAX_CHARS),
+      creado: new Date().toISOString(),
+      editado: '',
+      original: '',
+    });
+    document.getElementById('ov-notas-texto').value = '';
+    await notasRefrescar();
+    notasPintar();
+    renderConvs();
+  }
+
+  async function notasEditar(id) {
+    const nota = notasCache.find(n => n.id === id);
+    if (!nota) return;
+    const nuevo = prompt('Editar la nota:', nota.texto);
+    if (nuevo === null) return;
+    const limpio = nuevo.trim();
+    if (!limpio || limpio === nota.texto) return;
+    await notasGuardar({
+      ...nota,
+      texto: limpio.slice(0, NOTAS_MAX_CHARS),
+      editado: new Date().toISOString(),
+      // El texto de la primera versión se conserva aunque no se enseñe:
+      // «editada el…» sin poder saber qué cambió es media información, y
+      // guardarlo no cuesta nada.
+      original: nota.original || nota.texto,
+    });
+    await notasRefrescar();
+    notasPintar();
+  }
+
+  async function notasEliminar(id) {
+    const nota = notasCache.find(n => n.id === id);
+    if (!nota) return;
+    // Es el único botón irreversible del panel y está al lado de «Editar».
+    if (!confirm('¿Eliminar esta nota? No se puede deshacer.')) return;
+    await notasBorrar(id);
+    await notasRefrescar();
+    notasPintar();
+    renderConvs();
   }
 
   // ═══ BUZÓN DE FALLOS Y SUGERENCIAS ═══════════════════════════════════
