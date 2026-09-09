@@ -241,6 +241,54 @@
   .icon-btn:hover { color: var(--brand); border-color: rgba(21, 86, 168, .35); background: var(--brand-soft-2); }
   .icon-btn:active, .ghost-btn:active, .primary-btn:active, .link-btn:active { transform: translateY(1px); }
 
+  /* Etiqueta flotante de los botones de icono.
+     Sustituye al `title` nativo, que tarda cerca de un segundo en aparecer y no
+     se puede maquetar: un icono sin texto necesita decir qué hace ANTES de que
+     alguien decida pulsarlo, no después de esperar sobre él.
+     Se sale del `aria-label`, que sigue siendo lo que lee un lector de pantalla;
+     esto es solo lo que se ve. `pointer-events: none` para que la etiqueta no se
+     interponga entre el ratón y el botón. */
+  /* VA A LA IZQUIERDA, NO DEBAJO, y no es una preferencia estética.
+     `.app-header` lleva `overflow: hidden` porque sus dos círculos decorativos
+     de 288px (`::before` y `::after`) se salen del borde redondeado y hay que
+     recortarlos. Consecuencia: cualquier cosa que asome por debajo del botón se
+     corta a media palabra —comprobado con Chromium—. La cabecera mide 72px de
+     alto y la etiqueta 26, así que al costado cabe entera. */
+  .icon-btn[data-tooltip] { position: relative; }
+  .icon-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 8px);
+    z-index: 30;
+    white-space: nowrap;
+    background: #1f2733;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 7px 10px;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, .22);
+    opacity: 0;
+    transform: translate(4px, -50%);
+    pointer-events: none;
+    transition: opacity .14s ease, transform .14s ease;
+  }
+  .icon-btn[data-tooltip]:hover::after,
+  .icon-btn[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+  /* Sin animación para quien la haya desactivado en el sistema. Se quita el
+     desplazamiento, NO el `translateY(-50%)`, que es lo que la centra. */
+  @media (prefers-reduced-motion: reduce) {
+    .icon-btn[data-tooltip]::after {
+      transition: none;
+      transform: translate(0, -50%);
+    }
+  }
+
   /* Estado de la recopilación diaria, junto al pie. Es una nota de
      mantenimiento —cuántas convocatorias esperan análisis y qué costaría—, no
      una alerta de trabajo: por eso va discreta y al final, donde no compite
@@ -1592,7 +1640,7 @@
       </div>
       <div class="updated-pill" id="ts">Datos sin actualizar</div>
       <button class="icon-btn" type="button" id="buzon-abrir" onclick="buzonAbrir()"
-              title="Informar de un fallo o proponer una mejora"
+              data-tooltip="Sugerencias o fallos"
               aria-label="Informar de un fallo o proponer una mejora">
         <svg width="24" height="24" viewBox="1.5 1.5 21 21" fill="none" aria-hidden="true">
           <path d="M14.6 2.6H6.1a1.7 1.7 0 0 0-1.7 1.7v15.4a1.7 1.7 0 0 0 1.7 1.7h5.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -3238,6 +3286,11 @@
   // han pasado el filtro determinista, no el de Haiku. Presentarlas como
   // oportunidades sería contar como encontrado lo que aún no se ha evaluado.
   const COLLECTION_SOON_DAYS = 14;
+  // A partir de qué nota una convocatoria es «de alto encaje». Se supera, no se
+  // alcanza: 76 cuenta, 75 no. El mismo umbral que usa el resumen semanal
+  // (`HIGH_FIT_MIN` en grant_radar/weekly_digest.py), para que el panel y el
+  // correo no llamen «alto encaje» a cosas distintas.
+  const HIGH_FIT_MIN = 75;
   // La Batches API cobra al 50 %. Verificado contra la factura el 03/09/2026:
   // 0,00481 USD por lotes frente a 0,00961 instantáneo (AGENTS.md 61.9).
   const BATCH_COST_FACTOR = 0.5;
@@ -3387,7 +3440,15 @@
   function renderOverview() {
     const nonClosed = convocatorias.filter(c => (c.deadline ?? 1) > 0);
     const active = nonClosed.filter(c => !c.descartada);
-    const high = active.filter(c => c.priority === 'high');
+    // Alto encaje es superar 75, no llegar a él. Decisión del usuario del
+    // 09/09/2026, y los datos la sostienen: sobre las 91 fichas del 07/09 el
+    // 75 y el 72 son atractores —cinco y ocho convocatorias exactamente ahí—,
+    // así que un 75 dice poco. Por encima solo quedan el 78 y el 82.
+    //
+    // Antes esto contaba `priority === 'high'`, un campo que hoy no vale
+    // 'high' en ninguna ficha —14 son 'medium' y 77 'low'—, así que la tarjeta
+    // enseñaba un 0 permanente. `fit_score` es lo que el usuario mira.
+    const high = active.filter(c => (c.fit_score ?? 0) > HIGH_FIT_MIN);
     const discarded = nonClosed.filter(c => c.descartada);
     const dataPending = active.filter(c => c.data_pending);
     const review = active.filter(c => c.review_required);
@@ -3402,8 +3463,8 @@
 
     const highPercentage = active.length ? Math.round(high.length / active.length * 100) : 0;
     document.getElementById('high-caption').textContent = high.length
-      ? `${highPercentage}% de las convocatorias activas superan el umbral de prioridad alta.`
-      : 'No se han detectado oportunidades de prioridad alta en esta ejecución.';
+      ? `${highPercentage}% de las convocatorias activas superan un encaje de ${HIGH_FIT_MIN}.`
+      : `Ninguna convocatoria activa supera un encaje de ${HIGH_FIT_MIN}.`;
 
     urgentConvId = urgent?.id ?? null;
     document.getElementById('cnt-urgent-days').textContent = urgent ? urgent.deadline : '—';
