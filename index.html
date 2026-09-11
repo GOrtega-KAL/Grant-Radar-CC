@@ -1699,13 +1699,13 @@
               data-tooltip="Sugerencias o fallos"
               aria-label="Informar de un fallo o proponer una mejora">
         <svg width="24" height="24" viewBox="1.5 1.5 21 21" fill="none" aria-hidden="true">
-          <path d="M14.6 2.6H6.1a1.7 1.7 0 0 0-1.7 1.7v15.4a1.7 1.7 0 0 0 1.7 1.7h5.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M14.6 2.6 19 7v2.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M7.4 6.5h5.2M7.4 9.6h3.4M7.4 12.7h2.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".55"/>
-          <circle cx="15.5" cy="14.3" r="5.6" stroke="currentColor" stroke-width="1.5"/>
-          <path d="m19.6 18.4 2.2 2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <ellipse cx="15.5" cy="14.6" rx="2.2" ry="2.7" stroke="currentColor" stroke-width="1.4"/>
-          <path d="M15.5 11.9v5.4M13.3 13.5h-1.7M13.3 15.8h-1.7M17.7 13.5h1.7M17.7 15.8h1.7M14.4 11.5l-.9-1.1M16.6 11.5l.9-1.1" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+          <path d="M14.6 2.6H6.1a1.7 1.7 0 0 0-1.7 1.7v15.4a1.7 1.7 0 0 0 1.7 1.7h5.1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14.6 2.6 19 7v2.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M7.4 6.5h5.2M7.4 9.6h3.4M7.4 12.7h2.1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".55"/>
+          <circle cx="15.5" cy="14.3" r="5.6" stroke="currentColor" stroke-width="1.2"/>
+          <path d="m19.6 18.4 2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <ellipse cx="15.5" cy="14.6" rx="2.2" ry="2.7" stroke="currentColor" stroke-width="1.1"/>
+          <path d="M15.5 11.9v5.4M13.3 13.5h-1.7M13.3 15.8h-1.7M17.7 13.5h1.7M17.7 15.8h1.7M14.4 11.5l-.9-1.1M16.6 11.5l.9-1.1" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
         </svg>
       </button>
     </div>
@@ -1720,7 +1720,7 @@
 
     <article class="overview-card overview-urgent" id="urgent-card" role="button" tabindex="0" aria-label="Abrir convocatoria con cierre más próximo">
       <div class="overview-kicker"><span>Cierre más próximo</span><span class="panel-tag">Urgencia</span></div>
-      <div class="overview-value"><span id="cnt-urgent-days">—</span><span style="font-size:15px;letter-spacing:0;margin-left:4px">días</span></div>
+      <div class="overview-value"><span id="cnt-urgent-days">—</span><span id="cnt-urgent-unit" style="font-size:15px;letter-spacing:0;margin-left:4px">días</span></div>
       <div class="urgent-title" id="urgent-title">Sin cierres confirmados</div>
     </article>
 
@@ -2276,6 +2276,30 @@
     })[char]);
   }
 
+  // Lista blanca de formas de color, no lista negra de caracteres. Es el mismo
+  // criterio que safeExternalUrl(): se declara lo que vale y lo demas cae al
+  // color de marca. Un `red" onmouseover="...` rompe el atributo y ejecuta, y
+  // este es el unico valor de texto del JSON que llega a un `style=` sin pasar
+  // por escapeHtml. Hoy lo escribe el backend con constantes (public_output.py
+  // keywords[].color), asi que no es explotable; deja de serlo del todo si
+  // manana ese color lo eligiera el modelo.
+  function safeCssColor(value) {
+    const raw = String(value ?? '').trim();
+    if (/^#[0-9a-f]{3,8}$/i.test(raw)) return raw;
+    if (/^var\(--[a-z0-9-]+\)$/i.test(raw)) return raw;
+    if (/^rgba?\([\d\s.,%]+\)$/i.test(raw)) return raw;
+    if (/^[a-z]{3,20}$/i.test(raw)) return raw;
+    return 'var(--brand)';
+  }
+
+  // Un solo sitio para los plurales. El panel tenia SIETE construcciones que
+  // escribian el plural a mano, y todas decian «1 dias», «1 oportunidades» o
+  // «1 convocatorias» al llegar a uno. Es el mismo ayudante que `_plural()` en
+  // weekly_digest.py; conviene que sigan pareciendose.
+  function plural(n, singular, plural) {
+    return Number(n) === 1 ? singular : plural;
+  }
+
   function safeExternalUrl(value) {
     const raw = String(value ?? '').trim();
     if (!raw) return '';
@@ -2502,13 +2526,15 @@
     return Math.max(3, Math.min(100, 100 - (days / 365 * 100)));
   }
 
-  function deadlineText(days, suffix = ' días') {
+  // El sufijo dejo de ser un parametro con valor fijo: con `days === 1` escribia
+  // «1 dias» en la ficha y en el detalle. Quien quiera otro texto lo pasa entero.
+  function deadlineText(days, suffix = null) {
     if (!Number.isFinite(days)) return 'Sin fecha';
     // Un plazo negativo solo llega a la vista con el filtro de favoritos
     // activo, que es el único sitio donde una convocatoria vencida se sigue
     // mostrando. «-3 días» no dice nada; «Plazo vencido» sí.
     if (days < 0) return 'Plazo vencido';
-    return `${days}${suffix}`;
+    return `${days}${suffix ?? ` ${plural(days, 'día', 'días')}`}`;
   }
 
   function formatDeadlineDate(dateStr) {
@@ -2705,6 +2731,16 @@
   const FAVORITES_ENDPOINT = window.GRANT_RADAR_FAVORITES_ENDPOINT
     ?? 'https://grant-radar-favoritos.favoritos-worker.workers.dev/favoritos';
 
+  // LA CLAVE COMPARTIDA DEL PANEL. No es un secreto y no puede serlo: esta
+  // pagina es publica, asi que quien mire su codigo la ve. Lo que compra es
+  // que el endpoint deje de estar abierto a un curl a ciegas —antes bastaba
+  // con mandar la cabecera `Origin`, que cualquiera puede poner— y, sobre
+  // todo, que sea ROTABLE: si aparece abuso se cambia el secreto `PANEL_KEY`
+  // del Worker y se vuelve a subir este archivo. Ver worker.js.
+  //
+  // Si se cambia aqui, hay que cambiarla alli: `npx wrangler secret put PANEL_KEY`.
+  const FAVORITES_KEY = 'fd46f78861cd11f29e02217240f6da78';
+
   const FAVORITES_LOCAL_KEY = 'grant-radar-favoritos';
   const FAVORITES_NAME_KEY = 'grant-radar-nombre';
 
@@ -2775,7 +2811,10 @@
       : FAVORITES_ENDPOINT;
     const response = await fetch(url, {
       method,
-      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      headers: {
+        'X-Grant-Radar-Key': FAVORITES_KEY,
+        ...(body ? { 'Content-Type': 'application/json' } : {})
+      },
       body: body ? JSON.stringify(body) : undefined
     });
     if (!response.ok) throw new Error(`favoritos: HTTP ${response.status}`);
@@ -3359,7 +3398,7 @@
         Number.isFinite(cost)
           ? `coste estimado ${cost.toFixed(2)} USD · ${(cost * BATCH_COST_FACTOR).toFixed(2)} USD por lotes`
           : '',
-        state.collected_on ? `recopilado el ${formatShortDate(state.collected_on)}` : '',
+        state.collected_on ? `recopilado el ${escapeHtml(formatShortDate(state.collected_on))}` : '',
         Number.isFinite(days)
           ? `lo publicado tiene ${days} día${days === 1 ? '' : 's'}`
           : ''
@@ -3568,6 +3607,8 @@
 
     urgentConvId = urgent?.id ?? null;
     document.getElementById('cnt-urgent-days').textContent = urgent ? urgent.deadline : '—';
+    document.getElementById('cnt-urgent-unit').textContent =
+      urgent ? plural(urgent.deadline, 'día', 'días') : 'días';
     document.getElementById('urgent-title').textContent = urgent ? urgent.title : 'Sin cierres confirmados';
     document.getElementById('urgent-card').style.cursor = urgent ? 'pointer' : 'default';
 
@@ -3580,9 +3621,9 @@
     const top = [...active].sort((a, b) => (b.actionability_score - a.actionability_score) || (b.fit_score - a.fit_score))[0];
     const urgentCount = active.filter(c => Number.isFinite(c.deadline) && c.deadline > 0 && c.deadline < 30).length;
     document.getElementById('executive-summary').innerHTML = `
-      <p><strong>${high.length} oportunidades</strong> presentan encaje alto y <strong>${urgentCount}</strong> cierran en menos de 30 días.</p>
+      <p><strong>${high.length} ${plural(high.length, 'oportunidad', 'oportunidades')}</strong> ${plural(high.length, 'presenta', 'presentan')} encaje alto y <strong>${urgentCount}</strong> ${plural(urgentCount, 'cierra', 'cierran')} en menos de 30 días.</p>
       ${top ? `<p>La primera por accionabilidad es <strong>${escapeHtml(top.title)}</strong> (${top.actionability_score}%).</p>` : ''}
-      <p>${dataPending.length ? `${dataPending.length} convocatorias tienen datos documentales pendientes; ${review.length} presentan contradicciones de compatibilidad.` : `No quedan datos documentales pendientes; ${review.length} casos presentan contradicciones de compatibilidad.`}</p>`;
+      <p>${dataPending.length ? `${dataPending.length} ${plural(dataPending.length, 'convocatoria', 'convocatorias')} ${plural(dataPending.length, 'tiene', 'tienen')} datos documentales pendientes; ${review.length} ${plural(review.length, 'presenta', 'presentan')} contradicciones de compatibilidad.` : `No quedan datos documentales pendientes; ${review.length} ${plural(review.length, 'caso presenta', 'casos presentan')} contradicciones de compatibilidad.`}</p>`;
   }
 
   function animateNumber(id, target, duration) {
@@ -3691,7 +3732,7 @@
     }
     element.innerHTML = items.map(c => `
       <div class="deadline-item" role="button" tabindex="0" onclick="openOverlay(${Number(c.id)})" onkeydown="if(event.key==='Enter'){openOverlay(${Number(c.id)})}">
-        <div class="deadline-days ${deadlineClass(c.deadline)}">${c.deadline}<span>días</span></div>
+        <div class="deadline-days ${deadlineClass(c.deadline)}">${c.deadline}<span>${plural(c.deadline, 'día', 'días')}</span></div>
         <div><div class="deadline-name">${escapeHtml(c.title.length > 58 ? `${c.title.slice(0, 58)}…` : c.title)}</div><div class="deadline-org">${escapeHtml(c.source)}${formatDeadlineDate(c.deadline_date) ? ` · ${escapeHtml(formatDeadlineDate(c.deadline_date))}` : ''}</div></div>
         <div class="deadline-fit">${c.fit_score}%</div>
       </div>`).join('');
@@ -3738,7 +3779,7 @@
       return;
     }
     element.innerHTML = keywords.slice(0, 8).map(keyword => `
-      <div class="keyword-item"><div class="kw-name">${escapeHtml(keyword.name)}</div><div class="kw-bar-wrap"><div class="kw-bar" data-width="${(Number(keyword.count || 0) / max * 100).toFixed(0)}" style="background:${keyword.color || 'var(--brand)'}"></div></div><div class="kw-count">${Number(keyword.count || 0)}</div></div>`).join('');
+      <div class="keyword-item"><div class="kw-name">${escapeHtml(keyword.name)}</div><div class="kw-bar-wrap"><div class="kw-bar" data-width="${(Number(keyword.count || 0) / max * 100).toFixed(0)}" style="background:${safeCssColor(keyword.color)}"></div></div><div class="kw-count">${Number(keyword.count || 0)}</div></div>`).join('');
     requestAnimationFrame(() => document.querySelectorAll('.kw-bar').forEach(bar => { bar.style.width = `${bar.dataset.width}%`; }));
   }
 
@@ -3752,14 +3793,14 @@
       const rawCount = Number(source.raw_count ?? source.count ?? 0);
       const consolidatedCount = consolidatedSourceCount(source);
       return `
-      <div class="source-item"><div class="source-left"><span class="source-status ${escapeHtml(source.status || 'warn')}"></span><div><div class="source-name">${escapeHtml(source.name)}</div><div class="source-type">${escapeHtml(source.type || 'fuente')} ${source.count_cerradas ? `· ${source.count_cerradas} cerradas` : ''}</div></div></div><div class="source-right"><div class="source-volume" aria-label="${rawCount} registros recuperados, ${consolidatedCount} convocatorias consolidadas"><span class="source-raw-count">${rawCount}</span><span class="source-volume-arrow" aria-hidden="true">→</span><span class="source-consolidated-count">${consolidatedCount}</span></div><div class="source-volume-label">registros → convocatorias</div><div class="source-time">${escapeHtml(source.time || '')}</div></div></div>`;
+      <div class="source-item"><div class="source-left"><span class="source-status ${escapeHtml(source.status || 'warn')}"></span><div><div class="source-name">${escapeHtml(source.name)}</div><div class="source-type">${escapeHtml(source.type || 'fuente')} ${source.count_cerradas ? `· ${source.count_cerradas} cerradas` : ''}</div></div></div><div class="source-right"><div class="source-volume" aria-label="${rawCount} ${plural(rawCount, 'registro recuperado', 'registros recuperados')}, ${consolidatedCount} ${plural(consolidatedCount, 'convocatoria consolidada', 'convocatorias consolidadas')}"><span class="source-raw-count">${rawCount}</span><span class="source-volume-arrow" aria-hidden="true">→</span><span class="source-consolidated-count">${consolidatedCount}</span></div><div class="source-volume-label">registros → convocatorias</div><div class="source-time">${escapeHtml(source.time || '')}</div></div></div>`;
     }).join('');
   }
 
   function renderChart() {
     const max = Math.max(...trendData);
     document.getElementById('mini-bars').innerHTML = trendData.map((value, index) => `
-      <div class="mini-bar-col"><div class="mini-bar" style="height:${Math.max(4, value / max * 86)}px" title="${value} convocatorias"></div><div class="mini-bar-label">${trendLabels[index]}</div></div>`).join('');
+      <div class="mini-bar-col"><div class="mini-bar" style="height:${Math.max(4, value / max * 86)}px" title="${value} ${plural(value, 'convocatoria', 'convocatorias')}"></div><div class="mini-bar-label">${trendLabels[index]}</div></div>`).join('');
   }
 
   function renderFooterMeta() {
